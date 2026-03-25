@@ -1,40 +1,81 @@
-# Specifies intentionally untracked files to ignore when using Git
-# http://git-scm.com/docs/gitignore
+# =========================
+# OS / Sistema
+# =========================
+.DS_Store
+Thumbs.db
+$RECYCLE.BIN/
 
+# =========================
+# Logs
+# =========================
+*.log
+log.txt
+npm-debug.log*
+yarn-error.log*
+
+# =========================
+# Temp files
+# =========================
 *~
 *.sw[mnpcod]
 .tmp
 *.tmp
 *.tmp.*
-UserInterfaceState.xcuserstate
-$RECYCLE.BIN/
 
-*.log
-log.txt
-
-
-/.sourcemaps
-/.versions
-/coverage
-
-# Ionic
-/.ionic
-/www
-/platforms
-/plugins
-
-# Compiled output
+# =========================
+# Angular / Build
+# =========================
 /dist
 /tmp
 /out-tsc
 /bazel-out
+/.angular
+/.angular/cache
 
+# =========================
+# Ionic
+# =========================
+/.ionic
+/www
+
+# =========================
+# Capacitor
+# =========================
+android/
+ios/
+
+# =========================
 # Node
+# =========================
 /node_modules
-npm-debug.log
-yarn-error.log
 
-# IDEs and editors
+# =========================
+# Environment
+# =========================
+.env
+.env.local
+.env.*.local
+
+# =========================
+# Coverage / Test
+# =========================
+/coverage
+/.nyc_output
+
+# =========================
+# Cache
+# =========================
+.cache/
+.eslintcache
+
+# =========================
+# TypeScript
+# =========================
+*.tsbuildinfo
+
+# =========================
+# IDEs
+# =========================
 .idea/
 .project
 .classpath
@@ -44,7 +85,7 @@ yarn-error.log
 *.sublime-project
 *.sublime-workspace
 
-# Visual Studio Code
+# VSCode
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -52,19 +93,17 @@ yarn-error.log
 !.vscode/extensions.json
 .history/*
 
-
-# Miscellaneous
-/.angular
-/.angular/cache
-.sass-cache/
+# =========================
+# Misc
+# =========================
 /.nx
 /.nx/cache
 /connect.lock
-/coverage
 /libpeerconnection.log
 testem.log
 /typings
 
-# System files
-.DS_Store
-Thumbs.db
+# =========================
+# Local configs
+# =========================
+config.local.json
