@@ -11,6 +11,8 @@ import { ConnectionStatusComponent } from 'src/app/shared/components/connection-
 
 import { Router } from '@angular/router';
 
+import { AuthService } from 'src/app/core/services/auth.service';
+
 /**
  * LoginPage
  * Standalone component for user authentication.
@@ -38,10 +40,18 @@ export class LoginPage {
   loading = false;
   error: string | null = null;
 
-  constructor(private fb: FormBuilder, public facade: LoginFacade, private router: Router) {
+  constructor(
+    private fb: FormBuilder, 
+    public facade: LoginFacade, 
+    private authService: AuthService,
+    private router: Router
+  ) {
+    const lastCRM = this.authService.getLastCRM();
+    const rememberMePref = this.authService.getRememberMePreference();
     this.form = this.fb.group({
-      username: ['', [Validators.required]],
-      password: ['', [Validators.required]]
+      username: [lastCRM, [Validators.required]],
+      password: ['', [Validators.required]],
+      rememberMe: [rememberMePref]
     });
   }
 
@@ -52,7 +62,10 @@ export class LoginPage {
     if (this.form.invalid) return;
     this.loading = true;
     this.error = null;
-    this.facade.login(this.form.value)
+    
+    const { username, password, rememberMe } = this.form.value;
+    
+    this.facade.login({ username, password }, rememberMe)
       .subscribe({
         next: () => {
           this.loading = false;
