@@ -1,68 +1,9 @@
+<<<<<<< HEAD
 # =========================
 # OS / Sistema
 # =========================
 .DS_Store
 Thumbs.db
-$RECYCLE.BIN/
-
-# =========================
-# Logs
-# =========================
-*.log
-log.txt
-npm-debug.log*
-yarn-error.log*
-
-# =========================
-# Temp files
-# =========================
-*~
-*.sw[mnpcod]
-.tmp
-*.tmp
-*.tmp.*
-
-# =========================
-# Angular / Build
-# =========================
-/dist
-/tmp
-/out-tsc
-/bazel-out
-/.angular
-/.angular/cache
-
-# =========================
-# Ionic
-# =========================
-/.ionic
-/www
-
-# =========================
-# Capacitor
-# =========================
-android/
-ios/
-
-# =========================
-# Node
-# =========================
-/node_modules
-
-# =========================
-# Environment
-# =========================
-.env
-.env.local
-.env.*.local
-
-# =========================
-# Coverage / Test
-# =========================
-/coverage
-/.nyc_output
-
-# =========================
 # Cache
 # =========================
 .cache/
@@ -107,3 +48,33 @@ testem.log
 # Local configs
 # =========================
 config.local.json
+=======
+# Angular specific
+/dist/
+/out-tsc/
+/tmp/
+/coverage/
+/e2e/test-output/
+/.angular/
+.angular/
+
+# Node modules and dependency files
+/node_modules/
+/package-lock.json
+/yarn.lock
+
+# Environment files
+/.env
+
+# Angular CLI and build artefacts
+/.angular-cli.json
+/.ng/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+>>>>>>> 4aa016b5c36927ce1acd390966f1ae1b52117812
