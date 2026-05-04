@@ -1,0 +1,284 @@
+.app-container {
+    width: 100%;
+    height: 100vh;
+    background: #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.status-bar {
+    background: white;
+    padding: 10px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e9eef3;
+    font-size: 12px;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.hospital-header {
+    background: white;
+    padding: 12px 24px;
+    border-bottom: 1px solid #e9eef3;
+}
+
+.hospital-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-huap, .logo-uff {
+    height: 38px;
+    width: auto;
+    object-fit: contain;
+}
+
+.hospital-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.hospital-name {
+    font-weight: 700;
+    font-size: 16px;
+    color: #0f172a;
+}
+
+.university {
+    font-size: 11px;
+    color: #475569;
+    font-weight: 500;
+}
+
+.search-area {
+    background: white;
+    padding: 12px 24px;
+    border-bottom: 1px solid #e9eef3;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 8px 16px;
+    gap: 10px;
+}
+
+.search-box span {
+    font-size: 16px;
+}
+
+.search-box input {
+    border: none;
+    background: transparent;
+    width: 100%;
+    outline: none;
+    font-size: 14px;
+    color: #1e293b;
+}
+
+.filters-bar {
+    background: white;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e9eef3;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.status-filters {
+    display: flex;
+    gap: 8px;
+}
+
+.status-chip {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    padding: 8px 16px;
+    border-radius: 40px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.status-chip.active {
+    background: #7c3aed;
+    color: white;
+    border-color: #7c3aed;
+}
+
+.date-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 40px;
+    font-size: 12px;
+    color: #475569;
+}
+
+.date-filter input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.results-count {
+    font-size: 11px;
+    background: #f1f5f9;
+    padding: 6px 12px;
+    border-radius: 40px;
+    color: #475569;
+    font-weight: 600;
+}
+
+.main-content {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.procedures-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.procedure-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+}
+
+.procedure-card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05);
+    border-color: #cbd5e1;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.patient-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.allergy-badge {
+    background: #fef2f2;
+    color: #dc2626;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+.room-badge {
+    background: #f0fdf4;
+    color: #166534;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.patient-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 12px;
+    color: #475569;
+}
+
+.procedure-details {
+    font-size: 12px;
+    color: #1e293b;
+    background: #f8fafc;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.btn-assume {
+    flex: 1;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 40px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-assume:hover {
+    background: #2563eb;
+}
+
+.btn-ficha {
+    flex: 1;
+    background: #7c3aed;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 40px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-ficha:hover {
+    background: #6d28d9;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    background: white;
+    border-radius: 16px;
+    color: #64748b;
+    font-size: 14px;
+    border: 1px dashed #cbd5e1;
+}

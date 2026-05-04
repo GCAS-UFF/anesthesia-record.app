@@ -1,17 +1,74 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Tab 1
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
+<div class="app-container">
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <span class="time">10:31</span>
+        <span class="date">Sábado, 21 de Março</span>
+    </div>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 1</ion-title>
-    </ion-toolbar>
-  </ion-header>
+    <!-- Header Institucional -->
+    <div class="hospital-header">
+        <div class="hospital-info">
+            <div class="logo-container">
+                <img class="logo-huap" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhUkC4lf0T0wpLNtJR2sNXW2aiVXF_svEmmNTqABPgRYhhL2c4_4RpDmSdRufQYMegUMhVqxso1NCrD8EIq3SYMpT5kZ-3OLJSfruGqRWsBVfq5LEBShyvKkfMg1iKlycZQuMiNo4lNYj3m/s1600/logo_huap.png" alt="Logo HUAP">
+                <img class="logo-uff" src="https://upload.wikimedia.org/wikipedia/pt/4/47/UFF_bras%C3%A3o.png" alt="Brasão UFF">
+            </div>
+            <div class="hospital-text">
+                <div class="hospital-name">Hospital Universitário Antonio Pedro</div>
+                <div class="university">Universidade Federal Fluminense • Serviço de Anestesiologia</div>
+            </div>
+        </div>
+    </div>
 
-  <app-explore-container name="Tab 1 page"></app-explore-container>
-</ion-content>
+    <!-- Search Area -->
+    <div class="search-area">
+        <div class="search-box">
+            <span>🔍</span>
+            <input type="text" (input)="onSearchChange($event)" placeholder="Buscar por paciente, prontuário, procedimento ou sala...">
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-bar">
+        <div class="status-filters">
+            <button class="status-chip" [class.active]="selectedStatus === 'all'" (click)="changeStatus('all')">📋 Todos</button>
+            <button class="status-chip" [class.active]="selectedStatus === 'waiting'" (click)="changeStatus('waiting')">⏳ Em Espera</button>
+            <button class="status-chip" [class.active]="selectedStatus === 'completed'" (click)="changeStatus('completed')">✅ Realizados</button>
+        </div>
+        <div class="date-filter">
+            <label>📅 Data:</label>
+            <input type="date" (change)="onDateChange($event)" [value]="selectedDate">
+        </div>
+        <div class="results-count">{{ filteredProcedures.length }} procedimentos</div>
+    </div>
+
+    <!-- Main Content com Cards -->
+    <div class="main-content">
+        <div class="procedures-list">
+            <div class="procedure-card" *ngFor="let p of filteredProcedures">
+                <div class="card-header">
+                    <div class="patient-name">
+                        {{ p.patient }}
+                        <span *ngIf="p.isAllergy" class="allergy-badge" title="Alergia">⚠️ Alergia</span>
+                    </div>
+                    <div class="room-badge">{{ p.room }}</div>
+                </div>
+                <div class="patient-details">
+                    <div><strong>Idade:</strong> {{ p.age }}</div>
+                    <div><strong>Prontuário:</strong> {{ p.record }}</div>
+                    <div><strong>Data de Nasc:</strong> {{ p.birth }}</div>
+                </div>
+                <div class="procedure-details">
+                    <div class="procedure-name"><strong>Procedimento:</strong> {{ p.procedure }}</div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-assume" *ngIf="p.status === 'waiting'">Assumir Paciente</button>
+                    <button class="btn-ficha" *ngIf="p.status === 'waiting'">Abrir Ficha</button>
+                </div>
+            </div>
+
+            <div class="empty-state" *ngIf="filteredProcedures.length === 0">
+                <p>Nenhum procedimento encontrado para os filtros selecionados.</p>
+            </div>
+        </div>
+    </div>
+</div>
