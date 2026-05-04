@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { LoginService } from './login.service';
+import { AuthService } from 'src/app/core/services/auth.service';
 import { LoginCredentials } from './login.model';
 import { Observable } from 'rxjs';
 
@@ -8,12 +8,12 @@ import { Observable } from 'rxjs';
  */
 @Injectable()
 export class LoginFacade {
-  constructor(private service: LoginService) {}
+  constructor(private authService: AuthService) {}
 
   /**
    * Realiza login com as credenciais fornecidas.
    */
   login(credentials: LoginCredentials): Observable<boolean> {
-    return this.service.login(credentials);
+    return this.authService.login(credentials);
   }
 }

@@ -28,6 +28,7 @@ export class CustomInputComponent implements ControlValueAccessor {
   @Input() inputIcon = '';
   @Input() placeholder = '';
   @Input() required = false;
+  @Input() onlyNumbers = false;
   @Output() focused = new EventEmitter<void>();
 
   value = '';
@@ -38,6 +39,9 @@ export class CustomInputComponent implements ControlValueAccessor {
 
   onInputChange(event: Event): void {
     const target = event.target as HTMLInputElement;
+    if (this.onlyNumbers) {
+      target.value = target.value.replace(/[^0-9]/g, '');
+    }
     this.value = target.value;
     this.onChange(this.value);
   }
