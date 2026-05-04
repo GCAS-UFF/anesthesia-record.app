@@ -1,0 +1,16 @@
+.header-institucional {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.logo {
+  height: 48px;
+  width: auto;
+}
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--ion-color-primary, #3880ff);
+}
