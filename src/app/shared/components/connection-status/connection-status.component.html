@@ -1,4 +1,5 @@
-<ion-chip [color]="online ? 'success' : 'danger'">
-  <ion-icon [name]="online ? 'wifi' : 'cloud-offline'" color="light"></ion-icon>
-  <ion-label>{{ online ? 'Online' : 'Offline' }}</ion-label>
-</ion-chip>
+<div class="connection-status">
+    <div class="status-dot" [class.offline]="!online"></div>
+    <span class="status-text">{{ online ? 'Servidor: Conectado' : 'Servidor: Desconectado' }}</span>
+    <span class="status-detail">{{ online ? '● Online' : '○ Offline' }}</span>
+</div>

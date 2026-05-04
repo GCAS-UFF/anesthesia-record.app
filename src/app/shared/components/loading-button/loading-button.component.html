@@ -1,4 +1,9 @@
-<ion-button [expand]="expand" [color]="color" [disabled]="disabled || loading" [type]="type">
-  <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
-  <ng-content *ngIf="!loading"></ng-content>
-</ion-button>
+<button [type]="type" class="btn-login" [class.loading]="loading" [disabled]="disabled || loading">
+    <span class="btn-text">
+        <ng-content></ng-content>
+    </span>
+    <span class="loading-state">
+        <div class="spinner"></div>
+        <span>Aguarde...</span>
+    </span>
+</button>

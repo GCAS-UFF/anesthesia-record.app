@@ -1,4 +1,4 @@
-<ion-text color="danger" *ngIf="message">
-  <ion-icon name="alert-circle-outline"></ion-icon>
-  {{ message }}
-</ion-text>
+<div class="error-message" [class.show]="message">
+    <span>⚠️</span>
+    <span class="errorText">{{ message }}</span>
+</div>

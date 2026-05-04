@@ -15,14 +15,13 @@
     "sourceMap": true,
     "declaration": false,
     "experimentalDecorators": true,
-    "moduleResolution": "node16",
+    "moduleResolution": "node",
     "importHelpers": true,
     "target": "es2022",
-    "module": "Node16",
+    "module": "es2020",
     "lib": ["es2018", "dom"],
     "skipLibCheck": true,
-    "useDefineForClassFields": false,
-    "ignoreDeprecations": "6.0"
+    "useDefineForClassFields": false
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

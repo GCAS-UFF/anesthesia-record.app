@@ -25,6 +25,7 @@ export class CustomInputComponent implements ControlValueAccessor {
   @Input() label = '';
   @Input() type: 'text' | 'password' = 'text';
   @Input() icon = '';
+  @Input() inputIcon = '';
   @Input() placeholder = '';
   @Input() required = false;
 
@@ -33,6 +34,12 @@ export class CustomInputComponent implements ControlValueAccessor {
 
   onChange = (value: any) => {};
   onTouched = () => {};
+
+  onInputChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.value = target.value;
+    this.onChange(this.value);
+  }
 
   writeValue(value: any): void {
     this.value = value;

@@ -1,13 +1,18 @@
-<ion-item>
-  <ion-icon *ngIf="icon" [name]="icon" slot="start"></ion-icon>
-  <ion-label position="floating">{{ label }}</ion-label>
-  <ion-input
-    [type]="type"
-    [placeholder]="placeholder"
-    [(ngModel)]="value"
-    [required]="required"
-    [disabled]="disabled"
-    (ionBlur)="onTouched()"
-    (ionInput)="onChange($event.target.value)">
-  </ion-input>
-</ion-item>
+<div class="form-group">
+  <div class="form-label" *ngIf="label || icon">
+    <span *ngIf="icon">{{ icon }}</span>
+    <span>{{ label }}</span>
+  </div>
+  <div class="input-wrapper">
+    <span class="input-icon" *ngIf="inputIcon">{{ inputIcon }}</span>
+    <input
+      [type]="type"
+      [placeholder]="placeholder"
+      [value]="value"
+      [required]="required"
+      [disabled]="disabled"
+      class="form-input"
+      (blur)="onTouched()"
+      (input)="onInputChange($event)">
+  </div>
+</div>
