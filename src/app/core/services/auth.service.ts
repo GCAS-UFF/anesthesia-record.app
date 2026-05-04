@@ -16,7 +16,7 @@ export class AuthService {
   /**
    * Performs user login against the mock credentials.
    */
-  login(credentials: LoginCredentials): Observable<boolean> {
+  login(credentials: LoginCredentials, rememberMe: boolean = false): Observable<boolean> {
     const VALID_CREDENTIALS = [
       { username: '123456', password: 'senha123', name: 'Dra. Amanda Onishi' },
       { username: '12345678900', password: 'senha123', name: 'Dra. Amanda Onishi' },
@@ -30,8 +30,21 @@ export class AuthService {
 
     if (user) {
       this.loggedInUser = user;
-      localStorage.setItem('userLoggedIn', 'true');
-      localStorage.setItem('userCRM', user.username);
+      const mockToken = `token_${user.username}_${Date.now()}`;
+
+      if (rememberMe) {
+        localStorage.setItem('userLoggedIn', 'true');
+        localStorage.setItem('userCRM', user.username);
+        localStorage.setItem('authToken', mockToken);
+      } else {
+        sessionStorage.setItem('userLoggedIn', 'true');
+        sessionStorage.setItem('userCRM', user.username);
+        sessionStorage.setItem('authToken', mockToken);
+      }
+
+      // Save for CRM auto-fill
+      localStorage.setItem('lastSavedCRM', user.username);
+
       return of(true).pipe(delay(1000));
     }
 
@@ -45,13 +58,21 @@ export class AuthService {
     this.loggedInUser = null;
     localStorage.removeItem('userLoggedIn');
     localStorage.removeItem('userCRM');
+    localStorage.removeItem('authToken');
+    sessionStorage.removeItem('userLoggedIn');
+    sessionStorage.removeItem('userCRM');
+    sessionStorage.removeItem('authToken');
   }
 
   /**
    * Checks if the user is authenticated.
    */
   isAuthenticated(): boolean {
-    return this.loggedInUser !== null || localStorage.getItem('userLoggedIn') === 'true';
+    return (
+      this.loggedInUser !== null ||
+      localStorage.getItem('userLoggedIn') === 'true' ||
+      sessionStorage.getItem('userLoggedIn') === 'true'
+    );
   }
 
   /**
@@ -61,11 +82,24 @@ export class AuthService {
     return this.loggedInUser;
   }
 
+  /**
+   * Retrieves the last used CRM/CPF for auto-prefill.
+   */
+  getLastCRM(): string {
+    return localStorage.getItem('lastSavedCRM') || '';
+  }
+
   private checkSavedSession() {
-    const savedUser = localStorage.getItem('userLoggedIn');
-    const savedCRM = localStorage.getItem('userCRM');
-    if (savedUser === 'true' && savedCRM) {
-      this.loggedInUser = { username: savedCRM };
+    const savedUserLocal = localStorage.getItem('userLoggedIn');
+    const savedCRMLocal = localStorage.getItem('userCRM');
+
+    const savedUserSession = sessionStorage.getItem('userLoggedIn');
+    const savedCRMSession = sessionStorage.getItem('userCRM');
+
+    if (savedUserLocal === 'true' && savedCRMLocal) {
+      this.loggedInUser = { username: savedCRMLocal };
+    } else if (savedUserSession === 'true' && savedCRMSession) {
+      this.loggedInUser = { username: savedCRMSession };
     }
   }
 }

@@ -13,7 +13,7 @@ export class LoginFacade {
   /**
    * Realiza login com as credenciais fornecidas.
    */
-  login(credentials: LoginCredentials): Observable<boolean> {
-    return this.authService.login(credentials);
+  login(credentials: LoginCredentials, rememberMe: boolean = false): Observable<boolean> {
+    return this.authService.login(credentials, rememberMe);
   }
 }
