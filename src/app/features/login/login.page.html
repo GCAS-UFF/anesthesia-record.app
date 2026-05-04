@@ -1,25 +1,82 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>Login</ion-title>
-  </ion-toolbar>
-</ion-header>
+<div class="fullscreen-container">
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <span class="time">10:31</span>
+        <span class="date">Sábado, 21 de Março</span>
+    </div>
 
-<ion-content class="ion-padding">
-  <form [formGroup]="form" (ngSubmit)="submit()" autocomplete="off">
-    <ion-list>
-      <ion-item>
-        <ion-label position="floating">Usuário</ion-label>
-        <ion-input formControlName="username" type="text" required></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="floating">Senha</ion-label>
-        <ion-input formControlName="password" type="password" required></ion-input>
-      </ion-item>
-    </ion-list>
-    <ion-text color="danger" *ngIf="error">{{ error }}</ion-text>
-    <ion-button expand="block" type="submit" [disabled]="loading || form.invalid">
-      <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
-      <span *ngIf="!loading">Entrar</span>
-    </ion-button>
-  </form>
-</ion-content>
+    <!-- Header Institucional -->
+    <app-header-institucional></app-header-institucional>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-icon">
+                    <span>🔐</span>
+                </div>
+                <h1 class="login-title">Acesso ao Sistema</h1>
+                <p class="login-subtitle">Digite suas credenciais para continuar</p>
+            </div>
+
+            <!-- Mensagem de Erro -->
+            <app-error-message [message]="error || ''"></app-error-message>
+
+            <!-- Status de Conexão -->
+            <app-connection-status></app-connection-status>
+
+            <!-- Formulário -->
+            <form [formGroup]="form" (ngSubmit)="submit()" autocomplete="off">
+                <app-custom-input
+                    label="CRM / CPF"
+                    icon="👨‍⚕️"
+                    inputIcon="📋"
+                    type="text"
+                    placeholder="Digite seu CRM ou CPF"
+                    [required]="true"
+                    formControlName="username">
+                </app-custom-input>
+
+                <app-custom-input
+                    label="Senha"
+                    icon="🔒"
+                    inputIcon="●"
+                    type="password"
+                    placeholder="Digite sua senha"
+                    [required]="true"
+                    formControlName="password">
+                </app-custom-input>
+
+                <div class="form-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="rememberMe"> Manter conectado
+                    </label>
+                    <a href="#" class="forgot-link">Esqueceu a senha?</a>
+                </div>
+
+                <app-loading-button
+                    [loading]="loading"
+                    [disabled]="form.invalid"
+                    type="submit">
+                    <span>→</span>
+                    <span>ENTRAR</span>
+                </app-loading-button>
+            </form>
+
+            <!-- Informação Offline -->
+            <div class="offline-info">
+                <p>
+                    <span class="sync-icon">💾</span>
+                    Os dados serão salvos localmente e sincronizados ao detectar rede.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-text">
+            Sistema de Gerenciamento Anestésico - UFF v1.0 • <a href="#">Suporte</a> • <a href="#">Política de Privacidade</a>
+        </div>
+    </div>
+</div>

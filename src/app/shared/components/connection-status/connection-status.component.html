@@ -1,0 +1,5 @@
+<div class="connection-status">
+    <div class="status-dot" [class.offline]="!online"></div>
+    <span class="status-text">{{ online ? 'Servidor: Conectado' : 'Servidor: Desconectado' }}</span>
+    <span class="status-detail">{{ online ? '● Online' : '○ Offline' }}</span>
+</div>

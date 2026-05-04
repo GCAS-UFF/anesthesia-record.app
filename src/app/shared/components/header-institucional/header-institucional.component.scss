@@ -1,0 +1,104 @@
+.hospital-header {
+    background: white;
+    padding: 20px 32px;
+    border-bottom: 1px solid #e9eef3;
+}
+
+.hospital-info {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.logo-huap, .logo-uff {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+}
+
+.hospital-text {
+    border-left: 2px solid #e2e8f0;
+    padding-left: 20px;
+}
+
+.hospital-name {
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+
+.hospital-name span {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.university {
+    font-size: 12px;
+    color: #6d28d9;
+    font-weight: 500;
+    margin-top: 6px;
+}
+
+@media (min-width: 1600px) {
+    .logo-huap, .logo-uff {
+        height: 70px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hospital-header {
+        padding: 16px 20px;
+    }
+    .logo-huap, .logo-uff {
+        height: 45px;
+    }
+    .logo-container {
+        gap: 10px;
+    }
+    .hospital-info {
+        gap: 16px;
+    }
+    .hospital-text {
+        padding-left: 12px;
+    }
+    .hospital-name {
+        font-size: 20px;
+    }
+    .university {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 550px) {
+    .hospital-info {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+    .hospital-text {
+        border-left: none;
+        padding-left: 0;
+        text-align: center;
+    }
+    .logo-container {
+        justify-content: center;
+    }
+    .logo-huap, .logo-uff {
+        height: 40px;
+    }
+    .hospital-name {
+        font-size: 18px;
+    }
+}
