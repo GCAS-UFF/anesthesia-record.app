@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Login</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="form" (ngSubmit)="submit()" autocomplete="off">
+    <ion-list>
+      <ion-item>
+        <ion-label position="floating">Usuário</ion-label>
+        <ion-input formControlName="username" type="text" required></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Senha</ion-label>
+        <ion-input formControlName="password" type="password" required></ion-input>
+      </ion-item>
+    </ion-list>
+    <ion-text color="danger" *ngIf="error">{{ error }}</ion-text>
+    <ion-button expand="block" type="submit" [disabled]="loading || form.invalid">
+      <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+      <span *ngIf="!loading">Entrar</span>
+    </ion-button>
+  </form>
+</ion-content>
