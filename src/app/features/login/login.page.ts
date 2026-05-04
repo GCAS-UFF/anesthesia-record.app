@@ -47,10 +47,11 @@ export class LoginPage {
     private router: Router
   ) {
     const lastCRM = this.authService.getLastCRM();
+    const rememberMePref = this.authService.getRememberMePreference();
     this.form = this.fb.group({
       username: [lastCRM, [Validators.required]],
       password: ['', [Validators.required]],
-      rememberMe: [lastCRM ? true : false]
+      rememberMe: [rememberMePref]
     });
   }
 

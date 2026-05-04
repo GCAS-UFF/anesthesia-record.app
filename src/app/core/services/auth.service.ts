@@ -44,6 +44,7 @@ export class AuthService {
 
       // Save for CRM auto-fill
       localStorage.setItem('lastSavedCRM', user.username);
+      localStorage.setItem('rememberMePreference', rememberMe ? 'true' : 'false');
 
       return of(true).pipe(delay(1000));
     }
@@ -59,6 +60,7 @@ export class AuthService {
     localStorage.removeItem('userLoggedIn');
     localStorage.removeItem('userCRM');
     localStorage.removeItem('authToken');
+    localStorage.removeItem('rememberMePreference');
     sessionStorage.removeItem('userLoggedIn');
     sessionStorage.removeItem('userCRM');
     sessionStorage.removeItem('authToken');
@@ -87,6 +89,13 @@ export class AuthService {
    */
   getLastCRM(): string {
     return localStorage.getItem('lastSavedCRM') || '';
+  }
+
+  /**
+   * Retrieves the explicit remember me preference.
+   */
+  getRememberMePreference(): boolean {
+    return localStorage.getItem('rememberMePreference') === 'true';
   }
 
   private checkSavedSession() {
