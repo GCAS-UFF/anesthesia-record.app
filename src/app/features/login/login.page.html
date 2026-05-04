@@ -34,6 +34,7 @@
                     type="text"
                     placeholder="Digite seu CRM ou CPF"
                     [required]="true"
+                    (focused)="clearError()"
                     formControlName="username">
                 </app-custom-input>
 
@@ -44,6 +45,7 @@
                     type="password"
                     placeholder="Digite sua senha"
                     [required]="true"
+                    (focused)="clearError()"
                     formControlName="password">
                 </app-custom-input>
 

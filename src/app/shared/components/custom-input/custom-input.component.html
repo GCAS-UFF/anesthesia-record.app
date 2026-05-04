@@ -13,6 +13,7 @@
       [disabled]="disabled"
       class="form-input"
       (blur)="onTouched()"
+      (focus)="focused.emit()"
       (input)="onInputChange($event)">
   </div>
 </div>

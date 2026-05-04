@@ -59,4 +59,11 @@ export class LoginPage {
         }
       });
   }
+
+  /**
+   * Clears the current error message.
+   */
+  clearError() {
+    this.error = null;
+  }
 }

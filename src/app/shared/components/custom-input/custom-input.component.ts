@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, forwardRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -28,6 +28,7 @@ export class CustomInputComponent implements ControlValueAccessor {
   @Input() inputIcon = '';
   @Input() placeholder = '';
   @Input() required = false;
+  @Output() focused = new EventEmitter<void>();
 
   value = '';
   disabled = false;
