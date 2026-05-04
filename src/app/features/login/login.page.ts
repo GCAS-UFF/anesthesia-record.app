@@ -9,6 +9,8 @@ import { LoadingButtonComponent } from 'src/app/shared/components/loading-button
 import { ErrorMessageComponent } from 'src/app/shared/components/error-message/error-message.component';
 import { ConnectionStatusComponent } from 'src/app/shared/components/connection-status/connection-status.component';
 
+import { Router } from '@angular/router';
+
 /**
  * LoginPage
  * Standalone component for user authentication.
@@ -36,7 +38,7 @@ export class LoginPage {
   loading = false;
   error: string | null = null;
 
-  constructor(private fb: FormBuilder, public facade: LoginFacade) {
+  constructor(private fb: FormBuilder, public facade: LoginFacade, private router: Router) {
     this.form = this.fb.group({
       username: ['', [Validators.required]],
       password: ['', [Validators.required]]
@@ -52,7 +54,10 @@ export class LoginPage {
     this.error = null;
     this.facade.login(this.form.value)
       .subscribe({
-        next: () => this.loading = false,
+        next: () => {
+          this.loading = false;
+          this.router.navigate(['/tabs/tab1']);
+        },
         error: err => {
           this.error = err;
           this.loading = false;
