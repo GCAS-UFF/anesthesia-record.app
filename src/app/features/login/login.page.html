@@ -1,25 +1,28 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>Login</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content class="ion-padding">
+  <app-header-institucional title="Ficha Anestésica" logo="assets/logo.png"></app-header-institucional>
+  <app-connection-status></app-connection-status>
   <form [formGroup]="form" (ngSubmit)="submit()" autocomplete="off">
-    <ion-list>
-      <ion-item>
-        <ion-label position="floating">Usuário</ion-label>
-        <ion-input formControlName="username" type="text" required></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="floating">Senha</ion-label>
-        <ion-input formControlName="password" type="password" required></ion-input>
-      </ion-item>
-    </ion-list>
-    <ion-text color="danger" *ngIf="error">{{ error }}</ion-text>
-    <ion-button expand="block" type="submit" [disabled]="loading || form.invalid">
-      <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
-      <span *ngIf="!loading">Entrar</span>
-    </ion-button>
+    <app-custom-input
+      label="Usuário"
+      icon="person"
+      type="text"
+      required
+      formControlName="username">
+    </app-custom-input>
+    <app-custom-input
+      label="Senha"
+      icon="lock-closed"
+      type="password"
+      required
+      formControlName="password">
+    </app-custom-input>
+    <app-error-message [message]="error"></app-error-message>
+    <app-loading-button
+      [loading]="loading"
+      [disabled]="form.invalid"
+      type="submit"
+      expand="block">
+      Entrar
+    </app-loading-button>
   </form>
 </ion-content>

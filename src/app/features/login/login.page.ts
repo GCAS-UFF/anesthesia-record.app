@@ -3,6 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { LoginFacade } from './login.facade';
+import { HeaderInstitucionalComponent } from 'src/app/shared/components/header-institucional/header-institucional.component';
+import { CustomInputComponent } from 'src/app/shared/components/custom-input/custom-input.component';
+import { LoadingButtonComponent } from 'src/app/shared/components/loading-button/loading-button.component';
+import { ErrorMessageComponent } from 'src/app/shared/components/error-message/error-message.component';
+import { ConnectionStatusComponent } from 'src/app/shared/components/connection-status/connection-status.component';
 
 /**
  * LoginPage
@@ -12,7 +17,16 @@ import { LoginFacade } from './login.facade';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IonicModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    IonicModule,
+    HeaderInstitucionalComponent,
+    CustomInputComponent,
+    LoadingButtonComponent,
+    ErrorMessageComponent,
+    ConnectionStatusComponent
+  ],
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
   providers: [LoginFacade]
