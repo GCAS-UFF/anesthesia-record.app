@@ -9,8 +9,8 @@
     <div class="hospital-header">
         <div class="hospital-info">
             <div class="logo-container">
-                <img class="logo-huap" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhUkC4lf0T0wpLNtJR2sNXW2aiVXF_svEmmNTqABPgRYhhL2c4_4RpDmSdRufQYMegUMhVqxso1NCrD8EIq3SYMpT5kZ-3OLJSfruGqRWsBVfq5LEBShyvKkfMg1iKlycZQuMiNo4lNYj3m/s1600/logo_huap.png" alt="Logo HUAP">
-                <img class="logo-uff" src="https://upload.wikimedia.org/wikipedia/pt/4/47/UFF_bras%C3%A3o.png" alt="Brasão UFF">
+                <img class="logo-huap" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhUkC4lf0T0wpLNtJR2sNXW2aiVXF_svEmmNTqABPgRYhhL2c4_4RpDmSdRufQYMegUMhVqxso1NCrD8EIq3SYMpT5kZ-3OLJSfruGqRWsBVfq5LEBShyvKkfMg1iKlycZQuMiNo4lNYj3m/s1600/logo_huap.png" alt="Logo HUAP" onerror="this.style.display='none';">
+                <img class="logo-uff" src="https://upload.wikimedia.org/wikipedia/pt/4/47/UFF_bras%C3%A3o.png" alt="Brasão UFF" onerror="this.style.display='none';">
             </div>
             <div class="hospital-text">
                 <div class="hospital-name">Hospital Universitário Antonio Pedro</div>
@@ -46,28 +46,42 @@
         <div class="procedures-list">
             <div class="procedure-card" *ngFor="let p of filteredProcedures">
                 <div class="card-header">
-                    <div class="patient-name">
-                        {{ p.patient }}
-                        <span *ngIf="p.isAllergy" class="allergy-badge" title="Alergia">⚠️ Alergia</span>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <span class="room-badge">🏥 {{ p.room }}</span>
+                        <span class="procedure-tag">🔪 {{ p.procedure }}</span>
+                        <span class="status-badge" [ngClass]="p.status === 'waiting' ? 'waiting' : 'completed'">
+                            {{ p.status === 'waiting' ? '⏳ Em Espera' : '✅ Realizado' }}
+                        </span>
                     </div>
-                    <div class="room-badge">{{ p.room }}</div>
+                    <div style="font-size: 11px; color: #94a3b8; padding-top: 4px;">
+                        <ng-container *ngIf="p.status === 'waiting'">⏰ Previsto: {{ p.time }}</ng-container>
+                        <ng-container *ngIf="p.status === 'completed'">🏁 Concluído: {{ p.completedAt || '—' }}</ng-container>
+                    </div>
+                </div>
+                <div class="patient-name">
+                    {{ p.patientName }}
                 </div>
                 <div class="patient-details">
-                    <div><strong>Idade:</strong> {{ p.age }}</div>
-                    <div><strong>Prontuário:</strong> {{ p.record }}</div>
-                    <div><strong>Data de Nasc:</strong> {{ p.birth }}</div>
-                </div>
-                <div class="procedure-details">
-                    <div class="procedure-name"><strong>Procedimento:</strong> {{ p.procedure }}</div>
+                    <span>🎂 {{ p.birthDate | date:'dd/MM/yyyy' }} ({{ p.age }} anos)</span>
+                    <span>📋 Prontuário: {{ p.record }}</span>
+                    <span>🆔 ID: {{ p.id }}</span>
                 </div>
                 <div class="card-actions">
-                    <button class="btn-assume" *ngIf="p.status === 'waiting'">Assumir Paciente</button>
-                    <button class="btn-ficha" *ngIf="p.status === 'waiting'">Abrir Ficha</button>
+                    <button class="btn-assume" *ngIf="p.status === 'waiting'">
+                        👤 Assumir Paciente
+                    </button>
+                    <button class="btn-ficha" *ngIf="p.status === 'waiting'">
+                        📄 Abrir Ficha Anestésica
+                    </button>
+                    <button class="btn-registro" *ngIf="p.status === 'completed'">
+                        📋 Ver Registro da Cirurgia
+                    </button>
                 </div>
             </div>
 
             <div class="empty-state" *ngIf="filteredProcedures.length === 0">
-                <p>Nenhum procedimento encontrado para os filtros selecionados.</p>
+                <span style="font-size: 48px;">📭</span><br>
+                Nenhum procedimento encontrado para os filtros selecionados.
             </div>
         </div>
     </div>
