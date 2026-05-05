@@ -1,0 +1,34 @@
+<div class="procedure-card">
+    <div class="card-header">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <span class="room-badge">🏥 {{ room }}</span>
+            <span class="procedure-tag">🔪 {{ procedure }}</span>
+            <span class="status-badge" [ngClass]="status === 'waiting' ? 'waiting' : 'completed'">
+                {{ status === 'waiting' ? '⏳ Em Espera' : '✅ Realizado' }}
+            </span>
+        </div>
+        <div style="font-size: 11px; color: #94a3b8; padding-top: 4px;">
+            <ng-container *ngIf="status === 'waiting'">⏰ Previsto: {{ time }}</ng-container>
+            <ng-container *ngIf="status === 'completed'">🏁 Concluído: {{ completedAt || '—' }}</ng-container>
+        </div>
+    </div>
+    <div class="patient-name">
+        {{ patientName }}
+    </div>
+    <div class="patient-details">
+        <span>🎂 {{ birthDate | date:'dd/MM/yyyy' }} ({{ age }} anos)</span>
+        <span>📋 Prontuário: {{ record }}</span>
+        <span>🆔 ID: {{ id }}</span>
+    </div>
+    <div class="card-actions">
+        <button class="btn-assume" *ngIf="status === 'waiting'" (click)="onAssume()">
+            👤 Assumir Paciente
+        </button>
+        <button class="btn-ficha" *ngIf="status === 'waiting'" (click)="onOpenFicha()">
+            📄 Abrir Ficha Anestésica
+        </button>
+        <button class="btn-registro" *ngIf="status === 'completed'" (click)="onViewRegistro()">
+            📋 Ver Registro da Cirurgia
+        </button>
+    </div>
+</div>

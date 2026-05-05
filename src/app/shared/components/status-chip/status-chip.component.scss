@@ -1,0 +1,37 @@
+.status-chip {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    padding: 8px 16px;
+    border-radius: 40px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.status-chip:hover {
+    background: #e2e8f0;
+}
+
+.status-chip.active {
+    background: #7c3aed;
+    color: white;
+    border-color: #7c3aed;
+}
+
+@media (max-width: 850px) and (orientation: landscape) {
+    .status-chip {
+        padding: 5px 10px;
+        font-size: 10px;
+    }
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .status-chip {
+        cursor: default;
+    }
+    .status-chip:active {
+        transform: scale(0.96);
+    }
+}
