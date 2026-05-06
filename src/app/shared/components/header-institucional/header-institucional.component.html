@@ -13,8 +13,8 @@
             </div>
         </div>
     </div>
-    <div *ngIf="showLogout" style="margin-left: auto;">
-        <ion-button fill="clear" color="danger" (click)="logout()">
+    <div *ngIf="showLogout" class="logout-container" style="margin-left: auto;">
+        <ion-button class="btn-logout" fill="solid" (click)="logout()">
             <ion-icon slot="start" name="log-out-outline"></ion-icon>
             Sair
         </ion-button>

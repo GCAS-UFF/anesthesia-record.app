@@ -102,3 +102,24 @@
         font-size: 18px;
     }
 }
+
+.btn-logout {
+    --background: #fee2e2;
+    --background-hover: #fecaca;
+    --color: #ef4444;
+    --border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    height: 40px;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.1);
+    transition: all 0.2s ease;
+
+    &:active {
+        transform: scale(0.96);
+    }
+
+    ion-icon {
+        margin-right: 6px;
+        font-size: 18px;
+    }
+}

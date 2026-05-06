@@ -28,6 +28,6 @@ export class RegistroCirurgiaComponent implements OnInit {
   }
 
   voltar() {
-    this.router.navigate(['/']);
+    this.router.navigate(['/tabs/tab1']);
   }
 }
