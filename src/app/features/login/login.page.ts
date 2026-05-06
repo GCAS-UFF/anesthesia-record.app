@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -35,7 +35,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
   styleUrls: ['./login.page.scss'],
   providers: [LoginFacade]
 })
-export class LoginPage {
+export class LoginPage implements OnInit {
   form: FormGroup;
   loading = false;
   error: string | null = null;
@@ -52,6 +52,18 @@ export class LoginPage {
       username: [lastCRM, [Validators.required]],
       password: ['', [Validators.required]],
       rememberMe: [rememberMePref]
+    });
+  }
+
+  ngOnInit() {
+    this.form.valueChanges.subscribe(val => {
+      if (val.rememberMe) {
+        localStorage.setItem('rememberMePreference', 'true');
+        localStorage.setItem('lastSavedCRM', val.username || '');
+      } else {
+        localStorage.removeItem('rememberMePreference');
+        localStorage.removeItem('lastSavedCRM');
+      }
     });
   }
 

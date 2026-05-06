@@ -35,6 +35,7 @@
                     placeholder="Digite seu CRM ou CPF"
                     [required]="true"
                     [onlyNumbers]="true"
+                    autocomplete="one-time-code"
                     (focused)="clearError()"
                     formControlName="username">
                 </app-custom-input>
@@ -46,6 +47,7 @@
                     type="password"
                     placeholder="Digite sua senha"
                     [required]="true"
+                    autocomplete="new-password"
                     (focused)="clearError()"
                     formControlName="password">
                 </app-custom-input>
