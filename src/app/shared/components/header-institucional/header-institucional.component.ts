@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { Router } from '@angular/router';
 
 /**
  * FA-028 - Header institucional reutilizável
@@ -18,4 +19,12 @@ export class HeaderInstitucionalComponent {
   @Input() logo: string = 'assets/logo.png';
   /** Nome do sistema */
   @Input() title: string = 'Ficha Anestésica';
+  /** Exibe botão de sair */
+  @Input() showLogout: boolean = false;
+
+  constructor(private router: Router) {}
+
+  logout() {
+    this.router.navigate(['/login']);
+  }
 }

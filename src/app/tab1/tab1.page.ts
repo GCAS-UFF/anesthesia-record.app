@@ -333,10 +333,10 @@ export class Tab1Page {
   }
 
   onOpenFicha(id: number) {
-    this.router.navigate(['/tabs/tab2'], { queryParams: { pacienteId: id } });
+    this.router.navigate(['/ficha-anestesica', id]);
   }
 
   onViewRegistro(id: number) {
-    this.router.navigate(['/tabs/tab3'], { queryParams: { pacienteId: id } });
+    this.router.navigate(['/registro-cirurgia', id]);
   }
 }

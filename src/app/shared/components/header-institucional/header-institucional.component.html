@@ -1,4 +1,4 @@
-<div class="hospital-header">
+<div class="hospital-header" style="display: flex; justify-content: space-between; align-items: center;">
     <div class="hospital-info">
         <div class="logo-container">
             <img class="logo-huap" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhUkC4lf0T0wpLNtJR2sNXW2aiVXF_svEmmNTqABPgRYhhL2c4_4RpDmSdRufQYMegUMhVqxso1NCrD8EIq3SYMpT5kZ-3OLJSfruGqRWsBVfq5LEBShyvKkfMg1iKlycZQuMiNo4lNYj3m/s1600/logo_huap.png" alt="Logo HUAP" onerror="this.style.display='none';">
@@ -12,5 +12,11 @@
                 Hospital Universitário Antonio Pedro • Universidade Federal Fluminense
             </div>
         </div>
+    </div>
+    <div *ngIf="showLogout" style="margin-left: auto;">
+        <ion-button fill="clear" color="danger" (click)="logout()">
+            <ion-icon slot="start" name="log-out-outline"></ion-icon>
+            Sair
+        </ion-button>
     </div>
 </div>
