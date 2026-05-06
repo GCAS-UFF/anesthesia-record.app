@@ -2,19 +2,19 @@ import { Component } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { IonicModule, AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { PatientResponse } from './tab1.model';
-import { StatusBarComponent } from '../shared/components/status-bar/status-bar.component';
-import { HeaderInstitucionalComponent } from '../shared/components/header-institucional/header-institucional.component';
-import { SearchBarComponent } from '../shared/components/search-bar/search-bar.component';
-import { StatusChipComponent } from '../shared/components/status-chip/status-chip.component';
-import { DateFilterComponent } from '../shared/components/date-filter/date-filter.component';
-import { ProcedureCardComponent } from '../shared/components/procedure-card/procedure-card.component';
-import { EmptyStateComponent } from '../shared/components/empty-state/empty-state.component';
+import { PatientResponse } from '../../shared/models/patient.model';
+import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
+import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
+import { SearchBarComponent } from '../../shared/components/search-bar/search-bar.component';
+import { StatusChipComponent } from '../../shared/components/status-chip/status-chip.component';
+import { DateFilterComponent } from '../../shared/components/date-filter/date-filter.component';
+import { ProcedureCardComponent } from '../../shared/components/procedure-card/procedure-card.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 
 @Component({
-  selector: 'app-tab1',
-  templateUrl: 'tab1.page.html',
-  styleUrls: ['tab1.page.scss'],
+  selector: 'app-patient-list',
+  templateUrl: './patient-list.page.html',
+  styleUrls: ['./patient-list.page.scss'],
   standalone: true,
   imports: [
     CommonModule, 
@@ -29,7 +29,7 @@ import { EmptyStateComponent } from '../shared/components/empty-state/empty-stat
   ],
   providers: [DatePipe]
 })
-export class Tab1Page {
+export class PatientListPage {
   searchQuery = '';
   selectedStatus = 'all';
   selectedDate = '2026-04-21';
