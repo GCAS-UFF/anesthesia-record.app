@@ -33,6 +33,7 @@ export class Tab1Page {
   searchQuery = '';
   selectedStatus = 'all';
   selectedDate = '2026-04-21';
+  isRefreshing = false;
 
   mockResponse: PatientResponse = {
     "data": [
@@ -338,5 +339,20 @@ export class Tab1Page {
 
   onViewRegistro(id: number) {
     this.router.navigate(['/registro-cirurgia', id]);
+  }
+
+  /**
+   * FA-038 - Refresh manual da lista
+   */
+  handleRefresh() {
+    if (this.isRefreshing) return;
+    this.isRefreshing = true;
+    this.viewList = []; // limpa a lista para acionar os skeleton/loaders/animações
+
+    setTimeout(() => {
+      // Aqui ocorrerá o fetch real com RxJS (ex: this.api.getProcedures().subscribe(...))
+      this.flattenData(); 
+      this.isRefreshing = false;
+    }, 1500);
   }
 }

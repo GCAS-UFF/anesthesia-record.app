@@ -13,7 +13,13 @@
             <app-status-chip label="⏳ Em Espera" [active]="selectedStatus === 'waiting'" (chipClick)="changeStatus('waiting')"></app-status-chip>
             <app-status-chip label="✅ Realizados" [active]="selectedStatus === 'completed'" (chipClick)="changeStatus('completed')"></app-status-chip>
         </div>
-        <app-date-filter [date]="selectedDate" (dateChange)="onDateChange($event)"></app-date-filter>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <app-date-filter [date]="selectedDate" (dateChange)="onDateChange($event)"></app-date-filter>
+            <button class="btn-refresh" (click)="handleRefresh()" [disabled]="isRefreshing" title="Atualizar Lista">
+                <ion-spinner *ngIf="isRefreshing" name="crescent" style="width: 20px; height: 20px; color: #6366f1;"></ion-spinner>
+                <span *ngIf="!isRefreshing" style="font-size: 18px;">🔄</span>
+            </button>
+        </div>
         <div class="results-count">{{ filteredProcedures.length }} procedimentos</div>
     </div>
 
@@ -36,8 +42,13 @@
                 (viewRegistro)="onViewRegistro(p.id)">
             </app-procedure-card>
 
+            <div *ngIf="isRefreshing" class="loading-state">
+                <ion-spinner name="crescent" color="primary"></ion-spinner>
+                <p>Buscando procedimentos atualizados na API...</p>
+            </div>
+
             <app-empty-state 
-                *ngIf="filteredProcedures.length === 0"
+                *ngIf="!isRefreshing && filteredProcedures.length === 0"
                 icon="📭"
                 message="Nenhum procedimento encontrado para os filtros selecionados.">
             </app-empty-state>

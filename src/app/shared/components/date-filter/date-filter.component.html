@@ -1,4 +1,6 @@
-<div class="date-filter">
-    <label>📅 Data:</label>
-    <input type="date" (change)="onChange($event)" [value]="date">
+<div class="date-filter" (click)="openPicker(dateInput)">
+    <label>
+        📅 Data: <strong>{{ date }}</strong>
+    </label>
+    <input #dateInput id="date-input" type="date" (change)="onChange($event)" [value]="date">
 </div>

@@ -8,7 +8,6 @@
     gap: 12px;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
     transition: all 0.2s ease;
-    animation: fadeIn 0.3s ease-out;
 }
 
 .procedure-card:hover {
@@ -18,11 +17,23 @@
 
 .card-header {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    justify-content: space-between;
+    align-items: flex-start;
     border-bottom: 1px solid #f1f5f9;
     padding-bottom: 12px;
     margin-bottom: 4px;
+}
+
+.header-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.header-time {
+    font-size: 11px;
+    color: #94a3b8;
+    white-space: nowrap;
 }
 
 .room-badge {
@@ -72,13 +83,12 @@
 
 .patient-details {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    gap: 16px;
     font-size: 12px;
     color: #64748b;
-    background: #f8fafc;
-    padding: 10px;
-    border-radius: 8px;
+    padding: 4px 0;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 .patient-details span {
@@ -89,20 +99,19 @@
 
 .card-actions {
     display: flex;
-    gap: 8px;
-    margin-top: auto;
-    padding-top: 12px;
+    gap: 12px;
+    margin-top: 8px;
+    flex-wrap: wrap;
 }
 
 .btn-assume {
-    flex: 1;
     background: #3b82f6;
     border: none;
-    padding: 8px 12px;
+    padding: 8px 16px;
     border-radius: 40px;
     color: white;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 13px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -117,14 +126,13 @@
 }
 
 .btn-ficha {
-    flex: 1;
     background: #7c3aed;
     border: none;
-    padding: 8px 12px;
+    padding: 8px 16px;
     border-radius: 40px;
     color: white;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 13px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -139,14 +147,13 @@
 }
 
 .btn-registro {
-    flex: 1;
     background: #f1f5f9;
     border: 1px solid #e2e8f0;
-    padding: 8px 12px;
+    padding: 8px 16px;
     border-radius: 40px;
     color: #475569;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 13px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -161,16 +168,6 @@
     color: #1e293b;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 
 @media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
     .procedure-card {
@@ -196,4 +193,10 @@
     .btn-assume:active, .btn-ficha:active, .btn-registro:active {
         transform: scale(0.96);
     }
+}
+
+.ripple-parent {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }

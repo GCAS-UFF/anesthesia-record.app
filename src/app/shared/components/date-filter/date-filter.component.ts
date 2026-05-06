@@ -16,4 +16,12 @@ export class DateFilterComponent {
     const target = event.target as HTMLInputElement;
     this.dateChange.emit(target.value);
   }
+
+  openPicker(input: HTMLInputElement) {
+    if (input.showPicker) {
+      input.showPicker();
+    } else {
+      input.click();
+    }
+  }
 }

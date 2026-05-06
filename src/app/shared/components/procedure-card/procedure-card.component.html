@@ -1,13 +1,14 @@
-<div class="procedure-card">
+<div class="procedure-card ion-activatable ripple-parent">
+    <ion-ripple-effect></ion-ripple-effect>
     <div class="card-header">
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <div class="header-badges">
             <span class="room-badge">🏥 {{ room }}</span>
             <span class="procedure-tag">🔪 {{ procedure }}</span>
             <span class="status-badge" [ngClass]="status === 'waiting' ? 'waiting' : 'completed'">
                 {{ status === 'waiting' ? '⏳ Em Espera' : '✅ Realizado' }}
             </span>
         </div>
-        <div style="font-size: 11px; color: #94a3b8; padding-top: 4px;">
+        <div class="header-time">
             <ng-container *ngIf="status === 'waiting'">⏰ Previsto: {{ time }}</ng-container>
             <ng-container *ngIf="status === 'completed'">🏁 Concluído: {{ completedAt || '—' }}</ng-container>
         </div>
@@ -21,14 +22,17 @@
         <span>🆔 ID: {{ id }}</span>
     </div>
     <div class="card-actions">
-        <button class="btn-assume" *ngIf="status === 'waiting'" (click)="onAssume()">
+        <button class="btn-assume ion-activatable ripple-parent" *ngIf="status === 'waiting'" (click)="onAssume()">
             👤 Assumir Paciente
+            <ion-ripple-effect></ion-ripple-effect>
         </button>
-        <button class="btn-ficha" *ngIf="status === 'waiting'" (click)="onOpenFicha()">
+        <button class="btn-ficha ion-activatable ripple-parent" *ngIf="status === 'waiting'" (click)="onOpenFicha()">
             📄 Abrir Ficha Anestésica
+            <ion-ripple-effect></ion-ripple-effect>
         </button>
-        <button class="btn-registro" *ngIf="status === 'completed'" (click)="onViewRegistro()">
+        <button class="btn-registro ion-activatable ripple-parent" *ngIf="status === 'completed'" (click)="onViewRegistro()">
             📋 Ver Registro da Cirurgia
+            <ion-ripple-effect></ion-ripple-effect>
         </button>
     </div>
 </div>
