@@ -1,0 +1,57 @@
+<div class="app-container">
+    <app-status-bar></app-status-bar>
+    <app-header-institucional [showLogout]="true"></app-header-institucional>
+    
+    <app-search-bar 
+        placeholder="Buscar por paciente, prontuário, procedimento ou sala..."
+        (search)="onSearchChange($event)">
+    </app-search-bar>
+
+    <div class="filters-bar">
+        <div class="status-filters">
+            <app-status-chip label="📋 Todos" [active]="selectedStatus === 'all'" (chipClick)="changeStatus('all')"></app-status-chip>
+            <app-status-chip label="⏳ Em Espera" [active]="selectedStatus === 'waiting'" (chipClick)="changeStatus('waiting')"></app-status-chip>
+            <app-status-chip label="✅ Realizados" [active]="selectedStatus === 'completed'" (chipClick)="changeStatus('completed')"></app-status-chip>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <app-date-filter [date]="selectedDate" (dateChange)="onDateChange($event)"></app-date-filter>
+            <button class="btn-refresh" (click)="handleRefresh()" [disabled]="isRefreshing" title="Atualizar Lista">
+                <ion-spinner *ngIf="isRefreshing" name="crescent" style="width: 20px; height: 20px; color: #6366f1;"></ion-spinner>
+                <span *ngIf="!isRefreshing" style="font-size: 18px;">🔄</span>
+            </button>
+        </div>
+        <div class="results-count">{{ filteredProcedures.length }} procedimentos</div>
+    </div>
+
+    <div class="main-content">
+        <div class="procedures-list">
+            <app-procedure-card 
+                *ngFor="let p of filteredProcedures"
+                [patientName]="p.patientName"
+                [room]="p.room"
+                [procedure]="p.procedure"
+                [status]="p.status"
+                [time]="p.time"
+                [completedAt]="p.completedAt"
+                [birthDate]="p.birthDate"
+                [age]="p.age"
+                [record]="p.record"
+                [id]="p.id"
+                (assume)="onAssume(p.id)"
+                (openFicha)="onOpenFicha(p.id)"
+                (viewRegistro)="onViewRegistro(p.id)">
+            </app-procedure-card>
+
+            <div *ngIf="isRefreshing" class="loading-state">
+                <ion-spinner name="crescent" color="primary"></ion-spinner>
+                <p>Buscando procedimentos atualizados na API...</p>
+            </div>
+
+            <app-empty-state 
+                *ngIf="!isRefreshing && filteredProcedures.length === 0"
+                icon="📭"
+                message="Nenhum procedimento encontrado para os filtros selecionados.">
+            </app-empty-state>
+        </div>
+    </div>
+</div>

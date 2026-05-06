@@ -1,0 +1,20 @@
+.empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    background: white;
+    border-radius: 24px;
+    color: #94a3b8;
+    font-size: 14px;
+    grid-column: 1 / -1;
+}
+
+.icon {
+    font-size: 48px;
+}
+
+@media (max-width: 768px) {
+    .empty-state {
+        padding: 32px 20px;
+        font-size: 13px;
+    }
+}

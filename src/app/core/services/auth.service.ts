@@ -43,8 +43,13 @@ export class AuthService {
       }
 
       // Save for CRM auto-fill
-      localStorage.setItem('lastSavedCRM', user.username);
-      localStorage.setItem('rememberMePreference', rememberMe ? 'true' : 'false');
+      if (rememberMe) {
+        localStorage.setItem('lastSavedCRM', user.username);
+        localStorage.setItem('rememberMePreference', 'true');
+      } else {
+        localStorage.removeItem('lastSavedCRM');
+        localStorage.removeItem('rememberMePreference');
+      }
 
       return of(true).pipe(delay(1000));
     }
@@ -60,10 +65,14 @@ export class AuthService {
     localStorage.removeItem('userLoggedIn');
     localStorage.removeItem('userCRM');
     localStorage.removeItem('authToken');
-    localStorage.removeItem('rememberMePreference');
     sessionStorage.removeItem('userLoggedIn');
     sessionStorage.removeItem('userCRM');
     sessionStorage.removeItem('authToken');
+    
+    // Se o usuário optou por não se manter conectado ou removemos a preferencia
+    if (localStorage.getItem('rememberMePreference') !== 'true') {
+        localStorage.removeItem('lastSavedCRM');
+    }
   }
 
   /**

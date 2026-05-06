@@ -29,6 +29,7 @@ export class CustomInputComponent implements ControlValueAccessor {
   @Input() placeholder = '';
   @Input() required = false;
   @Input() onlyNumbers = false;
+  @Input() autocomplete = 'off';
   @Output() focused = new EventEmitter<void>();
 
   value = '';

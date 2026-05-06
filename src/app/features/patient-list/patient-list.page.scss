@@ -1,0 +1,163 @@
+.app-container {
+    width: 100%;
+    height: 100vh;
+    background: #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+@media (min-width: 1400px) {
+    .app-container {
+        max-width: 100%;
+    }
+}
+
+.filters-bar {
+    background: white;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e9eef3;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.status-filters {
+    display: flex;
+    gap: 8px;
+}
+
+.results-count {
+    font-size: 11px;
+    background: #f1f5f9;
+    padding: 6px 12px;
+    border-radius: 40px;
+    color: #475569;
+    font-weight: 600;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+/* Scroll personalizado */
+.main-content::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.main-content::-webkit-scrollbar-track {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+    background: #c4b5fd;
+    border-radius: 10px;
+}
+
+.main-content::-webkit-scrollbar-thumb:hover {
+    background: #a78bfa;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: 16px;
+    }
+}
+
+.procedures-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    app-procedure-card {
+        display: block;
+        opacity: 0;
+        animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @for $i from 1 through 20 {
+        app-procedure-card:nth-child(#{$i}) {
+            animation-delay: #{$i * 0.05}s;
+        }
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Para tablets em landscape */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+    .procedures-list {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 850px) and (orientation: landscape) {
+    .results-count {
+        font-size: 9px;
+        padding: 2px 8px;
+    }
+}
+
+.btn-refresh {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: #e2e8f0;
+        border-color: #cbd5e1;
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+
+    &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+}
+
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    color: #64748b;
+    gap: 16px;
+
+    p {
+        font-weight: 500;
+        font-size: 16px;
+        margin: 0;
+    }
+
+    ion-spinner {
+        width: 44px;
+        height: 44px;
+    }
+}

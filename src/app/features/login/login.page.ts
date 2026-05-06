@@ -1,17 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { LoginFacade } from './login.facade';
-import { HeaderInstitucionalComponent } from 'src/app/shared/components/header-institucional/header-institucional.component';
-import { CustomInputComponent } from 'src/app/shared/components/custom-input/custom-input.component';
-import { LoadingButtonComponent } from 'src/app/shared/components/loading-button/loading-button.component';
-import { ErrorMessageComponent } from 'src/app/shared/components/error-message/error-message.component';
-import { ConnectionStatusComponent } from 'src/app/shared/components/connection-status/connection-status.component';
+import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
+import { CustomInputComponent } from '../../shared/components/custom-input/custom-input.component';
+import { LoadingButtonComponent } from '../../shared/components/loading-button/loading-button.component';
+import { ErrorMessageComponent } from '../../shared/components/error-message/error-message.component';
+import { ConnectionStatusComponent } from '../../shared/components/connection-status/connection-status.component';
 
 import { Router } from '@angular/router';
 
-import { AuthService } from 'src/app/core/services/auth.service';
+import { AuthService } from '../../core/services/auth.service';
 
 /**
  * LoginPage
@@ -35,7 +35,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
   styleUrls: ['./login.page.scss'],
   providers: [LoginFacade]
 })
-export class LoginPage {
+export class LoginPage implements OnInit {
   form: FormGroup;
   loading = false;
   error: string | null = null;
@@ -55,6 +55,18 @@ export class LoginPage {
     });
   }
 
+  ngOnInit() {
+    this.form.valueChanges.subscribe(val => {
+      if (val.rememberMe) {
+        localStorage.setItem('rememberMePreference', 'true');
+        localStorage.setItem('lastSavedCRM', val.username || '');
+      } else {
+        localStorage.removeItem('rememberMePreference');
+        localStorage.removeItem('lastSavedCRM');
+      }
+    });
+  }
+
   /**
    * Handles login form submission.
    */
@@ -69,7 +81,7 @@ export class LoginPage {
       .subscribe({
         next: () => {
           this.loading = false;
-          this.router.navigate(['/tabs/tab1']);
+          this.router.navigate(['/pacientes']);
         },
         error: err => {
           this.error = err;

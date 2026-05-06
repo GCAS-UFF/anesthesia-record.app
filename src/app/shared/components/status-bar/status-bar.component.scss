@@ -1,0 +1,33 @@
+.status-bar {
+    background: white;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e9eef3;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+@media (max-width: 768px) {
+    .status-bar {
+        padding: 8px 16px;
+        font-size: 10px;
+    }
+    .time {
+        font-size: 12px;
+    }
+}
+
+.time {
+    font-weight: 900;
+    font-size: 16px;
+    letter-spacing: 0.8px;
+}
+
+.date {
+    color: #334155;
+    font-weight: 700;
+    font-size: 14px;
+}

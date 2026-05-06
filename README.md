@@ -62,10 +62,13 @@ Certifique-se de ter o **Node.js** e o **Ionic CLI** instalados na sua máquina.
 ```text
 src/
 ├── app/
-│   ├── core/           # Serviços globais e modelos centrais (AuthService, etc.)
-│   ├── features/       # Módulos e páginas principais (Login, Dashboard)
-│   ├── shared/         # Componentes reutilizáveis (Headers, Botões, Inputs)
-│   ├── tabs/           # Controle de rotas e navegação por abas
+│   ├── core/           # Serviços globais, interceptors e guardas (Auth, API)
+│   ├── features/       # Funcionalidades e telas principais:
+│   │   ├── login/          # Tela de autenticação
+│   │   ├── patient-list/   # Listagem operacional de pacientes (Dashboard)
+│   │   ├── ficha-anestesica/
+│   │   └── registro-cirurgia/
+│   ├── shared/         # Reutilizáveis: componentes, pipes e modelos de domínio (Patient, Surgery)
 ```
 
 ---
