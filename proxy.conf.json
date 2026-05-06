@@ -1,0 +1,8 @@
+{
+  "/api": {
+    "target": "https://anesthesia-record-api-dzcsd2eqgybbhmdd.brazilsouth-01.azurewebsites.net",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

@@ -16,9 +16,9 @@ export class SurgeryService {
     let url = 'api/surgeries';
     
     if (date && status && status !== 'all') {
-      url = `api/surgeries/date/${date}/status/${status}`;
+      url = `api/surgeries/date/${date}T00:00:00Z/status/${status}`;
     } else if (date) {
-      url = `api/surgeries/date/${date}`;
+      url = `api/surgeries/date/${date}T00:00:00Z`;
     } else if (status && status !== 'all') {
       url = `api/surgeries/status/${status}`;
     }

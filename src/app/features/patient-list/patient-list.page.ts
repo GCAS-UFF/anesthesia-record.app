@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { IonicModule, AlertController, LoadingController, ToastController } from '@ionic/angular';
+import { IonicModule, AlertController, LoadingController, ToastController, IonContent } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { SurgeryService } from '../../core/services/surgery.service';
 import { PatientResponse } from '../../shared/models/patient.model';
@@ -35,8 +35,15 @@ export class PatientListPage {
   selectedStatus = 'all';
   selectedDate = '2026-04-21';
   isRefreshing = false;
-
   viewList: any[] = [];
+  
+  // Paginação
+  currentPage = 1;
+  pageSize = 10;
+  totalItems = 0;
+  totalPages = 1;
+
+  @ViewChild(IonContent, { static: false }) content!: IonContent;
 
   constructor(
     private datePipe: DatePipe,
@@ -46,16 +53,26 @@ export class PatientListPage {
     private toastController: ToastController,
     private surgeryService: SurgeryService
   ) {
+    // Carregamento inicial
     this.loadData();
   }
 
   loadData() {
     this.isRefreshing = true;
-    const statusMap: any = { 'waiting': '0', 'completed': '1', 'all': null };
+    this.viewList = []; // Limpa a lista para mostrar o skeleton
+    
+    // Rola para o topo ao carregar novos dados
+    if (this.content) {
+      this.content.scrollToTop(400);
+    }
+    
+    const statusMap: any = { 'waiting': '0', 'completed': '3', 'all': null };
     const statusValue = statusMap[this.selectedStatus];
 
-    this.surgeryService.getSurgeries(this.selectedDate, statusValue).subscribe({
+    this.surgeryService.getSurgeries(this.selectedDate, statusValue, this.currentPage, this.pageSize).subscribe({
       next: (response) => {
+        this.totalItems = response.totalItems;
+        this.totalPages = Math.ceil(this.totalItems / this.pageSize);
         this.flattenData(response);
         this.isRefreshing = false;
       },
@@ -87,7 +104,7 @@ export class PatientListPage {
           record: patient.medicalRecordNumber,
           room: surgery.location.room,
           procedure: primaryProc ? primaryProc.description : 'Não informado',
-          status: surgery.status === 0 ? 'waiting' : 'completed',
+          status: surgery.status === 3 ? 'completed' : 'waiting',
           date: this.datePipe.transform(dt, 'yyyy-MM-dd'),
           time: this.datePipe.transform(dt, 'HH:mm'),
           completedAt: completedTime
@@ -131,12 +148,29 @@ export class PatientListPage {
 
   changeStatus(status: string) {
     this.selectedStatus = status;
+    this.currentPage = 1; // Reset para primeira página ao mudar filtro
     this.loadData();
   }
 
   onDateChange(newDate: string) {
     this.selectedDate = newDate;
+    this.currentPage = 1; // Reset para primeira página ao mudar filtro
     this.loadData();
+  }
+
+  // Métodos de Navegação
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.loadData();
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.loadData();
+    }
   }
 
   async onAssume(id: number) {
