@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, AlertController, LoadingController, ToastController } from '@ionic/angular';
+import { Router } from '@angular/router';
 import { PatientResponse } from './tab1.model';
 import { StatusBarComponent } from '../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../shared/components/header-institucional/header-institucional.component';
@@ -210,7 +211,13 @@ export class Tab1Page {
 
   viewList: any[] = [];
 
-  constructor(private datePipe: DatePipe) {
+  constructor(
+    private datePipe: DatePipe,
+    private router: Router,
+    private alertController: AlertController,
+    private loadingController: LoadingController,
+    private toastController: ToastController
+  ) {
     this.flattenData();
   }
 
@@ -285,15 +292,51 @@ export class Tab1Page {
     this.selectedDate = newDate;
   }
 
-  onAssume(id: number) {
-    console.log('Assumindo paciente:', id);
+  async onAssume(id: number) {
+    const alert = await this.alertController.create({
+      header: 'Assumir Paciente',
+      message: 'Deseja realmente assumir este paciente e iniciar o preparo anestésico?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'secondary'
+        },
+        {
+          text: 'Confirmar',
+          handler: async () => {
+            const loading = await this.loadingController.create({
+              message: 'Assumindo paciente...',
+              duration: 1000,
+              spinner: 'circular'
+            });
+            await loading.present();
+
+            await loading.onDidDismiss();
+
+            const toast = await this.toastController.create({
+              message: 'Paciente assumido com sucesso!',
+              duration: 2000,
+              color: 'success',
+              icon: 'checkmark-circle'
+            });
+            await toast.present();
+            
+            // Simula o redirecionamento automático para a ficha após assumir
+            this.onOpenFicha(id);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   onOpenFicha(id: number) {
-    console.log('Abrindo ficha do paciente:', id);
+    this.router.navigate(['/tabs/tab2'], { queryParams: { pacienteId: id } });
   }
 
   onViewRegistro(id: number) {
-    console.log('Visualizando registro:', id);
+    this.router.navigate(['/tabs/tab3'], { queryParams: { pacienteId: id } });
   }
 }
