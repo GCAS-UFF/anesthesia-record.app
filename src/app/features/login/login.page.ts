@@ -50,22 +50,11 @@ export class LoginPage implements OnInit {
     const rememberMePref = this.authService.getRememberMePreference();
     this.form = this.fb.group({
       username: [lastCRM, [Validators.required]],
-      password: ['', [Validators.required]],
-      rememberMe: [rememberMePref]
+      password: ['', [Validators.required]]
     });
   }
 
-  ngOnInit() {
-    this.form.valueChanges.subscribe(val => {
-      if (val.rememberMe) {
-        localStorage.setItem('rememberMePreference', 'true');
-        localStorage.setItem('lastSavedCRM', val.username || '');
-      } else {
-        localStorage.removeItem('rememberMePreference');
-        localStorage.removeItem('lastSavedCRM');
-      }
-    });
-  }
+  ngOnInit() {}
 
   /**
    * Handles login form submission.
@@ -75,9 +64,9 @@ export class LoginPage implements OnInit {
     this.loading = true;
     this.error = null;
     
-    const { username, password, rememberMe } = this.form.value;
+    const { username, password } = this.form.value;
     
-    this.facade.login({ username, password }, rememberMe)
+    this.facade.login({ username, password })
       .subscribe({
         next: () => {
           this.loading = false;

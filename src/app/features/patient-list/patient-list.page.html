@@ -14,14 +14,15 @@
                 (chipClick)="changeStatus('waiting')"></app-status-chip>
             <app-status-chip label="✅ Realizados" [active]="selectedStatus === 'completed'"
                 (chipClick)="changeStatus('completed')"></app-status-chip>
+            
+            <button class="btn-refresh-inline" (click)="handleRefresh()" [disabled]="isRefreshing" title="Atualizar Lista">
+                <ion-spinner *ngIf="isRefreshing" name="crescent"
+                    style="width: 18px; height: 18px; color: #6366f1;"></ion-spinner>
+                <span *ngIf="!isRefreshing" style="font-size: 16px;">🔄</span>
+            </button>
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
             <app-date-filter [date]="selectedDate" (dateChange)="onDateChange($event)"></app-date-filter>
-            <button class="btn-refresh" (click)="handleRefresh()" [disabled]="isRefreshing" title="Atualizar Lista">
-                <ion-spinner *ngIf="isRefreshing" name="crescent"
-                    style="width: 20px; height: 20px; color: #6366f1;"></ion-spinner>
-                <span *ngIf="!isRefreshing" style="font-size: 18px;">🔄</span>
-            </button>
         </div>
         <div class="results-count">{{ filteredProcedures.length }} procedimentos</div>
     </div>

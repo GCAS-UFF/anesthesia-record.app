@@ -66,10 +66,8 @@ export class PatientListPage {
       this.content.scrollToTop(400);
     }
     
-    const statusMap: any = { 'waiting': '0', 'completed': '3', 'all': null };
-    const statusValue = statusMap[this.selectedStatus];
-
-    this.surgeryService.getSurgeries(this.selectedDate, statusValue, this.currentPage, this.pageSize).subscribe({
+    // Fetch all for the date and filter in frontend to ensure reliability
+    this.surgeryService.getSurgeries(this.selectedDate, undefined, this.currentPage, this.pageSize).subscribe({
       next: (response) => {
         this.totalItems = response.totalItems;
         this.totalPages = Math.ceil(this.totalItems / this.pageSize);
@@ -78,7 +76,6 @@ export class PatientListPage {
       },
       error: () => {
         this.isRefreshing = false;
-        // Poderia adicionar um toast de erro aqui
       }
     });
   }

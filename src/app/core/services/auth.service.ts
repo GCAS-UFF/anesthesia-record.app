@@ -16,7 +16,7 @@ export class AuthService {
   /**
    * Performs user login against the mock credentials.
    */
-  login(credentials: LoginCredentials, rememberMe: boolean = false): Observable<boolean> {
+  login(credentials: LoginCredentials): Observable<boolean> {
     const VALID_CREDENTIALS = [
       { username: '123456', password: 'senha123', name: 'Dra. Amanda Onishi' },
       { username: '12345678900', password: 'senha123', name: 'Dra. Amanda Onishi' },
@@ -32,24 +32,9 @@ export class AuthService {
       this.loggedInUser = user;
       const mockToken = `token_${user.username}_${Date.now()}`;
 
-      if (rememberMe) {
-        localStorage.setItem('userLoggedIn', 'true');
-        localStorage.setItem('userCRM', user.username);
-        localStorage.setItem('authToken', mockToken);
-      } else {
-        sessionStorage.setItem('userLoggedIn', 'true');
-        sessionStorage.setItem('userCRM', user.username);
-        sessionStorage.setItem('authToken', mockToken);
-      }
-
-      // Save for CRM auto-fill
-      if (rememberMe) {
-        localStorage.setItem('lastSavedCRM', user.username);
-        localStorage.setItem('rememberMePreference', 'true');
-      } else {
-        localStorage.removeItem('lastSavedCRM');
-        localStorage.removeItem('rememberMePreference');
-      }
+      sessionStorage.setItem('userLoggedIn', 'true');
+      sessionStorage.setItem('userCRM', user.username);
+      sessionStorage.setItem('authToken', mockToken);
 
       return of(true).pipe(delay(1000));
     }
@@ -65,14 +50,11 @@ export class AuthService {
     localStorage.removeItem('userLoggedIn');
     localStorage.removeItem('userCRM');
     localStorage.removeItem('authToken');
+    localStorage.removeItem('lastSavedCRM');
+    localStorage.removeItem('rememberMePreference');
     sessionStorage.removeItem('userLoggedIn');
     sessionStorage.removeItem('userCRM');
     sessionStorage.removeItem('authToken');
-    
-    // Se o usuário optou por não se manter conectado ou removemos a preferencia
-    if (localStorage.getItem('rememberMePreference') !== 'true') {
-        localStorage.removeItem('lastSavedCRM');
-    }
   }
 
   /**
