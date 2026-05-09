@@ -9,95 +9,515 @@
                 <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
                 Voltar
             </ion-button>
-            <h1 class="page-title">Ficha Anestésica</h1>
+            <h1 class="page-title">Ficha Anestésica HUAP</h1>
             <div class="action-header-btns">
-                <div style="width: 100px;"></div> <!-- Spacer -->
+                <ion-button color="danger" fill="clear" (click)="confirmarLimpeza()">
+                    Limpar
+                </ion-button>
             </div>
         </div>
 
-        <!-- Card do Paciente -->
-        <app-patient-info-card 
-            [patientName]="patient?.fullName || ''"
-            [age]="patient?.age?.toString() || ''"
-            [record]="patient?.medicalRecordNumber || ''"
-            [procedure]="selectedProcedure?.description || ''"
-            [room]="selectedSurgery?.location?.room || ''"
-            [allergies]="patient?.allergies || []">
+        <!-- [FA-040] Card do Paciente com Sexo e Peso -->
+        <app-patient-info-card [patientName]="patient?.fullName || ''" [birthDate]="patient?.birthDate || ''"
+            [age]="patient?.age?.toString() || ''" [gender]="patient?.gender || 'M'" [weight]="patient?.weight || '--'"
+            [record]="patient?.medicalRecordNumber || ''" [procedure]="selectedProcedure?.description || ''"
+            [room]="selectedSurgery?.location?.room || ''" [allergies]="patient?.allergies || []">
         </app-patient-info-card>
 
         <form [formGroup]="form" (ngSubmit)="salvar()">
-            
+
             <div class="form-grid-2col">
-                <!-- SEÇÃO: SEGURANÇA -->
+                <!-- 1. SEGURANÇA DO PACIENTE -->
                 <app-form-section title="Segurança do Paciente" icon="🛡️" formGroupName="seguranca">
-                    <div class="checklist-grid" style="grid-template-columns: 1fr;">
-                        <div class="checklist-item"><ion-checkbox formControlName="identificacaoConfirmada">Identificação do Paciente Confirmada</ion-checkbox></div>
-                        <div class="checklist-item"><ion-checkbox formControlName="sitioCirurgicoMarcado">Sítio Cirúrgico Marcado</ion-checkbox></div>
-                        <div class="checklist-item"><ion-checkbox formControlName="consentimentoAssinado">Consentimento Anestésico Assinado</ion-checkbox></div>
-                        <div class="checklist-item"><ion-checkbox formControlName="equipamentosTestados">Equipamentos e Materiais Testados</ion-checkbox></div>
+                    <div class="form-grid" style="grid-template-columns: 1fr;">
+                        <app-radio-group label="Paciente identificado e avaliado antes da indução?"
+                            [options]="yesNoOptions" formControlName="identificadoAvaliado"></app-radio-group>
+                        <app-radio-group label="Termo de consentimento informado anestésico assinado?"
+                            [options]="yesNoOptions" formControlName="consentimentoAssinado"></app-radio-group>
+                        <app-radio-group label="Equipamento de anestesia e acessórios checados?"
+                            [options]="yesNoOptions" formControlName="equipamentosChecados"></app-radio-group>
+                        <app-form-field label="ATENÇÃO (Observações de Segurança)">
+                            <textarea formControlName="atencao" rows="2"
+                                style="width: 100%; border-radius: 12px; border: 1px solid #e2e8f0; padding: 12px;"></textarea>
+                        </app-form-field>
                     </div>
                 </app-form-section>
 
-                <!-- SEÇÃO: EQUIPE -->
-                <app-form-section title="Equipe Cirúrgica" icon="👨‍⚕️" formGroupName="equipe">
-                    <div class="form-grid">
-                        <app-form-field label="Anestesista Responsável" [required]="true"><input type="text" formControlName="anestesistaResponsavel"></app-form-field>
-                        <app-form-field label="Cirurgião Responsável" [required]="true"><input type="text" formControlName="cirurgiao"></app-form-field>
+                <!-- 2. PRÉ-INDUÇÃO -->
+                <app-form-section title="Pré-Indução" icon="💉" formGroupName="preInducao">
+                    <app-radio-group label="MEDICAÇÃO PRÉ ANESTÉSICA?" [options]="yesNoOptions"
+                        formControlName="recebeuMedPrevia" [required]="true"></app-radio-group>
+                    <div class="conditional-fields" *ngIf="form.get('preInducao.recebeuMedPrevia')?.value === 'sim'"
+                        style="margin-top: 12px;">
+                        <div class="form-grid">
+                            <app-form-field label="HORA"><input type="time" formControlName="hora"></app-form-field>
+                            <app-form-field label="FÁRMACO"><input type="text" formControlName="farmaco"
+                                    placeholder="Nome do fármaco"></app-form-field>
+                        </div>
+                        <app-radio-group label="VIA" [options]="viaPreOptions" formControlName="via"></app-radio-group>
+                        <app-form-field *ngIf="form.get('preInducao.via')?.value === 'Outras'" label="Especifique Via">
+                            <input type="text" formControlName="outrasVia">
+                        </app-form-field>
                     </div>
                 </app-form-section>
             </div>
 
-            <!-- SEÇÃO: DADOS VITAIS -->
-            <app-form-section title="Dados Vitais (Antes da Indução)" icon="📊" formGroupName="dadosVitais">
-                <div class="vitals-grid">
-                    <app-form-field label="PA Sistólica" [required]="true"><input type="number" formControlName="paSistolica"></app-form-field>
-                    <app-form-field label="PA Diastólica" [required]="true"><input type="number" formControlName="paDiastolica"></app-form-field>
-                    <app-form-field label="FC (bpm)" [required]="true"><input type="number" formControlName="fc"></app-form-field>
-                    <app-form-field label="SpO2 (%)" [required]="true"><input type="number" formControlName="spo2"></app-form-field>
-                    <app-form-field label="Temp. (°C)"><input type="number" formControlName="temperatura"></app-form-field>
-                </div>
-            </app-form-section>
+            <!-- 3. ANTIBIÓTICO PROFILÁTICO -->
+            <app-form-section title="Antibiótico Profilático" icon="💊" formGroupName="antibiotico">
+                <div class="form-grid" style="grid-template-columns: 1fr;">
+                    <app-radio-group label="Fez uso de Antibiótico Profilático?" [options]="yesNoOptions"
+                        formControlName="temAntibiotico" [required]="true"></app-radio-group>
 
-            <!-- SEÇÃO: TÉCNICA (Resumida para o card 40) -->
-            <app-form-section title="Técnica e Posicionamento" icon="⚕️" formGroupName="tecnica">
-                <div class="form-grid">
-                    <app-checkbox-group label="Posição Operatória" [options]="posicaoOptions" formControlName="posicoesOperatorias" [required]="true"></app-checkbox-group>
-                    <div class="form-grid-2col">
-                        <app-checkbox-group label="Acesso Venoso" [options]="acessoVenosoOptions" formControlName="acessosVenoso" [required]="true" direction="vertical"></app-checkbox-group>
-                        <app-checkbox-group label="Respiração" [options]="respiracaoOptions" formControlName="respiracao" [required]="true" direction="vertical"></app-checkbox-group>
+                    <div *ngIf="form.get('antibiotico.temAntibiotico')?.value === 'sim'" class="atb-container">
+                        <div class="atb-list">
+                            <div *ngFor="let atb of antibioticsList; let i = index" class="atb-item">
+                                <div class="atb-main">
+                                    <div class="atb-info">
+                                        <span class="atb-name">{{ atb.nome }}</span>
+                                        <span class="atb-details">{{ atb.dose }} • {{ atb.hora }}</span>
+                                    </div>
+                                    <div class="atb-actions">
+                                        <ion-button fill="clear" color="success" size="small"
+                                            (click)="adicionarRepique(i)" style="font-weight: 700; font-size: 11px;">
+                                            REPIQUE
+                                        </ion-button>
+                                        <ion-button fill="clear" color="primary" size="small"
+                                            (click)="editarAntibiotico(i)" title="Editar">
+                                            <ion-icon name="pencil-outline" slot="icon-only"></ion-icon>
+                                        </ion-button>
+                                        <ion-button fill="clear" color="danger" size="small"
+                                            (click)="removerAntibiotico(i)" title="Excluir">
+                                            <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                                        </ion-button>
+                                    </div>
+                                </div>
+
+                                <!-- Lista de Repiques aninhada -->
+                                <div class="repique-list" *ngIf="atb.repiques.length > 0">
+                                    <div *ngFor="let rep of atb.repiques; let j = index" class="repique-item">
+                                        <div class="repique-info">
+                                            <ion-icon name="return-down-forward-outline"></ion-icon>
+                                            <span>Repique: {{ rep.dose }} • {{ rep.hora }}</span>
+                                        </div>
+                                        <div class="repique-actions">
+                                            <ion-button fill="clear" color="primary" size="small"
+                                                (click)="editarRepique(i, j)" title="Editar">
+                                                <ion-icon name="pencil-outline" slot="icon-only"
+                                                    style="font-size: 16px;"></ion-icon>
+                                            </ion-button>
+                                            <ion-button fill="clear" color="danger" size="small"
+                                                (click)="removerRepique(i, j)" title="Excluir">
+                                                <ion-icon name="close-circle-outline" slot="icon-only"
+                                                    style="font-size: 16px;"></ion-icon>
+                                            </ion-button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <ion-button fill="outline" expand="block" (click)="abrirModalAntibiotico()" class="btn-add-atb">
+                            <ion-icon name="add-outline" slot="start"></ion-icon>
+                            Adicionar Antibiótico
+                        </ion-button>
                     </div>
                 </div>
             </app-form-section>
 
-            <!-- SEÇÃO: ALDERETE -->
-            <app-form-section title="Índice de Alderete e Kroulik" icon="📋" formGroupName="alderete">
+            <!-- 4. DADOS VITAIS E ANTROPOMÉTRICOS -->
+            <app-form-section title="Dados Vitais e Antropométricos" icon="📊" subtitle="Antes da indução anestésica"
+                formGroupName="dadosVitais">
+                <div class="vitals-grid">
+                    <app-form-field label="PA" [required]="true"><input type="text" formControlName="pa"
+                            placeholder="120/80"></app-form-field>
+                    <app-form-field label="FR" [required]="true"><input type="text" formControlName="fr"
+                            placeholder="irpm"></app-form-field>
+                    <app-form-field label="T (°C)" [required]="true"><input type="text" formControlName="temp"
+                            placeholder="36.5"></app-form-field>
+                    <app-form-field label="SpO2" [required]="true"><input type="text" formControlName="spo2"
+                            placeholder="98%"></app-form-field>
+                    <app-form-field label="Peso (kg)" [required]="true"><input type="text"
+                            formControlName="peso"></app-form-field>
+                    <app-form-field label="ASA" [required]="true"><input type="text"
+                            formControlName="asa"></app-form-field>
+                    <app-form-field label="Entrada na Sala" [required]="true"><input type="time"
+                            formControlName="entradaSala"></app-form-field>
+                </div>
+            </app-form-section>
+
+            <!-- 5. EQUIPE CIRÚRGICA E PRÉ-PROCEDIMENTO -->
+            <app-form-section title="Equipe Cirúrgica e Pré-Procedimento" icon="👨‍⚕️" formGroupName="equipe">
+                <div class="form-grid-2col">
+                    <app-form-field label="CIRURGIÃO" [required]="true"><input type="text"
+                            formControlName="cirurgiao"></app-form-field>
+                    <app-form-field label="ASSISTENTE"><input type="text" formControlName="assistente"></app-form-field>
+                </div>
+                <div class="form-grid" style="margin-top: 16px;">
+                    <app-form-field label="DIAGNÓSTICO PRÉ OPERATÓRIO" [required]="true"><input type="text"
+                            formControlName="diagnosticoPre"></app-form-field>
+                    <app-form-field label="HORA (Início da anestesia)" [required]="true"><input type="time"
+                            formControlName="horaInicioAnestesia"></app-form-field>
+                </div>
+            </app-form-section>
+
+            <!-- 6. POSIÇÃO OPERATÓRIA -->
+            <app-form-section title="Posição Operatória" icon="📐" formGroupName="posicao">
+                <app-checkbox-group label="POSIÇÃO" [options]="posicaoOptions"
+                    formControlName="posicoes"></app-checkbox-group>
+                
+                <app-form-field *ngIf="form.get('posicao.posicoes')?.value?.includes('Outra')" label="Especifique Posição:">
+                    <input type="text" formControlName="outrasPosicao" placeholder="Qual posição?">
+                </app-form-field>
+
+                <div class="form-grid-2col" style="margin-top: 24px; align-items: flex-end;">
+                    <div style="display: flex; gap: 24px; align-items: center;">
+                        <app-radio-group label="USO DE COXINS?" [options]="yesNoOptions"
+                            formControlName="usoCoxim"></app-radio-group>
+                        <app-form-field *ngIf="form.get('posicao.usoCoxim')?.value === 'sim'" label="LOCAL:"
+                            style="flex: 1;"><input type="text" formControlName="localCoxim"></app-form-field>
+                    </div>
+                </div>
+
+                <div style="margin-top: 24px;">
+                    <div style="display: flex; gap: 24px; align-items: center; flex-wrap: wrap;">
+                        <app-checkbox-group label="ACESSO VENOSO" [options]="acessoVenosoOptions"
+                            formControlName="acessoVenoso"></app-checkbox-group>
+                        
+                        <app-form-field *ngIf="form.get('posicao.acessoVenoso')?.value?.includes('Outro')" label="Especifique Acesso:">
+                            <input type="text" formControlName="outroAcesso" placeholder="Qual acesso?">
+                        </app-form-field>
+
+                        <app-form-field label="LOCAL DO ACESSO:" style="width: 250px;"><input
+                                type="text" formControlName="localAcesso" placeholder="Ex: MSD, MIE..."></app-form-field>
+                    </div>
+                    <div style="margin-top: 16px;">
+                        <app-radio-group label="Dificuldade de punção?" [options]="yesNoOptions"
+                            formControlName="dificuldadePuncao"></app-radio-group>
+                    </div>
+                </div>
+            </app-form-section>
+
+            <!-- 7. TÉCNICA ANESTÉSICA (Fidelidade Total HUAP) -->
+            <app-form-section title="Técnica Anestésica" icon="⚕️" formGroupName="tecnica">
+                <!-- LINHA 1: Geral e Via Aérea (Reduzindo a altura da Via Aérea dividindo em 2 colunas) -->
+                <div class="form-grid-3col">
+                    <!-- Coluna 1: Geral e Respiração -->
+                    <div class="technique-group" style="background: #f8fafc; padding: 16px; border-radius: 16px;">
+                        <app-radio-group label="ANESTESIA GERAL" [options]="yesNoOptions"
+                            formControlName="anestesiaGeral"></app-radio-group>
+                        <hr style="margin: 16px 0; border-color: #e2e8f0;">
+
+                        <div style="font-size: 14px; font-weight: 700; color: #475569; margin-bottom: 12px;">RESPIRAÇÃO
+                        </div>
+                        <div style="padding-left: 8px;">
+                            <div style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px;">
+                                Assistida:</div>
+                            <app-checkbox-group [options]="assistidaOptions" formControlName="respiracaoAssistida"
+                                direction="horizontal" class="grid-checkbox-2col"></app-checkbox-group>
+
+                            <div
+                                style="font-size: 12px; font-weight: 600; color: #64748b; margin-top: 10px; margin-bottom: 4px;">
+                                Controlada:</div>
+                            <app-checkbox-group [options]="controladaOptions" formControlName="respiracaoControlada"
+                                direction="horizontal" class="grid-checkbox-2col"></app-checkbox-group>
+                        </div>
+
+                        <hr style="margin: 16px 0; border-color: #e2e8f0;">
+                        <app-radio-group label="CIRCUITO (Absorvedor CO2?)" [options]="yesNoOptions"
+                            formControlName="circuitoAbsorvedor"></app-radio-group>
+                    </div>
+
+                    <!-- Coluna 2: VIA AÉREA - DISPOSITIVOS -->
+                    <div class="technique-group"
+                        style="background: #f8fafc; padding: 16px; border-radius: 16px; border-left: 2px solid #e2e8f0;">
+                        <div
+                            style="font-size: 14px; font-weight: 700; color: #475569; margin-bottom: 12px; text-align: center; background: #e2e8f0; padding: 4px; border-radius: 4px;">
+                            V.A. - DISPOSITIVOS</div>
+
+                        <div class="va-device-list">
+                            <div class="va-row">
+                                <ion-checkbox formControlName="vaGuedel" labelPlacement="end">Guedel</ion-checkbox>
+                                <div class="va-n-box"><span>Nº</span><input type="text" formControlName="guedelNo"
+                                        class="va-small-input"></div>
+                            </div>
+                            <div class="va-row">
+                                <ion-checkbox formControlName="vaMascLaringea" labelPlacement="end">Másc.
+                                    Laríngea</ion-checkbox>
+                                <div class="va-n-box"><span>Nº</span><input type="text" formControlName="mascLaringeaNo"
+                                        class="va-small-input"></div>
+                            </div>
+                            <div class="va-row">
+                                <ion-checkbox formControlName="vaMascFacial" labelPlacement="end">Másc.
+                                    Facial</ion-checkbox>
+                                <div class="va-n-box"><span>Nº</span><input type="text" formControlName="mascFacialNo"
+                                        class="va-small-input"></div>
+                            </div>
+                            <div class="va-row">
+                                <ion-checkbox formControlName="vaTubo" labelPlacement="end">Tubo</ion-checkbox>
+                                <div class="va-n-box"><span>Nº</span><input type="text" formControlName="tuboNo"
+                                        class="va-small-input"></div>
+                            </div>
+                        </div>
+
+                        <div class="va-options-grid">
+                            <div class="va-opt-col">
+                                <ion-checkbox formControlName="cuff" labelPlacement="end">Cuff</ion-checkbox>
+                                <ion-checkbox formControlName="oral" labelPlacement="end">Oral</ion-checkbox>
+                                <ion-checkbox formControlName="facil" labelPlacement="end">Fácil</ion-checkbox>
+                            </div>
+                            <div class="va-opt-col">
+                                <ion-checkbox formControlName="iot" labelPlacement="end">IOT</ion-checkbox>
+                                <ion-checkbox formControlName="nasal" labelPlacement="end">Nasal</ion-checkbox>
+                                <ion-checkbox formControlName="dificil" labelPlacement="end">Difícil</ion-checkbox>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coluna 3: VIA AÉREA - TIPO E TÉCNICAS -->
+                    <div class="technique-group"
+                        style="background: #f8fafc; padding: 16px; border-radius: 16px; border-left: 2px solid #e2e8f0;">
+                        <div
+                            style="font-size: 14px; font-weight: 700; color: #475569; margin-bottom: 12px; text-align: center; background: #e2e8f0; padding: 4px; border-radius: 4px;">
+                            V.A. - TIPO / TÉCNICAS</div>
+
+                        <div style="font-size: 11px; font-weight: 800; color: #94a3b8; margin-bottom: 4px;">TIPO</div>
+                        <div class="va-options-grid" style="margin-bottom: 12px;">
+                            <div class="va-opt-col">
+                                <ion-checkbox formControlName="tipoSimples" labelPlacement="end">Simples</ion-checkbox>
+                                <ion-checkbox formControlName="tipoEndobronquico"
+                                    labelPlacement="end">Endobrônq.</ion-checkbox>
+                            </div>
+                            <div class="va-opt-col">
+                                <ion-checkbox formControlName="tipoAramado" labelPlacement="end">Aramado</ion-checkbox>
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <ion-checkbox formControlName="tipoOutras" labelPlacement="end">Outras</ion-checkbox>
+                                    <input type="text" *ngIf="form.get('tecnica.tipoOutras')?.value" 
+                                           formControlName="tipoOutrasTexto" placeholder="Quais?" 
+                                           class="va-small-input" style="width: 100%;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            style="font-size: 11px; font-weight: 800; color: #94a3b8; margin-bottom: 4px; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+                            TÉCNICAS</div>
+                        <div class="va-options-grid">
+                            <div class="va-opt-col">
+                                <ion-checkbox formControlName="tecLaringoscopia"
+                                    labelPlacement="end">Laringosc.</ion-checkbox>
+                                <ion-checkbox formControlName="tecRetrograda"
+                                    labelPlacement="end">Retrógrada</ion-checkbox>
+                                <ion-checkbox formControlName="tecVideolaringoscopia"
+                                    labelPlacement="end">Videolarin.</ion-checkbox>
+                            </div>
+                            <div class="va-opt-col">
+                                <ion-checkbox formControlName="tecBroncofibroscopia"
+                                    labelPlacement="end">Broncofib.</ion-checkbox>
+                                <ion-checkbox formControlName="tecTraqueostomia"
+                                    labelPlacement="end">Traqueos.</ion-checkbox>
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <ion-checkbox formControlName="tecVAOutras" labelPlacement="end">Outras</ion-checkbox>
+                                    <input type="text" *ngIf="form.get('tecnica.tecVAOutras')?.value" 
+                                           formControlName="tecVAOutrasTexto" placeholder="Quais?" 
+                                           class="va-small-input" style="width: 100%;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LINHA 2: Bloqueios e Sedação -->
+                <div class="form-grid-3col" style="margin-top: 24px;">
+                    <!-- Coluna 1: Bloqueios Espinhais -->
+                    <div class="technique-group"
+                        style="background: #f0f7ff; padding: 16px; border-radius: 16px; border: 1px solid #bee3f8;">
+                        <app-radio-group label="BLOQUEIOS ESPINHAIS" [options]="yesNoOptions"
+                            formControlName="bloqueiosEspinhais"></app-radio-group>
+                        <div *ngIf="form.get('tecnica.bloqueiosEspinhais')?.value === 'sim'"
+                            style="margin-top: 16px; display: flex; flex-direction: column; gap: 16px;">
+                            <!-- Níveis em 2 colunas -->
+                            <div style="background: rgba(255,255,255,0.5); padding: 12px; border-radius: 12px;">
+                                <div style="font-size: 11px; font-weight: 800; color: #4a5568; margin-bottom: 8px;">
+                                    NÍVEL</div>
+                                <app-checkbox-group [options]="nivelPuncaoOptions" formControlName="nivelPuncao"
+                                    direction="horizontal" class="grid-checkbox-2col">
+                                </app-checkbox-group>
+                            </div>
+
+                            <!-- Posição Lado a Lado -->
+                            <app-radio-group label="POSIÇÃO"
+                                [options]="[{label:'Sentada', value:'Sentada'}, {label:'Decúbito Lateral', value:'Decubito'}]"
+                                formControlName="posicaoPuncao" direction="horizontal"></app-radio-group>
+
+                            <!-- Cateter e Opióide em baixo do outro -->
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <app-radio-group label="Cateter?" [options]="yesNoOptions"
+                                    formControlName="cateter"></app-radio-group>
+                                <app-radio-group label="Opióide?" [options]="yesNoOptions"
+                                    formControlName="opioide"></app-radio-group>
+                            </div>
+
+                            <!-- Nº Punções em baixo -->
+                            <app-form-field label="Nº punções" style="width: 100%;"><input type="text"
+                                    formControlName="numeroPuncoes"></app-form-field>
+                        </div>
+                    </div>
+
+                    <!-- Coluna 2: Sedação e O2 -->
+                    <div class="technique-group" style="background: #f8fafc; padding: 16px; border-radius: 16px;">
+                        <app-radio-group label="SEDAÇÃO" [options]="yesNoOptions"
+                            formControlName="sedacao"></app-radio-group>
+                        <div *ngIf="form.get('tecnica.sedacao')?.value === 'sim'"
+                            style="margin-top: 12px; padding-left: 12px; border-left: 3px solid #e2e8f0;">
+                            <app-radio-group label="SUPLEMENTAÇÃO DE O2?" [options]="yesNoOptions"
+                                formControlName="suplementacaoO2"></app-radio-group>
+                            <div *ngIf="form.get('tecnica.suplementacaoO2')?.value === 'sim'" style="margin-top: 8px;">
+                                <app-checkbox-group [options]="suplementacaoO2Options"
+                                    formControlName="tipoSuplementacaoO2" direction="vertical"></app-checkbox-group>
+                                <input type="text" *ngIf="form.get('tecnica.tipoSuplementacaoO2')?.value?.includes('Outros')"
+                                       formControlName="suplementacaoO2Outros" placeholder="Especifique O2"
+                                       class="va-small-input" style="width: 100%; margin-top: 8px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coluna 3: Plexo e Neuroestimulador -->
+                    <div class="technique-group" style="background: #f8fafc; padding: 16px; border-radius: 16px;">
+                        <app-radio-group label="BLOQUEIO PLEXO" [options]="yesNoOptions"
+                            formControlName="bloqueioPlexo"></app-radio-group>
+                        <div *ngIf="form.get('tecnica.bloqueioPlexo')?.value === 'sim'"
+                            style="margin-top: 12px; padding-left: 12px; border-left: 3px solid #e2e8f0;">
+                            <app-radio-group label="NEUROESTIMULADOR?" [options]="yesNoOptions"
+                                formControlName="neuroestimulador"></app-radio-group>
+                            <div *ngIf="form.get('tecnica.neuroestimulador')?.value === 'sim'" style="margin-top: 8px;">
+                                <app-checkbox-group label="NERVOS ESTIMULADOS" [options]="neuroestimuladorOptions"
+                                    formControlName="nervosEstimulados" direction="vertical"></app-checkbox-group>
+                                <input type="text" *ngIf="form.get('tecnica.nervosEstimulados')?.value?.includes('Outros')"
+                                       formControlName="nervosEstimuladosOutros" placeholder="Quais nervos?"
+                                       class="va-small-input" style="width: 100%; margin-top: 8px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </app-form-section>
+
+            <!-- 8. PÓS-PROCEDIMENTO -->
+            <app-form-section title="Pós-Procedimento" icon="🔄" formGroupName="posProcedimento">
+                <div class="form-grid-2col">
+                    <app-form-field label="CIRURGIA REALIZADA" [required]="true"><input type="text"
+                            formControlName="cirurgiaRealizada"></app-form-field>
+                    <app-form-field label="HORA TÉRMINO CIRURGIA" [required]="true"><input type="time"
+                            formControlName="horaTerminoCirurgia"></app-form-field>
+                </div>
+                <div class="form-grid-2col" style="margin-top: 16px;">
+                    <app-form-field label="DIAGNÓSTICO PÓS-OPERATÓRIO" [required]="true"><input type="text"
+                            formControlName="diagnosticoPos"></app-form-field>
+                    <app-form-field label="HORA TÉRMINO ANESTESIA" [required]="true"><input type="time"
+                            formControlName="horaTerminoAnestesia"></app-form-field>
+                </div>
+            </app-form-section>
+
+            <!-- 9. ÍNDICE DE ALDRETE E KROULIK -->
+            <app-form-section title="Índice de Alderete e Kroulik" icon="📋" subtitle="Avaliação para alta da sala"
+                formGroupName="alderete">
                 <div class="alderete-grid">
                     <div class="alderete-item" *ngFor="let item of aldereteFields">
                         <label class="alderete-label">{{ item.label }}</label>
                         <select [formControlName]="item.control">
                             <option value="">--</option>
-                            <option *ngFor="let opt of item.options" [value]="opt.score">{{ opt.score }} - {{ opt.text }}</option>
+                            <option *ngFor="let opt of item.options" [value]="opt.score">{{ opt.score }} - {{ opt.text
+                                }}</option>
                         </select>
+                    </div>
+                </div>
+
+                <div class="aldrete-total-container">
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <span class="aldrete-total-label">Total Alderete & Kroulik</span>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span [style.color]="aldereteStatus.color" style="font-size: 13px; font-weight: 700;">{{
+                                aldereteStatus.text }}</span>
+                            <app-form-field label="HORA" style="width: 100px;"><input type="time"
+                                    formControlName="horaAvaliacao"></app-form-field>
+                        </div>
+                    </div>
+                    <div class="aldrete-score-box">
+                        <span class="aldrete-score" [style.color]="aldereteStatus.color">{{ aldereteTotal }}</span>
+                        <span class="aldrete-max">/ 10</span>
+                    </div>
+                </div>
+
+                <!-- Barra de Progresso Visual [FA-041] -->
+                <div
+                    style="margin-top: 12px; height: 10px; background: #e2e8f0; border-radius: 10px; overflow: hidden;">
+                    <div [style.width.%]="aldereteTotal * 10" [style.background]="aldereteStatus.color"
+                        style="height: 100%; transition: width 0.4s ease;"></div>
+                </div>
+
+                <div class="form-grid-2col" style="margin-top: 24px;">
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <app-checkbox-group label="CONDIÇÕES CLÍNICAS ALTA?" [options]="condicoesAltaOptions"
+                            formControlName="condicoesClinicasAlta"></app-checkbox-group>
+                        <input type="text" *ngIf="form.get('alderete.condicoesClinicasAlta')?.value?.includes('Outras')"
+                               formControlName="condicoesAltaOutras" placeholder="Especifique outras condições..."
+                               class="va-small-input" style="width: 100%;">
+                    </div>
+                    <app-radio-group label="DESTINO?" [options]="destinoOptions" formControlName="destino"
+                        [required]="true"></app-radio-group>
+                </div>
+
+                <div class="form-grid"
+                    style="margin-top: 24px; padding: 16px; background: #fff5f5; border-radius: 16px; border: 1px solid #feb2b2;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+                        <!-- Pergunta Principal -->
+                        <app-radio-group label="DOR?" [options]="yesNoOptions" formControlName="dor"></app-radio-group>
+
+                        <!-- Escalas (Aparecem apenas se houver DOR) -->
+                        <div *ngIf="form.get('alderete.dor')?.value === 'sim'" 
+                             style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center; flex: 1;">
+                            
+                            <!-- ENV -->
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <ion-checkbox formControlName="dorUsouENV" labelPlacement="end">ENV</ion-checkbox>
+                                <input type="text" formControlName="dorENV" *ngIf="form.get('alderete.dorUsouENV')?.value"
+                                       class="va-small-input" style="width: 60px;" placeholder="Valor">
+                            </div>
+
+                            <!-- PAINAD -->
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <ion-checkbox formControlName="dorUsouPAINAD" labelPlacement="end">PAINAD</ion-checkbox>
+                                <input type="text" formControlName="dorPAINAD" *ngIf="form.get('alderete.dorUsouPAINAD')?.value"
+                                       class="va-small-input" style="width: 60px;" placeholder="Valor">
+                            </div>
+
+                            <!-- BPS -->
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <ion-checkbox formControlName="dorUsouBPS" labelPlacement="end">BPS</ion-checkbox>
+                                <input type="text" formControlName="dorBPS" *ngIf="form.get('alderete.dorUsouBPS')?.value"
+                                       class="va-small-input" style="width: 60px;" placeholder="Valor">
+                            </div>
+
+                            <!-- Conduta -->
+                            <app-form-field label="Conduta" style="flex: 1; min-width: 250px;">
+                                <input type="text" formControlName="conduta" placeholder="Conduta tomada...">
+                            </app-form-field>
+                        </div>
                     </div>
                 </div>
             </app-form-section>
 
-            <!-- SEÇÃO: ASSINATURAS (Igual à imagem) -->
+            <!-- 10. ASSINATURAS -->
             <app-form-section title="Assinaturas" icon="✍️" formGroupName="assinaturas">
                 <div class="form-grid-3col">
-                    <app-form-field label="1ª Anestesiologista" [required]="true">
-                        <input type="text" formControlName="primeiroAnestesista" placeholder="Assinatura / Carimbo">
-                    </app-form-field>
-                    <app-form-field label="2ª Anestesiologista">
-                        <input type="text" formControlName="segundoAnestesista" placeholder="Assinatura / Carimbo">
-                    </app-form-field>
-                    <app-form-field label="Data" [required]="true">
-                        <input type="date" formControlName="dataAssinatura">
-                    </app-form-field>
+                    <app-form-field label="1º ANESTESIOLOGISTA (Assinatura/carimbo)" [required]="true"><input
+                            type="text" formControlName="primeiroAnestesista" placeholder="Nome / CRM"></app-form-field>
+                    <app-form-field label="2º ANESTESIOLOGISTA (Assinatura/carimbo)"><input type="text"
+                            formControlName="segundoAnestesista" placeholder="Nome / CRM"></app-form-field>
+                    <app-form-field label="DATA" [required]="true"><input type="date"
+                            formControlName="dataAssinatura"></app-form-field>
                 </div>
             </app-form-section>
 
-            <!-- BOTÕES DE AÇÃO (Igual à imagem) -->
             <div class="form-actions">
                 <ion-button color="primary" type="submit" class="btn-pill">
                     <ion-icon name="save-outline" slot="start"></ion-icon>

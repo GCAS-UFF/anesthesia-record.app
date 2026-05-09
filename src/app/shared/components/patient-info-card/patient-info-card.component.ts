@@ -12,6 +12,9 @@ import { IonicModule } from '@ionic/angular';
 export class PatientInfoCardComponent {
   @Input() patientName: string = '';
   @Input() age: string = '';
+  @Input() birthDate: string = '';
+  @Input() gender: string = '';
+  @Input() weight: string = '';
   @Input() record: string = '';
   @Input() procedure: string = '';
   @Input() room: string = '';
