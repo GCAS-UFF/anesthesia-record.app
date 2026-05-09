@@ -1,8 +1,130 @@
 export interface AnesthesiaRecordModel {
-  id: number;
-  patientName: string;
-  procedure: string;
-  anesthetist: string;
-  date: Date;
-  notes?: string;
+  id?: number;
+  pacienteId: string;
+  seguranca: {
+    identificadoAvaliado: string;
+    consentimentoAssinado: string;
+    equipamentosChecados: string;
+    atencao: string;
+  };
+  preInducao: {
+    recebeuMedPrevia: string;
+    hora: string;
+    farmaco: string;
+    via: string;
+    outrasVia: string;
+  };
+  antibiotico: {
+    temAntibiotico: string;
+    atbNome: string;
+    atbDose: string;
+    atbHora: string;
+    temRepique: string;
+    repiqueDose: string;
+    repiqueHora: string;
+  };
+  dadosVitais: {
+    pa: string;
+    fr: string;
+    temp: string;
+    spo2: string;
+    peso: string;
+    asa: string;
+    entradaSala: string;
+  };
+  equipe: {
+    cirurgiao: string;
+    assistente: string;
+    diagnosticoPre: string;
+    horaInicioAnestesia: string;
+  };
+  posicao: {
+    posicoes: string[];
+    outrasPosicao: string;
+    usoCoxim: string;
+    localCoxim: string;
+    acessoVenoso: string[];
+    outroAcesso: string;
+    localAcesso: string;
+    dificuldadePuncao: string;
+  };
+  tecnica: {
+    anestesiaGeral: string;
+    respiracaoAssistida: string[];
+    respiracaoControlada: string[];
+    circuitoAbsorvedor: string;
+    vaGuedel: boolean;
+    vaMascLaringea: boolean;
+    vaMascFacial: boolean;
+    vaTubo: boolean;
+    guedelNo: string;
+    mascLaringeaNo: string;
+    mascFacialNo: string;
+    tuboNo: string;
+    cuff: boolean;
+    iot: boolean;
+    oral: boolean;
+    nasal: boolean;
+    facil: boolean;
+    dificil: boolean;
+    tipoSimples: boolean;
+    tipoOutras: boolean;
+    tipoOutrasTexto: string;
+    tipoEndobronquico: boolean;
+    tipoAramado: boolean;
+    tecLaringoscopia: boolean;
+    tecBroncofibroscopia: boolean;
+    tecRetrograda: boolean;
+    tecTraqueostomia: boolean;
+    tecVideolaringoscopia: boolean;
+    tecVAOutras: boolean;
+    tecVAOutrasTexto: string;
+    bloqueiosEspinhais: string;
+    nivelPuncao: string[];
+    posicaoPuncao: string;
+    cateter: string;
+    opioide: string;
+    numeroPuncoes: string;
+    sedacao: string;
+    suplementacaoO2: string;
+    tipoSuplementacaoO2: string[];
+    suplementacaoO2Outros: string;
+    bloqueioPlexo: string;
+    neuroestimulador: string;
+    nervosEstimulados: string[];
+    nervosEstimuladosOutros: string;
+    tecnicasAuxiliares: string[];
+  };
+  posProcedimento: {
+    cirurgiaRealizada: string;
+    horaTerminoCirurgia: string;
+    diagnosticoPos: string;
+    horaTerminoAnestesia: string;
+  };
+  alderete: {
+    consciencia: string;
+    atividade: string;
+    circulacao: string;
+    respiracao: string;
+    saturacao: string;
+    horaAvaliacao: string;
+    condicoesClinicasAlta: string[];
+    condicoesAltaOutras: string;
+    destino: string;
+    dor: string;
+    dorUsouENV: boolean;
+    dorENV: string;
+    dorUsouPAINAD: boolean;
+    dorPAINAD: string;
+    dorUsouBPS: boolean;
+    dorBPS: string;
+    conduta: string;
+  };
+  assinaturas: {
+    primeiroAnestesista: string;
+    segundoAnestesista: string;
+    dataAssinatura: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
 }

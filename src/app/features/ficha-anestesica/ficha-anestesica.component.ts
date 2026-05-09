@@ -27,7 +27,9 @@ import { RadioGroupComponent } from '../../shared/components/radio-group/radio-g
 import { CheckboxGroupComponent } from '../../shared/components/checkbox-group/checkbox-group.component';
 
 // Services
-import { SurgeryService } from '../../core/services/surgery.service';
+import { SurgeryService } from 'src/app/core/services/surgery.service';
+import { AnesthesiaRecordService } from 'src/app/core/services/anesthesia-record.service';
+import { AnesthesiaRecordModel } from 'src/app/shared/models/anesthesia-record.model';
 
 @Component({
   selector: 'app-ficha-anestesica',
@@ -184,6 +186,7 @@ export class FichaAnestesicaComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private surgeryService: SurgeryService,
+    private anesthesiaService: AnesthesiaRecordService,
     private alertController: AlertController,
     private toastController: ToastController
   ) {
@@ -417,6 +420,7 @@ export class FichaAnestesicaComponent implements OnInit {
   }
 
   private loadPatientData(id: string) {
+    this.isLoading = true;
     this.surgeryService.getSurgeries('2026-04-21').subscribe(res => {
       const patientData = res.data.find(p => p.surgeries.some(s => s.id === parseInt(id)));
       if (patientData) {
@@ -432,8 +436,19 @@ export class FichaAnestesicaComponent implements OnInit {
         this.selectedSurgery = patientData.surgeries.find(s => s.id === parseInt(id));
         this.selectedProcedure = this.selectedSurgery.procedures.find((p: any) => p.isPrimary) || this.selectedSurgery.procedures[0];
 
-        // [FA-041] Auto-preencher o peso nos Dados Vitais
-        this.form.get('dadosVitais.peso')?.patchValue(this.patient.weight);
+        // [FA-042] Verifica se já existe uma ficha salva para este paciente para pré-carregar
+        this.anesthesiaService.getLatestByPatient(this.pacienteId!).subscribe(savedRecord => {
+          if (savedRecord) {
+            console.log('Ficha anterior encontrada, carregando dados...');
+            this.form.patchValue(savedRecord);
+          } else {
+            // Se não tiver ficha salva, auto-preenche apenas o peso
+            this.form.get('dadosVitais.peso')?.patchValue(this.patient.weight);
+          }
+          this.isLoading = false;
+        });
+      } else {
+        this.isLoading = false;
       }
     });
   }
@@ -449,33 +464,72 @@ export class FichaAnestesicaComponent implements OnInit {
 
   async confirmarLimpeza() {
     const alert = await this.alertController.create({
-      header: 'Limpar Ficha?',
-      message: 'Isso apagará todos os dados preenchidos.',
+      header: 'Limpar Formulário?',
+      message: 'Isso apagará todos os campos preenchidos. Deseja continuar?',
       buttons: [
-        { text: 'Não', role: 'cancel' },
-        { text: 'Sim, Limpar', handler: () => this.form.reset() }
+        { text: 'Cancelar', role: 'cancel' },
+        { 
+          text: 'Limpar', 
+          cssClass: 'alert-button-danger',
+          handler: () => {
+            this.form.reset();
+            // Re-seta o peso inicial
+            if (this.patient) {
+              this.form.get('dadosVitais.peso')?.patchValue(this.patient.weight);
+            }
+          } 
+        }
       ]
     });
     await alert.present();
   }
 
   imprimir() {
+    console.log('Preparando para imprimir...');
     window.print();
   }
 
   async salvar() {
-    console.log('Tentando salvar formulário...', this.form.value);
     if (this.form.invalid) {
       const toast = await this.toastController.create({
-        message: 'Preencha todos os campos obrigatórios da ficha do HUAP.',
+        message: 'Por favor, preencha todos os campos obrigatórios (*) da ficha.',
         duration: 3000,
-        color: 'danger',
+        color: 'warning',
         position: 'top'
       });
       await toast.present();
       return;
     }
-    this.router.navigate(['/registro-cirurgia', this.pacienteId]);
+
+    const loading = await this.alertController.create({
+      message: 'Salvando Ficha Anestésica...'
+    });
+    // Simulação de loading (em app real usaria LoadingController)
+    
+    const record: AnesthesiaRecordModel = {
+      ...this.form.value,
+      pacienteId: this.pacienteId
+    };
+
+    this.anesthesiaService.saveRecord(record).subscribe(async (res) => {
+      const toast = await this.toastController.create({
+        message: 'Ficha Anestésica salva com sucesso!',
+        duration: 2000,
+        color: 'success',
+        position: 'top'
+      });
+      await toast.present();
+      
+      // Opcional: Navegar de volta ou para a lista
+      // this.router.navigate(['/pacientes']);
+    }, async (error) => {
+      const toast = await this.toastController.create({
+        message: 'Erro ao salvar ficha. Tente novamente.',
+        duration: 3000,
+        color: 'danger'
+      });
+      await toast.present();
+    });
   }
 
   voltar() {
