@@ -17,14 +17,30 @@
             </div>
         </div>
 
-        <!-- [FA-040] Card do Paciente com Sexo e Peso -->
         <app-patient-info-card [patientName]="patient?.fullName || ''" [birthDate]="patient?.birthDate || ''"
             [age]="patient?.age?.toString() || ''" [gender]="patient?.gender || 'M'" [weight]="patient?.weight || '--'"
             [record]="patient?.medicalRecordNumber || ''" [procedure]="selectedProcedure?.description || ''"
             [room]="selectedSurgery?.location?.room || ''" [allergies]="patient?.allergies || []">
         </app-patient-info-card>
 
-        <form [formGroup]="form" (ngSubmit)="salvar()">
+        <!-- [FA-041] Barra de Progresso e Status Global -->
+        <div class="form-intelligence-header" *ngIf="form">
+            <div class="progress-info">
+                <div class="status-badge" [ngClass]="{'complete': formProgress === 100}">
+                    <ion-icon [name]="formProgress === 100 ? 'checkmark-circle' : 'time-outline'"></ion-icon>
+                    <span>{{ formStatusText }}</span>
+                </div>
+                <div class="progress-text">
+                    <strong>{{ formProgress }}%</strong> preenchido
+                </div>
+            </div>
+            <div class="global-progress-container">
+                <div class="global-progress-bar" [style.width.%]="formProgress" 
+                     [style.background]="formProgress === 100 ? '#10b981' : '#3b82f6'"></div>
+            </div>
+        </div>
+
+        <form *ngIf="form" [formGroup]="form" (ngSubmit)="salvar()">
 
             <div class="form-grid-2col">
                 <!-- 1. SEGURANÇA DO PACIENTE -->

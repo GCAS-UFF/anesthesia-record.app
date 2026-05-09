@@ -440,3 +440,63 @@
         gap: 16px;
     }
 }
+
+// [FA-041] Inteligência de Tela e Barra de Progresso
+.form-intelligence-header {
+  background: white;
+  padding: 16px 20px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  border: 1px solid #f1f5f9;
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #f1f5f9;
+      color: #64748b;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.3s ease;
+
+      ion-icon {
+        font-size: 16px;
+      }
+
+      &.complete {
+        background: #ecfdf5;
+        color: #059669;
+      }
+    }
+
+    .progress-text {
+      font-size: 13px;
+      color: #64748b;
+      strong {
+        color: #1e293b;
+        font-size: 15px;
+      }
+    }
+  }
+
+  .global-progress-container {
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: 4px;
+    overflow: hidden;
+
+    .global-progress-bar {
+      height: 100%;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background 0.4s ease;
+    }
+  }
+}

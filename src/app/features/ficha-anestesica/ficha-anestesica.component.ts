@@ -381,6 +381,41 @@ export class FichaAnestesicaComponent implements OnInit {
     return { text: 'Crítico / Monitoramento Intenso', color: '#ef4444' };
   }
 
+  get formProgress(): number {
+    // Lista de campos críticos para medir o progresso
+    const criticalFields = [
+      'seguranca.identificadoAvaliado',
+      'seguranca.consentimentoAssinado',
+      'seguranca.equipamentosChecados',
+      'dadosVitais.pa',
+      'dadosVitais.peso',
+      'dadosVitais.asa',
+      'equipe.cirurgiao',
+      'equipe.diagnosticoPre',
+      'posicao.posicoes',
+      'posProcedimento.cirurgiaRealizada',
+      'alderete.consciencia'
+    ];
+
+    let filledCount = 0;
+    criticalFields.forEach(path => {
+      const val = this.form.get(path)?.value;
+      if (val && (Array.isArray(val) ? val.length > 0 : val !== '')) {
+        filledCount++;
+      }
+    });
+
+    return Math.round((filledCount / criticalFields.length) * 100);
+  }
+
+  get formStatusText(): string {
+    const progress = this.formProgress;
+    if (progress === 0) return 'Ficha Não Iniciada';
+    if (progress < 50) return 'Preenchimento Inicial';
+    if (progress < 100) return 'Em Procedimento';
+    return 'Ficha Completa';
+  }
+
   private loadPatientData(id: string) {
     this.surgeryService.getSurgeries('2026-04-21').subscribe(res => {
       const patientData = res.data.find(p => p.surgeries.some(s => s.id === parseInt(id)));
