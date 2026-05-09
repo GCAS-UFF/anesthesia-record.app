@@ -1,0 +1,90 @@
+.patient-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px 20px;
+    border-left: 6px solid #6366f1;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .patient-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: #64748b;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .patient-name {
+        margin: 4px 0 0;
+        font-size: 20px;
+        font-weight: 800;
+        color: #1e293b;
+    }
+
+    .patient-meta {
+        display: flex;
+        gap: 24px;
+    }
+
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .meta-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+    }
+
+    .meta-value {
+        font-size: 14px;
+        font-weight: 700;
+        color: #334155;
+    }
+
+    .procedure-section {
+        border-top: 1px solid #f1f5f9;
+        padding-top: 12px;
+        margin-bottom: 12px;
+
+        .procedure-name {
+            margin: 4px 0 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: #475569;
+        }
+    }
+
+    .allergy-section {
+        .allergy-badge {
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            .warning-icon {
+                font-size: 16px;
+            }
+
+            .allergy-text {
+                font-size: 12px;
+                font-weight: 700;
+                color: #dc2626;
+            }
+        }
+    }
+}

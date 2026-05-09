@@ -1,0 +1,34 @@
+<div class="patient-card">
+    <div class="header-section">
+        <div class="patient-main-info">
+            <span class="patient-label">PACIENTE</span>
+            <h2 class="patient-name">{{ patientName || 'NOME NÃO INFORMADO' }}</h2>
+        </div>
+        <div class="patient-meta">
+            <div class="meta-item">
+                <span class="meta-label">IDADE</span>
+                <span class="meta-value">{{ age || '--' }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">PRONTUÁRIO</span>
+                <span class="meta-value">{{ record || '--' }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">SALA</span>
+                <span class="meta-value">{{ room || '--' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="procedure-section">
+        <span class="meta-label">PROCEDIMENTO</span>
+        <p class="procedure-name">{{ procedure || 'PROCEDIMENTO NÃO DEFINIDO' }}</p>
+    </div>
+
+    <div class="allergy-section" *ngIf="hasAllergies">
+        <div class="allergy-badge">
+            <span class="warning-icon">⚠️</span>
+            <span class="allergy-text">ALERGIAS: {{ allergies.join(', ') }}</span>
+        </div>
+    </div>
+</div>
