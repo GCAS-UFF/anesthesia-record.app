@@ -7,7 +7,10 @@ import { IonicModule } from '@ionic/angular';
   template: `
     <div class="form-section">
       <div class="section-header">
-        <h3 class="section-title">{{ title }}</h3>
+        <h3 class="section-title">
+          <span class="icon" *ngIf="icon">{{ icon }}</span>
+          {{ title }}
+        </h3>
         <p *ngIf="subtitle" class="section-subtitle">{{ subtitle }}</p>
       </div>
       <div class="section-content">
@@ -18,32 +21,38 @@ import { IonicModule } from '@ionic/angular';
   styles: [`
     .form-section {
       background: white;
-      border-radius: 12px;
+      border-radius: 28px;
       margin-bottom: 24px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid #edf2f7;
       overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
     }
     .section-header {
-      background: #f8fafc;
-      padding: 12px 20px;
-      border-bottom: 1px solid #e2e8f0;
+      background: white;
+      padding: 24px 28px 12px 28px;
     }
     .section-title {
       margin: 0;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 700;
-      color: #334155;
-      text-transform: uppercase;
-      letter-spacing: 0.025em;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f1f5f9;
+    }
+    .icon {
+        font-size: 20px;
     }
     .section-subtitle {
-      margin: 4px 0 0;
-      font-size: 12px;
+      margin: 8px 0 0;
+      font-size: 13px;
       color: #64748b;
+      font-weight: 500;
     }
     .section-content {
-      padding: 20px;
+      padding: 20px 28px 28px 28px;
     }
   `],
   standalone: true,
@@ -52,4 +61,5 @@ import { IonicModule } from '@ionic/angular';
 export class FormSectionComponent {
   @Input() title: string = '';
   @Input() subtitle: string = '';
+  @Input() icon: string = '';
 }
