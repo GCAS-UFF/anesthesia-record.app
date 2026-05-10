@@ -1,45 +1,49 @@
-<div class="patient-card">
-    <div class="header-section">
-        <div class="patient-main-info">
-            <span class="patient-label">PACIENTE</span>
-            <h2 class="patient-name">{{ patientName || 'NOME NÃO INFORMADO' }}</h2>
-        </div>
-        <div class="record-badge" *ngIf="record">
-            Prontuário: {{ record }}
-        </div>
-    </div>
-
-    <div class="patient-meta">
-        <div class="meta-item">
-            <span class="meta-label">DATA DE NASCIMENTO (IDADE)</span>
-            <span class="meta-value">{{ birthDate || '--' }} ({{ age || '--' }} Anos)</span>
-        </div>
-        <div class="meta-item">
-            <span class="meta-label">SEXO</span>
-            <span class="meta-value">{{ gender || '--' }}</span>
-        </div>
-        <div class="meta-item">
-            <span class="meta-label">PESO</span>
-            <span class="meta-value">{{ weight || '--' }} kg</span>
-        </div>
-        <div class="meta-item">
-            <span class="meta-label">SALA / LEITO</span>
-            <span class="meta-value">{{ room || '--' }}</span>
-        </div>
-    </div>
-
-    <div class="procedure-section" *ngIf="procedure">
-        <span class="meta-label">PROCEDIMENTO CIRÚRGICO</span>
-        <h3 class="procedure-name">{{ procedure }}</h3>
-    </div>
-
-    <div class="allergy-alert" *ngIf="hasAllergies">
-        <div class="allergy-container">
-            <div class="allergy-icon">⚠️</div>
-            <div class="allergy-content">
-                <div class="allergy-title">ALERTA DE ALERGIA</div>
-                <div class="allergy-text">{{ allergies.join(' • ') }}</div>
+<div class="patient-compact-card">
+    <div class="card-gradient-overlay"></div>
+    
+    <div class="card-body">
+        <!-- Cabeçalho: Nome em cima, Badges embaixo -->
+        <div class="patient-header">
+            <div class="name-group">
+                <span class="label-mini">PACIENTE</span>
+                <h2 class="patient-name">{{ patientName || 'NOME NÃO INFORMADO' }}</h2>
             </div>
+            <div class="badges-row">
+                <span class="badge record">PRONTUÁRIO: #{{ record || '---' }}</span>
+                <span class="badge room" *ngIf="room">SALA: {{ room }}</span>
+                <span class="badge bed" *ngIf="bed">LEITO: {{ bed }}</span>
+            </div>
+        </div>
+
+        <!-- Grade de Informações com Títulos -->
+        <div class="patient-info-grid">
+            <div class="info-column">
+                <span class="info-label">NASCIMENTO</span>
+                <span class="info-value">{{ birthDate || '--' }}</span>
+            </div>
+            <div class="info-column">
+                <span class="info-label">IDADE</span>
+                <span class="info-value">{{ age || '--' }} anos</span>
+            </div>
+            <div class="info-column">
+                <span class="info-label">SEXO</span>
+                <span class="info-value">{{ gender === 'M' ? 'Masculino' : gender === 'F' ? 'Feminino' : gender || '--' }}</span>
+            </div>
+            <div class="info-column">
+                <span class="info-label">PESO</span>
+                <span class="info-value">{{ weight || '--' }} kg</span>
+            </div>
+            <div class="info-column procedure">
+                <span class="info-label">PROCEDIMENTO</span>
+                <span class="info-value truncate">{{ procedure || 'NÃO INFORMADO' }}</span>
+            </div>
+        </div>
+
+        <!-- Alerta de Alergia Minimalista -->
+        <div class="allergy-footer" *ngIf="hasAllergies">
+            <ion-icon name="warning"></ion-icon>
+            <strong>ALERGIA:</strong>
+            <span>{{ allergies.join(' • ') }}</span>
         </div>
     </div>
 </div>

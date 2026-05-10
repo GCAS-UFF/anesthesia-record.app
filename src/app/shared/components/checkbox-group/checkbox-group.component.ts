@@ -28,9 +28,13 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@a
       gap: 8px;
     }
     .group-label {
-      font-size: 13px;
-      font-weight: 600;
-      color: #475569;
+      font-size: 11px;
+      font-weight: 800;
+      color: #64748b;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding-left: 4px;
+      margin-bottom: 2px;
     }
     .required {
       color: #dc2626;
@@ -58,28 +62,50 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@a
       background: #f1f5f9;
     }
     .checkbox-option.active {
-      background: #eff6ff;
-      border-color: #3b82f6;
-      color: #1d4ed8;
+      background: #f8fafc;
+      border-color: #60a5fa;
+      color: #1e293b;
     }
     .checkbox-box {
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       border: 2px solid #cbd5e1;
-      border-radius: 4px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: white;
+      transition: all 0.2s ease;
     }
     .active .checkbox-box {
-      border-color: #3b82f6;
-      background: #3b82f6;
+      border-color: #60a5fa;
+      background: #60a5fa;
       color: white;
+    }
+    .active .checkbox-box ion-icon {
+      font-size: 16px;
+      stroke-width: 48;
     }
     .option-label {
       font-size: 14px;
       font-weight: 500;
+    }
+    :host.ng-invalid.ng-touched {
+      display: block;
+      animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+    :host.ng-invalid.ng-touched .checkbox-option {
+      border-color: #ef4444 !important;
+      background-color: #fef2f2 !important;
+    }
+    :host.ng-invalid.ng-touched .group-label {
+      color: #ef4444 !important;
+    }
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-1px, 0, 0); }
+      20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+      40%, 60% { transform: translate3d(4px, 0, 0); }
     }
   `],
   standalone: true,

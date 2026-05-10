@@ -1,21 +1,34 @@
 <div class="hospital-header" style="display: flex; justify-content: space-between; align-items: center;">
     <div class="hospital-info">
         <div class="logo-container">
-            <img class="logo-huap" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhUkC4lf0T0wpLNtJR2sNXW2aiVXF_svEmmNTqABPgRYhhL2c4_4RpDmSdRufQYMegUMhVqxso1NCrD8EIq3SYMpT5kZ-3OLJSfruGqRWsBVfq5LEBShyvKkfMg1iKlycZQuMiNo4lNYj3m/s1600/logo_huap.png" alt="Logo HUAP" onerror="this.style.display='none';">
-            <img class="logo-uff" src="https://upload.wikimedia.org/wikipedia/pt/4/47/UFF_bras%C3%A3o.png" alt="Brasão UFF" onerror="this.style.display='none';">
+            <img class="logo-huap"
+                src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhUkC4lf0T0wpLNtJR2sNXW2aiVXF_svEmmNTqABPgRYhhL2c4_4RpDmSdRufQYMegUMhVqxso1NCrD8EIq3SYMpT5kZ-3OLJSfruGqRWsBVfq5LEBShyvKkfMg1iKlycZQuMiNo4lNYj3m/s1600/logo_huap.png"
+                alt="Logo HUAP" onerror="this.style.display='none';">
+            <img class="logo-uff" src="https://upload.wikimedia.org/wikipedia/pt/4/47/UFF_bras%C3%A3o.png"
+                alt="Brasão UFF" onerror="this.style.display='none';">
         </div>
-    <div class="hospital-text">
-        <div class="hospital-name">
-            <span>HUAP</span>
-        </div>
-        <div class="university">
-            Hospital Universitário Antonio Pedro • Universidade Federal Fluminense • Serviço de Anestesiologia
+        <div class="hospital-text">
+            <div class="hospital-name">
+                <span>HUAP</span>
+            </div>
+            <div class="university">
+                Hospital Universitário Antonio Pedro • Universidade Federal Fluminense
+            </div>
         </div>
     </div>
-</div>
-<div *ngIf="showLogout" class="logout-container">
-    <button class="btn-logout-custom" (click)="logout()">
-        <span>Sair</span>
-    </button>
-</div>
+
+    <div class="header-right">
+        <div class="doctor-status">
+            <span class="doctor-name">Dra. Amanda Onishi</span>
+            <div class="connection-status">
+                <span class="dot"></span>
+                <span>Conectado</span>
+            </div>
+        </div>
+        <div *ngIf="showLogout" class="logout-container">
+            <button class="btn-logout-custom" (click)="logout()">
+                <span>Sair</span>
+            </button>
+        </div>
+    </div>
 </div>

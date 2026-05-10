@@ -31,7 +31,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     records.push(newRecord);
     localStorage.setItem('mock_anesthesia_records', JSON.stringify(records));
     
-    return of(newRecord).pipe(delay(800)); // Simula latência de rede
+    return of(newRecord).pipe(delay(100)); // Simula latência de rede reduzida
   }
 
   /**
@@ -43,7 +43,45 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       .filter(r => r.pacienteId === pacienteId)
       .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())[0];
     
-    return of(patientRecord || null).pipe(delay(500));
+    return of(patientRecord || null).pipe(delay(100));
+  }
+
+  /**
+   * [FA-042] Remove todas as fichas de um paciente (usado ao "Limpar" a ficha)
+   */
+  clearLatestRecord(pacienteId: string): Observable<boolean> {
+    console.log('Serviço: Limpando histórico do paciente...', pacienteId);
+    let records = this.getStoredRecords();
+    records = records.filter(r => r.pacienteId !== pacienteId);
+    localStorage.setItem('mock_anesthesia_records', JSON.stringify(records));
+    this.clearDraft(pacienteId); // Limpa rascunho também
+    return of(true).pipe(delay(100));
+  }
+
+  /**
+   * [FA-042] Salva um rascunho temporário (Auto-Save)
+   */
+  saveDraft(pacienteId: string, record: any): void {
+    localStorage.setItem(`draft_anesthesia_${pacienteId}`, JSON.stringify({
+      ...record,
+      pacienteId,
+      updatedAt: new Date().toISOString()
+    }));
+  }
+
+  /**
+   * [FA-042] Recupera o rascunho temporário
+   */
+  getDraft(pacienteId: string): any {
+    const draft = localStorage.getItem(`draft_anesthesia_${pacienteId}`);
+    return draft ? JSON.parse(draft) : null;
+  }
+
+  /**
+   * [FA-042] Remove o rascunho temporário
+   */
+  clearDraft(pacienteId: string): void {
+    localStorage.removeItem(`draft_anesthesia_${pacienteId}`);
   }
 
   private getStoredRecords(): AnesthesiaRecordModel[] {
