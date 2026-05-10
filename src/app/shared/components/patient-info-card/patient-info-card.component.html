@@ -11,17 +11,26 @@
 
     <div class="patient-meta">
         <div class="meta-item">
-            <span class="meta-label">IDADE / NASCIMENTO</span>
-            <span class="meta-value">{{ age || '--' }} Anos</span>
+            <span class="meta-label">DATA DE NASCIMENTO (IDADE)</span>
+            <span class="meta-value">{{ birthDate || '--' }} ({{ age || '--' }} Anos)</span>
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">SEXO</span>
+            <span class="meta-value">{{ gender || '--' }}</span>
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">PESO</span>
+            <span class="meta-value">{{ weight || '--' }} kg</span>
         </div>
         <div class="meta-item">
             <span class="meta-label">SALA / LEITO</span>
             <span class="meta-value">{{ room || '--' }}</span>
         </div>
-        <div class="meta-item" *ngIf="procedure">
-            <span class="meta-label">PROCEDIMENTO</span>
-            <span class="meta-value">{{ procedure }}</span>
-        </div>
+    </div>
+
+    <div class="procedure-section" *ngIf="procedure">
+        <span class="meta-label">PROCEDIMENTO CIRÚRGICO</span>
+        <h3 class="procedure-name">{{ procedure }}</h3>
     </div>
 
     <div class="allergy-alert" *ngIf="hasAllergies">

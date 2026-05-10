@@ -64,6 +64,172 @@
     gap: 24px;
 }
 
+.atb-container {
+    margin-top: 16px;
+    
+    .atb-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .atb-item {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .atb-main {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        background: white;
+
+        .atb-info {
+            display: flex;
+            flex-direction: column;
+
+            .atb-name {
+                font-weight: 700;
+                color: #1e293b;
+                font-size: 14px;
+            }
+
+            .atb-details {
+                font-size: 12px;
+                color: #64748b;
+            }
+        }
+
+        .atb-actions {
+            display: flex;
+            gap: 8px;
+        }
+    }
+
+    .repique-list {
+        padding: 8px 16px 12px 32px;
+        background: #f8fafc;
+        border-top: 1px dashed #e2e8f0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .repique-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        
+        .repique-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #475569;
+            
+            ion-icon {
+                color: #94a3b8;
+            }
+        }
+
+        .repique-actions {
+            display: flex;
+            gap: 4px;
+        }
+    }
+
+    .btn-add-atb {
+        --border-radius: 12px;
+        --border-width: 2px;
+        margin: 0;
+    }
+}
+
+.grid-checkbox-2col {
+    display: block;
+    ::ng-deep .checkbox-group-container {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+}
+
+.va-device-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+
+    .va-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #f1f5f9;
+
+        ion-checkbox {
+            --size: 20px;
+            font-size: 14px;
+            color: #334155;
+            --padding-start: 0;
+        }
+
+        .va-n-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            .va-n-label {
+                font-size: 11px;
+                font-weight: 700;
+                color: #94a3b8;
+            }
+
+            .va-small-input {
+                width: 120px;
+                height: 36px;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 8px;
+                padding: 0 12px;
+                font-size: 14px;
+                color: #1e293b;
+                text-align: left;
+                outline: none;
+
+                &:focus {
+                    border-color: var(--ion-color-primary);
+                }
+            }
+        }
+    }
+}
+
+.va-options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 12px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1.5px solid #e2e8f0;
+
+    .va-opt-col {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        ion-checkbox {
+            --size: 18px;
+            font-size: 13px;
+            color: #475569;
+        }
+    }
+}
+
 .vitals-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -273,4 +439,64 @@
         align-items: flex-start;
         gap: 16px;
     }
+}
+
+// [FA-041] Inteligência de Tela e Barra de Progresso
+.form-intelligence-header {
+  background: white;
+  padding: 16px 20px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  border: 1px solid #f1f5f9;
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #f1f5f9;
+      color: #64748b;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.3s ease;
+
+      ion-icon {
+        font-size: 16px;
+      }
+
+      &.complete {
+        background: #ecfdf5;
+        color: #059669;
+      }
+    }
+
+    .progress-text {
+      font-size: 13px;
+      color: #64748b;
+      strong {
+        color: #1e293b;
+        font-size: 15px;
+      }
+    }
+  }
+
+  .global-progress-container {
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: 4px;
+    overflow: hidden;
+
+    .global-progress-bar {
+      height: 100%;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background 0.4s ease;
+    }
+  }
 }
