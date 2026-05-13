@@ -4,16 +4,7 @@ import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { checkmarkCircle, trashOutline } from 'ionicons/icons';
-
-export interface VitalSignRecord {
-  time: string;
-  pas: number | null;
-  pad: number | null;
-  fc: number | null;
-  spo2: number | null;
-  temp: number | null;
-  etco2: number | null;
-}
+import { MonitoringRecord } from 'src/app/core/models/monitoring-record.model';
 
 @Component({
   selector: 'app-quick-vital-input',
@@ -24,7 +15,7 @@ export interface VitalSignRecord {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class QuickVitalInputComponent {
-  @Input() vitalData: VitalSignRecord | null = null;
+  @Input() vitalData: MonitoringRecord | null = null;
   @Output() onSave = new EventEmitter<void>();
   @Output() onCancel = new EventEmitter<void>();
 
