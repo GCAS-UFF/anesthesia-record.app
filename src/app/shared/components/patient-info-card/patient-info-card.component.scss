@@ -1,19 +1,15 @@
-.patient-compact-card {
+.patient-full-card {
     position: relative;
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); // Azul para Roxo (Indigo para Violet)
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
     border-radius: 24px;
     padding: 20px 24px;
-    margin: 0;
     color: white;
     box-shadow: 0 12px 30px -10px rgba(79, 70, 229, 0.4);
     overflow: hidden;
 
     .card-gradient-overlay {
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        top: 0; left: 0; right: 0; bottom: 0;
         background: radial-gradient(circle at top right, rgba(255,255,255,0.1) 0%, transparent 70%);
         pointer-events: none;
     }
@@ -27,39 +23,16 @@
     }
 
     .patient-header {
-        .label-mini {
-            font-size: 9px;
-            font-weight: 800;
-            opacity: 0.7;
-            letter-spacing: 1.2px;
-            text-transform: uppercase;
-        }
-        .patient-name {
-            margin: 0;
-            font-size: 22px;
-            font-weight: 800;
-            color: white;
-            letter-spacing: -0.5px;
-        }
+        .label-mini { font-size: 9px; font-weight: 800; opacity: 0.7; letter-spacing: 1.2px; text-transform: uppercase; }
+        .patient-name { margin: 0; font-size: 22px; font-weight: 800; color: white; letter-spacing: -0.5px; }
         .badges-row {
             display: flex;
             gap: 10px;
             margin-top: 8px;
-
             .badge {
-                padding: 4px 10px;
-                border-radius: 8px;
-                font-size: 11px;
-                font-weight: 700;
-                background: rgba(255, 255, 255, 0.12);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                color: white;
-
-                &.room {
-                    background: #fbbf24;
-                    color: #78350f;
-                    border: none;
-                }
+                padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;
+                background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);
+                &.room { background: #fbbf24; color: #78350f; border: none; }
             }
         }
     }
@@ -73,61 +46,93 @@
         justify-content: space-between;
 
         .info-column {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-
-            .info-label {
-                font-size: 9px;
-                font-weight: 700;
-                color: rgba(255, 255, 255, 0.6);
-                text-transform: uppercase;
-                letter-spacing: 0.8px;
-            }
-
-            .info-value {
-                font-size: 14px;
-                font-weight: 700;
-                color: white;
-            }
-
-            &.procedure {
-                max-width: 250px;
-                .truncate {
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-            }
+            display: flex; flex-direction: column; gap: 4px;
+            .info-label { font-size: 9px; font-weight: 700; color: rgba(255, 255, 255, 0.6); text-transform: uppercase; letter-spacing: 0.8px; }
+            .info-value { font-size: 14px; font-weight: 700; }
+            &.procedure { max-width: 250px; .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
         }
     }
 
     .allergy-footer {
-        margin-top: 4px;
-        background: #ef4444;
-        border-radius: 12px;
-        padding: 8px 16px;
+        margin-top: 4px; background: #ef4444; border-radius: 12px; padding: 8px 16px;
+        display: flex; align-items: center; gap: 8px; font-size: 12px;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        ion-icon { font-size: 16px; }
+    }
+}
+
+/* MODO COMPACTO (MONITORAMENTO) */
+.patient-mini-card {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    border-radius: 20px;
+    padding: 14px 18px;
+    color: white;
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2);
+
+    .mini-main-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+
+        .mini-name-area {
+            display: flex;
+            flex-direction: column;
+            .mini-name { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+            .mini-record { font-size: 10px; font-weight: 700; opacity: 0.7; text-transform: uppercase; }
+        }
+
+        .mini-stats-grid {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+
+            .mini-stat {
+                font-size: 12px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                white-space: nowrap;
+            }
+
+            .asa-badge {
+                background: #f59e0b;
+                color: white;
+                padding: 2px 10px;
+                border-radius: 8px;
+                font-weight: 800;
+                font-size: 11px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+        }
+    }
+
+    .mini-allergy-bar {
+        margin-top: 10px;
+        background: rgba(239, 68, 68, 0.25);
+        border: 1px solid rgba(255,255,255,0.2);
+        padding: 6px 12px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: 12px;
-        color: white;
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
-
-        ion-icon { font-size: 16px; }
-        strong { font-weight: 800; }
+        font-size: 11px;
+        ion-icon { font-size: 14px; }
     }
 }
 
-// Tablet Responsive
+/* Responsividade Tablets */
 @media (max-width: 1024px) {
-    .patient-info-grid {
+    .patient-full-card .patient-info-grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        
-        .info-column.procedure {
-            grid-column: span 3;
-            max-width: 100%;
-        }
+        .info-column.procedure { grid-column: span 3; max-width: 100%; }
+    }
+    
+    .patient-mini-card .mini-main-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
     }
 }
+

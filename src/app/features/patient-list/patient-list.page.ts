@@ -18,7 +18,7 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
   styleUrls: ['./patient-list.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     IonicModule,
     StatusBarComponent,
     HeaderInstitucionalComponent,
@@ -36,7 +36,7 @@ export class PatientListPage {
   selectedDate = '2026-04-21';
   isRefreshing = false;
   viewList: any[] = [];
-  
+
   // Paginação
   currentPage = 1;
   pageSize = 10;
@@ -57,15 +57,21 @@ export class PatientListPage {
     this.loadData();
   }
 
-  loadData() {
+  async loadData() {
     this.isRefreshing = true;
     this.viewList = []; // Limpa a lista para mostrar o skeleton
-    
+
+    const loading = await this.loadingController.create({
+      message: 'Buscando procedimentos...',
+      spinner: 'crescent'
+    });
+    await loading.present();
+
     // Rola para o topo ao carregar novos dados
     if (this.content) {
       this.content.scrollToTop(400);
     }
-    
+
     // Fetch all for the date and filter in frontend to ensure reliability
     this.surgeryService.getSurgeries(this.selectedDate, undefined, this.currentPage, this.pageSize).subscribe({
       next: (response) => {
@@ -73,9 +79,11 @@ export class PatientListPage {
         this.totalPages = Math.ceil(this.totalItems / this.pageSize);
         this.flattenData(response);
         this.isRefreshing = false;
+        loading.dismiss();
       },
       error: () => {
         this.isRefreshing = false;
+        loading.dismiss();
       }
     });
   }
@@ -86,11 +94,11 @@ export class PatientListPage {
       patient.surgeries.forEach(surgery => {
         const primaryProc = surgery.procedures.find(p => p.isPrimary) || surgery.procedures[0];
         const dt = new Date(surgery.surgeryDate);
-        
+
         let completedTime = null;
         if (surgery.status === 1) {
-            const endDt = new Date(dt.getTime() + 2 * 60 * 60 * 1000);
-            completedTime = this.datePipe.transform(endDt, 'HH:mm');
+          const endDt = new Date(dt.getTime() + 2 * 60 * 60 * 1000);
+          completedTime = this.datePipe.transform(endDt, 'HH:mm');
         }
 
         this.viewList.push({
@@ -100,7 +108,9 @@ export class PatientListPage {
           birthDate: patient.birthDate,
           record: patient.medicalRecordNumber,
           room: surgery.location.room,
-          procedure: primaryProc ? primaryProc.description : 'Não informado',
+          procedure: (primaryProc && primaryProc.description && primaryProc.description !== 'Não informado') 
+                     ? primaryProc.description 
+                     : 'Procedimento não informado',
           status: surgery.status === 3 ? 'completed' : 'waiting',
           date: this.datePipe.transform(dt, 'yyyy-MM-dd'),
           time: this.datePipe.transform(dt, 'HH:mm'),
@@ -113,10 +123,10 @@ export class PatientListPage {
   get filteredProcedures() {
     let filtered = this.viewList.filter(p => {
       const matchSearch = p.patientName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                         p.record.includes(this.searchQuery) ||
-                         p.procedure.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                         p.room.toLowerCase().includes(this.searchQuery.toLowerCase());
-      
+        p.record.includes(this.searchQuery) ||
+        p.procedure.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        p.room.toLowerCase().includes(this.searchQuery.toLowerCase());
+
       const matchStatus = this.selectedStatus === 'all' || p.status === this.selectedStatus;
       const matchDate = !this.selectedDate || p.date === this.selectedDate;
 
@@ -124,18 +134,18 @@ export class PatientListPage {
     });
 
     return filtered.sort((a, b) => {
-        if (a.status === 'waiting' && b.status === 'completed') return -1;
-        if (a.status === 'completed' && b.status === 'waiting') return 1;
+      if (a.status === 'waiting' && b.status === 'completed') return -1;
+      if (a.status === 'completed' && b.status === 'waiting') return 1;
 
-        if (a.status === 'waiting' && b.status === 'waiting') {
-            return a.time.localeCompare(b.time);
-        }
+      if (a.status === 'waiting' && b.status === 'waiting') {
+        return a.time.localeCompare(b.time);
+      }
 
-        if (a.status === 'completed' && b.status === 'completed') {
-            return b.completedAt.localeCompare(a.completedAt);
-        }
+      if (a.status === 'completed' && b.status === 'completed') {
+        return b.completedAt.localeCompare(a.completedAt);
+      }
 
-        return 0;
+      return 0;
     });
   }
 
@@ -199,15 +209,19 @@ export class PatientListPage {
               icon: 'checkmark-circle'
             });
             await toast.present();
-            
-            // Simula o redirecionamento automático para a ficha após assumir
-            this.onOpenFicha(id);
+
+            // [FA-044] Redirecionamento prioritário para monitorização ao assumir
+            this.onOpenMonitorizacao(id);
           }
         }
       ]
     });
 
     await alert.present();
+  }
+
+  onOpenMonitorizacao(id: number) {
+    this.router.navigate(['/monitorizacao', id]);
   }
 
   onOpenFicha(id: number) {

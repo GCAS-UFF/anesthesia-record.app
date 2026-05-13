@@ -25,6 +25,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/ficha-anestesica/ficha-anestesica.component').then(m => m.FichaAnestesicaComponent)
   },
   {
+    path: 'monitorizacao/:id',
+    loadComponent: () => import('./features/monitorizacao/monitorizacao.component').then(m => m.MonitorizacaoComponent)
+  },
+  {
     path: 'registro-cirurgia/:id',
     loadComponent: () => import('./features/registro-cirurgia/registro-cirurgia.component').then(m => m.RegistroCirurgiaComponent)
   }
