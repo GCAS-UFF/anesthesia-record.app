@@ -35,3 +35,92 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+/* ==========================================================================
+   GLOBAL PREMIUM UI STYLES (FA-043 Refinements)
+   ========================================================================== */
+
+/* Inputs, Selects, Textareas (Nativos e Ionic) */
+ion-input, ion-select, ion-textarea,
+input[type="text"], input[type="number"], input[type="date"], input[type="time"], input[type="email"], select, textarea {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+  width: 100%;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  appearance: none;
+  font-family: 'Inter', sans-serif;
+
+  &:focus, &.has-focus {
+    border-color: #cbd5e1;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  &::placeholder {
+    color: #94a3b8;
+  }
+}
+
+/* Fix específico para inputs de tempo/data */
+input[type="time"], input[type="date"] {
+  width: auto;
+  text-align: center;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Botões Globais Premium */
+ion-button {
+  --border-radius: 16px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  letter-spacing: 0.3px !important;
+}
+
+/* Checkboxes e Radios Globais */
+ion-checkbox {
+  --checkbox-background-checked: #60a5fa;
+  --border-color-checked: #60a5fa;
+  --checkmark-color: #ffffff;
+  --border-radius: 6px;
+}
+
+ion-radio {
+  --color-checked: #60a5fa;
+}
+
+.grid-checkbox-2col {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+/* Utilitário para inputs compactos */
+.compact-field {
+    width: fit-content !important;
+    min-width: 120px;
+}

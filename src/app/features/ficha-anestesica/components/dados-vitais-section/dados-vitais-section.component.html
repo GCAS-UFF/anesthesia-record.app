@@ -1,0 +1,29 @@
+<app-form-section title="Dados Vitais e Antropométricos" icon="📊" subtitle="Antes da indução anestésica" [formGroup]="formGroup">
+    <div class="vitals-grid">
+        <app-form-field label="PA" [required]="true">
+            <input type="text" formControlName="pa" placeholder="120/80">
+        </app-form-field>
+        <app-form-field label="FR" [required]="true">
+            <input type="text" formControlName="fr" placeholder="irpm">
+        </app-form-field>
+        <app-form-field label="T (°C)" [required]="true">
+            <input type="text" formControlName="temp" placeholder="36.5">
+        </app-form-field>
+        <app-form-field label="SpO2" [required]="true">
+            <input type="text" formControlName="spo2" placeholder="98%">
+        </app-form-field>
+        <app-form-field label="Peso (kg)" [required]="true">
+            <input type="text" formControlName="peso">
+        </app-form-field>
+        <app-form-field label="ASA" [required]="true">
+            <ion-select formControlName="asa" interface="popover" placeholder="Selecione">
+                <ion-select-option *ngFor="let opt of asaOptions" [value]="opt.value">
+                    {{ opt.label }}
+                </ion-select-option>
+            </ion-select>
+        </app-form-field>
+        <app-form-field label="Entrada na Sala" [required]="true">
+            <input type="time" formControlName="entradaSala">
+        </app-form-field>
+    </div>
+</app-form-section>

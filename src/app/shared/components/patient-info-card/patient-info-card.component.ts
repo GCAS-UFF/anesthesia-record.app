@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 
@@ -7,7 +7,8 @@ import { IonicModule } from '@ionic/angular';
   templateUrl: './patient-info-card.component.html',
   styleUrls: ['./patient-info-card.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PatientInfoCardComponent {
   @Input() patientName: string = '';
@@ -18,6 +19,7 @@ export class PatientInfoCardComponent {
   @Input() record: string = '';
   @Input() procedure: string = '';
   @Input() room: string = '';
+  @Input() bed: string = '';
   @Input() allergies: string[] = [];
 
   get hasAllergies(): boolean {

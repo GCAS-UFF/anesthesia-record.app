@@ -1,0 +1,183 @@
+<app-form-section title="Técnica Anestésica" icon="⚕️" [formGroup]="formGroup">
+    <!-- LINHA 1: Geral e Via Aérea -->
+    <div class="form-grid-3col">
+        <!-- Coluna 1: Geral e Respiração -->
+        <div class="technique-card no-hover">
+            <app-radio-group label="ANESTESIA GERAL" [options]="yesNoOptions" formControlName="anestesiaGeral" [required]="true"></app-radio-group>
+            
+            <div class="divider"></div>
+
+            <div class="group-title">RESPIRAÇÃO</div>
+            <div class="sub-group">
+                <div class="sub-label">Assistida:</div>
+                <app-checkbox-group [options]="assistidaOptions" formControlName="respiracaoAssistida" direction="horizontal" class="grid-checkbox-2col"></app-checkbox-group>
+
+                <div class="sub-label" style="margin-top: 12px;">Controlada:</div>
+                <app-checkbox-group [options]="controladaOptions" formControlName="respiracaoControlada" direction="horizontal" class="grid-checkbox-2col"></app-checkbox-group>
+            </div>
+
+            <div class="divider"></div>
+            <app-radio-group label="CIRCUITO (Absorvedor CO2?)" [options]="yesNoOptions" formControlName="circuitoAbsorvedor" [required]="true"></app-radio-group>
+        </div>
+
+        <!-- Coluna 2: VIA AÉREA - DISPOSITIVOS -->
+        <div class="technique-card no-hover">
+            <div class="card-header-simple">VIA AÉREA (SE APLICÁVEL)</div>
+            
+            <div class="group-title mini">DISPOSITIVOS</div>
+            <div class="va-device-list">
+                <div class="va-row">
+                    <ion-checkbox formControlName="vaGuedel" labelPlacement="end">Guedel</ion-checkbox>
+                    <div class="va-n-box"><span>Nº</span><input type="text" formControlName="guedelNo" class="va-small-input"></div>
+                </div>
+                <div class="va-row">
+                    <ion-checkbox formControlName="vaMascLaringea" labelPlacement="end">Másc. Laríngea</ion-checkbox>
+                    <div class="va-n-box"><span>Nº</span><input type="text" formControlName="mascLaringeaNo" class="va-small-input"></div>
+                </div>
+                <div class="va-row">
+                    <ion-checkbox formControlName="vaMascFacial" labelPlacement="end">Másc. Facial</ion-checkbox>
+                    <div class="va-n-box"><span>Nº</span><input type="text" formControlName="mascFacialNo" class="va-small-input"></div>
+                </div>
+                
+                <div class="va-row">
+                    <ion-checkbox formControlName="vaTubo" labelPlacement="end">Tubo</ion-checkbox>
+                    <div class="va-n-box"><span>Nº</span><input type="text" formControlName="tuboNo" class="va-small-input"></div>
+                </div>
+
+                <!-- Tubo Options & IOT Assessment side by side like the PDF -->
+                <div *ngIf="formGroup.get('vaTubo')?.value" class="va-tubo-details-grid" style="margin-top: 10px;">
+                    <div class="tubo-col">
+                        <ion-checkbox formControlName="cuff" labelPlacement="end">Cuff</ion-checkbox>
+                        <ion-checkbox formControlName="oral" labelPlacement="end">Oral</ion-checkbox>
+                        <ion-checkbox formControlName="nasal" labelPlacement="end">Nasal</ion-checkbox>
+                    </div>
+                    <div class="iot-col">
+                        <ion-checkbox formControlName="iot" labelPlacement="end" style="font-weight: 700; color: #1e293b; margin-bottom: 8px;">IOT:</ion-checkbox>
+                        <div class="iot-sub-options" style="padding-left: 24px; display: flex; flex-direction: column; gap: 12px;">
+                            <ion-checkbox formControlName="facil" labelPlacement="end">Fácil</ion-checkbox>
+                            <ion-checkbox formControlName="dificil" labelPlacement="end">Difícil</ion-checkbox>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna 3: VIA AÉREA - TIPO E TÉCNICAS -->
+        <div class="technique-card no-hover">
+            <div class="card-header-simple">VIA AÉREA - TIPO / TÉCNICAS</div>
+            
+            <div class="group-title mini">TIPO</div>
+            <div class="va-options-grid">
+                <div class="va-opt-col">
+                    <ion-checkbox formControlName="tipoSimples" labelPlacement="end">Simples</ion-checkbox>
+                    <ion-checkbox formControlName="tipoEndobronquico" labelPlacement="end">Endobrônquico</ion-checkbox>
+                    <ion-checkbox formControlName="tipoAramado" labelPlacement="end">Aramado</ion-checkbox>
+                </div>
+                <div class="va-opt-col">
+                    <div>
+                        <ion-checkbox formControlName="tipoOutras" labelPlacement="end">Outras:</ion-checkbox>
+                        <div *ngIf="formGroup.get('tipoOutras')?.value" style="margin-top: 8px;">
+                            <app-form-field label="">
+                                <input type="text" formControlName="tipoOutrasTexto" placeholder="Quais?">
+                            </app-form-field>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider light"></div>
+
+            <div class="group-title mini">TÉCNICAS</div>
+            <div class="va-options-grid">
+                <div class="va-opt-col">
+                    <ion-checkbox formControlName="tecLaringoscopia" labelPlacement="end">Laringoscopia</ion-checkbox>
+                    <ion-checkbox formControlName="tecRetrograda" labelPlacement="end">Retrógrada</ion-checkbox>
+                    <ion-checkbox formControlName="tecVideolaringoscopia" labelPlacement="end">Videolaringoscopia</ion-checkbox>
+                </div>
+                <div class="va-opt-col">
+                    <ion-checkbox formControlName="tecBroncofibroscopia" labelPlacement="end">Broncofibroscopia</ion-checkbox>
+                    <ion-checkbox formControlName="tecTraqueostomia" labelPlacement="end">Traqueostomia</ion-checkbox>
+                    <div>
+                        <ion-checkbox formControlName="tecVAOutras" labelPlacement="end">Outras:</ion-checkbox>
+                        <div *ngIf="formGroup.get('tecVAOutras')?.value" style="margin-top: 8px;">
+                            <app-form-field label="">
+                                <input type="text" formControlName="tecVAOutrasTexto" placeholder="Quais?">
+                            </app-form-field>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LINHA 2: Bloqueios, Sedação e Plexo -->
+    <div class="form-grid-3col" style="margin-top: 24px;">
+        <!-- Coluna 1: Bloqueios Espinhais -->
+        <div class="technique-card no-hover">
+            <div class="card-header-simple">BLOQUEIOS ESPINHAIS</div>
+            <app-radio-group label="REALIZADO?" [options]="yesNoOptions" formControlName="bloqueiosEspinhais" [required]="true"></app-radio-group>
+            
+            <div *ngIf="formGroup.get('bloqueiosEspinhais')?.value === 'sim'" style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px;">
+                <div class="divider light"></div>
+                <div class="group-title mini">NÍVEL DE PUNÇÃO</div>
+                <app-checkbox-group [options]="nivelPuncaoOptions" formControlName="nivelPuncao" direction="horizontal" class="grid-checkbox-2col"></app-checkbox-group>
+
+                <div class="divider light"></div>
+                <app-radio-group label="POSIÇÃO" [options]="[{label:'Sentada', value:'Sentada'}, {label:'Decúbito Lateral', value:'Decubito'}]" formControlName="posicaoPuncao" direction="horizontal"></app-radio-group>
+
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 4px;">
+                    <app-radio-group label="Cateter?" [options]="yesNoOptions" formControlName="cateter" [required]="true"></app-radio-group>
+                    <app-radio-group label="Opióide?" [options]="yesNoOptions" formControlName="opioide" [required]="true"></app-radio-group>
+                </div>
+
+                <app-form-field label="Número de punções:" style="width: 100%;"><input type="text" formControlName="numeroPuncoes"></app-form-field>
+            </div>
+        </div>
+
+        <!-- Coluna 2: Sedação e O2 -->
+        <div class="technique-card no-hover">
+            <div class="card-header-simple">SEDAÇÃO E OXIGÊNIO</div>
+            <app-radio-group label="SEDAÇÃO?" [options]="yesNoOptions" formControlName="sedacao" [required]="true"></app-radio-group>
+            
+            <div *ngIf="formGroup.get('sedacao')?.value === 'sim'" style="margin-top: 16px;">
+                <!-- Conteúdo da sedação se houver mais campos no futuro -->
+            </div>
+
+            <div class="divider light"></div>
+            
+            <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px;">
+                <app-radio-group label="SUPLEMENTAÇÃO DE O₂?" [options]="yesNoOptions" formControlName="suplementacaoO2" [required]="true"></app-radio-group>
+                
+                <div *ngIf="formGroup.get('suplementacaoO2')?.value === 'sim'" style="display: flex; flex-direction: column; gap: 12px;">
+                    <app-checkbox-group [options]="suplementacaoO2Options" formControlName="tipoSuplementacaoO2" direction="vertical"></app-checkbox-group>
+                    
+                    <div class="va-row-inline" style="margin-top: 4px;">
+                        <ion-checkbox formControlName="suplementacaoO2TemOutros" labelPlacement="end">Outros:</ion-checkbox>
+                        <div *ngIf="formGroup.get('suplementacaoO2TemOutros')?.value" style="flex: 1; margin-left: 8px;">
+                            <app-form-field label="">
+                                <input type="text" formControlName="suplementacaoO2Outros" placeholder="Especifique...">
+                            </app-form-field>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna 3: Plexo e Neuroestimulador -->
+        <div class="technique-card no-hover">
+            <div class="card-header-simple">BLOQUEIO PLEXO / NEURO</div>
+            <app-radio-group label="BLOQUEIO PLEXO?" [options]="yesNoOptions" formControlName="bloqueioPlexo" [required]="true"></app-radio-group>
+            
+            <div *ngIf="formGroup.get('bloqueioPlexo')?.value === 'sim'" style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px;">
+                <div class="divider light"></div>
+                <!-- Neuroestimulador com SIM/NÃO -->
+                <app-radio-group label="NEUROESTIMULADOR?" [options]="yesNoOptions" formControlName="neuroestimulador" [required]="true"></app-radio-group>
+                
+                <div *ngIf="formGroup.get('neuroestimulador')?.value === 'sim'" style="margin-top: 8px; padding-left: 12px; border-left: 2px solid #3b82f6;">
+                    <div class="group-title mini">NERVOS ESTIMULADOS</div>
+                    <app-checkbox-group [options]="nervosEstimuladosOptions" formControlName="nervosEstimulados" direction="vertical"></app-checkbox-group>
+                </div>
+            </div>
+        </div>
+    </div>
+</app-form-section>
