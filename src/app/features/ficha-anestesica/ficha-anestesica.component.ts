@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { IonicModule, AlertController, ToastController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -202,7 +202,8 @@ export class FichaAnestesicaComponent implements OnInit {
     private surgeryService: SurgeryService,
     private anesthesiaService: AnesthesiaRecordService,
     private alertController: AlertController,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private location: Location
   ) {
     addIcons({
       pencilOutline,
@@ -592,7 +593,7 @@ export class FichaAnestesicaComponent implements OnInit {
   }
 
   voltar() {
-    this.router.navigate(['/pacientes']);
+    this.location.back();
   }
 
   async abrirModalAntibiotico() {

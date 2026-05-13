@@ -1,0 +1,193 @@
+<div class="app-container">
+    <app-status-bar></app-status-bar>
+    <app-header-institucional [showLogout]="true"></app-header-institucional>
+
+    <!-- Barra de Navegação -->
+    <div class="nav-bar">
+        <button class="back-button" (click)="voltar()">
+            <ion-icon name="arrow-back-outline"></ion-icon> Voltar
+        </button>
+        <div class="page-title">Monitoramento Intraoperatório</div>
+    </div>
+
+    <div class="main-content">
+        <!-- COLUNA ESQUERDA: Gráfico e Tabela -->
+        <div class="left-column">
+            <!-- Versão Compacta do Card do Paciente -->
+            <div class="patient-compact-card">
+                <div class="patient-header">
+                    <span class="patient-name">{{ patient?.fullName || 'Carregando...' }}</span>
+                    <span class="prontuario-badge">Pront: {{ patient?.medicalRecordNumber || '--' }}</span>
+                </div>
+                <div class="patient-details">
+                    <span>📅 {{ patient?.birthDate || '--' }} ({{ patient?.age || '--' }} anos)</span>
+                    <span>🛏️ Leito {{ patient?.bed || '--' }}</span>
+                    <span>⚖️ {{ patient?.weightKg || '--' }}kg</span>
+                    <span class="asa-tag">ASA II</span>
+                </div>
+                <div class="allergy-alert" *ngIf="patient?.allergies?.length">
+                    <ion-icon name="warning-outline"></ion-icon>
+                    <span><strong>Alergias:</strong> {{ patient?.allergies.join(', ') }}</span>
+                </div>
+            </div>
+
+            <!-- Seção de Posição -->
+            <div class="position-row">
+                <span class="position-label">📐 Posição Cirúrgica:</span>
+                <div class="position-options">
+                    <span class="pos-opt active">Supina</span>
+                    <span class="pos-opt">Prona</span>
+                    <span class="pos-opt">Lateral Dir.</span>
+                    <span class="pos-opt">Lateral Esq.</span>
+                    <span class="pos-opt">Trendelenburg</span>
+                </div>
+            </div>
+
+            <!-- SEÇÃO DO GRÁFICO (GRADEADO) -->
+            <div class="graph-section">
+                <div class="section-title-premium">
+                    <ion-icon name="pulse-outline" class="pulse-icon"></ion-icon>
+                    GRÁFICO DE TENDÊNCIAS
+                </div>
+                <div class="graph-container">
+                    <!-- Placeholder para o Canvas do Gráfico (FA-044) -->
+                    <div class="graph-placeholder">
+                        <canvas id="vitalChart"></canvas>
+                        <div class="graph-empty-overlay" *ngIf="!hasData">
+                            <p>Aguardando início dos sinais vitais...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="graph-legend">
+                    <div class="legend-item"><span class="dot red"></span> FC (bpm)</div>
+                    <div class="legend-item"><span class="dot blue"></span> PA (mmHg)</div>
+                    <div class="legend-item"><span class="dot green"></span> SpO₂ (%)</div>
+                    <div class="legend-item"><span class="line purple"></span> Início Anestesia</div>
+                </div>
+            </div>
+
+            <!-- TABELA DE REGISTROS -->
+            <div class="records-section">
+                <div class="records-header">
+                    <div class="records-title">
+                        <ion-icon name="list-outline"></ion-icon> Registro de Sinais Vitais
+                    </div>
+                    <div class="records-actions">
+                        <ion-button size="small" fill="outline" color="secondary">
+                            <ion-icon name="add-outline" slot="start"></ion-icon> Campo
+                        </ion-button>
+                        <ion-button size="small" fill="solid" color="primary">
+                            <ion-icon name="add-outline" slot="start"></ion-icon> Registro
+                        </ion-button>
+                    </div>
+                </div>
+                <div class="table-scroll-container">
+                    <table class="vital-table">
+                        <thead>
+                            <tr>
+                                <th class="sticky-col">Hora</th>
+                                <th>PAS</th>
+                                <th>PAD</th>
+                                <th>FC</th>
+                                <th>SpO₂</th>
+                                <th>Temp</th>
+                                <th>EtCO₂</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let i of [1,2,3,4,5]">
+                                <td class="sticky-col time-cell">10:45</td>
+                                <td><input type="number" value="120"></td>
+                                <td><input type="number" value="80"></td>
+                                <td><input type="number" value="75"></td>
+                                <td><input type="number" value="99"></td>
+                                <td><input type="number" value="36.5"></td>
+                                <td><input type="number" value="35"></td>
+                                <td><ion-icon name="trash-outline" class="btn-del"></ion-icon></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUNA DIREITA: Controle e Raia de Eventos -->
+        <div class="right-column">
+            <!-- Timer Cirúrgico -->
+            <div class="timer-panel">
+                <div class="timer-label">TEMPO CIRÚRGICO</div>
+                <div class="timer-value">00:00:00</div>
+                <div class="timer-actions">
+                    <ion-button expand="block" size="small" color="tertiary" class="btn-timer">
+                        <ion-icon name="medkit-outline" slot="start"></ion-icon> INICIAR ANESTESIA
+                    </ion-button>
+                    <ion-button expand="block" size="small" color="warning" class="btn-timer">
+                        <ion-icon name="cut-outline" slot="start"></ion-icon> INICIAR CIRURGIA
+                    </ion-button>
+                </div>
+            </div>
+
+            <!-- Accordions laterais (Agentes, Eventos, Balanço) -->
+            <div class="accordions-container">
+                <!-- AGENTES -->
+                <div class="monitor-accordion agents">
+                    <div class="accordion-header">
+                        <div class="header-left">
+                            <ion-icon name="flask-outline"></ion-icon>
+                            <span>AGENTES</span>
+                        </div>
+                        <ion-button fill="clear" size="small" class="btn-add-inline">+</ion-button>
+                    </div>
+                    <div class="accordion-content empty">
+                        Nenhum agente registrado
+                    </div>
+                </div>
+
+                <!-- EVENTOS -->
+                <div class="monitor-accordion events">
+                    <div class="accordion-header">
+                        <div class="header-left">
+                            <ion-icon name="bookmark-outline"></ion-icon>
+                            <span>EVENTOS</span>
+                        </div>
+                        <ion-button fill="clear" size="small" class="btn-add-inline">+</ion-button>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="raia-item">
+                            <span class="raia-time">10:40</span>
+                            <span class="raia-desc">Intubação Orotraqueal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BALANÇO -->
+                <div class="monitor-accordion balance">
+                    <div class="accordion-header">
+                        <div class="header-left">
+                            <ion-icon name="water-outline"></ion-icon>
+                            <span>GANHOS & PERDAS</span>
+                        </div>
+                        <ion-button fill="clear" size="small" class="btn-add-inline">+</ion-button>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="balance-summary-mini">
+                            <div class="bal-item"><span>Ganhos:</span> <strong class="pos">500ml</strong></div>
+                            <div class="bal-item"><span>Perdas:</span> <strong class="neg">100ml</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões de Ação Final -->
+            <div class="footer-actions">
+                <ion-button expand="block" (click)="abrirFicha()" color="secondary" fill="outline" class="btn-main-ficha">
+                    <ion-icon name="document-text-outline" slot="start"></ion-icon> VER FICHA COMPLETA
+                </ion-button>
+                <ion-button expand="block" color="danger" class="btn-finish">
+                    <ion-icon name="checkmark-done-circle-outline" slot="start"></ion-icon> FINALIZAR CIRURGIA
+                </ion-button>
+            </div>
+        </div>
+    </div>
+</div>
