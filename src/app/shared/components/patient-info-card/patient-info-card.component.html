@@ -1,8 +1,8 @@
-<div class="patient-compact-card">
-    <div class="card-gradient-overlay"></div>
+<div [ngClass]="compact ? 'patient-mini-card' : 'patient-full-card'">
+    <div class="card-gradient-overlay" *ngIf="!compact"></div>
     
-    <div class="card-body">
-        <!-- Cabeçalho: Nome em cima, Badges embaixo -->
+    <!-- MODO PADRÃO (FULL) -->
+    <div class="card-body" *ngIf="!compact">
         <div class="patient-header">
             <div class="name-group">
                 <span class="label-mini">PACIENTE</span>
@@ -15,7 +15,6 @@
             </div>
         </div>
 
-        <!-- Grade de Informações com Títulos -->
         <div class="patient-info-grid">
             <div class="info-column">
                 <span class="info-label">NASCIMENTO</span>
@@ -39,11 +38,30 @@
             </div>
         </div>
 
-        <!-- Alerta de Alergia Minimalista -->
         <div class="allergy-footer" *ngIf="hasAllergies">
             <ion-icon name="warning"></ion-icon>
             <strong>ALERGIA:</strong>
             <span>{{ allergies.join(' • ') }}</span>
+        </div>
+    </div>
+
+    <!-- MODO COMPACTO (MONITORAMENTO) -->
+    <div class="mini-card-body" *ngIf="compact">
+        <div class="mini-main-info">
+            <div class="mini-name-area">
+                <span class="mini-name">{{ patientName }}</span>
+                <span class="mini-record">Pront: {{ record }}</span>
+            </div>
+            <div class="mini-stats-grid">
+                <div class="mini-stat">📅 {{ birthDate }} ({{ age }}a)</div>
+                <div class="mini-stat">🛏️ Leito {{ bed }}</div>
+                <div class="mini-stat">⚖️ {{ weight }}kg</div>
+                <div class="mini-stat"><span class="asa-badge">{{ status }}</span></div>
+            </div>
+        </div>
+        <div class="mini-allergy-bar" *ngIf="hasAllergies">
+            <ion-icon name="warning-outline"></ion-icon>
+            <strong>Alergias:</strong> {{ allergies.join(', ') }}
         </div>
     </div>
 </div>

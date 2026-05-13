@@ -36,6 +36,20 @@
         font-size: 18px;
         font-weight: 800;
         color: #0f172a;
+        flex: 1;
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+
+        .btn-ficha-header {
+            --border-radius: 14px;
+            --box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+            font-weight: 800;
+            height: 38px;
+            font-size: 12px;
+        }
     }
 }
 

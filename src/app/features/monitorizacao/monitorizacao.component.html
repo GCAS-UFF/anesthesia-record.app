@@ -8,28 +8,32 @@
             <ion-icon name="arrow-back-outline"></ion-icon> Voltar
         </button>
         <div class="page-title">Monitoramento Intraoperatório</div>
+        <div class="header-actions">
+            <ion-button color="primary" (click)="abrirFicha()" class="btn-ficha-header">
+                <ion-icon name="document-text-outline" slot="start"></ion-icon>
+                ABRIR FICHA ANESTÉSICA
+            </ion-button>
+        </div>
     </div>
 
     <div class="main-content">
         <!-- COLUNA ESQUERDA: Gráfico e Tabela -->
         <div class="left-column">
             <!-- Versão Compacta do Card do Paciente -->
-            <div class="patient-compact-card">
-                <div class="patient-header">
-                    <span class="patient-name">{{ patient?.fullName || 'Carregando...' }}</span>
-                    <span class="prontuario-badge">Pront: {{ patient?.medicalRecordNumber || '--' }}</span>
-                </div>
-                <div class="patient-details">
-                    <span>📅 {{ patient?.birthDate || '--' }} ({{ patient?.age || '--' }} anos)</span>
-                    <span>🛏️ Leito {{ patient?.bed || '--' }}</span>
-                    <span>⚖️ {{ patient?.weightKg || '--' }}kg</span>
-                    <span class="asa-tag">ASA II</span>
-                </div>
-                <div class="allergy-alert" *ngIf="patient?.allergies?.length">
-                    <ion-icon name="warning-outline"></ion-icon>
-                    <span><strong>Alergias:</strong> {{ patient?.allergies.join(', ') }}</span>
-                </div>
-            </div>
+            <app-patient-info-card *ngIf="!isLoading" 
+                [patientName]="patient?.fullName || ''" 
+                [birthDate]="patient?.birthDate || ''"
+                [age]="patient?.age?.toString() || ''" 
+                [gender]="patient?.gender || 'M'" 
+                [weight]="patient?.weightKg || '--'"
+                [record]="patient?.medicalRecordNumber || ''" 
+                [procedure]="selectedProcedure?.description || ''"
+                [room]="selectedSurgery?.location?.room || ''" 
+                [bed]="patient?.bed || '--'" 
+                [allergies]="patient?.allergies || []"
+                [compact]="true"
+                status="ASA II">
+            </app-patient-info-card>
 
             <!-- Seção de Posição -->
             <div class="position-row">
@@ -181,9 +185,6 @@
 
             <!-- Botões de Ação Final -->
             <div class="footer-actions">
-                <ion-button expand="block" (click)="abrirFicha()" color="secondary" fill="outline" class="btn-main-ficha">
-                    <ion-icon name="document-text-outline" slot="start"></ion-icon> VER FICHA COMPLETA
-                </ion-button>
                 <ion-button expand="block" color="danger" class="btn-finish">
                     <ion-icon name="checkmark-done-circle-outline" slot="start"></ion-icon> FINALIZAR CIRURGIA
                 </ion-button>

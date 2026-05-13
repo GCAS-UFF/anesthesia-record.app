@@ -21,6 +21,8 @@ export class PatientInfoCardComponent {
   @Input() room: string = '';
   @Input() bed: string = '';
   @Input() allergies: string[] = [];
+  @Input() compact: boolean = false;
+  @Input() status: string = 'ASA II';
 
   get hasAllergies(): boolean {
     return this.allergies && this.allergies.length > 0;

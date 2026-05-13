@@ -23,6 +23,7 @@ import {
 // Shared Components
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
+import { PatientInfoCardComponent } from '../../shared/components/patient-info-card/patient-info-card.component';
 
 // Services
 import { SurgeryService } from 'src/app/core/services/surgery.service';
@@ -34,7 +35,8 @@ import { SurgeryService } from 'src/app/core/services/surgery.service';
     CommonModule,
     IonicModule,
     StatusBarComponent,
-    HeaderInstitucionalComponent
+    HeaderInstitucionalComponent,
+    PatientInfoCardComponent
   ],
   templateUrl: './monitorizacao.component.html',
   styleUrls: ['./monitorizacao.component.scss']
