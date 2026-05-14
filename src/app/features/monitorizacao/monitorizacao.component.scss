@@ -79,6 +79,11 @@
             align-items: center;
             gap: 12px;
             
+            &.disabled-row {
+                opacity: 0.5;
+                pointer-events: none;
+            }
+            
             .position-label { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; }
             .position-options {
                 display: flex;
@@ -140,6 +145,57 @@
         .graph-placeholder {
             width: 100%; height: 100%;
             display: flex; align-items: center; justify-content: center;
+        }
+    }
+
+    /* LEGENDA CUSTOMIZADA */
+    .custom-chart-legend {
+        margin-top: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+
+        .legend-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+
+            .legend-item {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 11px;
+                font-weight: 700;
+                color: #475569;
+
+                .dot {
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 50%;
+                    &.fc { background: #ef4444; }
+                    &.spo2 { background: #10b981; border-radius: 2px; }
+                }
+            }
+
+            .sym {
+                font-family: monospace;
+                font-size: 14px;
+                font-weight: 900;
+                line-height: 1;
+                &.pas { color: #3b82f6; }
+                &.pad { color: #3b82f6; }
+                &.pam { color: #1e293b; font-size: 12px; }
+                &.anes { color: #8b5cf6; }
+                &.surg { color: #f59e0b; font-size: 16px; }
+            }
+        }
+
+        .surgical-markers {
+            border-top: 1px solid #f1f5f9;
+            padding-top: 8px;
+            width: 80%;
         }
     }
 }
@@ -265,18 +321,150 @@
         border: 1px solid #f1f5f9;
         border-radius: 14px;
         overflow: hidden;
+        background: white;
+        margin-bottom: 8px;
+
         .accordion-header {
             padding: 10px 14px;
             background: #f8fafc;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            &:hover { background: #f1f5f9; }
+
             .header-left { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; color: #475569; }
-            .btn-add-inline { font-weight: 800; margin: 0; --color: #6366f1; }
+            
+            .header-right {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+
+                .btn-add-inline { 
+                    font-weight: 800; 
+                    margin: 0; 
+                    --color: #6366f1;
+                    height: 28px;
+                    font-size: 18px;
+                }
+
+                .accordion-arrow {
+                    font-size: 10px;
+                    color: #94a3b8;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    padding: 8px;
+                    
+                    &:hover { color: #1e293b; }
+                }
+            }
         }
+
         .accordion-content {
-            padding: 10px; font-size: 11px;
+            padding: 0; 
+            font-size: 11px;
+            max-height: 250px;
+            overflow-y: auto;
+
             &.empty { text-align: center; color: #94a3b8; padding: 16px; }
+
+            .raia-item {
+                display: flex;
+                align-items: center;
+                padding: 10px 14px;
+                border-bottom: 1px solid #f8fafc;
+                gap: 12px;
+                cursor: pointer;
+                transition: background 0.2s;
+
+                &:hover { 
+                    background: #f8fafc; 
+                    .btn-delete-mini { opacity: 1; }
+                }
+
+                &.mini { padding: 6px 14px; gap: 8px; }
+
+                .raia-info {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2px;
+                }
+
+                .raia-name { font-weight: 700; color: #1e293b; }
+                .raia-sub { font-size: 9px; color: #64748b; font-weight: 600; }
+                .raia-type { font-size: 8px; color: #94a3b8; font-weight: 800; }
+                .raia-time { font-size: 10px; font-weight: 800; color: #6366f1; background: #f5f3ff; padding: 2px 6px; border-radius: 6px; }
+                .raia-val { font-weight: 800; color: #1e293b; margin-left: auto; }
+
+                .btn-delete-mini {
+                    font-size: 14px;
+                    color: #cbd5e1;
+                    opacity: 0;
+                    transition: all 0.2s;
+                    &:hover { color: #ef4444; }
+                }
+            }
+
+            .balance-header-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                padding: 12px;
+                background: #f8fafc;
+                border-bottom: 1px solid #f1f5f9;
+                text-align: center;
+
+                .grid-col {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2px;
+
+                    .label { font-size: 8px; color: #94a3b8; font-weight: 800; letter-spacing: 0.5px; }
+                    .value { font-size: 13px; font-weight: 800; color: #1e293b; font-family: 'Courier New', Courier, monospace; }
+                    .pos { color: #1e293b; } // Na foto o balanço positivo parece preto negrito
+                    .neg { color: #ef4444; }
+                }
+            }
+
+            .balance-row-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 14px;
+                border-bottom: 1px solid #f8fafc;
+                cursor: pointer;
+                transition: background 0.2s;
+
+                &:hover { background: #f8fafc; }
+
+                .item-left {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    .item-icon { font-size: 14px; }
+                    .item-name { font-size: 11px; font-weight: 600; color: #1e293b; }
+                }
+
+                .item-right {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+
+                    .item-value { font-size: 11px; font-weight: 700; width: 60px; text-align: right; }
+                    .pos { color: #10b981; }
+                    .neg { color: #ef4444; }
+                    .item-time { font-size: 9px; color: #94a3b8; font-weight: 600; width: 40px; }
+
+                    .item-actions {
+                        display: flex;
+                        gap: 6px;
+                        margin-left: 4px;
+                        .edit-icon { color: #f59e0b; font-size: 14px; }
+                        .delete-icon { color: #cbd5e1; font-size: 14px; &:hover { color: #ef4444; } }
+                    }
+                }
+            }
         }
     }
 }
