@@ -56,10 +56,7 @@ export class MonitorizacaoComponent implements OnInit {
   hasData = false;
 
   // Lista de registros de sinais vitais
-  vitalRecords: MonitoringRecord[] = [
-    { time: '10:45', pas: 120, pad: 80, fc: 75, spo2: 99, temp: 36.5, etco2: 35 },
-    { time: '10:30', pas: 118, pad: 78, fc: 72, spo2: 98, temp: 36.4, etco2: 34 }
-  ];
+  vitalRecords: MonitoringRecord[] = [];
 
   selectedRecord: MonitoringRecord | null = null;
   private isNewRecord = false;
@@ -170,5 +167,12 @@ export class MonitorizacaoComponent implements OnInit {
     }
     this.selectedRecord = null;
     this.isNewRecord = false;
+  }
+
+  deleteRecord(record: MonitoringRecord) {
+    this.vitalRecords = this.vitalRecords.filter(r => r !== record);
+    if (this.selectedRecord === record) {
+      this.selectedRecord = null;
+    }
   }
 }

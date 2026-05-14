@@ -118,9 +118,8 @@
                                 <td><input type="number" [ngModel]="record.spo2" readonly></td>
                                 <td><input type="number" [ngModel]="record.temp" readonly></td>
                                 <td><input type="number" [ngModel]="record.etco2" readonly></td>
-                                <td class="actions-cell">
-                                    <ion-icon name="create-outline" class="btn-edit" (click)="selectRecord(record); $event.stopPropagation();"></ion-icon>
-                                    <ion-icon name="trash-outline" class="btn-del" (click)="$event.stopPropagation();"></ion-icon>
+                                <td class="actions-cell" (click)="$event.stopPropagation()">
+                                    <ion-icon name="trash-outline" class="btn-del" (click)="deleteRecord(record)"></ion-icon>
                                 </td>
                             </tr>
                         </tbody>

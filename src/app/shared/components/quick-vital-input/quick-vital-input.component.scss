@@ -86,15 +86,30 @@
 
         .btn-confirm {
             color: #22c55e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+
             ion-icon { font-size: 44px; }
-            &:hover { color: #16a34a; }
+            ion-spinner { width: 32px; height: 32px; --color: #22c55e; }
+            
+            &:hover:not([disabled]) { color: #16a34a; }
+            &[disabled] { opacity: 0.7; cursor: not-allowed; }
         }
 
         .btn-cancel {
             color: #94a3b8;
             ion-icon { font-size: 28px; }
-            &:hover { color: #ef4444; }
+            &:hover:not([disabled]) { color: #ef4444; }
+            &[disabled] { opacity: 0.5; cursor: not-allowed; }
         }
+    }
+
+    &.saving {
+        opacity: 0.8;
+        pointer-events: none;
+        .vital-input { background: #f1f5f9; }
     }
 }
 
