@@ -1,0 +1,55 @@
+<div class="quick-input-container" *ngIf="vitalData">
+    <div class="input-grid">
+        <!-- HORÁRIO -->
+        <div class="input-group time-group">
+            <span class="input-label">Hora</span>
+            <input type="text" [(ngModel)]="vitalData.time" placeholder="00:00" class="vital-input time" (keyup.enter)="pasInput.focus()">
+        </div>
+
+        <!-- PRESSÃO ARTERIAL SISTÓLICA -->
+        <div class="input-group pa-group">
+            <span class="input-label">PAS <small>(Sist)</small></span>
+            <input type="number" [(ngModel)]="vitalData.pas" placeholder="--" class="vital-input pas" #pasInput (keyup.enter)="padInput.focus()">
+        </div>
+
+        <!-- PRESSÃO ARTERIAL DIASTÓLICA -->
+        <div class="input-group pa-group">
+            <span class="input-label">PAD <small>(Diast)</small></span>
+            <input type="number" [(ngModel)]="vitalData.pad" placeholder="--" class="vital-input pad" #padInput (keyup.enter)="fcInput.focus()">
+        </div>
+
+        <!-- FREQUÊNCIA CARDÍACA -->
+        <div class="input-group fc-group">
+            <span class="input-label">FC <small>(bpm)</small></span>
+            <input type="number" [(ngModel)]="vitalData.fc" placeholder="--" class="vital-input fc" #fcInput (keyup.enter)="spo2Input.focus()">
+        </div>
+
+        <!-- SATURAÇÃO -->
+        <div class="input-group spo2-group">
+            <span class="input-label">SpO₂ <small>(%)</small></span>
+            <input type="number" [(ngModel)]="vitalData.spo2" placeholder="--" class="vital-input spo2" #spo2Input (keyup.enter)="tempInput.focus()">
+        </div>
+
+        <!-- TEMPERATURA -->
+        <div class="input-group temp-group">
+            <span class="input-label">TEMP <small>(°C)</small></span>
+            <input type="number" [(ngModel)]="vitalData.temp" placeholder="--" class="vital-input temp" #tempInput (keyup.enter)="etco2Input.focus()">
+        </div>
+
+        <!-- EtCO2 -->
+        <div class="input-group etco2-group">
+            <span class="input-label">EtCO₂ <small>(mmHg)</small></span>
+            <input type="number" [(ngModel)]="vitalData.etco2" placeholder="--" class="vital-input etco2" #etco2Input (keyup.enter)="save()">
+        </div>
+
+        <!-- BOTÕES DE AÇÃO -->
+        <div class="action-group">
+            <button class="btn-confirm" (click)="save()">
+                <ion-icon name="checkmark-circle"></ion-icon>
+            </button>
+            <button class="btn-cancel" (click)="clear()">
+                <ion-icon name="trash-outline"></ion-icon>
+            </button>
+        </div>
+    </div>
+</div>

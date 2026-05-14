@@ -70,6 +70,14 @@
                 </div>
             </div>
 
+            <!-- ENTRADA RÁPIDA DE SINAIS VITAIS (FA-047) -->
+            <app-quick-vital-input 
+                *ngIf="selectedRecord"
+                [vitalData]="selectedRecord" 
+                (onSave)="updateActiveRecord()"
+                (onCancel)="cancelEdit()">
+            </app-quick-vital-input>
+            
             <!-- TABELA DE REGISTROS -->
             <div class="records-section">
                 <div class="records-header">
@@ -80,7 +88,7 @@
                         <ion-button size="small" fill="outline" color="secondary">
                             <ion-icon name="add-outline" slot="start"></ion-icon> Campo
                         </ion-button>
-                        <ion-button size="small" fill="solid" color="primary">
+                        <ion-button size="small" fill="solid" color="primary" (click)="addTimePoint()">
                             <ion-icon name="add-outline" slot="start"></ion-icon> Registro
                         </ion-button>
                     </div>
@@ -100,15 +108,20 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let i of [1,2,3,4,5]">
-                                <td class="sticky-col time-cell">10:45</td>
-                                <td><input type="number" value="120"></td>
-                                <td><input type="number" value="80"></td>
-                                <td><input type="number" value="75"></td>
-                                <td><input type="number" value="99"></td>
-                                <td><input type="number" value="36.5"></td>
-                                <td><input type="number" value="35"></td>
-                                <td><ion-icon name="trash-outline" class="btn-del"></ion-icon></td>
+                            <tr *ngFor="let record of vitalRecords" 
+                                [class.selected-row]="record === selectedRecord"
+                                (click)="selectRecord(record)">
+                                <td class="sticky-col time-cell">{{ record.time }}</td>
+                                <td><input type="number" [ngModel]="record.pas" readonly></td>
+                                <td><input type="number" [ngModel]="record.pad" readonly></td>
+                                <td><input type="number" [ngModel]="record.fc" readonly></td>
+                                <td><input type="number" [ngModel]="record.spo2" readonly></td>
+                                <td><input type="number" [ngModel]="record.temp" readonly></td>
+                                <td><input type="number" [ngModel]="record.etco2" readonly></td>
+                                <td class="actions-cell">
+                                    <ion-icon name="create-outline" class="btn-edit" (click)="selectRecord(record); $event.stopPropagation();"></ion-icon>
+                                    <ion-icon name="trash-outline" class="btn-del" (click)="$event.stopPropagation();"></ion-icon>
+                                </td>
                             </tr>
                         </tbody>
                     </table>

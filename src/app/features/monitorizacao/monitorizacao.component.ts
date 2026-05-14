@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { 
   arrowBackOutline, 
@@ -17,13 +18,15 @@ import {
   flaskOutline, 
   bookmarkOutline, 
   waterOutline, 
-  checkmarkDoneCircleOutline 
+  checkmarkDoneCircleOutline,
+  createOutline
 } from 'ionicons/icons';
 
 // Shared Components
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
 import { PatientInfoCardComponent } from '../../shared/components/patient-info-card/patient-info-card.component';
+import { QuickVitalInputComponent, VitalSignRecord } from '../../shared/components/quick-vital-input/quick-vital-input.component';
 
 // Services
 import { SurgeryService } from 'src/app/core/services/surgery.service';
@@ -36,7 +39,9 @@ import { SurgeryService } from 'src/app/core/services/surgery.service';
     IonicModule,
     StatusBarComponent,
     HeaderInstitucionalComponent,
-    PatientInfoCardComponent
+    PatientInfoCardComponent,
+    QuickVitalInputComponent,
+    FormsModule
   ],
   templateUrl: './monitorizacao.component.html',
   styleUrls: ['./monitorizacao.component.scss']
@@ -48,6 +53,15 @@ export class MonitorizacaoComponent implements OnInit {
   selectedProcedure: any = null;
   isLoading = true;
   hasData = false;
+
+  // Lista de registros de sinais vitais
+  vitalRecords: VitalSignRecord[] = [
+    { time: '10:45', pas: 120, pad: 80, fc: 75, spo2: 99, temp: 36.5, etco2: 35 },
+    { time: '10:30', pas: 118, pad: 78, fc: 72, spo2: 98, temp: 36.4, etco2: 34 }
+  ];
+
+  selectedRecord: VitalSignRecord | null = null;
+  private isNewRecord = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -69,7 +83,8 @@ export class MonitorizacaoComponent implements OnInit {
       flaskOutline,
       bookmarkOutline,
       waterOutline,
-      checkmarkDoneCircleOutline
+      checkmarkDoneCircleOutline,
+      createOutline
     });
   }
 
@@ -112,5 +127,47 @@ export class MonitorizacaoComponent implements OnInit {
 
   abrirFicha() {
     this.router.navigate(['/ficha-anestesica', this.pacienteId]);
+  }
+
+  // Adiciona novo registro vindo do botão "+ Registro" (Lógica App-Base)
+  addTimePoint() {
+    const lastRecord = this.vitalRecords[0];
+    let newTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    const newRec: VitalSignRecord = {
+      time: newTime,
+      pas: lastRecord?.pas || 120,
+      pad: lastRecord?.pad || 80,
+      fc: lastRecord?.fc || 75,
+      spo2: lastRecord?.spo2 || 99,
+      temp: lastRecord?.temp || 36.5,
+      etco2: lastRecord?.etco2 || 35
+    };
+
+    this.vitalRecords = [newRec, ...this.vitalRecords];
+    this.selectedRecord = newRec;
+    this.isNewRecord = true; // Marca que este registro foi acabado de criar
+    this.hasData = true;
+  }
+
+  selectRecord(record: VitalSignRecord) {
+    this.selectedRecord = record;
+    this.isNewRecord = false; // Registro existente
+  }
+
+  // Confirma o registro
+  updateActiveRecord() {
+    this.selectedRecord = null;
+    this.isNewRecord = false;
+  }
+
+  // Cancela a edição
+  cancelEdit() {
+    if (this.isNewRecord && this.selectedRecord) {
+      // Se era um registro novo, removemos da lista
+      this.vitalRecords = this.vitalRecords.filter(r => r !== this.selectedRecord);
+    }
+    this.selectedRecord = null;
+    this.isNewRecord = false;
   }
 }
