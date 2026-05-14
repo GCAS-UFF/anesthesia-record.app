@@ -1,6 +1,8 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { IonicModule, AlertController, LoadingController, ToastController, IonContent } from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { chevronBackOutline, chevronForwardOutline, checkmarkCircle } from 'ionicons/icons';
 import { Router } from '@angular/router';
 import { SurgeryService } from '../../core/services/surgery.service';
 import { PatientResponse } from '../../shared/models/patient.model';
@@ -30,7 +32,7 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
   ],
   providers: [DatePipe]
 })
-export class PatientListPage {
+export class PatientListPage implements OnInit {
   searchQuery = '';
   selectedStatus = 'all';
   selectedDate = '2026-04-21';
@@ -53,7 +55,11 @@ export class PatientListPage {
     private toastController: ToastController,
     private surgeryService: SurgeryService
   ) {
-    // Carregamento inicial
+    addIcons({ chevronBackOutline, chevronForwardOutline, checkmarkCircle });
+  }
+
+  ngOnInit() {
+    // Carregamento inicial movido para o ngOnInit
     this.loadData();
   }
 
