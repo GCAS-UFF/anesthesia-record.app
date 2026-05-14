@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, AlertController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
@@ -65,7 +65,8 @@ export class MonitorizacaoComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private surgeryService: SurgeryService,
-    private location: Location
+    private location: Location,
+    private alertController: AlertController
   ) {
     addIcons({
       arrowBackOutline,
@@ -143,9 +144,22 @@ export class MonitorizacaoComponent implements OnInit {
     };
 
     this.vitalRecords = [newRec, ...this.vitalRecords];
+    this.sortRecords(); // Garante a ordem cronológica
     this.selectedRecord = newRec;
     this.isNewRecord = true; // Marca que este registro foi acabado de criar
     this.hasData = true;
+  }
+
+  private sortRecords() {
+    this.vitalRecords.sort((a, b) => {
+      // Ordena do mais recente para o mais antigo (topo da tabela)
+      return b.time.localeCompare(a.time);
+    });
+  }
+
+  trackByRecords(index: number, record: MonitoringRecord) {
+    // Identificador único para performance (combinação de tempo e id se houver)
+    return record.id || record.time;
   }
 
   selectRecord(record: MonitoringRecord) {
@@ -155,6 +169,7 @@ export class MonitorizacaoComponent implements OnInit {
 
   // Confirma o registro
   updateActiveRecord() {
+    this.sortRecords(); // Re-ordena caso o horário tenha sido editado
     this.selectedRecord = null;
     this.isNewRecord = false;
   }
@@ -169,10 +184,29 @@ export class MonitorizacaoComponent implements OnInit {
     this.isNewRecord = false;
   }
 
-  deleteRecord(record: MonitoringRecord) {
-    this.vitalRecords = this.vitalRecords.filter(r => r !== record);
-    if (this.selectedRecord === record) {
-      this.selectedRecord = null;
-    }
+  async deleteRecord(record: MonitoringRecord) {
+    const alert = await this.alertController.create({
+      header: 'Confirmar Exclusão',
+      message: `Deseja realmente excluir o registro das ${record.time}?`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'secondary'
+        },
+        {
+          text: 'Excluir',
+          role: 'destructive',
+          handler: () => {
+            this.vitalRecords = this.vitalRecords.filter(r => r !== record);
+            if (this.selectedRecord === record) {
+              this.selectedRecord = null;
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 }

@@ -108,7 +108,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let record of vitalRecords" 
+                            <tr *ngFor="let record of vitalRecords; trackBy: trackByRecords" 
                                 [class.selected-row]="record === selectedRecord"
                                 (click)="selectRecord(record)">
                                 <td class="sticky-col time-cell">{{ record.time }}</td>
