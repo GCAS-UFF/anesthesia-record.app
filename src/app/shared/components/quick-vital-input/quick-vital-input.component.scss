@@ -57,12 +57,19 @@
         }
 
         // Variantes de Cores no Foco
-        &.time-group .vital-input { background: #fffbeb; border-color: #f59e0b; }
+        &.time-group {
+            min-width: 110px; // Espaço extra para o seletor nativo (type=time)
+            flex: 1.2;
+            .vital-input { background: #fffbeb; border-color: #f59e0b; }
+        }
         &.pa-group .vital-input:focus { border-color: #3b82f6; }
         &.fc-group .vital-input:focus { border-color: #ef4444; }
         &.spo2-group .vital-input:focus { border-color: #10b981; }
         &.temp-group .vital-input:focus { border-color: #f59e0b; }
         &.etco2-group .vital-input:focus { border-color: #8b5cf6; }
+        &.bis-group .vital-input:focus { border-color: #0ea5e9; }
+        &.pvc-group .vital-input:focus { border-color: #6366f1; }
+        &.pcap-group .vital-input:focus { border-color: #ec4899; }
         &.custom-group {
             min-width: 120px; // Mais largo para texto
             .vital-input:focus { border-color: #6366f1; }
@@ -74,6 +81,7 @@
         gap: 4px;
         align-items: center;
         padding-bottom: 2px;
+        margin-left: auto;
 
         button {
             background: transparent;
@@ -122,9 +130,13 @@
     .quick-input-container {
         .input-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(7, 1fr); // 7 colunas para caber tudo sem esticar
             gap: 12px;
         }
-        .action-group { grid-column: span 1; justify-content: flex-end; }
+        .action-group { 
+            grid-column: span 1; 
+            justify-content: flex-end;
+            margin-left: 0;
+        }
     }
 }

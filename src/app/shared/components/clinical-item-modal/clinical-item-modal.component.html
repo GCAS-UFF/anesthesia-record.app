@@ -1,0 +1,92 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>{{ itemData ? 'Editar' : 'Adicionar' }} {{ type === 'agent' ? 'Agente' : type === 'event' ? 'Evento' : 'Balanço' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<div class="modal-body ion-padding">
+  <div class="form-container">
+    
+    <!-- AGENTE -->
+    <ng-container *ngIf="type === 'agent'">
+      <div class="input-group">
+        <label>Nome do Medicamento</label>
+        <input type="text" [(ngModel)]="formData.name" placeholder="Ex: Propofol">
+      </div>
+      <div class="input-group">
+        <label>Dose</label>
+        <input type="text" [(ngModel)]="formData.dose" placeholder="Ex: 50mg">
+      </div>
+      <div class="input-group">
+        <label>Via de Administração</label>
+        <select [(ngModel)]="formData.route" class="custom-select">
+          <option value="IV">IV</option>
+          <option value="EM">EM</option>
+          <option value="VO">VO</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Apresentação</label>
+        <input type="text" [(ngModel)]="formData.presentation" placeholder="Ampola, Frasco">
+      </div>
+      <div class="input-group">
+        <label>Horário</label>
+        <input type="time" [(ngModel)]="formData.time">
+      </div>
+    </ng-container>
+
+    <!-- EVENTO -->
+    <ng-container *ngIf="type === 'event'">
+      <div class="input-group">
+        <label>Descrição do Evento</label>
+        <input type="text" [(ngModel)]="formData.name" placeholder="Ex: Intubação">
+      </div>
+      <div class="input-group">
+        <label>Horário</label>
+        <input type="time" [(ngModel)]="formData.time">
+      </div>
+    </ng-container>
+
+    <!-- BALANÇO -->
+    <ng-container *ngIf="type === 'balance'">
+      <div class="input-group">
+        <label>Tipo de Balanço</label>
+        <select [(ngModel)]="formData.type" class="custom-select">
+          <option value="gain">Ganho (+)</option>
+          <option value="loss">Perda (-)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Nome / Categoria</label>
+        <input type="text" [(ngModel)]="formData.category" placeholder="Ex: Cristalóide, Sangue, Diurese">
+      </div>
+      <div class="input-group">
+        <label>Quantidade (mL)</label>
+        <input type="number" [(ngModel)]="formData.value" placeholder="Volume em mL">
+      </div>
+      <div class="input-group">
+        <label>Horário</label>
+        <input type="time" [(ngModel)]="formData.time">
+      </div>
+    </ng-container>
+
+  </div>
+</div>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar>
+    <div class="footer-buttons">
+      <ion-button *ngIf="itemData" expand="block" color="danger" fill="outline" (click)="deleteItem()" class="btn-delete">
+        Excluir
+      </ion-button>
+      <ion-button expand="block" color="primary" (click)="confirm()" class="btn-save">
+        Salvar Registro
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>
