@@ -42,6 +42,12 @@
             <input type="number" [(ngModel)]="vitalData.etco2" placeholder="--" min="0" max="150" class="vital-input etco2" #etco2Input [disabled]="isSaving" (keyup.enter)="save()">
         </div>
 
+        <!-- CAMPOS CUSTOMIZADOS -->
+        <div class="input-group custom-group" *ngFor="let field of customFields">
+            <span class="input-label">{{ field.label }}</span>
+            <input type="text" [(ngModel)]="vitalData.custom![field.key]" placeholder="--" class="vital-input custom" [disabled]="isSaving">
+        </div>
+
         <!-- BOTÕES DE AÇÃO -->
         <div class="action-group">
             <button class="btn-confirm" (click)="save()" [disabled]="isSaving">

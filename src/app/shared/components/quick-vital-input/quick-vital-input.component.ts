@@ -16,6 +16,7 @@ import { MonitoringRecord } from 'src/app/core/models/monitoring-record.model';
 })
 export class QuickVitalInputComponent {
   @Input() vitalData: MonitoringRecord | null = null;
+  @Input() customFields: { label: string, key: string }[] = [];
   @Output() onSave = new EventEmitter<void>();
   @Output() onCancel = new EventEmitter<void>();
 

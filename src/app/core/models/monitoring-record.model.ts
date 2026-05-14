@@ -8,5 +8,6 @@ export interface MonitoringRecord {
     spo2: number | null;
     temp: number | null;
     etco2: number | null;
+    custom?: { [key: string]: string };
     createdAt?: Date;
 }

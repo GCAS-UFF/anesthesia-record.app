@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { IonicModule, AlertController } from '@ionic/angular';
+import { IonicModule, AlertController, ActionSheetController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
@@ -60,13 +60,17 @@ export class MonitorizacaoComponent implements OnInit {
 
   selectedRecord: MonitoringRecord | null = null;
   private isNewRecord = false;
+  customFields: { label: string, key: string }[] = [];
+
+  @ViewChild('topEditor', { static: false, read: ElementRef }) topEditor!: ElementRef;
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
     private surgeryService: SurgeryService,
-    private location: Location,
-    private alertController: AlertController
+    private route: ActivatedRoute,
+    private alertController: AlertController,
+    private actionSheetController: ActionSheetController,
+    private router: Router,
+    private location: Location
   ) {
     addIcons({
       arrowBackOutline,
@@ -130,9 +134,20 @@ export class MonitorizacaoComponent implements OnInit {
 
   // Adiciona novo registro vindo do botão "+ Registro" (Lógica App-Base)
   addTimePoint() {
+    // Se já estiver editando um registro (especialmente um novo), não deixa criar outro
+    if (this.selectedRecord) {
+      return;
+    }
+
     const lastRecord = this.vitalRecords[0];
     let newTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     
+    // Evita duplicata exata de horário no mesmo minuto se clicar muito rápido
+    if (lastRecord && lastRecord.time === newTime) {
+      const [h, m] = newTime.split(':');
+      newTime = `${h}:${parseInt(m) + 1}`;
+    }
+
     const newRec: MonitoringRecord = {
       time: newTime,
       pas: lastRecord?.pas || 120,
@@ -140,14 +155,30 @@ export class MonitorizacaoComponent implements OnInit {
       fc: lastRecord?.fc || 75,
       spo2: lastRecord?.spo2 || 99,
       temp: lastRecord?.temp || 36.5,
-      etco2: lastRecord?.etco2 || 35
+      etco2: lastRecord?.etco2 || 35,
+      custom: {} // Inicializa objeto para campos customizados
     };
+
+    // Inicializa campos customizados existentes
+    this.customFields.forEach(field => {
+      newRec.custom![field.key] = "";
+    });
 
     this.vitalRecords = [newRec, ...this.vitalRecords];
     this.sortRecords(); // Garante a ordem cronológica
     this.selectedRecord = newRec;
     this.isNewRecord = true; // Marca que este registro foi acabado de criar
     this.hasData = true;
+
+    this.scrollToEditor();
+  }
+
+  private scrollToEditor() {
+    setTimeout(() => {
+      if (this.topEditor) {
+        this.topEditor.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
   }
 
   private sortRecords() {
@@ -165,6 +196,7 @@ export class MonitorizacaoComponent implements OnInit {
   selectRecord(record: MonitoringRecord) {
     this.selectedRecord = record;
     this.isNewRecord = false; // Registro existente
+    this.scrollToEditor();
   }
 
   // Confirma o registro
@@ -207,6 +239,125 @@ export class MonitorizacaoComponent implements OnInit {
       ]
     });
 
+    await alert.present();
+  }
+
+  async addCustomField() {
+    const alert = await this.alertController.create({
+      header: 'Novo Campo',
+      message: 'Digite o nome da nova coluna (ex: Medicamento, PVC, etc)',
+      inputs: [
+        {
+          name: 'label',
+          type: 'text',
+          placeholder: 'Nome do campo'
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Adicionar',
+          handler: (data) => {
+            if (!data.label) return false;
+            
+            const key = 'custom_' + Date.now();
+            this.customFields.push({ label: data.label, key: key });
+
+            // Adiciona o campo em todos os registros existentes
+            this.vitalRecords.forEach(rec => {
+              if (!rec.custom) rec.custom = {};
+              rec.custom[key] = "";
+            });
+
+            return true;
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async editCustomFieldMenu(field: { label: string, key: string }) {
+    const actionSheet = await this.actionSheetController.create({
+      header: `Gerenciar Coluna: ${field.label}`,
+      buttons: [
+        {
+          text: 'Renomear',
+          icon: 'create-outline',
+          handler: () => {
+            this.renameCustomField(field);
+          }
+        },
+        {
+          text: 'Excluir Coluna',
+          role: 'destructive',
+          icon: 'trash-outline',
+          handler: () => {
+            this.removeCustomField(field);
+          }
+        },
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        }
+      ]
+    });
+    await actionSheet.present();
+  }
+
+  async renameCustomField(field: { label: string, key: string }) {
+    const alert = await this.alertController.create({
+      header: 'Renomear Campo',
+      inputs: [
+        {
+          name: 'label',
+          type: 'text',
+          value: field.label,
+          placeholder: 'Novo nome'
+        }
+      ],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Salvar',
+          handler: (data) => {
+            if (!data.label) return false;
+            field.label = data.label;
+            return true;
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async removeCustomField(field: { label: string, key: string }) {
+    const alert = await this.alertController.create({
+      header: 'Excluir Coluna?',
+      message: `Tem certeza que deseja remover a coluna "${field.label}"? Todos os dados preenchidos nela serão perdidos.`,
+      buttons: [
+        { text: 'Não', role: 'cancel' },
+        {
+          text: 'Sim, Excluir',
+          cssClass: 'danger-button',
+          handler: () => {
+            // Remove da lista de cabeçalhos
+            this.customFields = this.customFields.filter(f => f.key !== field.key);
+            
+            // Limpa os dados nos registros
+            this.vitalRecords.forEach(rec => {
+              if (rec.custom) {
+                delete rec.custom[field.key];
+              }
+            });
+          }
+        }
+      ]
+    });
     await alert.present();
   }
 }

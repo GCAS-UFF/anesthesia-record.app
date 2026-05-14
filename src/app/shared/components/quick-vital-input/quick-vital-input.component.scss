@@ -63,6 +63,10 @@
         &.spo2-group .vital-input:focus { border-color: #10b981; }
         &.temp-group .vital-input:focus { border-color: #f59e0b; }
         &.etco2-group .vital-input:focus { border-color: #8b5cf6; }
+        &.custom-group {
+            min-width: 120px; // Mais largo para texto
+            .vital-input:focus { border-color: #6366f1; }
+        }
     }
 
     .action-group {

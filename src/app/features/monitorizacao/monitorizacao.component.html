@@ -2,7 +2,7 @@
     <app-status-bar></app-status-bar>
     <app-header-institucional [showLogout]="true"></app-header-institucional>
 
-    <!-- Barra de Navegação -->
+    <!-- Barra de Navegação Fixa -->
     <div class="nav-bar">
         <button class="back-button" (click)="voltar()">
             <ion-icon name="arrow-back-outline"></ion-icon> Voltar
@@ -17,120 +17,127 @@
     </div>
 
     <div class="main-content">
-        <!-- COLUNA ESQUERDA: Gráfico e Tabela -->
+        <!-- COLUNA ESQUERDA: Monitoramento -->
         <div class="left-column">
-            <!-- Versão Compacta do Card do Paciente -->
-            <app-patient-info-card *ngIf="!isLoading" 
-                [patientName]="patient?.fullName || ''" 
-                [birthDate]="patient?.birthDate || ''"
-                [age]="patient?.age?.toString() || ''" 
-                [gender]="patient?.gender || 'M'" 
-                [weight]="patient?.weightKg || '--'"
-                [record]="patient?.medicalRecordNumber || ''" 
-                [procedure]="selectedProcedure?.description || ''"
-                [room]="selectedSurgery?.location?.room || ''" 
-                [bed]="patient?.bed || '--'" 
-                [allergies]="patient?.allergies || []"
-                [compact]="true"
-                status="ASA II">
-            </app-patient-info-card>
-
-            <!-- Seção de Posição -->
-            <div class="position-row">
-                <span class="position-label">📐 Posição Cirúrgica:</span>
-                <div class="position-options">
-                    <span class="pos-opt active">Supina</span>
-                    <span class="pos-opt">Prona</span>
-                    <span class="pos-opt">Lateral Dir.</span>
-                    <span class="pos-opt">Lateral Esq.</span>
-                    <span class="pos-opt">Trendelenburg</span>
+            <!-- Card do Paciente: Sempre Visível no Topo da Coluna -->
+            <div class="sticky-patient-area">
+                <app-patient-info-card *ngIf="!isLoading" 
+                    [patientName]="patient?.fullName || ''" 
+                    [birthDate]="patient?.birthDate || ''"
+                    [age]="patient?.age?.toString() || ''" 
+                    [gender]="patient?.gender || 'M'" 
+                    [weight]="patient?.weightKg || '--'"
+                    [record]="patient?.medicalRecordNumber || ''" 
+                    [procedure]="selectedProcedure?.description || ''"
+                    [room]="selectedSurgery?.location?.room || ''" 
+                    [bed]="patient?.bed || '--'" 
+                    [allergies]="patient?.allergies || []"
+                    [compact]="true"
+                    status="ASA II">
+                </app-patient-info-card>
+                
+                <!-- Linha de Posição (também importante ficar visível) -->
+                <div class="position-row">
+                    <span class="position-label">📐 Posição:</span>
+                    <div class="position-options">
+                        <span class="pos-opt active">Supina</span>
+                        <span class="pos-opt">Prona</span>
+                        <span class="pos-opt">Lateral Dir.</span>
+                        <span class="pos-opt">Lateral Esq.</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- SEÇÃO DO GRÁFICO (GRADEADO) -->
-            <div class="graph-section">
-                <div class="section-title-premium">
-                    <ion-icon name="pulse-outline" class="pulse-icon"></ion-icon>
-                    GRÁFICO DE TENDÊNCIAS
-                </div>
-                <div class="graph-container">
-                    <!-- Placeholder para o Canvas do Gráfico (FA-044) -->
-                    <div class="graph-placeholder">
-                        <canvas id="vitalChart"></canvas>
-                        <div class="graph-empty-overlay" *ngIf="!hasData">
-                            <p>Aguardando início dos sinais vitais...</p>
+            <!-- ÁREA SCROLLÁVEL: Gráficos e Tabela -->
+            <div class="scrollable-content-area">
+                <!-- SEÇÃO DO GRÁFICO -->
+                <div class="graph-section">
+                    <div class="section-title-premium">
+                        <ion-icon name="pulse-outline" class="pulse-icon"></ion-icon>
+                        TENDÊNCIAS VITAIS
+                    </div>
+                    <div class="graph-container">
+                        <div class="graph-placeholder">
+                            <canvas id="vitalChart"></canvas>
+                            <div class="graph-empty-overlay" *ngIf="!hasData">
+                                <p>Aguardando início dos sinais vitais...</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="graph-legend">
-                    <div class="legend-item"><span class="dot red"></span> FC (bpm)</div>
-                    <div class="legend-item"><span class="dot blue"></span> PA (mmHg)</div>
-                    <div class="legend-item"><span class="dot green"></span> SpO₂ (%)</div>
-                    <div class="legend-item"><span class="line purple"></span> Início Anestesia</div>
-                </div>
-            </div>
 
-            <!-- ENTRADA RÁPIDA DE SINAIS VITAIS (FA-047) -->
-            <app-quick-vital-input 
-                *ngIf="selectedRecord"
-                [vitalData]="selectedRecord" 
-                (onSave)="updateActiveRecord()"
-                (onCancel)="cancelEdit()">
-            </app-quick-vital-input>
-            
-            <!-- TABELA DE REGISTROS -->
-            <div class="records-section">
-                <div class="records-header">
-                    <div class="records-title">
-                        <ion-icon name="list-outline"></ion-icon> Registro de Sinais Vitais
-                    </div>
-                    <div class="records-actions">
-                        <ion-button size="small" fill="outline" color="secondary">
+                <!-- ENTRADA RÁPIDA (Aparece quando selecionado) -->
+                <app-quick-vital-input #topEditor
+                    *ngIf="selectedRecord"
+                    [vitalData]="selectedRecord" 
+                    [customFields]="customFields"
+                    (onSave)="updateActiveRecord()"
+                    (onCancel)="cancelEdit()">
+                </app-quick-vital-input>
+                
+                <!-- TABELA DE REGISTROS -->
+                <div class="records-section">
+                    <div class="records-header">
+                        <div class="records-title">
+                            <ion-icon name="list-outline"></ion-icon> Histórico de Sinais
+                        </div>
+                        <div class="records-actions">
+                        <ion-button size="small" fill="outline" color="secondary" (click)="addCustomField()" [disabled]="!!selectedRecord">
                             <ion-icon name="add-outline" slot="start"></ion-icon> Campo
                         </ion-button>
-                        <ion-button size="small" fill="solid" color="primary" (click)="addTimePoint()">
-                            <ion-icon name="add-outline" slot="start"></ion-icon> Registro
-                        </ion-button>
+                        <ion-button size="small" fill="solid" color="primary" (click)="addTimePoint()" [disabled]="!!selectedRecord">
+                                <ion-icon name="add-outline" slot="start"></ion-icon> Novo Registro
+                            </ion-button>
+                        </div>
                     </div>
-                </div>
-                <div class="table-scroll-container">
-                    <table class="vital-table">
-                        <thead>
-                            <tr>
-                                <th class="sticky-col">Hora</th>
-                                <th>PAS</th>
-                                <th>PAD</th>
-                                <th>FC</th>
-                                <th>SpO₂</th>
+
+                    <div class="table-wrapper">
+                        <table class="vital-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-hora">Hora</th>
+                                    <th>PAS</th>
+                                    <th>PAD</th>
+                                    <th>FC</th>
+                                    <th>SpO₂</th>
                                 <th>Temp</th>
                                 <th>EtCO₂</th>
-                                <th>Ações</th>
+                                <!-- Colunas Dinâmicas (+ Campo) -->
+                                <th *ngFor="let field of customFields" class="custom-th" (click)="editCustomFieldMenu(field)">
+                                    {{ field.label }}
+                                    <ion-icon name="settings-outline" class="th-icon"></ion-icon>
+                                </th>
+                                <th class="col-actions"></th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let record of vitalRecords; trackBy: trackByRecords" 
-                                [class.selected-row]="record === selectedRecord"
-                                (click)="selectRecord(record)">
-                                <td class="sticky-col time-cell">{{ record.time }}</td>
-                                <td><input type="number" [ngModel]="record.pas" readonly></td>
-                                <td><input type="number" [ngModel]="record.pad" readonly></td>
-                                <td><input type="number" [ngModel]="record.fc" readonly></td>
-                                <td><input type="number" [ngModel]="record.spo2" readonly></td>
-                                <td><input type="number" [ngModel]="record.temp" readonly></td>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let record of vitalRecords; trackBy: trackByRecords" 
+                                    [class.selected-row]="record === selectedRecord"
+                                    (click)="selectRecord(record)">
+                                    <td class="col-hora">{{ record.time }}</td>
+                                    <td><input type="number" [ngModel]="record.pas" readonly></td>
+                                    <td><input type="number" [ngModel]="record.pad" readonly></td>
+                                    <td><input type="number" [ngModel]="record.fc" readonly></td>
+                                    <td><input type="number" [ngModel]="record.spo2" readonly></td>
+                                    <td><input type="number" [ngModel]="record.temp" readonly></td>
                                 <td><input type="number" [ngModel]="record.etco2" readonly></td>
-                                <td class="actions-cell" (click)="$event.stopPropagation()">
-                                    <ion-icon name="trash-outline" class="btn-del" (click)="deleteRecord(record)"></ion-icon>
+                                <!-- Células Dinâmicas -->
+                                <td *ngFor="let field of customFields">
+                                    <input type="text" [(ngModel)]="record.custom![field.key]" [readonly]="record !== selectedRecord">
                                 </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                <td class="col-actions" (click)="$event.stopPropagation()">
+                                        <ion-icon name="trash-outline" class="btn-del" (click)="deleteRecord(record)"></ion-icon>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- COLUNA DIREITA: Controle e Raia de Eventos -->
+        <!-- COLUNA DIREITA: Controles Fixos -->
         <div class="right-column">
-            <!-- Timer Cirúrgico -->
             <div class="timer-panel">
                 <div class="timer-label">TEMPO CIRÚRGICO</div>
                 <div class="timer-value">00:00:00</div>
@@ -144,58 +151,39 @@
                 </div>
             </div>
 
-            <!-- Accordions laterais (Agentes, Eventos, Balanço) -->
             <div class="accordions-container">
-                <!-- AGENTES -->
                 <div class="monitor-accordion agents">
                     <div class="accordion-header">
-                        <div class="header-left">
-                            <ion-icon name="flask-outline"></ion-icon>
-                            <span>AGENTES</span>
-                        </div>
+                        <div class="header-left"><ion-icon name="flask-outline"></ion-icon><span>AGENTES</span></div>
                         <ion-button fill="clear" size="small" class="btn-add-inline">+</ion-button>
                     </div>
-                    <div class="accordion-content empty">
-                        Nenhum agente registrado
-                    </div>
+                    <div class="accordion-content empty">Nenhum agente</div>
                 </div>
 
-                <!-- EVENTOS -->
                 <div class="monitor-accordion events">
                     <div class="accordion-header">
-                        <div class="header-left">
-                            <ion-icon name="bookmark-outline"></ion-icon>
-                            <span>EVENTOS</span>
-                        </div>
+                        <div class="header-left"><ion-icon name="bookmark-outline"></ion-icon><span>EVENTOS</span></div>
                         <ion-button fill="clear" size="small" class="btn-add-inline">+</ion-button>
                     </div>
                     <div class="accordion-content">
-                        <div class="raia-item">
-                            <span class="raia-time">10:40</span>
-                            <span class="raia-desc">Intubação Orotraqueal</span>
-                        </div>
+                        <div class="raia-item"><span class="raia-time">10:40</span><span class="raia-desc">Intubação</span></div>
                     </div>
                 </div>
 
-                <!-- BALANÇO -->
                 <div class="monitor-accordion balance">
                     <div class="accordion-header">
-                        <div class="header-left">
-                            <ion-icon name="water-outline"></ion-icon>
-                            <span>GANHOS & PERDAS</span>
-                        </div>
+                        <div class="header-left"><ion-icon name="water-outline"></ion-icon><span>BALANÇO</span></div>
                         <ion-button fill="clear" size="small" class="btn-add-inline">+</ion-button>
                     </div>
                     <div class="accordion-content">
                         <div class="balance-summary-mini">
-                            <div class="bal-item"><span>Ganhos:</span> <strong class="pos">500ml</strong></div>
-                            <div class="bal-item"><span>Perdas:</span> <strong class="neg">100ml</strong></div>
+                            <div class="bal-item">Ganhos: <strong class="pos">500ml</strong></div>
+                            <div class="bal-item">Perdas: <strong class="neg">100ml</strong></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Botões de Ação Final -->
             <div class="footer-actions">
                 <ion-button expand="block" color="danger" class="btn-finish">
                     <ion-icon name="checkmark-done-circle-outline" slot="start"></ion-icon> FINALIZAR CIRURGIA
