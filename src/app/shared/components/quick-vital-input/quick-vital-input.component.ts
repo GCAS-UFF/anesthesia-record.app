@@ -16,6 +16,7 @@ import { MonitoringRecord } from 'src/app/core/models/monitoring-record.model';
 })
 export class QuickVitalInputComponent {
   @Input() vitalData: MonitoringRecord | null = null;
+  @Input() customFields: { label: string, key: string }[] = [];
   @Output() onSave = new EventEmitter<void>();
   @Output() onCancel = new EventEmitter<void>();
 
@@ -53,6 +54,10 @@ export class QuickVitalInputComponent {
     this.vitalData.spo2 = clamp(this.vitalData.spo2, 0, 100);
     this.vitalData.temp = clamp(this.vitalData.temp, 30, 45);
     this.vitalData.etco2 = clamp(this.vitalData.etco2, 0, 150);
+    this.vitalData.pam = clamp(this.vitalData.pam, 0, 250);
+    this.vitalData.bis = clamp(this.vitalData.bis, 0, 100);
+    this.vitalData.pvc = clamp(this.vitalData.pvc, -10, 50);
+    this.vitalData.pcap = clamp(this.vitalData.pcap, 0, 50);
   }
 
   private isValid(): boolean {
@@ -60,7 +65,8 @@ export class QuickVitalInputComponent {
     
     // Valida se pelo menos um sinal vital foi preenchido
     const hasVital = !!(this.vitalData.pas || this.vitalData.pad || this.vitalData.fc || 
-                        this.vitalData.spo2 || this.vitalData.temp || this.vitalData.etco2);
+                        this.vitalData.spo2 || this.vitalData.temp || this.vitalData.etco2 ||
+                        this.vitalData.pam || this.vitalData.bis || this.vitalData.pvc || this.vitalData.pcap);
     
     // Valida formato de hora (HH:mm)
     const isTimeValid = /^([01]\d|2[0-3]):([0-5]\d)$/.test(this.vitalData.time);
