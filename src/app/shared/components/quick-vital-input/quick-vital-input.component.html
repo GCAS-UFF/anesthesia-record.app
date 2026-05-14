@@ -3,7 +3,7 @@
         <!-- HORÁRIO -->
         <div class="input-group time-group">
             <span class="input-label">Hora</span>
-            <input type="time" [(ngModel)]="vitalData.time" class="vital-input time" [disabled]="isSaving" (keyup.enter)="pasInput.focus()">
+            <input type="text" [(ngModel)]="vitalData.time" placeholder="00:00" maxlength="5" class="vital-input time" [disabled]="isSaving" (keyup.enter)="pasInput.focus()">
         </div>
 
         <!-- PRESSÃO ARTERIAL SISTÓLICA -->
@@ -15,13 +15,7 @@
         <!-- PRESSÃO ARTERIAL DIASTÓLICA -->
         <div class="input-group pa-group">
             <span class="input-label">PAD <small>(Diast)</small></span>
-            <input type="number" [(ngModel)]="vitalData.pad" placeholder="--" min="0" max="250" class="vital-input pad" #padInput [disabled]="isSaving" (keyup.enter)="pamInput.focus()">
-        </div>
-
-        <!-- PRESSÃO ARTERIAL MÉDIA -->
-        <div class="input-group pa-group">
-            <span class="input-label">PAM <small>(Média)</small></span>
-            <input type="number" [(ngModel)]="vitalData.pam" placeholder="--" min="0" max="250" class="vital-input pam" #pamInput [disabled]="isSaving" (keyup.enter)="fcInput.focus()">
+            <input type="number" [(ngModel)]="vitalData.pad" placeholder="--" min="0" max="250" class="vital-input pad" #padInput [disabled]="isSaving" (keyup.enter)="fcInput.focus()">
         </div>
 
         <!-- FREQUÊNCIA CARDÍACA -->
@@ -33,37 +27,19 @@
         <!-- SATURAÇÃO -->
         <div class="input-group spo2-group">
             <span class="input-label">SpO₂ <small>(%)</small></span>
-            <input type="number" [(ngModel)]="vitalData.spo2" placeholder="--" min="0" max="100" class="vital-input spo2" #spo2Input [disabled]="isSaving" (keyup.enter)="etco2Input.focus()">
-        </div>
-
-        <!-- EtCO2 -->
-        <div class="input-group etco2-group">
-            <span class="input-label">EtCO₂ <small>(mmHg)</small></span>
-            <input type="number" [(ngModel)]="vitalData.etco2" placeholder="--" min="0" max="150" class="vital-input etco2" #etco2Input [disabled]="isSaving" (keyup.enter)="bisInput.focus()">
-        </div>
-
-        <!-- BIS -->
-        <div class="input-group bis-group">
-            <span class="input-label">BIS</span>
-            <input type="number" [(ngModel)]="vitalData.bis" placeholder="--" min="0" max="100" class="vital-input bis" #bisInput [disabled]="isSaving" (keyup.enter)="pvcInput.focus()">
-        </div>
-
-        <!-- PVC -->
-        <div class="input-group pvc-group">
-            <span class="input-label">PVC</span>
-            <input type="number" [(ngModel)]="vitalData.pvc" placeholder="--" min="-10" max="50" class="vital-input pvc" #pvcInput [disabled]="isSaving" (keyup.enter)="pcapInput.focus()">
-        </div>
-
-        <!-- PCAP -->
-        <div class="input-group pcap-group">
-            <span class="input-label">PCAP</span>
-            <input type="number" [(ngModel)]="vitalData.pcap" placeholder="--" min="0" max="50" class="vital-input pcap" #pcapInput [disabled]="isSaving" (keyup.enter)="tempInput.focus()">
+            <input type="number" [(ngModel)]="vitalData.spo2" placeholder="--" min="0" max="100" class="vital-input spo2" #spo2Input [disabled]="isSaving" (keyup.enter)="tempInput.focus()">
         </div>
 
         <!-- TEMPERATURA -->
         <div class="input-group temp-group">
             <span class="input-label">TEMP <small>(°C)</small></span>
-            <input type="number" [(ngModel)]="vitalData.temp" placeholder="--" min="30" max="45" step="0.1" class="vital-input temp" #tempInput [disabled]="isSaving" (keyup.enter)="save()">
+            <input type="number" [(ngModel)]="vitalData.temp" placeholder="--" min="30" max="45" step="0.1" class="vital-input temp" #tempInput [disabled]="isSaving" (keyup.enter)="etco2Input.focus()">
+        </div>
+
+        <!-- EtCO2 -->
+        <div class="input-group etco2-group">
+            <span class="input-label">EtCO₂ <small>(mmHg)</small></span>
+            <input type="number" [(ngModel)]="vitalData.etco2" placeholder="--" min="0" max="150" class="vital-input etco2" #etco2Input [disabled]="isSaving" (keyup.enter)="save()">
         </div>
 
         <!-- CAMPOS CUSTOMIZADOS -->
