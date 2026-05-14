@@ -26,7 +26,8 @@ import {
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
 import { PatientInfoCardComponent } from '../../shared/components/patient-info-card/patient-info-card.component';
-import { QuickVitalInputComponent, VitalSignRecord } from '../../shared/components/quick-vital-input/quick-vital-input.component';
+import { QuickVitalInputComponent } from '../../shared/components/quick-vital-input/quick-vital-input.component';
+import { MonitoringRecord } from 'src/app/core/models/monitoring-record.model';
 
 // Services
 import { SurgeryService } from 'src/app/core/services/surgery.service';
@@ -55,12 +56,12 @@ export class MonitorizacaoComponent implements OnInit {
   hasData = false;
 
   // Lista de registros de sinais vitais
-  vitalRecords: VitalSignRecord[] = [
+  vitalRecords: MonitoringRecord[] = [
     { time: '10:45', pas: 120, pad: 80, fc: 75, spo2: 99, temp: 36.5, etco2: 35 },
     { time: '10:30', pas: 118, pad: 78, fc: 72, spo2: 98, temp: 36.4, etco2: 34 }
   ];
 
-  selectedRecord: VitalSignRecord | null = null;
+  selectedRecord: MonitoringRecord | null = null;
   private isNewRecord = false;
 
   constructor(
@@ -134,7 +135,7 @@ export class MonitorizacaoComponent implements OnInit {
     const lastRecord = this.vitalRecords[0];
     let newTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     
-    const newRec: VitalSignRecord = {
+    const newRec: MonitoringRecord = {
       time: newTime,
       pas: lastRecord?.pas || 120,
       pad: lastRecord?.pad || 80,
@@ -150,7 +151,7 @@ export class MonitorizacaoComponent implements OnInit {
     this.hasData = true;
   }
 
-  selectRecord(record: VitalSignRecord) {
+  selectRecord(record: MonitoringRecord) {
     this.selectedRecord = record;
     this.isNewRecord = false; // Registro existente
   }
