@@ -6,8 +6,8 @@
 
 .hospital-info {
     display: flex;
-    align-items: center;
-    gap: 24px;
+    align-items: flex-end;
+    gap: 16px;
     flex-wrap: wrap;
     justify-content: center;
 }
@@ -18,44 +18,27 @@
     gap: 16px;
 }
 
-.logo-huap,
-.logo-uff {
+.main-logo {
     height: 60px;
     width: auto;
     object-fit: contain;
 }
 
 .hospital-text {
-    border-left: 2px solid #e2e8f0;
-    padding-left: 20px;
-}
-
-.hospital-name {
-    font-size: 32px;
-    font-weight: 900;
-    color: #0f172a;
-    letter-spacing: -0.8px;
-    line-height: 1;
-}
-
-.hospital-name span {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    /* Sem borda ou padding lateral */
 }
 
 .university {
-    font-size: 13px;
-    color: #6d28d9;
-    font-weight: 600;
-    margin-top: 4px;
+    font-size: 16px;
+    color: #475569;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 4px; /* Optical alignment with the bottom of the logo */
 }
 
 @media (min-width: 1600px) {
 
-    .logo-huap,
-    .logo-uff {
+    .main-logo {
         height: 70px;
     }
 }
@@ -65,8 +48,7 @@
         padding: 16px 20px;
     }
 
-    .logo-huap,
-    .logo-uff {
+    .main-logo {
         height: 45px;
     }
 
@@ -87,7 +69,7 @@
     }
 
     .university {
-        font-size: 10px;
+        font-size: 13px;
     }
 }
 
@@ -108,13 +90,12 @@
         justify-content: center;
     }
 
-    .logo-huap,
-    .logo-uff {
+    .main-logo {
         height: 40px;
     }
 
-    .hospital-name {
-        font-size: 18px;
+    .university {
+        font-size: 12px;
     }
 }
 
@@ -124,10 +105,30 @@
     gap: 24px;
 }
 
-.doctor-status {
+.server-status {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 8px;
+    font-size: 13px;
+    color: #10b981;
+    background: #d1fae5;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 600;
+    border: 1px solid #a7f3d0;
+
+    .dot {
+        width: 8px;
+        height: 8px;
+        background: #10b981;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+}
+
+.doctor-profile {
+    display: flex;
+    align-items: center;
     background: #f8fafc;
     padding: 8px 20px;
     border-radius: 40px;
@@ -137,26 +138,6 @@
         font-weight: 700;
         font-size: 14px;
         color: #1e293b;
-    }
-
-    .connection-status {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 12px;
-        color: #10b981;
-        background: #d1fae5;
-        padding: 4px 14px;
-        border-radius: 20px;
-        font-weight: 600;
-
-        .dot {
-            width: 8px;
-            height: 8px;
-            background: #10b981;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
     }
 }
 
@@ -199,7 +180,7 @@
 }
 
 @media (max-width: 900px) {
-    .doctor-status {
+    .doctor-profile, .server-status {
         display: none;
     }
 }

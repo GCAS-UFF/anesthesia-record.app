@@ -22,6 +22,9 @@ export class HeaderInstitucionalComponent {
   /** Exibe botão de sair */
   @Input() showLogout: boolean = false;
 
+  /** Exibe informações do médico */
+  @Input() showDoctorInfo: boolean = true;
+
   constructor(private router: Router) {}
 
   logout() {

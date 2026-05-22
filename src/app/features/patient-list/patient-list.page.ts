@@ -67,11 +67,8 @@ export class PatientListPage implements OnInit {
     this.isRefreshing = true;
     this.viewList = []; // Limpa a lista para mostrar o skeleton
 
-    const loading = await this.loadingController.create({
-      message: 'Buscando procedimentos...',
-      spinner: 'crescent'
-    });
-    await loading.present();
+    // Spinner e skeleton já são controlados por isRefreshing.
+    // O LoadingController (modal) foi removido para evitar travamentos silenciosos em produção.
 
     // Rola para o topo ao carregar novos dados
     if (this.content) {
@@ -85,11 +82,9 @@ export class PatientListPage implements OnInit {
         this.totalPages = Math.ceil(this.totalItems / this.pageSize);
         this.flattenData(response);
         this.isRefreshing = false;
-        loading.dismiss();
       },
       error: () => {
         this.isRefreshing = false;
-        loading.dismiss();
       }
     });
   }
