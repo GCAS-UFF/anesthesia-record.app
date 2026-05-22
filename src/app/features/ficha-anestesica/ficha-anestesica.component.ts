@@ -271,7 +271,7 @@ export class FichaAnestesicaComponent implements OnInit {
         atbNome: [''],
         atbDose: [''],
         atbHora: [''],
-        temRepique: ['', Validators.required],
+        temRepique: [''],
         atbIndex: [null],
         repiqueDose: [''],
         repiqueHora: ['']
@@ -291,7 +291,7 @@ export class FichaAnestesicaComponent implements OnInit {
       // 5. Equipe Cirúrgica e Pré-Procedimento
       equipe: this.fb.group({
         cirurgiao: ['', Validators.required],
-        assistente: [''],
+        assistente: ['', Validators.required],
         diagnosticoPre: ['', Validators.required],
         horaInicioAnestesia: ['', Validators.required]
       }),
@@ -343,8 +343,8 @@ export class FichaAnestesicaComponent implements OnInit {
         bloqueiosEspinhais: ['', Validators.required],
         nivelPuncao: [[]],
         posicaoPuncao: [''], // Sentada / Decúbito
-        cateter: ['', Validators.required],
-        opioide: ['', Validators.required],
+        cateter: [''],
+        opioide: [''],
         numeroPuncoes: [''],
 
         sedacao: ['', Validators.required],
@@ -354,7 +354,7 @@ export class FichaAnestesicaComponent implements OnInit {
         suplementacaoO2Outros: [''],
 
         bloqueioPlexo: ['', Validators.required],
-        neuroestimulador: ['', Validators.required],
+        neuroestimulador: [''],
         nervosEstimulados: [[]],
         nervosEstimuladosOutros: ['']
       }),
@@ -369,11 +369,11 @@ export class FichaAnestesicaComponent implements OnInit {
 
       // 9. Índice de Alderete e Kroulik
       alderete: this.fb.group({
-        consciencia: ['', Validators.required],
-        atividade: ['', Validators.required],
-        circulacao: ['', Validators.required],
-        respiracao: ['', Validators.required],
-        saturacao: ['', Validators.required],
+        consciencia: [''],
+        atividade: [''],
+        circulacao: [''],
+        respiracao: [''],
+        saturacao: [''],
         horaAvaliacao: [''],
         condicoesClinicasAlta: [[]],
         condicoesAltaOutras: [''],
@@ -398,7 +398,269 @@ export class FichaAnestesicaComponent implements OnInit {
   }
 
   private setupConditionalLogic() {
-    // Implementar regras do card 41 conforme necessário
+    const atbGroup = this.form.get('antibiotico') as FormGroup;
+    const tecGroup = this.form.get('tecnica') as FormGroup;
+    const aldGroup = this.form.get('alderete') as FormGroup;
+
+    if (atbGroup) {
+      atbGroup.get('temAntibiotico')?.valueChanges.subscribe(val => {
+        const temRepiqueCtrl = atbGroup.get('temRepique');
+        if (val === 'sim') {
+          temRepiqueCtrl?.setValidators([Validators.required]);
+        } else {
+          temRepiqueCtrl?.clearValidators();
+          temRepiqueCtrl?.setValue('');
+        }
+        temRepiqueCtrl?.updateValueAndValidity();
+      });
+    }
+
+    if (tecGroup) {
+      tecGroup.get('bloqueiosEspinhais')?.valueChanges.subscribe(val => {
+        const cateterCtrl = tecGroup.get('cateter');
+        const opioideCtrl = tecGroup.get('opioide');
+        if (val === 'sim') {
+          cateterCtrl?.setValidators([Validators.required]);
+          opioideCtrl?.setValidators([Validators.required]);
+        } else {
+          cateterCtrl?.clearValidators();
+          cateterCtrl?.setValue('');
+          opioideCtrl?.clearValidators();
+          opioideCtrl?.setValue('');
+        }
+        cateterCtrl?.updateValueAndValidity();
+        opioideCtrl?.updateValueAndValidity();
+      });
+
+      tecGroup.get('bloqueioPlexo')?.valueChanges.subscribe(val => {
+        const neuroCtrl = tecGroup.get('neuroestimulador');
+        if (val === 'sim') {
+          neuroCtrl?.setValidators([Validators.required]);
+        } else {
+          neuroCtrl?.clearValidators();
+          neuroCtrl?.setValue('');
+        }
+        neuroCtrl?.updateValueAndValidity();
+      });
+    }
+
+    if (aldGroup) {
+      aldGroup.get('dor')?.valueChanges.subscribe(val => {
+        if (val === 'nao') {
+          aldGroup.get('dorUsouENV')?.setValue(false, { emitEvent: false });
+          aldGroup.get('dorUsouPAINAD')?.setValue(false, { emitEvent: false });
+          aldGroup.get('dorUsouBPS')?.setValue(false, { emitEvent: false });
+          
+          const envVal = aldGroup.get('dorENV');
+          envVal?.clearValidators();
+          envVal?.setValue('', { emitEvent: false });
+          envVal?.updateValueAndValidity();
+
+          const painadVal = aldGroup.get('dorPAINAD');
+          painadVal?.clearValidators();
+          painadVal?.setValue('', { emitEvent: false });
+          painadVal?.updateValueAndValidity();
+
+          const bpsVal = aldGroup.get('dorBPS');
+          bpsVal?.clearValidators();
+          bpsVal?.setValue('', { emitEvent: false });
+          bpsVal?.updateValueAndValidity();
+        }
+      });
+
+      aldGroup.get('dorUsouENV')?.valueChanges.subscribe(checked => {
+        const ctrl = aldGroup.get('dorENV');
+        if (checked && aldGroup.get('dor')?.value === 'sim') {
+          ctrl?.setValidators([Validators.required, Validators.min(0), Validators.max(10), Validators.pattern(/^\d+$/)]);
+        } else {
+          ctrl?.clearValidators();
+          ctrl?.setValue('');
+        }
+        ctrl?.updateValueAndValidity();
+      });
+
+      aldGroup.get('dorUsouPAINAD')?.valueChanges.subscribe(checked => {
+        const ctrl = aldGroup.get('dorPAINAD');
+        if (checked && aldGroup.get('dor')?.value === 'sim') {
+          ctrl?.setValidators([Validators.required, Validators.min(0), Validators.max(10), Validators.pattern(/^\d+$/)]);
+        } else {
+          ctrl?.clearValidators();
+          ctrl?.setValue('');
+        }
+        ctrl?.updateValueAndValidity();
+      });
+
+      aldGroup.get('dorUsouBPS')?.valueChanges.subscribe(checked => {
+        const ctrl = aldGroup.get('dorBPS');
+        if (checked && aldGroup.get('dor')?.value === 'sim') {
+          ctrl?.setValidators([Validators.required, Validators.min(3), Validators.max(12), Validators.pattern(/^\d+$/)]);
+        } else {
+          ctrl?.clearValidators();
+          ctrl?.setValue('');
+        }
+        ctrl?.updateValueAndValidity();
+      });
+    }
+  }
+
+  private syncConditionalValidators() {
+    const atbGroup = this.form.get('antibiotico') as FormGroup;
+    const tecGroup = this.form.get('tecnica') as FormGroup;
+    const aldGroup = this.form.get('alderete') as FormGroup;
+
+    if (atbGroup) {
+      const val = atbGroup.get('temAntibiotico')?.value;
+      const temRepiqueCtrl = atbGroup.get('temRepique');
+      if (val === 'sim') {
+        temRepiqueCtrl?.setValidators([Validators.required]);
+      } else {
+        temRepiqueCtrl?.clearValidators();
+      }
+      temRepiqueCtrl?.updateValueAndValidity();
+    }
+
+    if (tecGroup) {
+      const be = tecGroup.get('bloqueiosEspinhais')?.value;
+      const cateterCtrl = tecGroup.get('cateter');
+      const opioideCtrl = tecGroup.get('opioide');
+      if (be === 'sim') {
+        cateterCtrl?.setValidators([Validators.required]);
+        opioideCtrl?.setValidators([Validators.required]);
+      } else {
+        cateterCtrl?.clearValidators();
+        opioideCtrl?.clearValidators();
+      }
+      cateterCtrl?.updateValueAndValidity();
+      opioideCtrl?.updateValueAndValidity();
+
+      const bp = tecGroup.get('bloqueioPlexo')?.value;
+      const neuroCtrl = tecGroup.get('neuroestimulador');
+      if (bp === 'sim') {
+        neuroCtrl?.setValidators([Validators.required]);
+      } else {
+        neuroCtrl?.clearValidators();
+      }
+      neuroCtrl?.updateValueAndValidity();
+    }
+
+    if (aldGroup) {
+      const isDorSim = aldGroup.get('dor')?.value === 'sim';
+      
+      const useEnv = aldGroup.get('dorUsouENV')?.value;
+      const envCtrl = aldGroup.get('dorENV');
+      if (isDorSim && useEnv) {
+        envCtrl?.setValidators([Validators.required, Validators.min(0), Validators.max(10), Validators.pattern(/^\d+$/)]);
+      } else {
+        envCtrl?.clearValidators();
+      }
+      envCtrl?.updateValueAndValidity();
+
+      const usePainad = aldGroup.get('dorUsouPAINAD')?.value;
+      const painadCtrl = aldGroup.get('dorPAINAD');
+      if (isDorSim && usePainad) {
+        painadCtrl?.setValidators([Validators.required, Validators.min(0), Validators.max(10), Validators.pattern(/^\d+$/)]);
+      } else {
+        painadCtrl?.clearValidators();
+      }
+      painadCtrl?.updateValueAndValidity();
+
+      const useBps = aldGroup.get('dorUsouBPS')?.value;
+      const bpsCtrl = aldGroup.get('dorBPS');
+      if (isDorSim && useBps) {
+        bpsCtrl?.setValidators([Validators.required, Validators.min(3), Validators.max(12), Validators.pattern(/^\d+$/)]);
+      } else {
+        bpsCtrl?.clearValidators();
+      }
+      bpsCtrl?.updateValueAndValidity();
+    }
+  }
+
+  getInvalidControlsNames(): string[] {
+    const invalidFields: string[] = [];
+    
+    // Mapeamento de chaves do formulário para nomes amigáveis em português
+    const fieldNamesMap: { [key: string]: string } = {
+      // Segurança do Paciente
+      'seguranca.identificadoAvaliado': 'Segurança: Identificado e avaliado',
+      'seguranca.consentimentoAssinado': 'Segurança: Consentimento assinado',
+      'seguranca.equipamentosChecados': 'Segurança: Equipamentos checados',
+      
+      // Pré-Indução
+      'preInducao.recebeuMedPrevia': 'Pré-Indução: Medicação prévia',
+      
+      // Antibiótico
+      'antibiotico.temAntibiotico': 'Antibiótico: Fez uso',
+      'antibiotico.temRepique': 'Antibiótico: Opção de repique',
+      
+      // Dados Vitais
+      'dadosVitais.pa': 'Dados Vitais: PA',
+      'dadosVitais.fr': 'Dados Vitais: FR',
+      'dadosVitais.temp': 'Dados Vitais: Temp',
+      'dadosVitais.spo2': 'Dados Vitais: SpO2',
+      'dadosVitais.peso': 'Dados Vitais: Peso',
+      'dadosVitais.asa': 'Dados Vitais: ASA',
+      'dadosVitais.entradaSala': 'Dados Vitais: Entrada na sala',
+      
+      // Equipe
+      'equipe.cirurgiao': 'Equipe: Cirurgião',
+      'equipe.assistente': 'Equipe: Assistente',
+      'equipe.diagnosticoPre': 'Equipe: Diagnóstico pré-operatório',
+      'equipe.horaInicioAnestesia': 'Equipe: Hora início da anestesia',
+      
+      // Posição
+      'posicao.usoCoxim': 'Posição: Uso de coxins',
+      'posicao.dificuldadePuncao': 'Posição: Dificuldade de punção',
+      
+      // Técnica Anestésica
+      'tecnica.anestesiaGeral': 'Técnica: Anestesia Geral',
+      'tecnica.circuitoAbsorvedor': 'Técnica: Circuito absorvedor',
+      'tecnica.bloqueiosEspinhais': 'Técnica: Bloqueios espinhais realizados',
+      'tecnica.cateter': 'Técnica: Cateter espinhal',
+      'tecnica.opioide': 'Técnica: Opióide espinhal',
+      'tecnica.sedacao': 'Técnica: Sedação',
+      'tecnica.suplementacaoO2': 'Técnica: Suplementação de O2',
+      'tecnica.bloqueioPlexo': 'Técnica: Bloqueio plexo',
+      'tecnica.neuroestimulador': 'Técnica: Neuroestimulador',
+      
+      // Pós-Procedimento
+      'posProcedimento.cirurgiaRealizada': 'Pós-Procedimento: Cirurgia realizada',
+      'posProcedimento.horaTerminoCirurgia': 'Pós-Procedimento: Hora término da cirurgia',
+      'posProcedimento.diagnosticoPos': 'Pós-Procedimento: Diagnóstico pós-operatório',
+      'posProcedimento.horaTerminoAnestesia': 'Pós-Procedimento: Hora término da anestesia',
+      
+      // Alderete
+      'alderete.consciencia': 'Alderete: Consciência',
+      'alderete.atividade': 'Alderete: Atividade',
+      'alderete.circulacao': 'Alderete: Circulação',
+      'alderete.respiracao': 'Alderete: Respiração',
+      'alderete.saturacao': 'Alderete: SpO2',
+      'alderete.destino': 'Alderete: Destino',
+      'alderete.dor': 'Alderete: Presença de dor',
+      'alderete.dorENV': 'Alderete: Valor ENV (0 a 10)',
+      'alderete.dorPAINAD': 'Alderete: Valor PAINAD (0 a 10)',
+      'alderete.dorBPS': 'Alderete: Valor BPS (3 a 12)',
+      
+      // Assinaturas
+      'assinaturas.primeiroAnestesista': 'Assinaturas: 1º Anestesista',
+      'assinaturas.dataAssinatura': 'Assinaturas: Data'
+    };
+
+    const checkControls = (group: FormGroup, prefix = '') => {
+      Object.keys(group.controls).forEach(key => {
+        const control = group.controls[key];
+        const path = prefix ? `${prefix}.${key}` : key;
+        
+        if (control instanceof FormGroup) {
+          checkControls(control, path);
+        } else if (control.invalid) {
+          const friendlyName = fieldNamesMap[path] || path;
+          invalidFields.push(friendlyName);
+        }
+      });
+    };
+
+    checkControls(this.form);
+    return invalidFields;
   }
 
   get aldereteTotal(): number {
@@ -466,6 +728,7 @@ export class FichaAnestesicaComponent implements OnInit {
             this.form.get('dadosVitais.peso')?.patchValue(this.patient.weight);
           }
 
+          this.syncConditionalValidators();
           this.isLoading = false;
           this.startAutoSave(); // Inicia monitoramento após carregar
         });
@@ -527,11 +790,13 @@ export class FichaAnestesicaComponent implements OnInit {
               });
               await toast.present();
 
-              // [FA-043] Redireciona para o topo da página após limpar (Instantâneo)
-              const content = document.querySelector('.main-content');
-              if (content) {
-                content.scrollTop = 0;
-              }
+              // Redireciona para o topo da página com scroll suave (setTimeout garante renderização pós-reset)
+              setTimeout(() => {
+                const content = document.querySelector('.main-content');
+                if (content) {
+                  content.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }, 150);
             });
           }
         }
@@ -553,8 +818,29 @@ export class FichaAnestesicaComponent implements OnInit {
       // Remove a classe após a animação para poder repetir se necessário
       setTimeout(() => this.showValidationErrors = false, 1000);
 
+      const aldGroup = this.form.get('alderete');
+      const isEnvInvalid = aldGroup?.get('dorENV')?.invalid;
+      const isPainadInvalid = aldGroup?.get('dorPAINAD')?.invalid;
+      const isBpsInvalid = aldGroup?.get('dorBPS')?.invalid;
+
+      if (isEnvInvalid || isPainadInvalid || isBpsInvalid) {
+        let msg = 'Valores de escala de dor inválidos. ';
+        if (isEnvInvalid) msg += 'ENV (0 a 10). ';
+        if (isPainadInvalid) msg += 'PAINAD (0 a 10). ';
+        if (isBpsInvalid) msg += 'BPS (3 a 12).';
+        
+        const toast = await this.toastController.create({
+          message: msg,
+          duration: 4000,
+          color: 'warning',
+          position: 'top'
+        });
+        await toast.present();
+        return;
+      }
+
       const toast = await this.toastController.create({
-        message: 'Por favor, preencha todos os campos obrigatórios (*) da ficha.',
+        message: 'Preencha os campos obrigatórios (*).',
         duration: 3000,
         color: 'warning',
         position: 'top'

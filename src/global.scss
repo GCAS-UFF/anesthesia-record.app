@@ -141,3 +141,94 @@ ion-radio {
     position: relative;
   }
 }
+
+/* ==========================================================================
+   ESTILOS DE IMPRESSÃO GLOBAIS (FA-075)
+   ========================================================================== */
+@media print {
+  app-status-bar, 
+  app-header-institucional, 
+  .navigation-header, 
+  .form-actions,
+  .form-actions-centered,
+  .form-intelligence-header,
+  ion-button,
+  .btn-add-atb,
+  .btn-pill,
+  ion-icon,
+  .toast-container {
+    display: none !important;
+  }
+
+  html, body, ion-app, ion-router-outlet, ion-content, .app-container, .main-content, form {
+    height: auto !important;
+    min-height: initial !important;
+    max-height: initial !important;
+    overflow: visible !important;
+    position: static !important;
+    display: block !important;
+  }
+  
+  ion-content::part(scroll), ion-content::part(background) {
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+    display: block !important;
+  }
+
+  .app-container {
+    background: white !important;
+  }
+
+  .main-content {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+
+  app-form-section {
+    display: block !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 20px !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  input, select, textarea {
+    border: none !important;
+    border-bottom: 1px dotted #cbd5e1 !important;
+    background: transparent !important;
+    padding: 4px 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .form-grid-2col {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px !important;
+  }
+
+  .form-grid-3col {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 15px !important;
+  }
+
+  ion-checkbox, ion-radio {
+    --opacity: 1 !important;
+    opacity: 1 !important;
+  }
+
+  .page-title {
+    display: block !important;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 30px;
+    font-size: 24px;
+    font-weight: 800;
+  }
+}

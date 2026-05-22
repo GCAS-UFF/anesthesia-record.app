@@ -851,48 +851,6 @@
 }
 
 
-// [FA-042] Estilos de Impressão
-@media print {
-  app-status-bar, 
-  app-header-institucional, 
-  .navigation-header, 
-  .form-actions,
-  .form-intelligence-header,
-  ion-button,
-  .btn-add-atb {
-    display: none !important;
-  }
-
-  .app-container {
-    height: auto !important;
-    background: white !important;
-  }
-
-  .main-content {
-    padding: 0 !important;
-    margin: 0 !important;
-    max-width: none !important;
-    overflow: visible !important;
-  }
-
-  app-form-section {
-    break-inside: avoid;
-    margin-bottom: 10px !important;
-  }
-
-  input, select, textarea {
-    border: none !important;
-    background: transparent !important;
-    padding: 0 !important;
-  }
-
-  .page-title {
-    display: block !important;
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 20px;
-  }
-}
 
 
 @keyframes shake {

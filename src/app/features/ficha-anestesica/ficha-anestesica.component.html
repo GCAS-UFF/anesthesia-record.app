@@ -155,7 +155,7 @@
                     <div class="form-grid-2col" style="gap: 12px;">
                         <app-form-field label="CIRURGIÃO" [required]="true"><input type="text"
                                 formControlName="cirurgiao"></app-form-field>
-                        <app-form-field label="ASSISTENTE"><input type="text"
+                        <app-form-field label="ASSISTENTE" [required]="true"><input type="text"
                                 formControlName="assistente"></app-form-field>
                     </div>
                     <div class="form-grid" style="grid-template-columns: 2fr 1fr; gap: 12px;">
@@ -317,21 +317,21 @@
                             style="display: flex; gap: 16px; margin-bottom: 4px;">
                             <div class="scale-item">
                                 <ion-checkbox formControlName="dorUsouENV" labelPlacement="end">ENV</ion-checkbox>
-                                <input type="text" formControlName="dorENV"
+                                <input type="number" formControlName="dorENV" min="0" max="10" step="1"
                                     *ngIf="form.get('alderete.dorUsouENV')?.value" class="va-small-input mini"
                                     placeholder="0-10">
                             </div>
                             <div class="scale-item">
                                 <ion-checkbox formControlName="dorUsouPAINAD" labelPlacement="end">PAINAD</ion-checkbox>
-                                <input type="text" formControlName="dorPAINAD"
+                                <input type="number" formControlName="dorPAINAD" min="0" max="10" step="1"
                                     *ngIf="form.get('alderete.dorUsouPAINAD')?.value" class="va-small-input mini"
                                     placeholder="0-10">
                             </div>
                             <div class="scale-item">
                                 <ion-checkbox formControlName="dorUsouBPS" labelPlacement="end">BPS</ion-checkbox>
-                                <input type="text" formControlName="dorBPS"
+                                <input type="number" formControlName="dorBPS" min="3" max="12" step="1"
                                     *ngIf="form.get('alderete.dorUsouBPS')?.value" class="va-small-input mini"
-                                    placeholder="0-10">
+                                    placeholder="3-12">
                             </div>
                         </div>
                     </div>
