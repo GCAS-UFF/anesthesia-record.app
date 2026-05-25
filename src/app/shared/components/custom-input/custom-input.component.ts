@@ -1,8 +1,6 @@
 import { Component, Input, Output, EventEmitter, forwardRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor, ReactiveFormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
-
 /**
  * FA-028 - Input customizado reutilizável
  * Suporta ícone, label, integração com Reactive Forms.
@@ -10,7 +8,7 @@ import { IonicModule } from '@ionic/angular';
 @Component({
   selector: 'app-custom-input',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IonicModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './custom-input.component.html',
   styleUrls: ['./custom-input.component.scss'],
   providers: [

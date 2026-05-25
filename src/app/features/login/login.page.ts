@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { LoginFacade } from './login.facade';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
 import { CustomInputComponent } from '../../shared/components/custom-input/custom-input.component';
@@ -24,8 +23,6 @@ import { AuthService } from '../../core/services/auth.service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    IonicModule,
-    HeaderInstitucionalComponent,
     CustomInputComponent,
     LoadingButtonComponent,
     ErrorMessageComponent,

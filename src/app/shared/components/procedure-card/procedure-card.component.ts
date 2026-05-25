@@ -1,11 +1,11 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonRippleEffect } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-procedure-card',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonRippleEffect],
   providers: [DatePipe],
   templateUrl: './procedure-card.component.html',
   styleUrls: ['./procedure-card.component.scss']

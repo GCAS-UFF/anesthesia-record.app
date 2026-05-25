@@ -1,13 +1,13 @@
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonIcon } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-patient-info-card',
   templateUrl: './patient-info-card.component.html',
   styleUrls: ['./patient-info-card.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonIcon],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PatientInfoCardComponent {

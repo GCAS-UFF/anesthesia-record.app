@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
+import { IonCheckbox } from '@ionic/angular/standalone';
 import { FormSectionComponent } from '../../../../shared/components/form-section/form-section.component';
 import { RadioGroupComponent } from '../../../../shared/components/radio-group/radio-group.component';
 import { CheckboxGroupComponent } from '../../../../shared/components/checkbox-group/checkbox-group.component';
@@ -13,7 +13,7 @@ import { FormFieldComponent } from '../../../../shared/components/form-field/for
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    IonicModule,
+    IonCheckbox,
     FormSectionComponent,
     RadioGroupComponent,
     CheckboxGroupComponent,

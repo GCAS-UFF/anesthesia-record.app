@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { IonicModule, AlertController, ToastController } from '@ionic/angular';
+import { AlertController, ToastController } from '@ionic/angular/standalone';
+import { IonButton, IonIcon, IonCheckbox, IonSpinner } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable, of, Subscription } from "rxjs";
@@ -16,7 +17,8 @@ import {
   printOutline,
   arrowBackOutline,
   closeOutline,
-  addOutline
+  addOutline,
+  timeOutline
 } from 'ionicons/icons';
 
 // Shared Components
@@ -40,7 +42,10 @@ import { AnesthesiaRecordModel } from 'src/app/shared/models/anesthesia-record.m
   standalone: true,
   imports: [
     CommonModule,
-    IonicModule,
+    IonButton,
+    IonIcon,
+    IonCheckbox,
+    IonSpinner,
     ReactiveFormsModule,
     StatusBarComponent,
     HeaderInstitucionalComponent,

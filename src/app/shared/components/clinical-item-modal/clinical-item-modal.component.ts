@@ -1,13 +1,13 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ModalController, AlertController } from '@ionic/angular';
+import { ModalController, AlertController, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonFooter } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
 import { Agent, ClinicalEvent, FluidBalance } from 'src/app/core/models/clinical-data.model';
 
 @Component({
   selector: 'app-clinical-item-modal',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, FormsModule, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonFooter],
   templateUrl: './clinical-item-modal.component.html',
   styleUrls: ['./clinical-item-modal.component.scss']
 })

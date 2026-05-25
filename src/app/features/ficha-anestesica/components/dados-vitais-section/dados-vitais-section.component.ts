@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
+import { IonSelect, IonSelectOption } from '@ionic/angular/standalone';
 import { FormSectionComponent } from '../../../../shared/components/form-section/form-section.component';
 import { FormFieldComponent } from '../../../../shared/components/form-field/form-field.component';
 
@@ -11,7 +11,8 @@ import { FormFieldComponent } from '../../../../shared/components/form-field/for
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    IonicModule,
+    IonSelect,
+    IonSelectOption,
     FormSectionComponent,
     FormFieldComponent
   ],

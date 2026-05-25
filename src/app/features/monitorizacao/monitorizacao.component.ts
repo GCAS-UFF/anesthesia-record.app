@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { IonicModule, AlertController, ActionSheetController, ModalController } from '@ionic/angular';
+import { AlertController, ActionSheetController, ModalController, IonButton, IonIcon } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
@@ -49,7 +49,8 @@ import Chart from 'chart.js/auto';
   standalone: true,
   imports: [
     CommonModule,
-    IonicModule,
+    IonButton,
+    IonIcon,
     StatusBarComponent,
     HeaderInstitucionalComponent,
     PatientInfoCardComponent,

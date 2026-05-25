@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonContent, IonButton } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-registro-cirurgia',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonContent, IonButton],
   template: `
     <ion-content class="ion-padding">
       <h1>Registro da Cirurgia (Histórico)</h1>

@@ -1,11 +1,10 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
 
 @Component({
   selector: 'app-form-field',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule],
   template: `
     <div class="form-field" [class.error]="hasError">
       <label *ngIf="label" class="field-label">

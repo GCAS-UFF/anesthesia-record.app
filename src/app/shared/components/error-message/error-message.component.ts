@@ -1,5 +1,4 @@
 import { Component, Input } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 
 /**
@@ -9,7 +8,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-error-message',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule],
   templateUrl: './error-message.component.html',
   styleUrls: ['./error-message.component.scss']
 })

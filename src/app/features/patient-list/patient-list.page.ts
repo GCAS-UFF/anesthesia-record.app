@@ -1,6 +1,7 @@
 import { Component, ViewChild, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { IonicModule, AlertController, LoadingController, ToastController, IonContent } from '@ionic/angular';
+import { AlertController, LoadingController, ToastController } from '@ionic/angular/standalone';
+import { IonContent, IonSpinner, IonSkeletonText, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { chevronBackOutline, chevronForwardOutline, checkmarkCircle } from 'ionicons/icons';
 import { Router } from '@angular/router';
@@ -21,7 +22,9 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
   standalone: true,
   imports: [
     CommonModule,
-    IonicModule,
+    IonSpinner,
+    IonSkeletonText,
+    IonIcon,
     StatusBarComponent,
     HeaderInstitucionalComponent,
     SearchBarComponent,

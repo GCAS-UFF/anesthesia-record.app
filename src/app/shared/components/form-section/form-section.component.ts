@@ -1,7 +1,5 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
-
 @Component({
   selector: 'app-form-section',
   template: `
@@ -56,7 +54,7 @@ import { IonicModule } from '@ionic/angular';
     }
   `],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule]
 })
 export class FormSectionComponent {
   @Input() title: string = '';

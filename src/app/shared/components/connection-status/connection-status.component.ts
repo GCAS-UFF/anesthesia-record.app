@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
 
 /**
  * FA-028 - Status de conexão reutilizável
@@ -9,7 +8,7 @@ import { IonicModule } from '@ionic/angular';
 @Component({
   selector: 'app-connection-status',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule],
   templateUrl: './connection-status.component.html',
   styleUrls: ['./connection-status.component.scss']
 })
