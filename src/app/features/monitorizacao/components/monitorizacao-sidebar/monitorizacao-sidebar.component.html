@@ -1,0 +1,127 @@
+<div class="right-column">
+    <div class="timer-panel">
+        <div class="timer-label">TEMPO CIRÚRGICO</div>
+        <div class="timer-value">{{ timerValue }}</div>
+        <div class="timer-actions">
+            <ion-button expand="block" size="small" [color]="isAnesthesiaStarted ? 'success' : 'tertiary'" class="btn-timer" (click)="iniciarAnestesia()" [disabled]="isSurgeryFinished">
+                <ion-icon [name]="isAnesthesiaStarted ? 'checkmark-done-outline' : 'medkit-outline'" slot="start"></ion-icon>
+                {{ isAnesthesiaStarted ? 'ANESTESIA: ' + startTimeAnesthesia : 'INICIAR ANESTESIA' }}
+            </ion-button>
+            <ion-button expand="block" size="small" [color]="isSurgeryStarted ? 'success' : 'warning'" class="btn-timer" (click)="iniciarCirurgia()" [disabled]="!isAnesthesiaStarted || isSurgeryFinished">
+                <ion-icon [name]="isSurgeryStarted ? 'checkmark-done-outline' : 'cut-outline'" slot="start"></ion-icon>
+                {{ isSurgeryStarted ? 'CIRURGIA: ' + startTimeSurgery : 'INICIAR CIRURGIA' }}
+            </ion-button>
+        </div>
+    </div>
+
+    <div class="accordions-container">
+        <!-- AGENTES -->
+        <div class="monitor-accordion agents">
+            <div class="accordion-header" (click)="openAgentModal()">
+                <div class="header-left">💊 <span>AGENTES</span></div>
+                <div class="header-right">
+                  <ion-button fill="clear" size="small" class="btn-add-inline" *ngIf="!isSurgeryFinished">+</ion-button>
+                  <ion-icon name="triangle" class="accordion-arrow" 
+                            (click)="toggleSection('agents', $event)"
+                            [style.transform]="expandedSections.agents ? 'rotate(180deg)' : 'rotate(90deg)'"></ion-icon>
+                </div>
+            </div>
+            <div class="accordion-content" *ngIf="expandedSections.agents" [class.empty]="agents.length === 0">
+                <div *ngIf="agents.length === 0">Nenhum agente</div>
+                <div *ngFor="let agent of agents; trackBy: trackById" class="raia-item clinical-item" (click)="openAgentModal(agent)">
+                    <div class="raia-info">
+                        <span class="raia-name">💊 {{ agent.name }} ({{ agent.dose }})</span>
+                        <span class="raia-sub">{{ agent.route }} | {{ agent.presentation }}</span>
+                    </div>
+                    <span class="raia-time">{{ agent.time }}</span>
+                    <ion-icon name="trash-outline" class="btn-delete-mini" *ngIf="!isSurgeryFinished" (click)="deleteAgent($event, agent.id!)"></ion-icon>
+                </div>
+            </div>
+        </div>
+
+        <!-- EVENTOS -->
+        <div class="monitor-accordion events">
+            <div class="accordion-header" (click)="openEventModal('event')">
+                <div class="header-left">🔔 <span>EVENTOS</span></div>
+                <div class="header-right">
+                  <ion-button fill="clear" size="small" class="btn-add-inline" *ngIf="!isSurgeryFinished">+</ion-button>
+                  <ion-icon name="triangle" class="accordion-arrow"
+                            (click)="toggleSection('events', $event)"
+                            [style.transform]="expandedSections.events ? 'rotate(180deg)' : 'rotate(90deg)'"></ion-icon>
+                </div>
+            </div>
+            <div class="accordion-content" *ngIf="expandedSections.events" [class.empty]="events.length === 0">
+                <div *ngIf="events.length === 0">Nenhum evento</div>
+                <div *ngFor="let ev of events; trackBy: trackById" class="raia-item clinical-item" (click)="openEventModal(ev.type, ev)">
+                    <div class="raia-info">
+                        <span class="raia-name">📋 {{ ev.name }}</span>
+                        <span class="raia-type">{{ ev.type | uppercase }}</span>
+                    </div>
+                    <span class="raia-time">{{ ev.time }}</span>
+                    <ion-icon name="trash-outline" class="btn-delete-mini" *ngIf="!isSurgeryFinished" (click)="deleteEvent($event, ev.id!)"></ion-icon>
+                </div>
+            </div>
+        </div>
+
+        <!-- BALANÇO (GANHOS & PERDAS) -->
+        <div class="monitor-accordion balance">
+            <div class="accordion-header" (click)="openBalanceModal()">
+                <div class="header-left">⚖️ <span>GANHOS & PERDAS</span></div>
+                <div class="header-right">
+                  <ion-button fill="clear" size="small" class="btn-add-inline" *ngIf="!isSurgeryFinished">+</ion-button>
+                  <ion-icon name="triangle" class="accordion-arrow"
+                            (click)="toggleSection('balance', $event)"
+                            [style.transform]="expandedSections.balance ? 'rotate(180deg)' : 'rotate(90deg)'"></ion-icon>
+                </div>
+            </div>
+            <div class="accordion-content" *ngIf="expandedSections.balance">
+                <!-- Cabeçalho de Totais igual à foto -->
+                <div class="balance-header-grid">
+                    <div class="grid-col">
+                        <span class="label">GANHOS</span>
+                        <span class="value">{{ getTotalGains() }} ml</span>
+                    </div>
+                    <div class="grid-col">
+                        <span class="label">PERDAS</span>
+                        <span class="value">{{ getTotalLosses() }} ml</span>
+                    </div>
+                    <div class="grid-col">
+                        <span class="label">BALANÇO</span>
+                        <span class="value" [class.pos]="getNetBalance() >= 0" [class.neg]="getNetBalance() < 0">
+                            {{ getNetBalance() >= 0 ? '+' : '' }}{{ getNetBalance() }} ml
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Lista de Itens Detalhada -->
+                <div *ngFor="let item of balanceItems; trackBy: trackById" class="balance-row-item" (click)="openBalanceModal(item)">
+                    <div class="item-left">
+                        <span class="item-icon">{{ item.type === 'gain' ? '💧' : '🩸' }}</span>
+                        <span class="item-name">{{ item.category }}</span>
+                    </div>
+                    <div class="item-right">
+                        <span class="item-value" [class.pos]="item.type === 'gain'" [class.neg]="item.type === 'loss'">
+                            {{ item.type === 'gain' ? '+' : '-' }}{{ item.value }} ml
+                        </span>
+                        <span class="item-time">{{ item.time }}</span>
+                        <div class="item-actions">
+                            <ion-icon name="close-outline" class="delete-icon" *ngIf="!isSurgeryFinished" (click)="deleteBalance($event, item.id!)"></ion-icon>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer-actions">
+        <ion-button *ngIf="!isSurgeryFinished" expand="block" color="danger" class="btn-finish" (click)="finalizarCirurgia()" [disabled]="!isSurgeryStarted">
+            <ion-icon name="checkmark-done-circle-outline" slot="start"></ion-icon> FINALIZAR CIRURGIA
+        </ion-button>
+        <div *ngIf="isSurgeryFinished" class="finished-banner">
+            <ion-icon name="checkmark-done-circle-outline" class="success-icon"></ion-icon>
+            <div class="banner-text">
+                <span class="status-title">CIRURGIA FINALIZADA</span>
+                <span class="status-subtitle">Registros arquivados em modo leitura</span>
+            </div>
+        </div>
+    </div>
+</div>

@@ -42,8 +42,12 @@ import { Agent, ClinicalEvent, FluidBalance } from 'src/app/core/models/clinical
 // Services
 import { SurgeryService } from 'src/app/core/services/surgery.service';
 
-// Chart.js
-import Chart from 'chart.js/auto';
+// Chart.js removed from here, now in MonitorizacaoGraficoComponent
+
+// Sub-components
+import { MonitorizacaoTabelaComponent } from './components/monitorizacao-tabela/monitorizacao-tabela.component';
+import { MonitorizacaoGraficoComponent } from './components/monitorizacao-grafico/monitorizacao-grafico.component';
+import { MonitorizacaoSidebarComponent } from './components/monitorizacao-sidebar/monitorizacao-sidebar.component';
 
 @Component({
   selector: 'app-monitorizacao',
@@ -56,7 +60,10 @@ import Chart from 'chart.js/auto';
     HeaderInstitucionalComponent,
     PatientInfoCardComponent,
     QuickVitalInputComponent,
-    FormsModule
+    FormsModule,
+    MonitorizacaoTabelaComponent,
+    MonitorizacaoGraficoComponent,
+    MonitorizacaoSidebarComponent
   ],
   templateUrl: './monitorizacao.component.html',
   styleUrls: ['./monitorizacao.component.scss']
@@ -68,7 +75,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   selectedProcedure: any = null;
   isLoading = true;
   hasData = false;
-  private chart: any;
+  // Chart is now managed by MonitorizacaoGraficoComponent
   vitalRecords: MonitoringRecord[] = [];
   selectedRecord: MonitoringRecord | null = null;
   isNewRecord = false; // Removido private para uso no template se necessário
@@ -142,7 +149,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.createChart();
+    // Chart creation moved to Grafico component
   }
 
   ngOnInit() {
@@ -317,7 +324,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
           handler: (data) => {
             this.startTimeAnesthesia = data.time;
             this.isAnesthesiaStarted = true;
-            this.updateChartData();
+            this.updateChartDataLocal();
           }
         }
       ]
@@ -381,7 +388,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     if (isFirstTime) {
       this.startTimer();
     }
-    this.updateChartData();
+    this.updateChartDataLocal();
   }
 
   async mudarPosicao(novaPosicao: string) {
@@ -408,7 +415,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
               type: 'position',
               name: `Mudança de Posição: ${novaPosicao}`
             });
-            this.updateChartData();
+            this.updateChartDataLocal();
           }
         }
       ]
@@ -456,7 +463,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     this.selectedRecord = null;
     this.isNewRecord = false;
     this.saveToLocalStorage();
-    this.updateChartData();
+    // Chart will update automatically via Inputs
     
     // 4. Mostra alerta de sucesso
     const successAlert = await this.alertController.create({
@@ -579,7 +586,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     this.isNewRecord = true; // Marca que este registro foi acabado de criar
     this.hasData = true;
 
-    this.updateChartData();
+    this.updateChartDataLocal();
     this.scrollToEditor();
   }
 
@@ -617,11 +624,10 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     const wasNew = this.isNewRecord;
     this.selectedRecord = null;
     this.isNewRecord = false;
-    this.updateChartData();
+    this.updateChartDataLocal();
   }
 
-  toggleSection(section: 'agents' | 'events' | 'balance', event: Event) {
-    event.stopPropagation();
+  toggleSection(section: string) {
     this.expandedSections[section] = !this.expandedSections[section];
   }
 
@@ -653,7 +659,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
       } else {
         this.agents.push(newAgent);
       }
-      this.updateChartData();
+      this.updateChartDataLocal();
     } else if (role === 'delete' && data?.id) {
       this.deleteAgent(data.id);
     }
@@ -681,7 +687,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
       } else {
         this.events.push(newItem);
       }
-      this.updateChartData();
+      this.updateChartDataLocal();
     } else if (role === 'delete' && data?.id) {
       this.deleteEvent(data.id);
     }
@@ -709,15 +715,15 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
       } else {
         this.balanceItems.push(newItem);
       }
-      this.updateChartData();
+      this.updateChartDataLocal();
     } else if (role === 'delete' && data?.id) {
       this.deleteBalance(data.id);
     }
   }
 
-  deleteAgent(id: string) { if (this.isSurgeryFinished) return; this.agents = this.agents.filter(a => a.id !== id); this.updateChartData(); }
-  deleteEvent(id: string) { if (this.isSurgeryFinished) return; this.events = this.events.filter(e => e.id !== id); this.updateChartData(); }
-  deleteBalance(id: string) { if (this.isSurgeryFinished) return; this.balanceItems = this.balanceItems.filter(b => b.id !== id); this.updateChartData(); }
+  deleteAgent(id: string) { if (this.isSurgeryFinished) return; this.agents = this.agents.filter(a => a.id !== id); this.updateChartDataLocal(); }
+  deleteEvent(id: string) { if (this.isSurgeryFinished) return; this.events = this.events.filter(e => e.id !== id); this.updateChartDataLocal(); }
+  deleteBalance(id: string) { if (this.isSurgeryFinished) return; this.balanceItems = this.balanceItems.filter(b => b.id !== id); this.updateChartDataLocal(); }
 
   getTotalGains() { return this.balanceItems.filter(b => b.type === 'gain').reduce((acc, b) => acc + (b.value || 0), 0); }
   getTotalLosses() { return this.balanceItems.filter(b => b.type === 'loss').reduce((acc, b) => acc + (b.value || 0), 0); }
@@ -731,7 +737,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     }
     this.selectedRecord = null;
     this.isNewRecord = false;
-    this.updateChartData(); // Atualiza o gráfico para refletir o cancelamento
+    this.updateChartDataLocal(); // Atualiza o gráfico para refletir o cancelamento
   }
 
   async deleteRecord(record: MonitoringRecord) {
@@ -753,7 +759,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
             if (this.selectedRecord === record) {
               this.selectedRecord = null;
             }
-            this.updateChartData();
+            this.updateChartDataLocal();
           }
         }
       ]
@@ -888,338 +894,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     await alert.present();
   }
 
-  // --- LÓGICA DO GRÁFICO (FA-051) ---
-
-  private createEmojiCanvas(emoji: string): HTMLCanvasElement {
-    const canvas = document.createElement('canvas');
-    canvas.width = 16;
-    canvas.height = 16;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.font = '13px serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(emoji, 8, 9); // Ajuste fino no Y para centralizar o emoji no canvas menor
-    }
-    return canvas;
-  }
-
-  createChart() {
-    const ctx = document.getElementById('vitalChart') as HTMLCanvasElement;
-    if (!ctx) return;
-
-    this.chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [
-          {
-            label: 'FC (Pulso)',
-            data: [],
-            borderColor: '#ef4444',
-            backgroundColor: '#ef4444',
-            pointStyle: 'circle',
-            pointRadius: 3,
-            borderWidth: 1,
-            tension: 0.3,
-            spanGaps: true,
-            yAxisID: 'y'
-          },
-          {
-            label: 'PA Sistólica (V)',
-            data: [],
-            borderColor: '#3b82f6',
-            backgroundColor: 'transparent',
-            pointStyle: (ctx: any) => {
-                const canvas = document.createElement('canvas');
-                canvas.width = 14;
-                canvas.height = 14;
-                const c = canvas.getContext('2d')!;
-                c.strokeStyle = '#3b82f6';
-                c.lineWidth = 1.5;
-                c.beginPath();
-                c.moveTo(2, 2);
-                c.lineTo(7, 12);
-                c.lineTo(12, 2);
-                c.stroke();
-                return canvas;
-            },
-            pointRadius: 5,
-            borderWidth: 1.5,
-            tension: 0.1,
-            spanGaps: true,
-            yAxisID: 'y'
-          },
-          {
-            label: 'PA Diastólica (Λ)',
-            data: [],
-            borderColor: '#3b82f6',
-            backgroundColor: 'transparent',
-            pointStyle: (ctx: any) => {
-                const canvas = document.createElement('canvas');
-                canvas.width = 14;
-                canvas.height = 14;
-                const c = canvas.getContext('2d')!;
-                c.strokeStyle = '#3b82f6';
-                c.lineWidth = 1.5;
-                c.beginPath();
-                c.moveTo(2, 12);
-                c.lineTo(7, 2);
-                c.lineTo(12, 12);
-                c.stroke();
-                return canvas;
-            },
-            pointRadius: 5,
-            borderWidth: 1.5,
-            tension: 0.1,
-            spanGaps: true,
-            yAxisID: 'y'
-          },
-          {
-            label: 'PAM (▲)',
-            data: [],
-            borderColor: '#1e293b',
-            backgroundColor: '#1e293b',
-            pointStyle: 'triangle',
-            pointRadius: 4,
-            borderWidth: 1,
-            tension: 0.1,
-            spanGaps: true,
-            yAxisID: 'y'
-          },
-          {
-            label: 'SpO₂ (%)',
-            data: [],
-            borderColor: '#10b981',
-            backgroundColor: '#10b981',
-            pointStyle: 'rect',
-            pointRadius: 4,
-            borderWidth: 1,
-            tension: 0.1,
-            spanGaps: true,
-            yAxisID: 'ySpO2'
-          },
-          {
-            label: 'Início Anestesia (X)',
-            data: [],
-            borderColor: '#8b5cf6',
-            backgroundColor: '#8b5cf6',
-            pointStyle: 'crossRot', // Forma um 'X'
-            pointRadius: 4,
-            borderWidth: 2,
-            showLine: false
-          },
-          {
-            label: 'Início Cirurgia (☉)',
-            data: [],
-            borderColor: '#f59e0b',
-            backgroundColor: '#ffffff',
-            pointStyle: (ctx: any) => {
-                // Desenha o círculo com ponto no meio manualmente para paridade total
-                const canvas = document.createElement('canvas');
-                canvas.width = 14;
-                canvas.height = 14;
-                const c = canvas.getContext('2d')!;
-                c.strokeStyle = '#f59e0b';
-                c.lineWidth = 1.5;
-                c.beginPath();
-                c.arc(7, 7, 5, 0, Math.PI * 2);
-                c.stroke();
-                c.fillStyle = '#f59e0b';
-                c.beginPath();
-                c.arc(7, 7, 1.5, 0, Math.PI * 2);
-                c.fill();
-                return canvas;
-            },
-            pointRadius: 5,
-            borderWidth: 2,
-            showLine: false
-          },
-          // Datasets Clínicos (Novos)
-          { label: 'Agentes', data: [], pointStyle: 'rect', pointRadius: 0, showLine: false },
-          { label: 'Eventos', data: [], pointStyle: 'rect', pointRadius: 0, showLine: false },
-          { label: 'Posições', data: [], pointStyle: 'rect', pointRadius: 0, showLine: false },
-          { label: 'Ganhos', data: [], pointStyle: 'rect', pointRadius: 0, showLine: false },
-          { label: 'Perdas', data: [], pointStyle: 'rect', pointRadius: 0, showLine: false }
-        ]
-      },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false // Usamos nossa legenda customizada
-        },
-        tooltip: {
-          enabled: true,
-          callbacks: {
-            label: (ctx: any) => {
-              if (ctx.dataset.label === 'Agentes') {
-                const agent = this.agents.find(a => a.time === ctx.label);
-                return `Agente: ${agent?.name} (${agent?.dose})`;
-              }
-              if (ctx.dataset.label === 'Eventos') {
-                const ev = this.events.find(e => e.time === ctx.label);
-                return `Evento: ${ev?.name}`;
-              }
-              if (ctx.dataset.label === 'Ganhos' || ctx.dataset.label === 'Perdas') {
-                const item = this.balanceItems.find(b => b.time === ctx.label);
-                return `${item?.category}: ${item?.value}ml`;
-              }
-              return `${ctx.dataset.label}: ${ctx.parsed.y}`;
-            }
-          }
-        }
-      },
-      scales: {
-        y: {
-          min: 0,
-          max: 220, // Aumentado para dar espaço aos ícones no topo
-          ticks: {
-            stepSize: 20,
-            color: '#94a3b8',
-            font: { size: 10, weight: 'bold' }
-          },
-          grid: { color: '#f1f5f9' }
-        },
-          ySpO2: {
-            type: 'linear',
-            display: true,
-            position: 'right',
-            min: 80,
-            max: 100,
-            grid: { drawOnChartArea: false }, // Não sobrepor grid à esquerda
-            ticks: {
-              callback: (value) => value + '%',
-              color: '#10b981',
-              font: { weight: 'bold' }
-            }
-          },
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 } }
-          }
-        }
-      }
-    });
-
-    this.updateChartData();
-  }
-
-  private updateChartData() {
-    if (!this.chart) return;
-
-    // Usa todos os registros da tabela como fonte única de verdade para o gráfico
-    const validRecords = this.vitalRecords;
-
-    // Coleta todos os horários únicos registrados
-    const timesArray: string[] = [];
-    validRecords.forEach(r => timesArray.push(r.time));
-    if (this.startTimeAnesthesia) timesArray.push(this.startTimeAnesthesia);
-    if (this.startTimeSurgery) timesArray.push(this.startTimeSurgery);
-    this.agents.forEach(a => timesArray.push(a.time));
-    this.events.forEach(e => timesArray.push(e.time));
-    this.balanceItems.forEach(b => timesArray.push(b.time));
-
-    let sortedTimes: string[] = [];
-    if (timesArray.length > 0) {
-      // Pega o menor e o maior tempo
-      const sorted = [...timesArray].sort((a, b) => a.localeCompare(b));
-      const minTime = sorted[0];
-      const maxTime = sorted[sorted.length - 1];
-
-      // Gera todos os intervalos de 5 minutos entre o mínimo e o máximo
-      const fullTimeLabels = new Set<string>(timesArray);
-      const today = new Date().toISOString().split('T')[0];
-      let current = new Date(`${today}T${minTime}:00`);
-      const end = new Date(`${today}T${maxTime}:00`);
-
-      while (current <= end) {
-        fullTimeLabels.add(current.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-        current = new Date(current.getTime() + 5 * 60000); // +5 minutos
-      }
-
-      sortedTimes = Array.from(fullTimeLabels).sort((a, b) => a.localeCompare(b));
-    }
-
-    this.hasData = timesArray.length > 0;
-    this.chart.data.labels = sortedTimes;
-
-    this.chart.data.datasets[0].data = sortedTimes.map(t => {
-      const rec = validRecords.find(r => r.time === t);
-      return rec ? rec.fc : null;
-    });
-    this.chart.data.datasets[1].data = sortedTimes.map(t => {
-      const rec = validRecords.find(r => r.time === t);
-      return rec ? rec.pas : null;
-    });
-    this.chart.data.datasets[2].data = sortedTimes.map(t => {
-      const rec = validRecords.find(r => r.time === t);
-      return rec ? rec.pad : null;
-    });
-    this.chart.data.datasets[3].data = sortedTimes.map(t => {
-      const rec = validRecords.find(r => r.time === t);
-      return rec ? rec.pam : null;
-    });
-    this.chart.data.datasets[4].data = sortedTimes.map(t => {
-      const rec = validRecords.find(r => r.time === t);
-      return rec ? rec.spo2 : null;
-    });
-
-    const anesDs = this.chart.data.datasets.find((d: any) => d.label && d.label.includes('Início Anestesia'));
-    if (anesDs) {
-      anesDs.data = sortedTimes.map(t => t === this.startTimeAnesthesia ? 100 : null);
-    }
-
-    const surgDs = this.chart.data.datasets.find((d: any) => d.label && d.label.includes('Início Cirurgia'));
-    if (surgDs) {
-      surgDs.data = sortedTimes.map(t => t === this.startTimeSurgery ? 100 : null);
-    }
-
-    const pillIcon = this.createEmojiCanvas('💊');
-    const bellIcon = this.createEmojiCanvas('🔔');
-    const positionIcon = this.createEmojiCanvas('🧍');
-    const blueDrop = this.createEmojiCanvas('💧');
-    const redDrop = this.createEmojiCanvas('🩸');
-
-    const agentsDs = this.chart.data.datasets.find((d: any) => d.label === 'Agentes');
-    if (agentsDs) {
-      agentsDs.pointStyle = pillIcon;
-      agentsDs.pointRadius = 7;
-      agentsDs.data = sortedTimes.map(t => this.agents.find(a => a.time === t) ? 210 : null);
-    }
-
-    const eventsDs = this.chart.data.datasets.find((d: any) => d.label === 'Eventos');
-    if (eventsDs) {
-      eventsDs.pointStyle = bellIcon;
-      eventsDs.pointRadius = 7;
-      eventsDs.data = sortedTimes.map(t => this.events.find(e => e.time === t && e.type !== 'position') ? 200 : null);
-    }
-
-    const posDs = this.chart.data.datasets.find((d: any) => d.label === 'Posições');
-    if (posDs) {
-      posDs.pointStyle = positionIcon;
-      posDs.pointRadius = 7;
-      posDs.data = sortedTimes.map(t => this.events.find(e => e.time === t && e.type === 'position') ? 190 : null);
-    }
-
-    const gainsDs = this.chart.data.datasets.find((d: any) => d.label === 'Ganhos');
-    if (gainsDs) {
-      gainsDs.pointStyle = blueDrop;
-      gainsDs.pointRadius = 7;
-      gainsDs.data = sortedTimes.map(t => this.balanceItems.find(b => b.time === t && b.type === 'gain') ? 180 : null);
-    }
-
-    const lossesDs = this.chart.data.datasets.find((d: any) => d.label === 'Perdas');
-    if (lossesDs) {
-      lossesDs.pointStyle = redDrop;
-      lossesDs.pointRadius = 7;
-      lossesDs.data = sortedTimes.map(t => this.balanceItems.find(b => b.time === t && b.type === 'loss') ? 180 : null);
-    }
-
-    this.chart.update('none');
-    this.saveToLocalStorage();
-  }
+  // Chart methods removed. Lógica do Gráfico foi movida para MonitorizacaoGraficoComponent.
 
   async reiniciarTeste() {
     const alert = await this.alertController.create({
@@ -1259,8 +934,12 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
               localStorage.removeItem(`monitoring_record_${this.pacienteId}`);
             }
 
-            // Atualiza gráfico e salva estado limpo
-            this.updateChartData();
+            // Atualiza gráfico (Removido, as referências de array vão atualizar o filho)
+            // Para garantir a propagação:
+            this.vitalRecords = [...this.vitalRecords];
+            this.agents = [...this.agents];
+            this.events = [...this.events];
+            this.balanceItems = [...this.balanceItems];
           }
         }
       ]
@@ -1308,19 +987,18 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
       }
 
       this.sortRecords();
-      this.updateChartData();
+      // Emissão para recriar referência para change detection no OnPush
+      this.vitalRecords = [...this.vitalRecords];
       console.log('[Auto-Repeat] Sinais vitais repetidos/atualizados:', newTime);
     }
   }
 
-  private prepareClinicalDatasets(): any[] {
-    // Retorna datasets vazios com os labels corretos que o updateChartData vai preencher
-    return [
-      { label: 'Agentes', data: [], pointStyle: 'rect', pointRadius: 0, showLine: false },
-      { label: 'Eventos', data: [], pointStyle: 'rect', pointRadius: 0, showLine: false },
-      { label: 'Posições', data: [], pointStyle: 'rect', pointRadius: 0, showLine: false },
-      { label: 'Ganhos', data: [], pointStyle: 'rect', pointRadius: 0, showLine: false },
-      { label: 'Perdas', data: [], pointStyle: 'rect', pointRadius: 0, showLine: false }
-    ];
+  // updateChartData foi removido, em vez disso disparamos novas referências quando array muda
+  private updateChartDataLocal() {
+    this.vitalRecords = [...this.vitalRecords];
+    this.agents = [...this.agents];
+    this.events = [...this.events];
+    this.balanceItems = [...this.balanceItems];
+    this.saveToLocalStorage();
   }
 }

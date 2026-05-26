@@ -1,0 +1,82 @@
+.graph-section {
+    background: white;
+    border-radius: 20px;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+    flex: none;
+
+    .section-title-premium {
+        font-size: 12px;
+        font-weight: 800;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        .pulse-icon { color: #ef4444; }
+    }
+
+    .graph-container {
+        height: 220px;
+        background: #fafafa;
+        border-radius: 12px;
+        position: relative;
+        overflow: hidden;
+        
+        .graph-placeholder {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+        }
+    }
+
+    /* LEGENDA CUSTOMIZADA */
+    .custom-chart-legend {
+        margin-top: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+
+        .legend-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+
+            .legend-item {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 11px;
+                font-weight: 700;
+                color: #475569;
+
+                .dot {
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 50%;
+                    &.fc { background: #ef4444; }
+                    &.spo2 { background: #10b981; border-radius: 2px; }
+                }
+            }
+
+            .sym {
+                font-family: monospace;
+                font-size: 14px;
+                font-weight: 900;
+                line-height: 1;
+                &.pas { color: #3b82f6; }
+                &.pad { color: #3b82f6; }
+                &.pam { color: #1e293b; font-size: 12px; }
+                &.anes { color: #8b5cf6; }
+                &.surg { color: #f59e0b; font-size: 16px; }
+            }
+        }
+
+        .surgical-markers {
+            border-top: 1px solid #f1f5f9;
+            padding-top: 8px;
+            width: 80%;
+        }
+    }
+}
