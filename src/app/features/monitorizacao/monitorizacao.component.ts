@@ -72,6 +72,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   selectedRecord: MonitoringRecord | null = null;
   isNewRecord = false; // Removido private para uso no template se necessário
   customFields: { label: string, key: string }[] = [];
+  private autoRefreshInterval: any;
 
   // Dados Clínicos (Novo)
   agents: Agent[] = [];
@@ -146,7 +147,18 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     if (this.pacienteId) {
       this.loadPatientData(this.pacienteId);
       this.loadFromLocalStorage();
+      this.startAutoRefresh();
     }
+  }
+
+  private startAutoRefresh() {
+    // Polling leve dos dados cadastrais/status do paciente a cada 30 segundos
+    this.autoRefreshInterval = setInterval(() => {
+      if (this.pacienteId) {
+        console.log('[Auto-Refresh] Atualizando dados cadastrais/procedimento do paciente...');
+        this.loadPatientData(this.pacienteId);
+      }
+    }, 30000);
   }
 
   private loadPatientData(id: string) {
@@ -272,6 +284,9 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   ngOnDestroy() {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
+    }
+    if (this.autoRefreshInterval) {
+      clearInterval(this.autoRefreshInterval);
     }
   }
 
