@@ -56,37 +56,14 @@
             <!-- ÁREA SCROLLÁVEL: Gráficos e Tabela -->
             <div class="scrollable-content-area">
                 <!-- SEÇÃO DO GRÁFICO -->
-                <div class="graph-section">
-                    <div class="section-title-premium">
-                        <ion-icon name="pulse-outline" class="pulse-icon"></ion-icon>
-                        TENDÊNCIAS VITAIS
-                    </div>
-                    <div class="graph-container">
-                        <div class="graph-placeholder">
-                            <canvas id="vitalChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- LEGENDA CUSTOMIZADA -->
-                    <div class="custom-chart-legend">
-                        <div class="legend-row main-vitals">
-                            <div class="legend-item"><span class="dot fc"></span> FC (Pulso)</div>
-                            <div class="legend-item"><span class="sym pas">V</span> PA Sistólica</div>
-                            <div class="legend-item"><span class="sym pad">Λ</span> PA Diastólica</div>
-                            <div class="legend-item"><span class="sym pam">▲</span> PAM</div>
-                            <div class="legend-item"><span class="dot spo2"></span> SpO₂ (%)</div>
-                        </div>
-                        <div class="legend-row surgical-markers">
-                            <div class="legend-item"><span class="sym anes">X</span> Início Anestesia</div>
-                            <div class="legend-item"><span class="sym surg">☉</span> Início Cirurgia</div>
-                            <div class="legend-item">💊 Agente</div>
-                            <div class="legend-item">🔔 Evento</div>
-                            <div class="legend-item">🧍 Posição</div>
-                            <div class="legend-item">💧 Ganho</div>
-                            <div class="legend-item">🩸 Perda</div>
-                        </div>
-                    </div>
-                </div>
+                <app-monitorizacao-grafico
+                    [vitalRecords]="vitalRecords"
+                    [agents]="agents"
+                    [events]="events"
+                    [balanceItems]="balanceItems"
+                    [startTimeAnesthesia]="startTimeAnesthesia"
+                    [startTimeSurgery]="startTimeSurgery">
+                </app-monitorizacao-grafico>
 
                 <!-- ENTRADA RÁPIDA (Aparece quando selecionado) -->
                 <app-quick-vital-input #topEditor
@@ -98,201 +75,42 @@
                 </app-quick-vital-input>
                 
                 <!-- TABELA DE REGISTROS -->
-                <div class="records-section">
-                    <div class="records-header">
-                        <div class="records-title">
-                            <ion-icon name="list-outline"></ion-icon> Histórico de Sinais
-                        </div>
-                        <div class="records-actions">
-                        <ion-button size="small" fill="outline" color="secondary" (click)="addCustomField()" [disabled]="!!selectedRecord || isSurgeryFinished">
-                            <ion-icon name="add-outline" slot="start"></ion-icon> Campo
-                        </ion-button>
-                        <ion-button size="small" fill="solid" color="primary" (click)="addTimePoint()" [disabled]="!!selectedRecord || isSurgeryFinished">
-                                <ion-icon name="add-outline" slot="start"></ion-icon> Novo Registro
-                            </ion-button>
-                        </div>
-                    </div>
-
-                    <div class="table-wrapper">
-                        <table class="vital-table">
-                            <thead>
-                                <tr>
-                                    <th class="col-hora">Hora</th>
-                                    <th>PAS</th>
-                                    <th>PAD</th>
-                                    <th>PAM</th>
-                                    <th>FC</th>
-                                    <th>SpO₂</th>
-                                    <th>EtCO₂</th>
-                                    <th>BIS</th>
-                                    <th>PVC</th>
-                                    <th>PCAP</th>
-                                    <th>T(°C)</th>
-                                <!-- Colunas Dinâmicas (+ Campo) -->
-                                <th *ngFor="let field of customFields" class="custom-th" (click)="!isSurgeryFinished && editCustomFieldMenu(field)">
-                                    {{ field.label }}
-                                    <ion-icon name="settings-outline" class="th-icon" *ngIf="!isSurgeryFinished"></ion-icon>
-                                </th>
-                                <th class="col-actions"></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let record of vitalRecords; trackBy: trackByRecords" 
-                                    [class.selected-row]="record === selectedRecord"
-                                    (click)="!isSurgeryFinished && selectRecord(record)">
-                                    <td class="col-hora">{{ record.time }}</td>
-                                    <td><input type="number" [ngModel]="record.pas" readonly></td>
-                                    <td><input type="number" [ngModel]="record.pad" readonly></td>
-                                    <td><input type="number" [ngModel]="record.pam" readonly></td>
-                                    <td><input type="number" [ngModel]="record.fc" readonly></td>
-                                    <td><input type="number" [ngModel]="record.spo2" readonly></td>
-                                    <td><input type="number" [ngModel]="record.etco2" readonly></td>
-                                    <td><input type="number" [ngModel]="record.bis" readonly></td>
-                                    <td><input type="number" [ngModel]="record.pvc" readonly></td>
-                                    <td><input type="number" [ngModel]="record.pcap" readonly></td>
-                                    <td><input type="number" [ngModel]="record.temp" readonly></td>
-                                <!-- Células Dinâmicas -->
-                                <td *ngFor="let field of customFields">
-                                    <input type="text" [(ngModel)]="record.custom![field.key]" [readonly]="record !== selectedRecord || isSurgeryFinished">
-                                </td>
-                                <td class="col-actions" (click)="$event.stopPropagation()">
-                                        <ion-icon name="trash-outline" class="btn-del" *ngIf="!isSurgeryFinished" (click)="deleteRecord(record)"></ion-icon>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <app-monitorizacao-tabela
+                    [vitalRecords]="vitalRecords"
+                    [customFields]="customFields"
+                    [selectedRecord]="selectedRecord"
+                    [isSurgeryFinished]="isSurgeryFinished"
+                    (onAddCustomField)="addCustomField()"
+                    (onAddTimePoint)="addTimePoint()"
+                    (onEditCustomFieldMenu)="editCustomFieldMenu($event)"
+                    (onSelectRecord)="selectRecord($event)"
+                    (onDeleteRecord)="deleteRecord($event)">
+                </app-monitorizacao-tabela>
             </div>
         </div>
 
         <!-- COLUNA DIREITA: Controles Fixos -->
-        <div class="right-column">
-            <div class="timer-panel">
-                <div class="timer-label">TEMPO CIRÚRGICO</div>
-                <div class="timer-value">{{ timerValue }}</div>
-                <div class="timer-actions">
-                    <ion-button expand="block" size="small" [color]="isAnesthesiaStarted ? 'success' : 'tertiary'" class="btn-timer" (click)="iniciarAnestesia()" [disabled]="isSurgeryFinished">
-                        <ion-icon [name]="isAnesthesiaStarted ? 'checkmark-done-outline' : 'medkit-outline'" slot="start"></ion-icon>
-                        {{ isAnesthesiaStarted ? 'ANESTESIA: ' + startTimeAnesthesia : 'INICIAR ANESTESIA' }}
-                    </ion-button>
-                    <ion-button expand="block" size="small" [color]="isSurgeryStarted ? 'success' : 'warning'" class="btn-timer" (click)="iniciarCirurgia()" [disabled]="!isAnesthesiaStarted || isSurgeryFinished">
-                        <ion-icon [name]="isSurgeryStarted ? 'checkmark-done-outline' : 'cut-outline'" slot="start"></ion-icon>
-                        {{ isSurgeryStarted ? 'CIRURGIA: ' + startTimeSurgery : 'INICIAR CIRURGIA' }}
-                    </ion-button>
-                </div>
-            </div>
-
-            <div class="accordions-container">
-                <!-- AGENTES -->
-                <div class="monitor-accordion agents">
-                    <div class="accordion-header" (click)="!isSurgeryFinished && openAgentModal()">
-                        <div class="header-left">💊 <span>AGENTES</span></div>
-                        <div class="header-right">
-                          <ion-button fill="clear" size="small" class="btn-add-inline" *ngIf="!isSurgeryFinished">+</ion-button>
-                          <ion-icon name="triangle" class="accordion-arrow" 
-                                    (click)="toggleSection('agents', $event)"
-                                    [style.transform]="expandedSections.agents ? 'rotate(180deg)' : 'rotate(90deg)'"></ion-icon>
-                        </div>
-                    </div>
-                    <div class="accordion-content" *ngIf="expandedSections.agents" [class.empty]="agents.length === 0">
-                        <div *ngIf="agents.length === 0">Nenhum agente</div>
-                        <div *ngFor="let agent of agents" class="raia-item clinical-item" (click)="!isSurgeryFinished && openAgentModal(agent)">
-                            <div class="raia-info">
-                                <span class="raia-name">💊 {{ agent.name }} ({{ agent.dose }})</span>
-                                <span class="raia-sub">{{ agent.route }} | {{ agent.presentation }}</span>
-                            </div>
-                            <span class="raia-time">{{ agent.time }}</span>
-                            <ion-icon name="trash-outline" class="btn-delete-mini" *ngIf="!isSurgeryFinished" (click)="$event.stopPropagation(); deleteAgent(agent.id!)"></ion-icon>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- EVENTOS -->
-                <div class="monitor-accordion events">
-                    <div class="accordion-header" (click)="!isSurgeryFinished && openEventModal('event')">
-                        <div class="header-left">🔔 <span>EVENTOS</span></div>
-                        <div class="header-right">
-                          <ion-button fill="clear" size="small" class="btn-add-inline" *ngIf="!isSurgeryFinished">+</ion-button>
-                          <ion-icon name="triangle" class="accordion-arrow"
-                                    (click)="toggleSection('events', $event)"
-                                    [style.transform]="expandedSections.events ? 'rotate(180deg)' : 'rotate(90deg)'"></ion-icon>
-                        </div>
-                    </div>
-                    <div class="accordion-content" *ngIf="expandedSections.events" [class.empty]="events.length === 0">
-                        <div *ngIf="events.length === 0">Nenhum evento</div>
-                        <div *ngFor="let ev of events" class="raia-item clinical-item" (click)="!isSurgeryFinished && openEventModal(ev.type, ev)">
-                            <div class="raia-info">
-                                <span class="raia-name">📋 {{ ev.name }}</span>
-                                <span class="raia-type">{{ ev.type | uppercase }}</span>
-                            </div>
-                            <span class="raia-time">{{ ev.time }}</span>
-                            <ion-icon name="trash-outline" class="btn-delete-mini" *ngIf="!isSurgeryFinished" (click)="$event.stopPropagation(); deleteEvent(ev.id!)"></ion-icon>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- BALANÇO (GANHOS & PERDAS) -->
-                <div class="monitor-accordion balance">
-                    <div class="accordion-header" (click)="!isSurgeryFinished && openBalanceModal()">
-                        <div class="header-left">⚖️ <span>GANHOS & PERDAS</span></div>
-                        <div class="header-right">
-                          <ion-button fill="clear" size="small" class="btn-add-inline" *ngIf="!isSurgeryFinished">+</ion-button>
-                          <ion-icon name="triangle" class="accordion-arrow"
-                                    (click)="toggleSection('balance', $event)"
-                                    [style.transform]="expandedSections.balance ? 'rotate(180deg)' : 'rotate(90deg)'"></ion-icon>
-                        </div>
-                    </div>
-                    <div class="accordion-content" *ngIf="expandedSections.balance">
-                        <!-- Cabeçalho de Totais igual à foto -->
-                        <div class="balance-header-grid">
-                            <div class="grid-col">
-                                <span class="label">GANHOS</span>
-                                <span class="value">{{ getTotalGains() }} ml</span>
-                            </div>
-                            <div class="grid-col">
-                                <span class="label">PERDAS</span>
-                                <span class="value">{{ getTotalLosses() }} ml</span>
-                            </div>
-                            <div class="grid-col">
-                                <span class="label">BALANÇO</span>
-                                <span class="value" [class.pos]="getNetBalance() >= 0" [class.neg]="getNetBalance() < 0">
-                                    {{ getNetBalance() >= 0 ? '+' : '' }}{{ getNetBalance() }} ml
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Lista de Itens Detalhada -->
-                        <div *ngFor="let item of balanceItems" class="balance-row-item" (click)="!isSurgeryFinished && openBalanceModal(item)">
-                            <div class="item-left">
-                                <span class="item-icon">{{ item.type === 'gain' ? '💧' : '🩸' }}</span>
-                                <span class="item-name">{{ item.category }}</span>
-                            </div>
-                            <div class="item-right">
-                                <span class="item-value" [class.pos]="item.type === 'gain'" [class.neg]="item.type === 'loss'">
-                                    {{ item.type === 'gain' ? '+' : '-' }}{{ item.value }} ml
-                                </span>
-                                <span class="item-time">{{ item.time }}</span>
-                                <div class="item-actions">
-                                    <ion-icon name="close-outline" class="delete-icon" *ngIf="!isSurgeryFinished" (click)="$event.stopPropagation(); deleteBalance(item.id!)"></ion-icon>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-actions">
-                <ion-button *ngIf="!isSurgeryFinished" expand="block" color="danger" class="btn-finish" (click)="finalizarCirurgia()" [disabled]="!isSurgeryStarted">
-                    <ion-icon name="checkmark-done-circle-outline" slot="start"></ion-icon> FINALIZAR CIRURGIA
-                </ion-button>
-                <div *ngIf="isSurgeryFinished" class="finished-banner">
-                    <ion-icon name="checkmark-done-circle-outline" class="success-icon"></ion-icon>
-                    <div class="banner-text">
-                        <span class="status-title">CIRURGIA FINALIZADA</span>
-                        <span class="status-subtitle">Registros arquivados em modo leitura</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <app-monitorizacao-sidebar
+            [isSurgeryStarted]="isSurgeryStarted"
+            [isSurgeryFinished]="isSurgeryFinished"
+            [isAnesthesiaStarted]="isAnesthesiaStarted"
+            [startTimeAnesthesia]="startTimeAnesthesia"
+            [startTimeSurgery]="startTimeSurgery"
+            [timerValue]="timerValue"
+            [agents]="agents"
+            [events]="events"
+            [balanceItems]="balanceItems"
+            [expandedSections]="expandedSections"
+            (onIniciarAnestesia)="iniciarAnestesia()"
+            (onIniciarCirurgia)="iniciarCirurgia()"
+            (onFinalizarCirurgia)="finalizarCirurgia()"
+            (onToggleSection)="toggleSection($event)"
+            (onOpenAgentModal)="openAgentModal($event)"
+            (onDeleteAgent)="deleteAgent($event)"
+            (onOpenEventModal)="openEventModal($event.type, $event.item)"
+            (onDeleteEvent)="deleteEvent($event)"
+            (onOpenBalanceModal)="openBalanceModal($event)"
+            (onDeleteBalance)="deleteBalance($event)">
+        </app-monitorizacao-sidebar>
     </div>
 </div>

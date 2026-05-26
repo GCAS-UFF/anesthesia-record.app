@@ -1,0 +1,31 @@
+<div class="graph-section">
+    <div class="section-title-premium">
+        <ion-icon name="pulse-outline" class="pulse-icon"></ion-icon>
+        TENDÊNCIAS VITAIS
+    </div>
+    <div class="graph-container">
+        <div class="graph-placeholder">
+            <canvas #vitalChart></canvas>
+        </div>
+    </div>
+
+    <!-- LEGENDA CUSTOMIZADA -->
+    <div class="custom-chart-legend">
+        <div class="legend-row main-vitals">
+            <div class="legend-item"><span class="dot fc"></span> FC (Pulso)</div>
+            <div class="legend-item"><span class="sym pas">V</span> PA Sistólica</div>
+            <div class="legend-item"><span class="sym pad">Λ</span> PA Diastólica</div>
+            <div class="legend-item"><span class="sym pam">▲</span> PAM</div>
+            <div class="legend-item"><span class="dot spo2"></span> SpO₂ (%)</div>
+        </div>
+        <div class="legend-row surgical-markers">
+            <div class="legend-item"><span class="sym anes">X</span> Início Anestesia</div>
+            <div class="legend-item"><span class="sym surg">☉</span> Início Cirurgia</div>
+            <div class="legend-item">💊 Agente</div>
+            <div class="legend-item">🔔 Evento</div>
+            <div class="legend-item">🧍 Posição</div>
+            <div class="legend-item">💧 Ganho</div>
+            <div class="legend-item">🩸 Perda</div>
+        </div>
+    </div>
+</div>

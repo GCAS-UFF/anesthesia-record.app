@@ -1,0 +1,94 @@
+.records-section {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    flex: none;
+    overflow: visible;
+    margin-top: 16px; 
+
+    .records-header {
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #f1f5f9;
+
+        .records-title { font-size: 13px; font-weight: 800; color: #1e293b; }
+        ion-button { height: 32px; font-size: 11px; font-weight: 700; }
+    }
+
+    .table-wrapper {
+        width: 100%;
+        overflow: visible;
+    }
+
+    .vital-table {
+        width: 100%;
+        border-collapse: collapse;
+
+        th {
+            position: sticky;
+            top: 0;
+            background: #f8fafc;
+            padding: 12px 8px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            border-bottom: 2px solid #e2e8f0;
+            z-index: 10;
+
+            &.col-hora {
+                left: 0;
+                z-index: 20; 
+                background: #f1f5f9;
+            }
+
+            &.custom-th {
+                cursor: pointer;
+                transition: background 0.2s;
+                &:hover { background: #e2e8f0; }
+                .th-icon { font-size: 10px; margin-left: 4px; opacity: 0.5; vertical-align: middle; }
+            }
+        }
+
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            text-align: center;
+            font-size: 13px;
+            
+            input {
+                width: 45px;
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                padding: 4px;
+                text-align: center;
+                font-weight: 700;
+            }
+        }
+
+        .col-hora {
+            width: 70px;
+            background: #f5f3ff !important;
+            color: #6366f1;
+            font-weight: 800;
+            position: sticky;
+            left: 0;
+            z-index: 5;
+        }
+
+        .col-actions {
+            width: 50px;
+            .btn-del { color: #cbd5e1; cursor: pointer; font-size: 18px; &:hover { color: #ef4444; } }
+        }
+
+        tr.selected-row td {
+            background: #eff6ff !important;
+            border-top: 1px solid #3b82f6;
+            border-bottom: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+    }
+}
