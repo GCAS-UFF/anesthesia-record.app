@@ -392,14 +392,40 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     if (this.timerInterval) clearInterval(this.timerInterval);
     
     let secondsElapsed = 0;
+    console.log('[Timer Debug] Iniciando timer. startTimeSurgery registrado:', this.startTimeSurgery);
+    
     if (this.startTimeSurgery) {
-      const now = new Date();
-      const [sh, sm] = this.startTimeSurgery.split(':').map(Number);
-      const startDateTime = new Date();
-      startDateTime.setHours(sh, sm, 0, 0);
-      
-      if (now.getTime() > startDateTime.getTime()) {
-        secondsElapsed = Math.floor((now.getTime() - startDateTime.getTime()) / 1000);
+      // Regex robusto para extrair horas, minutos e segundos (opcionais), com suporte a AM/PM (opcional)
+      const match = this.startTimeSurgery.match(/(\d+):(\d+)(?::(\d+))?\s*(AM|PM)?/i);
+      if (match) {
+        let hours = parseInt(match[1], 10);
+        const minutes = parseInt(match[2], 10);
+        const seconds = match[3] ? parseInt(match[3], 10) : 0;
+        const ampm = match[4];
+        
+        if (ampm) {
+          if (ampm.toUpperCase() === 'PM' && hours < 12) {
+            hours += 12;
+          } else if (ampm.toUpperCase() === 'AM' && hours === 12) {
+            hours = 0;
+          }
+        }
+        
+        const now = new Date();
+        const startDateTime = new Date();
+        startDateTime.setHours(hours, minutes, seconds, 0);
+        
+        console.log('[Timer Debug] startDateTime interpretado localmente:', startDateTime.toString());
+        console.log('[Timer Debug] Horário atual (now):', now.toString());
+        
+        if (now.getTime() > startDateTime.getTime()) {
+          secondsElapsed = Math.floor((now.getTime() - startDateTime.getTime()) / 1000);
+          console.log('[Timer Debug] Segundos decorridos calculados:', secondsElapsed);
+        } else {
+          console.warn('[Timer Debug] Horário de início da cirurgia é no futuro ou inválido em relação ao horário atual.');
+        }
+      } else {
+        console.warn('[Timer Debug] Formato de startTimeSurgery não reconhecido pelo regex:', this.startTimeSurgery);
       }
     }
 
