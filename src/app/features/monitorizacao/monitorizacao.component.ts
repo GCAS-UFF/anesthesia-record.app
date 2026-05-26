@@ -26,7 +26,8 @@ import {
   saveOutline, 
   closeOutline, 
   createOutline, 
-  triangle
+  triangle,
+  refreshOutline
 } from 'ionicons/icons';
 
 // Shared Components
@@ -100,6 +101,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   private timerInterval: any;
   isAnesthesiaStarted = false;
   isSurgeryStarted = false;
+  isSurgeryFinished = false;
 
   @ViewChild('topEditor', { static: false, read: ElementRef }) topEditor!: ElementRef;
 
@@ -134,7 +136,8 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
       saveOutline, 
       closeOutline, 
       createOutline, 
-      triangle
+      triangle,
+      refreshOutline
     });
   }
 
@@ -230,9 +233,14 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
         this.startTimeSurgery = parsed.startTimeSurgery || null;
         this.isAnesthesiaStarted = parsed.isAnesthesiaStarted || false;
         this.isSurgeryStarted = parsed.isSurgeryStarted || false;
+        this.isSurgeryFinished = parsed.isSurgeryFinished || false;
         this.posicaoAtual = parsed.posicaoAtual || null;
         
-        if (this.isSurgeryStarted) {
+        if (parsed.timerValue) {
+          this.timerValue = parsed.timerValue;
+        }
+        
+        if (this.isSurgeryStarted && !this.isSurgeryFinished) {
           this.startTimer();
         }
         
@@ -260,6 +268,8 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
       startTimeSurgery: this.startTimeSurgery,
       isAnesthesiaStarted: this.isAnesthesiaStarted,
       isSurgeryStarted: this.isSurgeryStarted,
+      isSurgeryFinished: this.isSurgeryFinished,
+      timerValue: this.timerValue,
       posicaoAtual: this.posicaoAtual
     };
     localStorage.setItem(`monitoring_record_${this.pacienteId}`, JSON.stringify(data));
@@ -293,6 +303,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   // --- CONTROLE TEMPORAL (FA-051) ---
 
   async iniciarAnestesia() {
+    if (this.isSurgeryFinished) return;
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const defaultTime = this.startTimeAnesthesia || now;
     
@@ -315,6 +326,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   }
 
   async iniciarCirurgia() {
+    if (this.isSurgeryFinished) return;
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const defaultTime = this.startTimeSurgery || now;
     
@@ -351,6 +363,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   }
 
   private confirmarInicioCirurgia(time: string, pos: string | null) {
+    if (this.isSurgeryFinished) return;
     const isFirstTime = !this.isSurgeryStarted;
     this.startTimeSurgery = time;
     this.isSurgeryStarted = true;
@@ -372,7 +385,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   }
 
   async mudarPosicao(novaPosicao: string) {
-    if (!this.isSurgeryStarted || this.posicaoAtual === novaPosicao) return;
+    if (this.isSurgeryFinished || !this.isSurgeryStarted || this.posicaoAtual === novaPosicao) return;
 
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     
@@ -404,9 +417,10 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   }
 
   async finalizarCirurgia() {
+    if (this.isSurgeryFinished || !this.isSurgeryStarted) return;
     const alert = await this.alertController.create({
       header: 'Finalizar Cirurgia',
-      message: 'Tem certeza que deseja finalizar esta cirurgia? Todos os dados serão salvos.',
+      message: 'Atenção: Ao finalizar, todos os registros da cirurgia serão bloqueados e salvos permanentemente. Deseja prosseguir?',
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
         {
@@ -438,17 +452,21 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     
     // 3. Altera o status da cirurgia e salva
     this.isSurgeryStarted = false;
+    this.isSurgeryFinished = true;
+    this.selectedRecord = null;
+    this.isNewRecord = false;
     this.saveToLocalStorage();
+    this.updateChartData();
     
-    // 4. Mostra alerta de sucesso e volta para a lista
+    // 4. Mostra alerta de sucesso
     const successAlert = await this.alertController.create({
       header: 'Sucesso',
-      message: 'Cirurgia finalizada e salva com sucesso!',
+      message: 'Cirurgia finalizada e salva com sucesso! Os registros foram bloqueados para alteração.',
       buttons: [
         {
           text: 'OK',
           handler: () => {
-            this.router.navigate(['/']); // Volta para a lista de pacientes
+            // Permanece na tela em modo leitura
           }
         }
       ]
@@ -510,11 +528,17 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
 
       this.timerValue = 
         `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+      // Checa a cada 10 segundos se precisa repetir os sinais vitais
+      if (secondsElapsed % 10 === 0) {
+        this.checkAndAutoRepeatVitals();
+      }
     }, 1000);
   }
 
   // Adiciona novo registro vindo do botão "+ Registro" (Lógica App-Base)
   addTimePoint() {
+    if (this.isSurgeryFinished) return;
     // Se já estiver editando um registro (especialmente um novo), não deixa criar outro
     if (this.selectedRecord) {
       return;
@@ -580,6 +604,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   }
 
   selectRecord(record: MonitoringRecord) {
+    if (this.isSurgeryFinished) return;
     this.selectedRecord = record;
     this.isNewRecord = false; // Registro existente
     this.scrollToEditor();
@@ -587,6 +612,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
 
   // Confirma o registro
   updateActiveRecord() {
+    if (this.isSurgeryFinished) return;
     this.sortRecords(); // Re-ordena caso o horário tenha sido editado
     const wasNew = this.isNewRecord;
     this.selectedRecord = null;
@@ -606,6 +632,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   // --- GESTÃO CLÍNICA (AGENTES, EVENTOS, BALANÇO) ---
 
   async openAgentModal(agent?: Agent) {
+    if (this.isSurgeryFinished) return;
     const modal = await this.modalController.create({
       component: ClinicalItemModalComponent,
       componentProps: {
@@ -633,6 +660,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   }
 
   async openEventModal(type: 'event' | 'incident' | 'technique' | 'position', item?: ClinicalEvent) {
+    if (this.isSurgeryFinished) return;
     const modal = await this.modalController.create({
       component: ClinicalItemModalComponent,
       componentProps: {
@@ -660,6 +688,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   }
 
   async openBalanceModal(balance?: FluidBalance) {
+    if (this.isSurgeryFinished) return;
     const modal = await this.modalController.create({
       component: ClinicalItemModalComponent,
       componentProps: {
@@ -686,9 +715,9 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     }
   }
 
-  deleteAgent(id: string) { this.agents = this.agents.filter(a => a.id !== id); this.updateChartData(); }
-  deleteEvent(id: string) { this.events = this.events.filter(e => e.id !== id); this.updateChartData(); }
-  deleteBalance(id: string) { this.balanceItems = this.balanceItems.filter(b => b.id !== id); this.updateChartData(); }
+  deleteAgent(id: string) { if (this.isSurgeryFinished) return; this.agents = this.agents.filter(a => a.id !== id); this.updateChartData(); }
+  deleteEvent(id: string) { if (this.isSurgeryFinished) return; this.events = this.events.filter(e => e.id !== id); this.updateChartData(); }
+  deleteBalance(id: string) { if (this.isSurgeryFinished) return; this.balanceItems = this.balanceItems.filter(b => b.id !== id); this.updateChartData(); }
 
   getTotalGains() { return this.balanceItems.filter(b => b.type === 'gain').reduce((acc, b) => acc + (b.value || 0), 0); }
   getTotalLosses() { return this.balanceItems.filter(b => b.type === 'loss').reduce((acc, b) => acc + (b.value || 0), 0); }
@@ -706,6 +735,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   }
 
   async deleteRecord(record: MonitoringRecord) {
+    if (this.isSurgeryFinished) return;
     const alert = await this.alertController.create({
       header: 'Confirmar Exclusão',
       message: `Deseja realmente excluir o registro das ${record.time}?`,
@@ -733,6 +763,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   }
 
   async addCustomField() {
+    if (this.isSurgeryFinished) return;
     const alert = await this.alertController.create({
       header: 'Novo Campo',
       message: 'Digite o nome da nova coluna (ex: Medicamento, PVC, etc)',
@@ -773,6 +804,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   }
 
   async editCustomFieldMenu(field: { label: string, key: string }) {
+    if (this.isSurgeryFinished) return;
     const actionSheet = await this.actionSheetController.create({
       header: `Gerenciar Coluna: ${field.label}`,
       buttons: [
@@ -801,6 +833,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   }
 
   async renameCustomField(field: { label: string, key: string }) {
+    if (this.isSurgeryFinished) return;
     const alert = await this.alertController.create({
       header: 'Renomear Campo',
       inputs: [
@@ -828,6 +861,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   }
 
   async removeCustomField(field: { label: string, key: string }) {
+    if (this.isSurgeryFinished) return;
     const alert = await this.alertController.create({
       header: 'Excluir Coluna?',
       message: `Tem certeza que deseja remover a coluna "${field.label}"? Todos os dados preenchidos nela serão perdidos.`,
@@ -1185,6 +1219,98 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
 
     this.chart.update('none');
     this.saveToLocalStorage();
+  }
+
+  async reiniciarTeste() {
+    const alert = await this.alertController.create({
+      header: 'Confirmar Reinício',
+      message: 'Isso apagará todos os dados cadastrados neste monitoramento localmente. Deseja reiniciar?',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Confirmar',
+          handler: () => {
+            // Limpa variáveis de estado
+            this.isAnesthesiaStarted = false;
+            this.isSurgeryStarted = false;
+            this.isSurgeryFinished = false;
+            this.timerValue = '00:00:00';
+            this.startTimeAnesthesia = null;
+            this.startTimeSurgery = null;
+            this.posicaoAtual = null;
+            
+            // Limpa dados
+            this.vitalRecords = [];
+            this.agents = [];
+            this.events = [];
+            this.balanceItems = [];
+            this.selectedRecord = null;
+            this.isNewRecord = false;
+            this.hasData = false;
+
+            // Para o cronômetro
+            if (this.timerInterval) {
+              clearInterval(this.timerInterval);
+              this.timerInterval = null;
+            }
+
+            // Limpa do LocalStorage
+            if (this.pacienteId) {
+              localStorage.removeItem(`monitoring_record_${this.pacienteId}`);
+            }
+
+            // Atualiza gráfico e salva estado limpo
+            this.updateChartData();
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  checkAndAutoRepeatVitals() {
+    // Apenas insere se a cirurgia estiver rodando (e não finalizada) e se houver dados
+    if (!this.isSurgeryStarted || this.isSurgeryFinished || this.vitalRecords.length === 0) {
+      return;
+    }
+
+    const lastRecord = this.vitalRecords[0];
+    const [lastH, lastM] = lastRecord.time.split(':').map(x => parseInt(x, 10));
+
+    const now = new Date();
+    const lastRecordDate = new Date();
+    lastRecordDate.setHours(lastH, lastM, 0, 0);
+
+    const diffMs = now.getTime() - lastRecordDate.getTime();
+    const diffSeconds = Math.floor(diffMs / 1000);
+
+    // Se passou 300 segundos (5 minutos) ou mais desde o último registro
+    if (diffSeconds >= 300) {
+      const newTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      const existingIndex = this.vitalRecords.findIndex(r => r.time === newTime);
+      if (existingIndex > -1) {
+        // Se já existe um registro para o minuto atual, atualiza seus dados
+        this.vitalRecords[existingIndex] = {
+          ...this.vitalRecords[existingIndex],
+          ...lastRecord,
+          time: newTime
+        };
+      } else {
+        // Se não existe, insere um novo registro
+        const newRec: MonitoringRecord = {
+          ...lastRecord,
+          id: undefined,
+          time: newTime,
+          custom: lastRecord.custom ? { ...lastRecord.custom } : {}
+        };
+        this.vitalRecords = [newRec, ...this.vitalRecords];
+      }
+
+      this.sortRecords();
+      this.updateChartData();
+      console.log('[Auto-Repeat] Sinais vitais repetidos/atualizados:', newTime);
+    }
   }
 
   private prepareClinicalDatasets(): any[] {
