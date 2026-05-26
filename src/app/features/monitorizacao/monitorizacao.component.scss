@@ -297,6 +297,8 @@
 }
 
 /* COLUNA DIREITA: A Barra de Controle Operacional */
+
+
 .right-column {
     width: 320px;
     background: white;
@@ -305,6 +307,7 @@
     padding: 16px;
     gap: 16px;
     border-left: 1px solid #e2e8f0;
+    overflow: hidden;
 
     .timer-panel {
         background: #f5f3ff;
@@ -315,6 +318,13 @@
         .timer-label { font-size: 9px; font-weight: 800; color: #6366f1; margin-bottom: 4px; }
         .timer-value { font-size: 32px; font-weight: 900; color: #1e1b4b; margin-bottom: 12px; }
         .btn-timer { --border-radius: 10px; font-weight: 700; height: 34px; margin-bottom: 4px; }
+    }
+
+    .accordions-container {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 4px;
+        -webkit-overflow-scrolling: touch;
     }
 
     .monitor-accordion {
@@ -364,8 +374,6 @@
         .accordion-content {
             padding: 0; 
             font-size: 11px;
-            max-height: 250px;
-            overflow-y: auto;
 
             &.empty { text-align: center; color: #94a3b8; padding: 16px; }
 
@@ -474,4 +482,40 @@
     padding-top: 16px;
     border-top: 1px solid #f1f5f9;
     .btn-finish { --border-radius: 14px; font-weight: 800; height: 44px; }
+
+    .finished-banner {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        padding: 10px 14px;
+        border-radius: 14px;
+        
+        .success-icon {
+            font-size: 24px;
+            color: #10b981;
+            --color: #10b981;
+        }
+        
+        .banner-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            text-align: left;
+            
+            .status-title {
+                font-size: 11px;
+                font-weight: 800;
+                color: #065f46;
+                letter-spacing: 0.5px;
+            }
+            
+            .status-subtitle {
+                font-size: 9px;
+                color: #047857;
+                font-weight: 600;
+            }
+        }
+    }
 }
