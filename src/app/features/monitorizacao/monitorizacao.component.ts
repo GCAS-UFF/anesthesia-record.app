@@ -505,6 +505,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     }
     this.selectedRecord = null;
     this.isNewRecord = false;
+    this.updateChartData(); // Atualiza o gráfico para refletir o cancelamento
   }
 
   async deleteRecord(record: MonitoringRecord) {
@@ -874,8 +875,8 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   private updateChartData() {
     if (!this.chart) return;
 
-    // Filtra registros: Não plota o registro que está sendo criado agora (isNewRecord)
-    const validRecords = this.vitalRecords.filter(r => !(this.isNewRecord && r === this.selectedRecord));
+    // Usa todos os registros da tabela como fonte única de verdade para o gráfico
+    const validRecords = this.vitalRecords;
 
     // Coleta todos os horários únicos registrados
     const timesArray: string[] = [];
