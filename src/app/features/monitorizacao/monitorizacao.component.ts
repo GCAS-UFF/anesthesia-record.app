@@ -145,25 +145,112 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     this.pacienteId = this.route.snapshot.paramMap.get('id');
     if (this.pacienteId) {
       this.loadPatientData(this.pacienteId);
+      this.loadFromLocalStorage();
     }
   }
 
   private loadPatientData(id: string) {
     this.isLoading = true;
-    // Buscando dados reais do paciente para o header
-    this.surgeryService.getSurgeries('2026-04-21').subscribe(res => {
-      const patientData = res.data.find(p => p.surgeries.some(s => s.id === parseInt(id)));
-      if (patientData) {
-        this.patient = {
-          ...patientData,
-          gender: patientData.gender || 'M',
-          birthDate: this.formatDate(patientData.birthDate || '1985-03-15T00:00:00')
-        };
-        this.selectedSurgery = patientData.surgeries.find(s => s.id === parseInt(id));
-        this.selectedProcedure = this.selectedSurgery.procedures.find((p: any) => p.isPrimary) || this.selectedSurgery.procedures[0];
+    this.surgeryService.getSurgeries('2026-04-21').subscribe({
+      next: (res) => {
+        const patientData = res?.data?.find(p => p.surgeries.some(s => s.id === parseInt(id)));
+        if (patientData) {
+          this.patient = {
+            ...patientData,
+            gender: patientData.gender || 'M',
+            birthDate: this.formatDate(patientData.birthDate || '1985-03-15T00:00:00')
+          };
+          this.selectedSurgery = patientData.surgeries.find(s => s.id === parseInt(id));
+          this.selectedProcedure = this.selectedSurgery.procedures.find((p: any) => p.isPrimary) || this.selectedSurgery.procedures[0];
+        } else {
+          this.setMockPatient(id);
+        }
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.warn('Erro ao carregar dados do paciente da API. Usando dados mockados para testes.', err);
+        this.setMockPatient(id);
+        this.isLoading = false;
       }
-      this.isLoading = false;
     });
+  }
+
+  private setMockPatient(id: string) {
+    this.patient = {
+      fullName: 'Paciente de Teste (Mock)',
+      gender: 'M',
+      birthDate: '15/03/1985',
+      medicalRecordNumber: '123456789',
+      age: 41,
+      weightKg: '75',
+      bed: 'Leito 05',
+      allergies: ['Dipirona', 'Penicilina']
+    };
+    this.selectedSurgery = {
+      id: parseInt(id),
+      location: {
+        room: 'Sala 03'
+      },
+      status: 'SCHEDULED',
+      anesthesiologists: [],
+      procedures: [
+        {
+          description: 'APENDICECTOMIA',
+          isPrimary: true
+        }
+      ]
+    };
+    this.selectedProcedure = this.selectedSurgery.procedures[0];
+  }
+
+  private loadFromLocalStorage() {
+    if (!this.pacienteId) return;
+    const data = localStorage.getItem(`monitoring_record_${this.pacienteId}`);
+    if (data) {
+      try {
+        const parsed = JSON.parse(data);
+        this.vitalRecords = parsed.vitalRecords || [];
+        this.customFields = parsed.customFields || [];
+        this.agents = parsed.agents || [];
+        this.events = parsed.events || [];
+        this.balanceItems = parsed.balanceItems || [];
+        this.startTimeAnesthesia = parsed.startTimeAnesthesia || null;
+        this.startTimeSurgery = parsed.startTimeSurgery || null;
+        this.isAnesthesiaStarted = parsed.isAnesthesiaStarted || false;
+        this.isSurgeryStarted = parsed.isSurgeryStarted || false;
+        this.posicaoAtual = parsed.posicaoAtual || null;
+        
+        if (this.isSurgeryStarted) {
+          this.startTimer();
+        }
+        
+        this.hasData = this.vitalRecords.length > 0 || 
+                       !!this.startTimeAnesthesia || 
+                       !!this.startTimeSurgery || 
+                       this.agents.length > 0 || 
+                       this.events.length > 0 || 
+                       this.balanceItems.length > 0;
+      } catch (e) {
+        console.error('Erro ao recuperar do local storage', e);
+      }
+    }
+  }
+
+  private saveToLocalStorage() {
+    if (!this.pacienteId) return;
+    const data = {
+      vitalRecords: this.vitalRecords,
+      customFields: this.customFields,
+      agents: this.agents,
+      events: this.events,
+      balanceItems: this.balanceItems,
+      startTimeAnesthesia: this.startTimeAnesthesia,
+      startTimeSurgery: this.startTimeSurgery,
+      isAnesthesiaStarted: this.isAnesthesiaStarted,
+      isSurgeryStarted: this.isSurgeryStarted,
+      posicaoAtual: this.posicaoAtual
+    };
+    localStorage.setItem(`monitoring_record_${this.pacienteId}`, JSON.stringify(data));
   }
 
   private formatDate(dateStr: string): string {
@@ -305,14 +392,58 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     if (this.timerInterval) clearInterval(this.timerInterval);
     
     let secondsElapsed = 0;
+    console.log('[Timer Debug] Iniciando timer. startTimeSurgery registrado:', this.startTimeSurgery);
+    
+    if (this.startTimeSurgery) {
+      // Regex robusto para extrair horas, minutos e segundos (opcionais), com suporte a AM/PM (opcional)
+      const match = this.startTimeSurgery.match(/(\d+):(\d+)(?::(\d+))?\s*(AM|PM)?/i);
+      if (match) {
+        let hours = parseInt(match[1], 10);
+        const minutes = parseInt(match[2], 10);
+        const seconds = match[3] ? parseInt(match[3], 10) : 0;
+        const ampm = match[4];
+        
+        if (ampm) {
+          if (ampm.toUpperCase() === 'PM' && hours < 12) {
+            hours += 12;
+          } else if (ampm.toUpperCase() === 'AM' && hours === 12) {
+            hours = 0;
+          }
+        }
+        
+        const now = new Date();
+        const startDateTime = new Date();
+        startDateTime.setHours(hours, minutes, seconds, 0);
+        
+        console.log('[Timer Debug] startDateTime interpretado localmente:', startDateTime.toString());
+        console.log('[Timer Debug] Horário atual (now):', now.toString());
+        
+        if (now.getTime() > startDateTime.getTime()) {
+          secondsElapsed = Math.floor((now.getTime() - startDateTime.getTime()) / 1000);
+          console.log('[Timer Debug] Segundos decorridos calculados:', secondsElapsed);
+        } else {
+          console.warn('[Timer Debug] Horário de início da cirurgia é no futuro ou inválido em relação ao horário atual.');
+        }
+      } else {
+        console.warn('[Timer Debug] Formato de startTimeSurgery não reconhecido pelo regex:', this.startTimeSurgery);
+      }
+    }
+
+    // Atualiza imediatamente antes de rodar o intervalo de 1s
+    const hours = Math.floor(secondsElapsed / 3600);
+    const minutes = Math.floor((secondsElapsed % 3600) / 60);
+    const seconds = secondsElapsed % 60;
+    this.timerValue = 
+      `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
     this.timerInterval = setInterval(() => {
       secondsElapsed++;
-      const hours = Math.floor(secondsElapsed / 3600);
-      const minutes = Math.floor((secondsElapsed % 3600) / 60);
-      const seconds = secondsElapsed % 60;
+      const hrs = Math.floor(secondsElapsed / 3600);
+      const mins = Math.floor((secondsElapsed % 3600) / 60);
+      const secs = secondsElapsed % 60;
 
       this.timerValue = 
-        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }, 1000);
   }
 
@@ -565,6 +696,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
               rec.custom[key] = "";
             });
 
+            this.saveToLocalStorage();
             return true;
           }
         }
@@ -620,6 +752,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
           handler: (data) => {
             if (!data.label) return false;
             field.label = data.label;
+            this.saveToLocalStorage();
             return true;
           }
         }
@@ -647,6 +780,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
                 delete rec.custom[field.key];
               }
             });
+            this.saveToLocalStorage();
           }
         }
       ]
@@ -984,6 +1118,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     }
 
     this.chart.update('none');
+    this.saveToLocalStorage();
   }
 
   private prepareClinicalDatasets(): any[] {
