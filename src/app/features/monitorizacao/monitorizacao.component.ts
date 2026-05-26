@@ -403,9 +403,60 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     await alert.present();
   }
 
-  private startTimer() {
-    if (this.timerInterval) clearInterval(this.timerInterval);
+  async finalizarCirurgia() {
+    const alert = await this.alertController.create({
+      header: 'Finalizar Cirurgia',
+      message: 'Tem certeza que deseja finalizar esta cirurgia? Todos os dados serão salvos.',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Confirmar',
+          handler: () => {
+            this.confirmarFinalizarCirurgia();
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  private async confirmarFinalizarCirurgia() {
+    // 1. Para o timer
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
     
+    // 2. Registra o evento de finalização
+    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    this.events.push({
+      id: Date.now().toString(),
+      time: nowTime,
+      type: 'event',
+      name: 'Cirurgia Finalizada'
+    });
+    
+    // 3. Altera o status da cirurgia e salva
+    this.isSurgeryStarted = false;
+    this.saveToLocalStorage();
+    
+    // 4. Mostra alerta de sucesso e volta para a lista
+    const successAlert = await this.alertController.create({
+      header: 'Sucesso',
+      message: 'Cirurgia finalizada e salva com sucesso!',
+      buttons: [
+        {
+          text: 'OK',
+          handler: () => {
+            this.router.navigate(['/']); // Volta para a lista de pacientes
+          }
+        }
+      ]
+    });
+    await successAlert.present();
+  }
+
+  private startTimer() {
     let secondsElapsed = 0;
     console.log('[Timer Debug] Iniciando timer. startTimeSurgery registrado:', this.startTimeSurgery);
     
