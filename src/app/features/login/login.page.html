@@ -24,13 +24,12 @@
             <!-- Formulário -->
             <form [formGroup]="form" (ngSubmit)="submit()" autocomplete="off">
                 <app-custom-input
-                    label="CRM / CPF"
+                    label="Usuário"
                     icon="👨‍⚕️"
                     inputIcon="📋"
                     type="text"
-                    placeholder="Digite seu CRM ou CPF"
+                    placeholder="Digite seu usuário"
                     [required]="true"
-                    [onlyNumbers]="true"
                     autocomplete="one-time-code"
                     (focused)="clearError()"
                     formControlName="username">

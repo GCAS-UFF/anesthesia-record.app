@@ -11,27 +11,19 @@ import { delay } from "rxjs/operators";
 export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> {
 
   constructor(api: ApiService) {
-    super(api, 'anesthesia-records');
+    // Aponta para o controller do backend: /api/AnesthesiaRecord
+    super(api, 'AnesthesiaRecord');
   }
 
-  /**
-   * [FA-042] Salva a ficha anestésica. 
-   * Por enquanto usa Mock, mas está preparado para o backend.
-   */
-  saveRecord(record: AnesthesiaRecordModel): Observable<AnesthesiaRecordModel> {
-    console.log('Serviço: Salvando ficha...', record);
-    // Mock: salva no localStorage para persistência local durante testes
-    const records = this.getStoredRecords();
-    const newRecord = { 
-      ...record, 
-      id: record.id || Math.floor(Math.random() * 10000),
-      createdAt: new Date().toISOString()
-    };
+  saveRecord(record: any): Observable<any> {
+    console.log('Serviço: Salvando ficha via API...', record);
     
-    records.push(newRecord);
-    localStorage.setItem('mock_anesthesia_records', JSON.stringify(records));
-    
-    return of(newRecord).pipe(delay(100)); // Simula latência de rede reduzida
+    // Se a ficha já possui um ID de persistência, faz PUT, caso contrário POST
+    if (record.id) {
+      return this.update(record.id, record);
+    } else {
+      return this.create(record);
+    }
   }
 
   /**

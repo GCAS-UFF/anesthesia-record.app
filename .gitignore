@@ -1,22 +1,15 @@
-<<<<<<< HEAD
-# =========================
 # OS / Sistema
-# =========================
 .DS_Store
 Thumbs.db
+
 # Cache
-# =========================
 .cache/
 .eslintcache
 
-# =========================
 # TypeScript
-# =========================
 *.tsbuildinfo
 
-# =========================
 # IDEs
-# =========================
 .idea/
 .project
 .classpath
@@ -34,9 +27,7 @@ Thumbs.db
 !.vscode/extensions.json
 .history/*
 
-# =========================
 # Misc
-# =========================
 /.nx
 /.nx/cache
 /connect.lock
@@ -44,11 +35,9 @@ Thumbs.db
 testem.log
 /typings
 
-# =========================
 # Local configs
-# =========================
 config.local.json
-=======
+
 # Angular specific
 /dist/
 /out-tsc/
@@ -69,12 +58,9 @@ config.local.json
 # Angular CLI and build artefacts
 /.angular-cli.json
 /.ng/
-
-# TypeScript cache
-*.tsbuildinfo
+/www/
 
 # Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
->>>>>>> 4aa016b5c36927ce1acd390966f1ae1b52117812

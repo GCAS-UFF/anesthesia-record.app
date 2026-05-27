@@ -31,7 +31,7 @@
         <div class="procedures-list">
             <app-procedure-card *ngFor="let p of filteredProcedures" [patientName]="p.patientName" [room]="p.room"
                 [procedure]="p.procedure" [status]="p.status" [time]="p.time" [completedAt]="p.completedAt"
-                [birthDate]="p.birthDate" [age]="p.age" [record]="p.record" [id]="p.id" (assume)="onAssume(p.id)"
+                [birthDate]="p.birthDate" [age]="p.age" [record]="p.record" [id]="p.id" (assume)="onAssume(p.id, p.patientId)"
                 (openFicha)="onOpenFicha(p.id)" (viewRegistro)="onViewRegistro(p.id)">
             </app-procedure-card>
 
