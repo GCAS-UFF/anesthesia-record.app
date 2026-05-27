@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { AlertController, ActionSheetController, ModalController, IonButton, IonIcon } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -70,7 +70,7 @@ import { MonitorizacaoSidebarComponent } from './components/monitorizacao-sideba
   templateUrl: './monitorizacao.component.html',
   styleUrls: ['./monitorizacao.component.scss']
 })
-export class MonitorizacaoComponent implements OnInit, AfterViewInit {
+export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy {
   pacienteId: string | null = null;
   patient: any = null;
   selectedSurgery: any = null;
@@ -165,6 +165,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     }
   }
 
+
   private startAutoRefresh() {
     // Polling leve dos dados cadastrais/status do paciente a cada 30 segundos
     this.autoRefreshInterval = setInterval(() => {
@@ -182,17 +183,19 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   }
 
   private loadPatientData(id: string) {
-    this.isLoading = true;
-    this.surgeryService.getSurgeries('2026-04-21').subscribe({
+    if (!this.patient) {
+      this.isLoading = true;
+    }
+    this.surgeryService.getSurgeries('2026-04-11').subscribe({
       next: (res) => {
-        const patientData = res?.data?.find(p => p.surgeries.some(s => s.id === parseInt(id)));
+        const patientData = res?.data?.find(p => p.surgeries.some(s => s.id.toString() === id.toString()));
         if (patientData) {
           this.patient = {
             ...patientData,
             gender: patientData.gender || 'M',
             birthDate: this.formatDate(patientData.birthDate || '1985-03-15T00:00:00')
           };
-          this.selectedSurgery = patientData.surgeries.find(s => s.id === parseInt(id));
+          this.selectedSurgery = patientData.surgeries.find(s => s.id.toString() === id.toString());
           this.selectedProcedure = this.selectedSurgery.procedures.find((p: any) => p.isPrimary) || this.selectedSurgery.procedures[0];
           
           if (this.selectedSurgery?.id) {

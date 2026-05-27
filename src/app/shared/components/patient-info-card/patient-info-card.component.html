@@ -1,6 +1,6 @@
 <div [ngClass]="compact ? 'patient-mini-card' : 'patient-full-card'">
     <div class="card-gradient-overlay" *ngIf="!compact"></div>
-    
+
     <!-- MODO PADRÃO (FULL) -->
     <div class="card-body" *ngIf="!compact">
         <div class="patient-header">
@@ -8,10 +8,13 @@
                 <span class="label-mini">PACIENTE</span>
                 <h2 class="patient-name">{{ patientName || 'NOME NÃO INFORMADO' }}</h2>
             </div>
-            <div class="badges-row">
-                <span class="badge record">PRONTUÁRIO: #{{ record || '---' }}</span>
-                <span class="badge room" *ngIf="room">SALA: {{ room }}</span>
-                <span class="badge bed" *ngIf="bed">LEITO: {{ bed }}</span>
+            <div class="badges-row" style="flex-wrap: wrap; gap: 6px;">
+                <span class="badge record" *ngIf="record">📋 {{ record }}</span>
+                <span class="badge" *ngIf="unit">🏥 {{ unit }}</span>
+                <span class="badge" *ngIf="floor">🏢 Andar {{ floor }}</span>
+                <span class="badge" *ngIf="bed">🛏️ Leito {{ bed }}</span>
+                <span class="badge" *ngIf="surgicalCenter">⚕️ {{ surgicalCenter }}</span>
+                <span class="badge" *ngIf="room">🚪 {{ room }}</span>
             </div>
         </div>
 
@@ -26,7 +29,8 @@
             </div>
             <div class="info-column">
                 <span class="info-label">SEXO</span>
-                <span class="info-value">{{ gender === 'M' ? 'Masculino' : gender === 'F' ? 'Feminino' : gender || '--' }}</span>
+                <span class="info-value">{{ gender === 'M' ? 'Masculino' : gender === 'F' ? 'Feminino' : gender || '--'
+                    }}</span>
             </div>
             <div class="info-column">
                 <span class="info-label">PESO</span>
@@ -41,7 +45,7 @@
         <div class="allergy-footer" *ngIf="hasAllergies">
             <ion-icon name="warning"></ion-icon>
             <strong>ALERGIA:</strong>
-            <span>{{ allergies.join(' • ') }}</span>
+            <span>{{ formattedAllergies }}</span>
         </div>
     </div>
 
@@ -50,18 +54,17 @@
         <div class="mini-main-info">
             <div class="mini-name-area">
                 <span class="mini-name">{{ patientName }}</span>
-                <span class="mini-record">Pront: {{ record }}</span>
+                <span class="mini-record">{{ record }}</span>
             </div>
             <div class="mini-stats-grid">
-                <div class="mini-stat">📅 {{ birthDate }} ({{ age }}a)</div>
-                <div class="mini-stat">🛏️ Leito {{ bed }}</div>
+                <div class="mini-stat">👤 {{ age }} anos</div>
                 <div class="mini-stat">⚖️ {{ weight }}kg</div>
                 <div class="mini-stat"><span class="asa-badge">{{ status }}</span></div>
             </div>
         </div>
         <div class="mini-allergy-bar" *ngIf="hasAllergies">
             <ion-icon name="warning-outline"></ion-icon>
-            <strong>Alergias:</strong> {{ allergies.join(', ') }}
+            <strong>Alergias:</strong> {{ formattedAllergies }}
         </div>
     </div>
 </div>

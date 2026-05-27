@@ -33,7 +33,7 @@ export interface Procedure {
 }
 
 export interface Surgery {
-  id: number;
+  id: string | number;
   surgeryDate: string;
   status: number;
   specialty: Specialty;

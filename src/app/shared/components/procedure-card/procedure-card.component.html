@@ -16,10 +16,9 @@
     <div class="patient-name">
         {{ patientName }}
     </div>
-    <div class="patient-details">
-        <span>🎂 {{ birthDate | date:'dd/MM/yyyy' }} ({{ age }} anos)</span>
-        <span>📋 Prontuário: {{ record }}</span>
-        <span>🆔 ID: {{ id }}</span>
+    <div class="patient-details" style="display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; font-weight: 500; color: #475569; margin-bottom: 8px;">
+        <span style="background: #f1f5f9; padding: 2px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">👤 {{ age }} anos</span>
+        <span style="background: #f1f5f9; padding: 2px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">📋 {{ record }}</span>
     </div>
     <div class="card-actions">
         <button class="btn-assume ion-activatable ripple-parent" *ngIf="status === 'waiting'" (click)="onAssume()">

@@ -13,6 +13,10 @@ import { IonRippleEffect } from '@ionic/angular/standalone';
 export class ProcedureCardComponent {
   @Input() patientName: string = '';
   @Input() room: string = '';
+  @Input() surgicalCenter: string = '';
+  @Input() bed: string = '';
+  @Input() floor: string = '';
+  @Input() unit: string = '';
   @Input() procedure: string = '';
   @Input() status: 'waiting' | 'completed' | string = 'waiting';
   @Input() time: string | null = '';

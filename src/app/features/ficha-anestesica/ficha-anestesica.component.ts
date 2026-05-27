@@ -697,8 +697,8 @@ export class FichaAnestesicaComponent implements OnInit {
 
   private loadPatientData(id: string) {
     this.isLoading = true;
-    this.surgeryService.getSurgeries('2026-04-21').subscribe(res => {
-      const patientData = res.data.find(p => p.surgeries.some(s => s.id === parseInt(id)));
+    this.surgeryService.getSurgeries('2026-04-11').subscribe(res => {
+      const patientData = res.data.find(p => p.surgeries.some(s => s.id.toString() === id.toString()));
       if (patientData) {
         const patientWeight = patientData.weightKg || '92';
 
@@ -709,7 +709,7 @@ export class FichaAnestesicaComponent implements OnInit {
           birthDate: this.formatDate(patientData.birthDate || '1985-03-15T00:00:00')
         };
 
-        this.selectedSurgery = patientData.surgeries.find(s => s.id === parseInt(id));
+        this.selectedSurgery = patientData.surgeries.find(s => s.id.toString() === id.toString());
         this.selectedProcedure = this.selectedSurgery.procedures.find((p: any) => p.isPrimary) || this.selectedSurgery.procedures[0];
 
         // [FA-042] Lógica de Auto-Save Draft PRIORITÁRIA
@@ -811,8 +811,8 @@ export class FichaAnestesicaComponent implements OnInit {
   }
 
   imprimir() {
-    console.log('Preparando para imprimir...');
-    window.print();
+    console.log('Solicitando PDF da API...');
+    window.open(this.anesthesiaService.getPdfUrl(9), '_blank');
   }
 
   async salvar() {
