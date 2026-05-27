@@ -1,6 +1,6 @@
 <div [ngClass]="compact ? 'patient-mini-card' : 'patient-full-card'">
     <div class="card-gradient-overlay" *ngIf="!compact"></div>
-    
+
     <!-- MODO PADRÃO (FULL) -->
     <div class="card-body" *ngIf="!compact">
         <div class="patient-header">
@@ -10,10 +10,12 @@
             </div>
             <div class="badges-row" style="flex-wrap: wrap; gap: 8px;">
                 <span class="badge record">PRONTUÁRIO: #{{ record || '---' }}</span>
-                <span class="badge bed" *ngIf="unit || floor || bed" style="background-color: rgba(99, 102, 241, 0.15); color: #4338ca;">
+                <span class="badge bed" *ngIf="unit || floor || bed"
+                    style="background-color: rgba(99, 102, 241, 0.15); color: #4338ca;">
                     🛏️ INTERNAÇÃO: {{ unit }} {{ floor ? '• Andar ' + floor : '' }} {{ bed ? '• Leito ' + bed : '' }}
                 </span>
-                <span class="badge room" *ngIf="room || surgicalCenter" style="background-color: rgba(16, 185, 129, 0.15); color: #047857;">
+                <span class="badge room" *ngIf="room || surgicalCenter"
+                    style="background-color: rgba(16, 185, 129, 0.15); color: #047857;">
                     🚪 CIRURGIA: {{ surgicalCenter || 'CC' }} • SALA {{ room }}
                 </span>
             </div>
@@ -30,7 +32,8 @@
             </div>
             <div class="info-column">
                 <span class="info-label">SEXO</span>
-                <span class="info-value">{{ gender === 'M' ? 'Masculino' : gender === 'F' ? 'Feminino' : gender || '--' }}</span>
+                <span class="info-value">{{ gender === 'M' ? 'Masculino' : gender === 'F' ? 'Feminino' : gender || '--'
+                    }}</span>
             </div>
             <div class="info-column">
                 <span class="info-label">PESO</span>
@@ -54,11 +57,12 @@
         <div class="mini-main-info">
             <div class="mini-name-area">
                 <span class="mini-name">{{ patientName }}</span>
-                <span class="mini-record">Pront: {{ record }}</span>
+                <span class="mini-record">{{ record }}</span>
             </div>
             <div class="mini-stats-grid">
-                <div class="mini-stat">📅 {{ birthDate }} ({{ age }}a)</div>
-                <div class="mini-stat" title="Internação">🛏️ {{ unit || 'Internação' }} {{ floor ? '• A' + floor : '' }} {{ bed ? '• L' + bed : '' }}</div>
+                <div class="mini-stat">📅 {{ birthDate }} ({{ age }} anos)</div>
+                <div class="mini-stat" title="Internação">🛏️ {{ unit || 'Internação' }} {{ floor ? '• A' + floor : ''
+                    }} {{ bed ? '• L' + bed : '' }}</div>
                 <div class="mini-stat" title="Cirurgia">🚪 {{ surgicalCenter || 'CC' }} • Sala {{ room }}</div>
                 <div class="mini-stat">⚖️ {{ weight }}kg</div>
                 <div class="mini-stat"><span class="asa-badge">{{ status }}</span></div>

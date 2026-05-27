@@ -21,7 +21,7 @@
         <span>📋 Prontuário: {{ record }}</span>
         <span>🆔 ID: {{ id }}</span>
     </div>
-    <div class="location-details" style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #64748b; margin-top: 8px;">
+    <div class="location-details" style="display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: #64748b;">
         <span *ngIf="unit || floor || bed">🛏️ <strong>Internação:</strong> {{ unit }} • Andar: {{ floor || '--' }} • Leito: {{ bed || '--' }}</span>
         <span>🚪 <strong>Cirurgia:</strong> {{ surgicalCenter || 'Centro Cirúrgico' }}</span>
     </div>
