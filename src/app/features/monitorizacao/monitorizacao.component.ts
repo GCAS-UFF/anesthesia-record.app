@@ -41,6 +41,8 @@ import { Agent, ClinicalEvent, FluidBalance } from 'src/app/core/models/clinical
 
 // Services
 import { SurgeryService } from 'src/app/core/services/surgery.service';
+import { MonitoringService } from 'src/app/core/services/monitoring.service';
+import { MonitoringPayload, MonitoringCustomFieldPayload } from 'src/app/core/models/monitoring-payload.model';
 
 // Chart.js removed from here, now in MonitorizacaoGraficoComponent
 
@@ -109,17 +111,19 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   isAnesthesiaStarted = false;
   isSurgeryStarted = false;
   isSurgeryFinished = false;
+  endTimeSurgery: string | null = null;
 
   @ViewChild('topEditor', { static: false, read: ElementRef }) topEditor!: ElementRef;
 
   constructor(
-    private surgeryService: SurgeryService,
     private route: ActivatedRoute,
-    private alertController: AlertController,
-    private actionSheetController: ActionSheetController,
-    private modalController: ModalController,
     private router: Router,
-    private location: Location
+    private location: Location,
+    private alertController: AlertController,
+    private modalController: ModalController,
+    private actionSheetController: ActionSheetController,
+    private surgeryService: SurgeryService,
+    private monitoringService: MonitoringService
   ) {
     addIcons({
       arrowBackOutline,
@@ -171,6 +175,12 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     }, 30000);
   }
 
+  private stopAutoRefresh() {
+    if (this.autoRefreshInterval) {
+      clearInterval(this.autoRefreshInterval);
+    }
+  }
+
   private loadPatientData(id: string) {
     this.isLoading = true;
     this.surgeryService.getSurgeries('2026-04-21').subscribe({
@@ -184,10 +194,22 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
           };
           this.selectedSurgery = patientData.surgeries.find(s => s.id === parseInt(id));
           this.selectedProcedure = this.selectedSurgery.procedures.find((p: any) => p.isPrimary) || this.selectedSurgery.procedures[0];
+          
+          if (this.selectedSurgery?.id) {
+            this.monitoringService.getMonitoringData(this.selectedSurgery.id).subscribe(data => {
+              if (data) {
+                // Aqui faríamos a desserialização do JSON da API para o estado interno
+                // this.restoreStateFromPayload(data);
+              }
+              this.isLoading = false;
+              this.hasData = true;
+            });
+          } else {
+            this.isLoading = false;
+          }
         } else {
           this.setMockPatient(id);
         }
-        this.isLoading = false;
       },
       error: (err) => {
         console.warn('Erro ao carregar dados do paciente da API. Usando dados mockados para testes.', err);
@@ -424,16 +446,34 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
   }
 
   async finalizarCirurgia() {
-    if (this.isSurgeryFinished || !this.isSurgeryStarted) return;
     const alert = await this.alertController.create({
       header: 'Finalizar Cirurgia',
-      message: 'Atenção: Ao finalizar, todos os registros da cirurgia serão bloqueados e salvos permanentemente. Deseja prosseguir?',
+      message: 'Tem certeza que deseja finalizar a cirurgia? Os registros da monitorização serão encerrados e não poderão ser mais alterados.',
       buttons: [
-        { text: 'Cancelar', role: 'cancel' },
         {
-          text: 'Confirmar',
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'secondary'
+        },
+        {
+          text: 'Finalizar',
           handler: () => {
-            this.confirmarFinalizarCirurgia();
+            this.isSurgeryFinished = true;
+            this.endTimeSurgery = this.getCurrentTime(); // Adicionando caso fosse útil
+            this.stopAutoRefresh();
+            
+            // Consolidar Payload JSON
+            const payload = this.buildMonitoringPayload();
+            
+            // Chamar Serviço Mock
+            this.monitoringService.saveMonitoringData(this.selectedSurgery?.id || 0, payload).subscribe({
+              next: (res) => {
+                console.log('Cirurgia finalizada e dados enviados com sucesso!', res);
+              },
+              error: (err) => {
+                console.error('Erro ao enviar monitoramento', err);
+              }
+            });
           }
         }
       ]
@@ -441,44 +481,70 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit {
     await alert.present();
   }
 
-  private async confirmarFinalizarCirurgia() {
-    // 1. Para o timer
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-      this.timerInterval = null;
-    }
-    
-    // 2. Registra o evento de finalização
-    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    this.events.push({
-      id: Date.now().toString(),
-      time: nowTime,
-      type: 'event',
-      name: 'Cirurgia Finalizada'
-    });
-    
-    // 3. Altera o status da cirurgia e salva
-    this.isSurgeryStarted = false;
-    this.isSurgeryFinished = true;
-    this.selectedRecord = null;
-    this.isNewRecord = false;
-    this.saveToLocalStorage();
-    // Chart will update automatically via Inputs
-    
-    // 4. Mostra alerta de sucesso
-    const successAlert = await this.alertController.create({
-      header: 'Sucesso',
-      message: 'Cirurgia finalizada e salva com sucesso! Os registros foram bloqueados para alteração.',
-      buttons: [
-        {
-          text: 'OK',
-          handler: () => {
-            // Permanece na tela em modo leitura
-          }
+  /**
+   * Constrói o JSON no formato exigido pela futura API 
+   * (conforme modelo MonitoringPayload)
+   */
+  private buildMonitoringPayload(): MonitoringPayload {
+    // Helper para gerar um timestamp completo no dia de hoje
+    const todayStr = new Date().toISOString().split('T')[0];
+    const parseTime = (t: string | null) => t ? `${todayStr}T${t}:00Z` : null;
+
+    return {
+      anesthesiaRecordId: null, // Será resolvido na integração real
+      surgeryId: this.selectedSurgery?.id || null,
+      recordedByProfessionalId: 42, // Mock do médico logado
+      startedAt: parseTime(this.startTimeAnesthesia),
+      endedAt: parseTime(this.endTimeSurgery),
+      vitalSigns: this.vitalRecords.map(r => {
+        const custom: MonitoringCustomFieldPayload[] = [];
+        if (r.custom) {
+          Object.keys(r.custom).forEach(k => {
+             const fieldLabel = this.customFields.find(f => f.key === k)?.label || k;
+             custom.push({ name: fieldLabel, value: r.custom![k] });
+          });
         }
-      ]
-    });
-    await successAlert.present();
+        return {
+          timestamp: parseTime(r.time)!,
+          systolicBloodPressure: r.pas,
+          diastolicBloodPressure: r.pad,
+          meanArterialPressure: r.pam,
+          heartRate: r.fc,
+          spo2: r.spo2,
+          etco2: r.etco2,
+          temperature: r.temp,
+          bis: r.bis,
+          pvc: r.pvc,
+          pcap: r.pcap,
+          customFields: custom
+        };
+      }),
+      administeredAgents: this.agents.map(a => {
+        // Separa dose e unidade se possível (ex: "150mg" -> 150, "mg")
+        const match = a.dose.match(/([\d.]+)\s*([a-zA-Z]+)/);
+        return {
+          timestamp: parseTime(a.time)!,
+          name: a.name,
+          dose: match ? match[1] : a.dose,
+          unit: match ? match[2] : '',
+          route: a.route,
+          presentation: a.presentation
+        };
+      }),
+      clinicalEvents: this.events.map(e => ({
+        timestamp: parseTime(e.time)!,
+        eventType: e.type,
+        name: e.name,
+        observations: null
+      })),
+      fluidBalances: this.balanceItems.map(b => ({
+        timestamp: parseTime(b.time)!,
+        balanceType: b.type,
+        category: b.category,
+        name: b.name,
+        volumeMl: b.value
+      }))
+    };
   }
 
   private startTimer() {

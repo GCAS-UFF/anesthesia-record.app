@@ -4,7 +4,8 @@
 
 export const environment = {
   production: false,
-  apiUrl: ''
+  apiUrl: 'https://anesthesia-record-api-dzcsd2eqgybbhmdd.brazilsouth-01.azurewebsites.net/api'
+  // apiUrl: 'http://localhost:5000/api' // Use essa porta se o Bruno subir a API localmente
 };
 
 /*

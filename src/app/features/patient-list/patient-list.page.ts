@@ -6,6 +6,7 @@ import { addIcons } from 'ionicons';
 import { chevronBackOutline, chevronForwardOutline, checkmarkCircle } from 'ionicons/icons';
 import { Router } from '@angular/router';
 import { SurgeryService } from '../../core/services/surgery.service';
+import { AuthService } from '../../core/services/auth.service';
 import { PatientResponse } from '../../shared/models/patient.model';
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
@@ -56,7 +57,8 @@ export class PatientListPage implements OnInit {
     private alertController: AlertController,
     private loadingController: LoadingController,
     private toastController: ToastController,
-    private surgeryService: SurgeryService
+    private surgeryService: SurgeryService,
+    private authService: AuthService
   ) {
     addIcons({ chevronBackOutline, chevronForwardOutline, checkmarkCircle });
   }
@@ -107,6 +109,7 @@ export class PatientListPage implements OnInit {
 
         this.viewList.push({
           id: surgery.id,
+          patientId: patient.id, // <-- ADICIONADO
           patientName: patient.fullName,
           age: patient.age,
           birthDate: patient.birthDate,
@@ -184,7 +187,7 @@ export class PatientListPage implements OnInit {
     }
   }
 
-  async onAssume(id: number) {
+  async onAssume(surgeryId: number, patientId: string) {
     const alert = await this.alertController.create({
       header: 'Assumir Paciente',
       message: 'Deseja realmente assumir este paciente e iniciar o preparo anestésico?',
@@ -204,18 +207,33 @@ export class PatientListPage implements OnInit {
             });
             await loading.present();
 
-            await loading.onDidDismiss();
+            // Pega o ID do médico logado dinamicamente do AuthService
+            const doctorId = this.authService.getCurrentUserId();
 
-            const toast = await this.toastController.create({
-              message: 'Paciente assumido com sucesso!',
-              duration: 2000,
-              color: 'success',
-              icon: 'checkmark-circle'
+            this.surgeryService.assumePatient(patientId, doctorId).subscribe({
+              next: async () => {
+                await loading.dismiss();
+                const toast = await this.toastController.create({
+                  message: 'Paciente assumido com sucesso!',
+                  duration: 2000,
+                  color: 'success',
+                  icon: 'checkmark-circle'
+                });
+                await toast.present();
+                this.onOpenMonitorizacao(surgeryId);
+              },
+              error: async () => {
+                await loading.dismiss();
+                // Se der erro (ex: backend offline), mocka o sucesso
+                const toast = await this.toastController.create({
+                  message: 'Paciente assumido offline (Mock).',
+                  duration: 2000,
+                  color: 'warning'
+                });
+                await toast.present();
+                this.onOpenMonitorizacao(surgeryId);
+              }
             });
-            await toast.present();
-
-            // [FA-044] Redirecionamento prioritário para monitorização ao assumir
-            this.onOpenMonitorizacao(id);
           }
         }
       ]

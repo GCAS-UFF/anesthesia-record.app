@@ -13,16 +13,19 @@ export class SurgeryService {
    * Obtém a lista de pacientes com cirurgias filtrada por data e status.
    */
   getSurgeries(date?: string, status?: string, page: number = 1, size: number = 10): Observable<PatientResponse> {
-    let url = 'api/surgeries';
+    const url = 'surgeries';
     
-    if (date && status && status !== 'all') {
-      url = `api/surgeries/date/${date}T00:00:00Z/status/${status}`;
-    } else if (date) {
-      url = `api/surgeries/date/${date}T00:00:00Z`;
-    } else if (status && status !== 'all') {
-      url = `api/surgeries/status/${status}`;
-    }
+    const params: any = { page, size };
+    if (date) params.date = `${date}T00:00:00Z`;
+    if (status && status !== 'all') params.status = status;
 
-    return this.api.get<PatientResponse>(url, { page, size });
+    return this.api.get<PatientResponse>(url, params);
+  }
+
+  /**
+   * Associa um médico responsável ao paciente/cirurgia
+   */
+  assumePatient(patientId: string, responsableId: number): Observable<any> {
+    return this.api.patch(`surgeries/${patientId}/${responsableId}`, {});
   }
 }
