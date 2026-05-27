@@ -20,11 +20,24 @@ export class PatientInfoCardComponent {
   @Input() procedure: string = '';
   @Input() room: string = '';
   @Input() bed: string = '';
-  @Input() allergies: string[] = [];
+  @Input() allergies: any = [];
   @Input() compact: boolean = false;
   @Input() status: string = 'ASA II';
 
+  get formattedAllergies(): string {
+    if (!this.allergies) return '';
+    if (Array.isArray(this.allergies)) {
+      return this.allergies.map((a: any) => {
+        if (typeof a === 'string') return a;
+        return a.name || a.description || a.medicamento || 'Alergia (não especificada)';
+      }).join(', ');
+    }
+    return String(this.allergies);
+  }
+
   get hasAllergies(): boolean {
-    return this.allergies && this.allergies.length > 0;
+    if (!this.allergies) return false;
+    if (Array.isArray(this.allergies)) return this.allergies.length > 0;
+    return true;
   }
 }

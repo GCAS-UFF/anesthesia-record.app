@@ -39,7 +39,7 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
 export class PatientListPage implements OnInit {
   searchQuery = '';
   selectedStatus = 'all';
-  selectedDate = '2026-04-21';
+  selectedDate = '2026-04-11';
   isRefreshing = false;
   viewList: any[] = [];
 
@@ -109,7 +109,7 @@ export class PatientListPage implements OnInit {
 
         this.viewList.push({
           id: surgery.id,
-          patientId: patient.id, // <-- ADICIONADO
+          patientId: patient.patientId || patient.id,
           patientName: patient.fullName,
           age: patient.age,
           birthDate: patient.birthDate,
@@ -187,7 +187,7 @@ export class PatientListPage implements OnInit {
     }
   }
 
-  async onAssume(surgeryId: number, patientId: string) {
+  async onAssume(surgeryId: string | number, patientId: string) {
     const alert = await this.alertController.create({
       header: 'Assumir Paciente',
       message: 'Deseja realmente assumir este paciente e iniciar o preparo anestésico?',
@@ -242,15 +242,15 @@ export class PatientListPage implements OnInit {
     await alert.present();
   }
 
-  onOpenMonitorizacao(id: number) {
+  onOpenMonitorizacao(id: string | number) {
     this.router.navigate(['/monitorizacao', id]);
   }
 
-  onOpenFicha(id: number) {
+  onOpenFicha(id: string | number) {
     this.router.navigate(['/ficha-anestesica', id]);
   }
 
-  onViewRegistro(id: number) {
+  onViewRegistro(id: string | number) {
     this.router.navigate(['/registro-cirurgia', id]);
   }
 

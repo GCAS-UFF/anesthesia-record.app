@@ -41,7 +41,7 @@
         <div class="allergy-footer" *ngIf="hasAllergies">
             <ion-icon name="warning"></ion-icon>
             <strong>ALERGIA:</strong>
-            <span>{{ allergies.join(' • ') }}</span>
+            <span>{{ formattedAllergies }}</span>
         </div>
     </div>
 
@@ -61,7 +61,7 @@
         </div>
         <div class="mini-allergy-bar" *ngIf="hasAllergies">
             <ion-icon name="warning-outline"></ion-icon>
-            <strong>Alergias:</strong> {{ allergies.join(', ') }}
+            <strong>Alergias:</strong> {{ formattedAllergies }}
         </div>
     </div>
 </div>
