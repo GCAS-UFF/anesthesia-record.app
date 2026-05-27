@@ -78,22 +78,29 @@
         .mini-name-area {
             display: flex;
             flex-direction: column;
+            flex-shrink: 0;
             .mini-name { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
-            .mini-record { font-size: 10px; font-weight: 700; opacity: 0.7; text-transform: uppercase; }
+            .mini-record { font-size: 12px; font-weight: 700; opacity: 0.8; text-transform: uppercase; }
         }
 
         .mini-stats-grid {
             display: flex;
-            gap: 16px;
+            flex-wrap: wrap;
+            gap: 6px;
             align-items: center;
+            justify-content: flex-end;
 
             .mini-stat {
                 font-size: 12px;
                 font-weight: 600;
+                white-space: nowrap;
                 display: flex;
                 align-items: center;
                 gap: 4px;
-                white-space: nowrap;
+                background: rgba(255, 255, 255, 0.12);
+                padding: 4px 10px;
+                border-radius: 20px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
             }
 
             .asa-badge {
