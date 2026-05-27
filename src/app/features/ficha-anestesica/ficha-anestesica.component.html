@@ -27,7 +27,12 @@
         <app-patient-info-card *ngIf="!isLoading" [patientName]="patient?.fullName || ''" [birthDate]="patient?.birthDate || ''"
             [age]="patient?.age?.toString() || ''" [gender]="patient?.gender || 'M'" [weight]="patient?.weight || '--'"
             [record]="patient?.medicalRecordNumber || ''" [procedure]="selectedProcedure?.description || ''"
-            [room]="selectedSurgery?.location?.room || ''" [bed]="patient?.bed || '2'" [allergies]="patient?.allergies || []">
+            [surgicalCenter]="selectedSurgery?.location?.surgicalCenter?.description || ''"
+            [room]="selectedSurgery?.location?.room || ''"
+            [unit]="patient?.currentLocation?.unit?.description || ''"
+            [floor]="patient?.currentLocation?.floor || ''"
+            [bed]="patient?.currentLocation?.bed || '--'" 
+            [allergies]="patient?.allergies || []">
         </app-patient-info-card>
 
         <form *ngIf="form && !isLoading" [formGroup]="form" (ngSubmit)="salvar()" class="ficha-form-container">

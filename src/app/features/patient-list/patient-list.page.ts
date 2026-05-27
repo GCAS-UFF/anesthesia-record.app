@@ -115,6 +115,10 @@ export class PatientListPage implements OnInit {
           birthDate: patient.birthDate,
           record: patient.medicalRecordNumber,
           room: surgery.location.room,
+          surgicalCenter: surgery.location.surgicalCenter?.description || '',
+          bed: patient.currentLocation?.bed || '',
+          floor: patient.currentLocation?.floor || '',
+          unit: patient.currentLocation?.unit?.description || '',
           procedure: (primaryProc && primaryProc.description && primaryProc.description !== 'Não informado') 
                      ? primaryProc.description 
                      : 'Procedimento não informado',

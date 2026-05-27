@@ -21,6 +21,10 @@
         <span>📋 Prontuário: {{ record }}</span>
         <span>🆔 ID: {{ id }}</span>
     </div>
+    <div class="location-details" style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #64748b; margin-top: 8px;">
+        <span *ngIf="unit || floor || bed">🛏️ <strong>Internação:</strong> {{ unit }} • Andar: {{ floor || '--' }} • Leito: {{ bed || '--' }}</span>
+        <span>🚪 <strong>Cirurgia:</strong> {{ surgicalCenter || 'Centro Cirúrgico' }}</span>
+    </div>
     <div class="card-actions">
         <button class="btn-assume ion-activatable ripple-parent" *ngIf="status === 'waiting'" (click)="onAssume()">
             👤 Assumir Paciente

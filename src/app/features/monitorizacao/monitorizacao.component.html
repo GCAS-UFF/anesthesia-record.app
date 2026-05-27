@@ -33,8 +33,11 @@
                     [weight]="patient?.weightKg || '--'"
                     [record]="patient?.medicalRecordNumber || ''" 
                     [procedure]="selectedProcedure?.description || ''"
+                    [surgicalCenter]="selectedSurgery?.location?.surgicalCenter?.description || ''"
                     [room]="selectedSurgery?.location?.room || ''" 
-                    [bed]="patient?.bed || '--'" 
+                    [unit]="patient?.currentLocation?.unit?.description || ''"
+                    [floor]="patient?.currentLocation?.floor || ''"
+                    [bed]="patient?.currentLocation?.bed || '--'" 
                     [allergies]="patient?.allergies || []"
                     [compact]="true"
                     status="ASA II">

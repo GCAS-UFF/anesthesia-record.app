@@ -20,6 +20,9 @@ export class PatientInfoCardComponent {
   @Input() procedure: string = '';
   @Input() room: string = '';
   @Input() bed: string = '';
+  @Input() unit: string = '';
+  @Input() floor: string = '';
+  @Input() surgicalCenter: string = '';
   @Input() allergies: any = [];
   @Input() compact: boolean = false;
   @Input() status: string = 'ASA II';
