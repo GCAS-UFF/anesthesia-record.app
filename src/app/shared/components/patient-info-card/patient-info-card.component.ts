@@ -1,6 +1,8 @@
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonIcon } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { warning } from 'ionicons/icons';
 
 @Component({
   selector: 'app-patient-info-card',
@@ -11,6 +13,10 @@ import { IonIcon } from '@ionic/angular/standalone';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PatientInfoCardComponent {
+  constructor() {
+    addIcons({ warning });
+  }
+
   @Input() patientName: string = '';
   @Input() age: string = '';
   @Input() birthDate: string = '';

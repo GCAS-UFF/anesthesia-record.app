@@ -19,23 +19,20 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   saveRecord(record: any): Observable<any> {
     console.log('Serviço: Salvando ficha via API...', record);
     
+    const surgeryId = Number(record.pacienteId);
+    
     // Converte o form do Angular (aninhado) para o JSON flat da API
-    const apiPayload = this.mapToApiFormat(record);
+    const apiPayload = this.mapToApiFormat(record, surgeryId);
     
-    // Força o ID 9 para testes no backend conforme instrução
-    apiPayload.id = 9;
-    
-    // Sempre faz PUT para /api/AnesthesiaRecord/9 (pois o ID 9 já existe na API)
-    return this.update(9, apiPayload);
+    return this.update(surgeryId, apiPayload);
   }
 
   /**
    * [FA-042] Carrega a ficha da API e mapeia de volta para o form
    */
   getLatestByPatient(pacienteId: string): Observable<any | null> {
-    // Força o ID 9 no GET para teste
     return new Observable(obs => {
-      this.getById(9).subscribe({
+      this.getById(Number(pacienteId)).subscribe({
         next: (apiResponse: any) => {
           if (apiResponse && apiResponse.data) {
             const mappedForm = this.mapToAppFormat(apiResponse.data);
@@ -54,14 +51,20 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   }
 
   /**
-   * [FA-042] Remove todas as fichas de um paciente (usado ao "Limpar" a ficha)
+   * [NOVO] Cria uma ficha anestésica em branco (e consequentemente o MonitoringRecord)
+   * para que a Monitorização possa salvar dados via PUT.
+   */
+  createBlankRecord(surgeryId: number): Observable<any> {
+    const apiPayload = this.mapToApiFormat({}, surgeryId);
+    return this.create(apiPayload);
+  }
+
+  /**
+   * [FA-042] Remove rascunho de ficha de um paciente (usado ao "Limpar" a ficha)
    */
   clearLatestRecord(pacienteId: string): Observable<boolean> {
-    console.log('Serviço: Limpando histórico do paciente...', pacienteId);
-    let records = this.getStoredRecords();
-    records = records.filter(r => r.pacienteId !== pacienteId);
-    localStorage.setItem('mock_anesthesia_records', JSON.stringify(records));
-    this.clearDraft(pacienteId); // Limpa rascunho também
+    console.log('Serviço: Limpando rascunho do paciente...', pacienteId);
+    this.clearDraft(pacienteId);
     return of(true).pipe(delay(100));
   }
 
@@ -91,19 +94,33 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     localStorage.removeItem(`draft_anesthesia_${pacienteId}`);
   }
 
-  private getStoredRecords(): AnesthesiaRecordModel[] {
-    const data = localStorage.getItem('mock_anesthesia_records');
-    return data ? JSON.parse(data) : [];
+  getPdfUrl(id: number): string {
+    return `${environment.apiUrl}/AnesthesiaRecord/${id}/print`;
   }
 
-  getPdfUrl(id: number = 9): string {
-    return `${environment.apiUrl}/AnesthesiaRecord/${id}/pdf`;
+  private formatTimeForApi(timeStr: string | undefined | null): string {
+    if (!timeStr) return '00:00:00';
+    if (timeStr.includes('T')) {
+      const timePart = timeStr.split('T')[1];
+      return timePart.substring(0, 8);
+    }
+    if (timeStr.length === 5 && timeStr.includes(':')) {
+      return `${timeStr}:00`;
+    }
+    return timeStr.substring(0, 8);
   }
 
   // Mapper do App (Aninhado) para a API (Flat)
-  private mapToApiFormat(app: any): any {
+  private mapToApiFormat(app: any, surgeryId: number): any {
+    const todayDate = new Date().toISOString().split('T')[0];
+    const parsedAsa = app.dadosVitais?.asa ? parseInt(app.dadosVitais.asa.replace('ASA ', '')) : 1;
+
     return {
-      id: 9, // Sempre 9
+      id: surgeryId,
+      surgeryId: surgeryId,
+      patientId: app.patientId || 1, // Fallback caso não seja passado
+      externalPatientId: app.externalPatientId || "EXT-000",
+      recordDate: app.recordDate || todayDate,
       patientIdentifiedBeforeInduction: app.seguranca?.identificadoAvaliado === 'sim',
       anestheticConsentSigned: app.seguranca?.consentimentoAssinado === 'sim',
       anesthesiaEquipmentChecked: app.seguranca?.equipamentosChecados === 'sim',
@@ -115,11 +132,11 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       temperature: Number(app.dadosVitais?.temp) || 0,
       oxygenSaturation: Number(app.dadosVitais?.spo2) || 0,
       weightKg: Number(app.dadosVitais?.peso) || 0,
-      asaClassification: app.dadosVitais?.asa ? parseInt(app.dadosVitais.asa.replace('ASA ', '')) : 1,
-      roomEntryTime: app.dadosVitais?.entradaSala || '',
-      anesthesiaStartTime: app.equipe?.horaInicioAnestesia || '',
-      surgeryEndTime: app.posProcedimento?.horaTerminoCirurgia || '',
-      anesthesiaEndTime: app.posProcedimento?.horaTerminoAnestesia || '',
+      asaClassification: isNaN(parsedAsa) ? 1 : parsedAsa,
+      roomEntryTime: this.formatTimeForApi(app.dadosVitais?.entradaSala),
+      anesthesiaStartTime: this.formatTimeForApi(app.equipe?.horaInicioAnestesia),
+      surgeryEndTime: this.formatTimeForApi(app.posProcedimento?.horaTerminoCirurgia),
+      anesthesiaEndTime: this.formatTimeForApi(app.posProcedimento?.horaTerminoAnestesia),
       surgeon: app.equipe?.cirurgiao || '',
       assistant: app.equipe?.assistente || '',
       preOperativeDiagnosis: app.equipe?.diagnosticoPre || '',
@@ -161,9 +178,9 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       destination: 1, // Enum
       hasPain: app.alderete?.dor === 'sim',
       firstAnesthesiologistId: 5,
-      firstAnesthesiologistName: "Dra. Amanda Onish",
-      secondAnesthesiologistId: 8,
-      secondAnesthesiologistName: "Admin Siga"
+      firstAnesthesiologistName: "Dra. Amanda Onishi",
+      secondAnesthesiologistId: null,
+      secondAnesthesiologistName: null
     };
   }
 
@@ -171,7 +188,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   private mapToAppFormat(api: any): any {
     return {
       id: api.id,
-      pacienteId: 'CIR-001',
+      pacienteId: api.id?.toString(),
       seguranca: {
         identificadoAvaliado: api.patientIdentifiedBeforeInduction ? 'sim' : 'nao',
         consentimentoAssinado: api.anestheticConsentSigned ? 'sim' : 'nao',

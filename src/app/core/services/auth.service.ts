@@ -22,7 +22,7 @@ export class AuthService {
   login(credentials: LoginCredentials): Observable<boolean> {
     const url = `${environment.apiUrl}/Auth/login`;
     const payload = { 
-      email: credentials.username, 
+      login: credentials.username, 
       password: credentials.password 
     };
 
@@ -43,45 +43,10 @@ export class AuthService {
       }),
       map(() => true),
       catchError(err => {
-        console.warn('API de Login falhou ou está indisponível. Tentando Fallback Mock...', err);
-        return this.mockLoginFallback(credentials);
+        console.error('Erro na API de Login:', err);
+        return throwError(() => 'Usuário ou senha inválidos, ou API indisponível.');
       })
     );
-  }
-
-  /**
-   * Fallback enquanto a API do Bruno não estiver 100% no ar.
-   */
-  private mockLoginFallback(credentials: LoginCredentials): Observable<boolean> {
-    const VALID_CREDENTIALS = [
-      { username: 'admin', id: 8, name: 'Admin Siga' },
-      { username: 'amanda.onishi', id: 9, name: 'Dra. Amanda Onishi' },
-      { username: '123456', password: 'senha123', id: 9, name: 'Dra. Amanda Onishi' },
-      { username: '12345678900', password: 'senha123', id: 9, name: 'Dra. Amanda Onishi' },
-      { username: '654321', password: 'senha456', id: 10, name: 'Dr. Carlos Mendes' },
-      { username: '98765432100', password: 'senha456', id: 10, name: 'Dr. Carlos Mendes' }
-    ];
-
-    const user = VALID_CREDENTIALS.find(cred => {
-      if (cred.username === 'admin' || cred.username === 'amanda.onishi') {
-        return cred.username === credentials.username;
-      }
-      return cred.username === credentials.username && cred.password === credentials.password;
-    });
-
-    if (user) {
-      this.loggedInUser = user;
-      const mockToken = `token_${user.username}_${Date.now()}`;
-
-      sessionStorage.setItem('userLoggedIn', 'true');
-      sessionStorage.setItem('userCRM', user.username);
-      sessionStorage.setItem('authToken', mockToken);
-      sessionStorage.setItem('userId', user.id.toString());
-
-      return of(true).pipe(delay(1000));
-    }
-
-    return throwError(() => 'Usuário ou senha inválidos. Tente novamente.').pipe(delay(500));
   }
 
   /**

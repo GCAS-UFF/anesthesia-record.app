@@ -220,7 +220,8 @@ export class FichaAnestesicaComponent implements OnInit {
       printOutline,
       arrowBackOutline,
       closeOutline,
-      addOutline
+      addOutline,
+      timeOutline
     });
     this.initForm();
   }
@@ -697,20 +698,22 @@ export class FichaAnestesicaComponent implements OnInit {
 
   private loadPatientData(id: string) {
     this.isLoading = true;
-    this.surgeryService.getSurgeries('2026-04-11').subscribe(res => {
-      const patientData = res.data.find(p => p.surgeries.some(s => s.id.toString() === id.toString()));
-      if (patientData) {
-        const patientWeight = patientData.weightKg || '92';
+    this.surgeryService.getSurgeries('2026-04-11').subscribe((res: any) => {
+      const dataArray = res?.data?.data || res?.data || [];
+      const surgeryData = dataArray.find((s: any) => (s.surgeryId || s.id)?.toString() === id.toString());
+
+      if (surgeryData) {
+        const patientWeight = surgeryData.weightKg || '92';
 
         this.patient = {
-          ...patientData,
-          gender: patientData.gender || 'M',
+          ...surgeryData,
+          gender: surgeryData.gender || 'M',
           weight: patientWeight.toString().replace(' kg', ''),
-          birthDate: this.formatDate(patientData.birthDate || '1985-03-15T00:00:00')
+          birthDate: this.formatDate(surgeryData.birthDate || '1985-03-15T00:00:00')
         };
 
-        this.selectedSurgery = patientData.surgeries.find(s => s.id.toString() === id.toString());
-        this.selectedProcedure = this.selectedSurgery.procedures.find((p: any) => p.isPrimary) || this.selectedSurgery.procedures[0];
+        this.selectedSurgery = { ...surgeryData, id: surgeryData.surgeryId || surgeryData.id };
+        this.selectedProcedure = this.selectedSurgery.procedures?.find((p: any) => p.isPrimary) || this.selectedSurgery.procedures?.[0];
 
         // [FA-042] Lógica de Auto-Save Draft PRIORITÁRIA
         const draft = this.anesthesiaService.getDraft(this.pacienteId!);
@@ -812,7 +815,9 @@ export class FichaAnestesicaComponent implements OnInit {
 
   imprimir() {
     console.log('Solicitando PDF da API...');
-    window.open(this.anesthesiaService.getPdfUrl(9), '_blank');
+    if (this.selectedSurgery?.id) {
+        window.open(this.anesthesiaService.getPdfUrl(this.selectedSurgery.id), '_blank');
+    }
   }
 
   async salvar() {
