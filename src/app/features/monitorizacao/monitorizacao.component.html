@@ -43,17 +43,28 @@
                     status="ASA II">
                 </app-patient-info-card>
                 
-                <!-- Linha de Posição (também importante ficar visível) -->
-                <div class="position-row" [class.disabled-row]="!isSurgeryStarted || isSurgeryFinished">
-                    <span class="position-label">📐 Posição:</span>
-                    <div class="position-options">
-                        <span class="pos-opt" *ngFor="let pos of posicoesPossiveis" 
-                              [class.active]="pos === posicaoAtual"
-                              (click)="!isSurgeryFinished && mudarPosicao(pos)">
-                            {{ pos }}
-                        </span>
-                    </div>
+                <!-- Linha de Posição -->
+            <div class="position-row" [class.disabled-row]="!isSurgeryStarted || isSurgeryFinished">
+                <span class="position-label">🛌 Posição:</span>
+                <div class="position-options">
+                    <span class="pos-opt" *ngFor="let pos of posicoesPossiveis" 
+                          [class.active]="pos === posicaoAtual"
+                          (click)="!isSurgeryFinished && mudarPosicao(pos)">
+                        {{ pos }}
+                    </span>
                 </div>
+                
+                <ion-button 
+                    *ngIf="isSurgeryStarted && !isSurgeryFinished" 
+                    fill="outline" 
+                    size="small" 
+                    color="medium" 
+                    style="margin-left: 10px; --border-radius: 4px;"
+                    (click)="reconfigurarFrequencia()">
+                    <ion-icon name="time-outline" slot="start"></ion-icon>
+                    {{ autoMonitoringIntervalMinutes ? autoMonitoringIntervalMinutes + ' min' : 'Auto' }}
+                </ion-button>
+            </div>
             </div>
 
             <!-- ÁREA SCROLLÁVEL: Gráficos e Tabela -->

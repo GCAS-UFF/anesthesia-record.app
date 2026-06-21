@@ -82,10 +82,12 @@ export class PatientListPage implements OnInit {
 
     // Fetch all for the date and filter in frontend to ensure reliability
     this.surgeryService.getSurgeries(this.selectedDate, undefined, this.currentPage, this.pageSize).subscribe({
-      next: (response) => {
-        this.totalItems = response.totalItems;
-        this.totalPages = Math.ceil(this.totalItems / this.pageSize);
-        this.flattenData(response);
+      next: (response: any) => {
+        // A API agora usa um wrapper padronizado: { valid: true, data: { data: [...], totalItems: ... }, message: ... }
+        const resultData = response.data || response;
+        this.totalItems = resultData.totalItems || 0;
+        this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1;
+        this.flattenData(resultData);
         this.isRefreshing = false;
       },
       error: () => {
@@ -94,39 +96,40 @@ export class PatientListPage implements OnInit {
     });
   }
 
-  flattenData(response: PatientResponse) {
+  flattenData(response: any) {
     this.viewList = [];
-    response.data.forEach(patient => {
-      patient.surgeries.forEach(surgery => {
-        const primaryProc = surgery.procedures.find(p => p.isPrimary) || surgery.procedures[0];
-        const dt = new Date(surgery.surgeryDate);
+    const dataArray = response.data || [];
+    
+    dataArray.forEach((item: any) => {
+      // O backend agora retorna uma lista achatada onde cada item já é a cirurgia com os dados do paciente embutidos
+      const primaryProc = item.procedures?.find((p: any) => p.isPrimary) || item.procedures?.[0];
+      const dt = new Date(item.expectedAt || item.surgeryDate || new Date());
 
-        let completedTime = null;
-        if (surgery.status === 1) {
-          const endDt = new Date(dt.getTime() + 2 * 60 * 60 * 1000);
-          completedTime = this.datePipe.transform(endDt, 'HH:mm');
-        }
+      let completedTime = null;
+      if (item.status === 1 || item.status === 3) {
+        const endDt = new Date(dt.getTime() + 2 * 60 * 60 * 1000);
+        completedTime = this.datePipe.transform(endDt, 'HH:mm');
+      }
 
-        this.viewList.push({
-          id: surgery.id,
-          patientId: patient.patientId || patient.id,
-          patientName: patient.fullName,
-          age: patient.age,
-          birthDate: patient.birthDate,
-          record: patient.medicalRecordNumber,
-          room: surgery.location.room,
-          surgicalCenter: surgery.location.surgicalCenter?.description || '',
-          bed: patient.currentLocation?.bed || '',
-          floor: patient.currentLocation?.floor || '',
-          unit: patient.currentLocation?.unit?.description || '',
-          procedure: (primaryProc && primaryProc.description && primaryProc.description !== 'Não informado') 
-                     ? primaryProc.description 
-                     : 'Procedimento não informado',
-          status: surgery.status === 3 ? 'completed' : 'waiting',
-          date: this.datePipe.transform(dt, 'yyyy-MM-dd'),
-          time: this.datePipe.transform(dt, 'HH:mm'),
-          completedAt: completedTime
-        });
+      this.viewList.push({
+        id: item.surgeryId || item.id,
+        patientId: item.patientId || item.id,
+        patientName: item.fullName,
+        age: item.age,
+        birthDate: item.birthDate,
+        record: item.medicalRecordNumber || item.record,
+        room: item.room || item.location?.room || '',
+        surgicalCenter: item.location?.surgicalCenter?.description || '',
+        bed: item.currentLocation?.bed || '',
+        floor: item.currentLocation?.floor || '',
+        unit: item.currentLocation?.unit?.description || '',
+        procedure: (primaryProc && primaryProc.description && primaryProc.description !== 'Não informado') 
+                   ? primaryProc.description 
+                   : 'Procedimento não informado',
+        status: item.status === 3 ? 'completed' : 'waiting',
+        date: this.datePipe.transform(dt, 'yyyy-MM-dd'),
+        time: this.datePipe.transform(dt, 'HH:mm'),
+        completedAt: completedTime
       });
     });
   }
@@ -214,7 +217,7 @@ export class PatientListPage implements OnInit {
             // Pega o ID do médico logado dinamicamente do AuthService
             const doctorId = this.authService.getCurrentUserId();
 
-            this.surgeryService.assumePatient(patientId, doctorId).subscribe({
+            this.surgeryService.assumePatient(patientId, Number(surgeryId), doctorId).subscribe({
               next: async () => {
                 await loading.dismiss();
                 const toast = await this.toastController.create({
@@ -228,14 +231,12 @@ export class PatientListPage implements OnInit {
               },
               error: async () => {
                 await loading.dismiss();
-                // Se der erro (ex: backend offline), mocka o sucesso
                 const toast = await this.toastController.create({
-                  message: 'Paciente assumido offline (Mock).',
-                  duration: 2000,
-                  color: 'warning'
+                  message: 'Falha de comunicação com a API. Não foi possível assumir o paciente.',
+                  duration: 3000,
+                  color: 'danger'
                 });
                 await toast.present();
-                this.onOpenMonitorizacao(surgeryId);
               }
             });
           }

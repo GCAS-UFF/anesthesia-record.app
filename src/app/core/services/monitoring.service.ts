@@ -17,10 +17,9 @@ export class MonitoringService {
   /**
    * Busca os dados de monitorização da API
    */
-  getMonitoringData(surgeryId: string | number): Observable<MonitoringPayload | null> {
-    console.log(`[MonitoringService] Buscando dados de monitorização reais da cirurgia ${surgeryId}...`);
-    // Forçando ID 9 conforme o swagger/instruções para testes
-    return this.http.get<any>(`${this.baseUrl}/Monitoring/9`).pipe(
+  getMonitoringData(monitoringId: number): Observable<MonitoringPayload | null> {
+    console.log(`[MonitoringService] Buscando dados de monitorização reais ID ${monitoringId}...`);
+    return this.http.get<any>(`${this.baseUrl}/monitoring/${monitoringId}`).pipe(
       map(res => {
          if (res && res.data) {
             return res.data as MonitoringPayload;
@@ -31,12 +30,26 @@ export class MonitoringService {
   }
 
   /**
-   * Salva os dados de monitorização (auto-save ou encerramento)
+   * Cria um novo registro de monitorização na API
    */
-  saveMonitoringData(surgeryId: string | number, data: MonitoringPayload): Observable<any> {
-    console.log(`[MonitoringService] (Mock) Salvando dados de monitorização da cirurgia ${surgeryId}...`, data);
-    // A rota de POST/PUT de monitoring não foi detalhada no swagger pelo usuário,
-    // então deixaremos um dummy temporário aqui por segurança se não existir
-    return this.http.post<any>(`${this.baseUrl}/Monitoring`, { ...data, anesthesiaRecordId: 9 });
+  createMonitoringData(data: MonitoringPayload): Observable<any> {
+    console.log(`[MonitoringService] Criando novo registro de monitorização...`, data);
+    return this.http.post<any>(`${this.baseUrl}/monitoring`, data);
+  }
+
+  /**
+   * Atualiza um registro existente de monitorização
+   */
+  updateMonitoringData(monitoringId: number, data: MonitoringPayload): Observable<any> {
+    console.log(`[MonitoringService] Atualizando registro de monitorização ID ${monitoringId}...`, data);
+    return this.http.put<any>(`${this.baseUrl}/monitoring/${monitoringId}`, data);
+  }
+
+  /**
+   * Finaliza a monitorização
+   */
+  finalizeMonitoring(monitoringId: number): Observable<any> {
+    console.log(`[MonitoringService] Finalizando registro de monitorização ID ${monitoringId}...`);
+    return this.http.patch<any>(`${this.baseUrl}/monitoring/${monitoringId}`, {});
   }
 }

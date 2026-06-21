@@ -1,3 +1,12 @@
+import { 
+  UnitEnum, 
+  AdministrationRouteEnum, 
+  MedicationPresentationEnum, 
+  ClinicalEventTypeEnum, 
+  FluidBalanceTypeEnum, 
+  FluidCategoryEnum 
+} from './api-enums.model';
+
 export interface MonitoringCustomFieldPayload {
   name: string;
   value: string;
@@ -22,22 +31,22 @@ export interface MonitoringAgentPayload {
   timestamp: string;
   name: string;
   dose: string;
-  unit: string;
-  route: string;
-  presentation: string;
+  unit: UnitEnum;
+  route: AdministrationRouteEnum;
+  presentation: MedicationPresentationEnum;
 }
 
 export interface MonitoringEventPayload {
   timestamp: string;
-  eventType: 'event' | 'incident' | 'technique' | 'position';
+  eventType: ClinicalEventTypeEnum;
   name: string;
   observations: string | null;
 }
 
 export interface MonitoringFluidBalancePayload {
   timestamp: string;
-  balanceType: 'gain' | 'loss';
-  category: string;
+  balanceType: FluidBalanceTypeEnum;
+  category: FluidCategoryEnum;
   name: string;
   volumeMl: number;
 }
