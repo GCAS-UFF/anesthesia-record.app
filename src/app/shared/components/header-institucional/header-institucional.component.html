@@ -1,27 +1,72 @@
-<div class="hospital-header" style="display: flex; justify-content: space-between; align-items: center;">
-    <div class="hospital-info">
-        <div class="logo-container">
-            <img class="main-logo" src="assets/Logo.png" alt="Logo do Sistema">
-        </div>
-        <div class="hospital-text">
-            <div class="university">
-                Sistema Interno de Gerenciamento Anestésico
-            </div>
-        </div>
-    </div>
+<header class="hospital-header">
+  <!-- Esquerda: botão menu + logos -->
+  <div class="header-left">
+    <button class="menu-btn" (click)="openMenu()" aria-label="Abrir menu">
+      <ion-icon name="menu-outline"></ion-icon>
+    </button>
+  </div>
 
-    <div class="header-right">
-        <div class="server-status">
-            <span class="dot"></span>
-            <span>Servidor: Conectado</span>
-        </div>
-        <div *ngIf="showDoctorInfo" class="doctor-profile">
-            <span class="doctor-name">Dra. Amanda Onishi</span>
-        </div>
-        <div *ngIf="showLogout" class="logout-container">
-            <button class="btn-logout-custom" (click)="logout()">
-                <span>Sair</span>
-            </button>
-        </div>
+  <!-- Direita: status + avatar -->
+  <div class="header-right">
+    <span
+      class="server-icon"
+      [class.connected]="serverConnected"
+      [attr.title]="
+        serverConnected ? 'Servidor conectado' : 'Servidor desconectado'
+      "
+      aria-label="Status do servidor"
+    >
+      <ion-icon name="wifi-outline"></ion-icon>
+    </span>
+
+    <div class="doctor-chip">
+      <div class="avatar">{{ doctorInitials }}</div>
+      <div class="doctor-info">
+        <span class="doctor-name">{{ doctorName }}</span>
+        <span class="doctor-role">{{ doctorRole }}</span>
+      </div>
     </div>
-</div>
+  </div>
+</header>
+
+<!-- Menu lateral (drawer) -->
+<div
+  class="drawer-backdrop"
+  [class.open]="menuOpen"
+  (click)="closeMenu()"
+></div>
+<aside
+  class="drawer"
+  [class.open]="menuOpen"
+  role="dialog"
+  aria-label="Menu principal"
+>
+  <div class="drawer-header">
+    <div class="drawer-logos">
+      <img src="assets/Logo.png" alt="UFF" class="logo uff" />
+      <span class="drawer-title">HUAP · UFF</span>
+    </div>
+    <button class="close-btn" (click)="closeMenu()" aria-label="Fechar menu">
+      <ion-icon name="close-outline"></ion-icon>
+    </button>
+  </div>
+
+  <nav class="drawer-nav">
+    <button
+      *ngFor="let item of navItems"
+      class="nav-item"
+      [class.active]="item.active"
+      (click)="navigate(item)"
+    >
+      <ion-icon [name]="item.icon"></ion-icon>
+      <span>{{ item.label }}</span>
+    </button>
+  </nav>
+
+  <div class="drawer-footer">
+    <button class="nav-item logout" (click)="logout()">
+      <ion-icon name="log-out-outline"></ion-icon>
+      <span>Sair</span>
+    </button>
+  </div>
+</aside>

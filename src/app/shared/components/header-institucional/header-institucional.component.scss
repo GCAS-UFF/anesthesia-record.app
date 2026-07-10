@@ -1,188 +1,239 @@
-
+:host {
+  display: block;
+}
 
 .hospital-header {
-    background: white;
-    padding: 8px 32px;
-    border-bottom: 1px solid #e9eef3;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 64px;
+  padding: 0 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid #f1f5f9;
+  position: sticky;
+  top: 0;
+  z-index: 30;
 }
 
-.hospital-info {
-    display: flex;
-    align-items: flex-end;
-    gap: 16px;
-    flex-wrap: wrap;
-    justify-content: center;
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
-.logo-container {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+.menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  border-radius: 12px;
+  color: #475569;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  ion-icon { font-size: 24px; }
+  &:hover { background: #f1f5f9; }
+  &:active { background: #e2e8f0; }
 }
 
-.main-logo {
-    height: 40px;
-    width: auto;
+.logos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .logo {
     object-fit: contain;
-}
+    &.huap { height: 32px; width: 32px; }
+    &.uff { height: 32px; width: 90px; }
+  }
 
-.hospital-text {
-    /* Sem borda ou padding lateral */
-}
-
-.university {
-    font-size: 16px;
-    color: #475569;
-    font-weight: 700;
-    margin-top: 0;
-    margin-bottom: 4px; /* Optical alignment with the bottom of the logo */
-}
-
-@media (min-width: 1600px) {
-
-    .main-logo {
-        height: 70px;
-    }
-}
-
-@media (max-width: 768px) {
-    .hospital-header {
-        padding: 16px 20px;
-    }
-
-    .main-logo {
-        height: 45px;
-    }
-
-    .logo-container {
-        gap: 10px;
-    }
-
-    .hospital-info {
-        gap: 16px;
-    }
-
-    .hospital-text {
-        padding-left: 12px;
-    }
-
-    .hospital-name {
-        font-size: 20px;
-    }
-
-    .university {
-        font-size: 13px;
-    }
-}
-
-@media (max-width: 550px) {
-    .hospital-info {
-        flex-direction: column;
-        text-align: center;
-        gap: 12px;
-    }
-
-    .hospital-text {
-        border-left: none;
-        padding-left: 0;
-        text-align: center;
-    }
-
-    .logo-container {
-        justify-content: center;
-    }
-
-    .main-logo {
-        height: 40px;
-    }
-
-    .university {
-        font-size: 12px;
-    }
+  .divider {
+    width: 1px;
+    height: 24px;
+    background: #e2e8f0;
+  }
 }
 
 .header-right {
-    display: flex;
-    align-items: center;
-    gap: 24px;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.server-status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: #10b981;
-    background: #d1fae5;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-weight: 600;
-    border: 1px solid #a7f3d0;
+.server-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  color: #cbd5e1;
 
-    .dot {
-        width: 8px;
-        height: 8px;
-        background: #10b981;
-        border-radius: 50%;
-        animation: pulse 2s infinite;
-    }
+  ion-icon { font-size: 20px; }
+  &.connected { color: #10b981; }
 }
 
-.doctor-profile {
-    display: flex;
-    align-items: center;
-    background: #f8fafc;
-    padding: 8px 20px;
-    border-radius: 40px;
-    border: 1px solid #e2e8f0;
+.doctor-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 16px 4px 4px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
 
-    .doctor-name {
-        font-weight: 700;
-        font-size: 14px;
-        color: #1e293b;
-    }
-}
-
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.4; }
-    100% { opacity: 1; }
-}
-
-.btn-logout-custom {
+  .avatar {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #fff1f2;
-    color: #e11d48;
-    border: 2px solid #fecdd3;
-    border-radius: 9999px;
-    font-weight: 700;
-    font-size: 15px;
-    padding: 10px 28px;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    box-shadow: 0 1px 3px rgba(225, 29, 72, 0.08);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #3b82f6;
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+  }
 
-    ion-icon {
-        font-size: 18px;
-    }
+  .doctor-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+  }
 
-    &:hover {
-        background: #ffe4e6;
-        color: #be123c;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 6px rgba(225, 29, 72, 0.1);
-    }
+  .doctor-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+  }
 
-    &:active {
-        transform: translateY(0);
-        box-shadow: none;
-    }
+  .doctor-role {
+    font-size: 11px;
+    color: #64748b;
+  }
 }
 
-@media (max-width: 900px) {
-    .doctor-profile, .server-status {
-        display: none;
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 40;
+
+  &.open { opacity: 1; pointer-events: auto; }
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 320px;
+  max-width: 85vw;
+  background: #fff;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  box-shadow: 4px 0 24px rgba(15, 23, 42, 0.08);
+
+  &.open { transform: translateX(0); }
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 50px;
+  border-bottom: 1px solid #f1f5f9;
+
+  .drawer-logos {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .logo {
+      object-fit: contain;
+      &.huap { height: 36px; width: 36px; }
+      &.uff { height: 36px; width: 90px; }
     }
+
+    .drawer-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+  }
+
+  .close-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    color: #64748b;
+    cursor: pointer;
+
+    ion-icon { font-size: 22px; }
+    &:hover { background: #f1f5f9; }
+  }
+}
+
+.drawer-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 2px;
+  overflow-y: auto;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 12px;
+  text-align: left;
+  font-size: 15px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  ion-icon { font-size: 20px; flex-shrink: 0; }
+
+  &:hover { background: #f8fafc; }
+
+  &.active {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+  }
+
+  &.logout {
+    color: #dc2626;
+    &:hover { background: #fef2f2; }
+  }
+}
+
+.drawer-footer {
+  padding: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+@media (max-width: 480px) {
+  .doctor-chip .doctor-info { display: none; }
+  .doctor-chip { padding: 4px; }
 }

@@ -1,130 +1,164 @@
 <div class="app-container">
-    <app-status-bar></app-status-bar>
-    <app-header-institucional [showLogout]="true"></app-header-institucional>
+  <app-status-bar></app-status-bar>
+  <app-header-institucional
+    doctorName="Dra. Amanda Onishi"
+    doctorInitials="AO"
+    [serverConnected]="true"
+  ></app-header-institucional>
 
-    <!-- Barra de Navegação Fixa -->
-    <div class="nav-bar">
-        <button class="back-button" (click)="voltar()">
-            <ion-icon name="arrow-back-outline"></ion-icon> Voltar
-        </button>
-        <div class="page-title">Monitoramento Intraoperatório</div>
-        <div class="header-actions">
-            <ion-button color="medium" fill="outline" (click)="reiniciarTeste()" class="btn-ficha-header" style="margin-right: 8px;">
-                <ion-icon name="refresh-outline" slot="start"></ion-icon>
-                REINICIAR TESTE
-            </ion-button>
-            <ion-button color="primary" (click)="abrirFicha()" class="btn-ficha-header">
-                <ion-icon name="document-text-outline" slot="start"></ion-icon>
-                ABRIR FICHA ANESTÉSICA
-            </ion-button>
+  <!-- Barra de Navegação Fixa -->
+  <div class="nav-bar">
+    <button class="back-button" (click)="voltar()">
+      <ion-icon name="arrow-back-outline"></ion-icon> Voltar
+    </button>
+    <div class="page-title">Monitoramento Intraoperatório</div>
+    <div class="header-actions">
+      <ion-button
+        color="medium"
+        fill="outline"
+        (click)="reiniciarTeste()"
+        class="btn-ficha-header"
+        style="margin-right: 8px"
+      >
+        <ion-icon name="refresh-outline" slot="start"></ion-icon>
+        REINICIAR TESTE
+      </ion-button>
+      <ion-button
+        color="primary"
+        (click)="abrirFicha()"
+        class="btn-ficha-header"
+      >
+        <ion-icon name="document-text-outline" slot="start"></ion-icon>
+        ABRIR FICHA ANESTÉSICA
+      </ion-button>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <!-- COLUNA ESQUERDA: Monitoramento -->
+    <div class="left-column">
+      <!-- Card do Paciente: Sempre Visível no Topo da Coluna -->
+      <div class="sticky-patient-area">
+        <app-patient-info-card
+          *ngIf="!isLoading"
+          [patientName]="patient?.fullName || ''"
+          [birthDate]="patient?.birthDate || ''"
+          [age]="patient?.age?.toString() || ''"
+          [gender]="patient?.gender || 'M'"
+          [weight]="patient?.weightKg || '--'"
+          [record]="patient?.medicalRecordNumber || ''"
+          [procedure]="selectedProcedure?.description || ''"
+          [surgicalCenter]="
+            selectedSurgery?.location?.surgicalCenter?.description || ''
+          "
+          [room]="selectedSurgery?.location?.room || ''"
+          [unit]="patient?.currentLocation?.unit?.description || ''"
+          [floor]="patient?.currentLocation?.floor || ''"
+          [bed]="patient?.currentLocation?.bed || '--'"
+          [allergies]="patient?.allergies || []"
+          [compact]="true"
+          status="ASA II"
+        >
+        </app-patient-info-card>
+
+        <!-- Linha de Posição -->
+        <div
+          class="position-row"
+          [class.disabled-row]="!isSurgeryStarted || isSurgeryFinished"
+        >
+          <span class="position-label">🛌 Posição:</span>
+          <div class="position-options">
+            <span
+              class="pos-opt"
+              *ngFor="let pos of posicoesPossiveis"
+              [class.active]="pos === posicaoAtual"
+              (click)="!isSurgeryFinished && mudarPosicao(pos)"
+            >
+              {{ pos }}
+            </span>
+          </div>
+
+          <ion-button
+            *ngIf="isSurgeryStarted && !isSurgeryFinished"
+            fill="outline"
+            size="small"
+            color="medium"
+            style="margin-left: 10px; --border-radius: 4px"
+            (click)="reconfigurarFrequencia()"
+          >
+            <ion-icon name="time-outline" slot="start"></ion-icon>
+            {{
+              autoMonitoringIntervalMinutes
+                ? autoMonitoringIntervalMinutes + " min"
+                : "Auto"
+            }}
+          </ion-button>
         </div>
+      </div>
+
+      <!-- ÁREA SCROLLÁVEL: Gráficos e Tabela -->
+      <div class="scrollable-content-area">
+        <!-- SEÇÃO DO GRÁFICO -->
+        <app-monitorizacao-grafico
+          [vitalRecords]="vitalRecords"
+          [agents]="agents"
+          [events]="events"
+          [balanceItems]="balanceItems"
+          [startTimeAnesthesia]="startTimeAnesthesia"
+          [startTimeSurgery]="startTimeSurgery"
+        >
+        </app-monitorizacao-grafico>
+
+        <!-- ENTRADA RÁPIDA (Aparece quando selecionado) -->
+        <app-quick-vital-input
+          #topEditor
+          *ngIf="selectedRecord && !isSurgeryFinished"
+          [vitalData]="selectedRecord"
+          [customFields]="customFields"
+          (onSave)="updateActiveRecord()"
+          (onCancel)="cancelEdit()"
+        >
+        </app-quick-vital-input>
+
+        <!-- TABELA DE REGISTROS -->
+        <app-monitorizacao-tabela
+          [vitalRecords]="vitalRecords"
+          [customFields]="customFields"
+          [selectedRecord]="selectedRecord"
+          [isSurgeryFinished]="isSurgeryFinished"
+          (onAddCustomField)="addCustomField()"
+          (onAddTimePoint)="addTimePoint()"
+          (onEditCustomFieldMenu)="editCustomFieldMenu($event)"
+          (onSelectRecord)="selectRecord($event)"
+          (onDeleteRecord)="deleteRecord($event)"
+        >
+        </app-monitorizacao-tabela>
+      </div>
     </div>
 
-    <div class="main-content">
-        <!-- COLUNA ESQUERDA: Monitoramento -->
-        <div class="left-column">
-            <!-- Card do Paciente: Sempre Visível no Topo da Coluna -->
-            <div class="sticky-patient-area">
-                <app-patient-info-card *ngIf="!isLoading" 
-                    [patientName]="patient?.fullName || ''" 
-                    [birthDate]="patient?.birthDate || ''"
-                    [age]="patient?.age?.toString() || ''" 
-                    [gender]="patient?.gender || 'M'" 
-                    [weight]="patient?.weightKg || '--'"
-                    [record]="patient?.medicalRecordNumber || ''" 
-                    [procedure]="selectedProcedure?.description || ''"
-                    [surgicalCenter]="selectedSurgery?.location?.surgicalCenter?.description || ''"
-                    [room]="selectedSurgery?.location?.room || ''" 
-                    [unit]="patient?.currentLocation?.unit?.description || ''"
-                    [floor]="patient?.currentLocation?.floor || ''"
-                    [bed]="patient?.currentLocation?.bed || '--'" 
-                    [allergies]="patient?.allergies || []"
-                    [compact]="true"
-                    status="ASA II">
-                </app-patient-info-card>
-                
-                <!-- Linha de Posição -->
-            <div class="position-row" [class.disabled-row]="!isSurgeryStarted || isSurgeryFinished">
-                <span class="position-label">🛌 Posição:</span>
-                <div class="position-options">
-                    <span class="pos-opt" *ngFor="let pos of posicoesPossiveis" 
-                          [class.active]="pos === posicaoAtual"
-                          (click)="!isSurgeryFinished && mudarPosicao(pos)">
-                        {{ pos }}
-                    </span>
-                </div>
-                
-                <ion-button 
-                    *ngIf="isSurgeryStarted && !isSurgeryFinished" 
-                    fill="outline" 
-                    size="small" 
-                    color="medium" 
-                    style="margin-left: 10px; --border-radius: 4px;"
-                    (click)="reconfigurarFrequencia()">
-                    <ion-icon name="time-outline" slot="start"></ion-icon>
-                    {{ autoMonitoringIntervalMinutes ? autoMonitoringIntervalMinutes + ' min' : 'Auto' }}
-                </ion-button>
-            </div>
-            </div>
-
-            <!-- ÁREA SCROLLÁVEL: Gráficos e Tabela -->
-            <div class="scrollable-content-area">
-                <!-- SEÇÃO DO GRÁFICO -->
-                <app-monitorizacao-grafico
-                    [vitalRecords]="vitalRecords"
-                    [agents]="agents"
-                    [events]="events"
-                    [balanceItems]="balanceItems"
-                    [startTimeAnesthesia]="startTimeAnesthesia"
-                    [startTimeSurgery]="startTimeSurgery">
-                </app-monitorizacao-grafico>
-
-                <!-- ENTRADA RÁPIDA (Aparece quando selecionado) -->
-                <app-quick-vital-input #topEditor
-                    *ngIf="selectedRecord && !isSurgeryFinished"
-                    [vitalData]="selectedRecord" 
-                    [customFields]="customFields"
-                    (onSave)="updateActiveRecord()"
-                    (onCancel)="cancelEdit()">
-                </app-quick-vital-input>
-                
-                <!-- TABELA DE REGISTROS -->
-                <app-monitorizacao-tabela
-                    [vitalRecords]="vitalRecords"
-                    [customFields]="customFields"
-                    [selectedRecord]="selectedRecord"
-                    [isSurgeryFinished]="isSurgeryFinished"
-                    (onAddCustomField)="addCustomField()"
-                    (onAddTimePoint)="addTimePoint()"
-                    (onEditCustomFieldMenu)="editCustomFieldMenu($event)"
-                    (onSelectRecord)="selectRecord($event)"
-                    (onDeleteRecord)="deleteRecord($event)">
-                </app-monitorizacao-tabela>
-            </div>
-        </div>
-
-        <!-- COLUNA DIREITA: Controles Fixos -->
-        <app-monitorizacao-sidebar
-            [isSurgeryStarted]="isSurgeryStarted"
-            [isSurgeryFinished]="isSurgeryFinished"
-            [isAnesthesiaStarted]="isAnesthesiaStarted"
-            [startTimeAnesthesia]="startTimeAnesthesia"
-            [startTimeSurgery]="startTimeSurgery"
-            [timerValue]="timerValue"
-            [agents]="agents"
-            [events]="events"
-            [balanceItems]="balanceItems"
-            [expandedSections]="expandedSections"
-            (onIniciarAnestesia)="iniciarAnestesia()"
-            (onIniciarCirurgia)="iniciarCirurgia()"
-            (onFinalizarCirurgia)="finalizarCirurgia()"
-            (onToggleSection)="toggleSection($event)"
-            (onOpenAgentModal)="openAgentModal($event)"
-            (onDeleteAgent)="deleteAgent($event)"
-            (onOpenEventModal)="openEventModal($event.type, $event.item)"
-            (onDeleteEvent)="deleteEvent($event)"
-            (onOpenBalanceModal)="openBalanceModal($event)"
-            (onDeleteBalance)="deleteBalance($event)">
-        </app-monitorizacao-sidebar>
-    </div>
+    <!-- COLUNA DIREITA: Controles Fixos -->
+    <app-monitorizacao-sidebar
+      [isSurgeryStarted]="isSurgeryStarted"
+      [isSurgeryFinished]="isSurgeryFinished"
+      [isAnesthesiaStarted]="isAnesthesiaStarted"
+      [startTimeAnesthesia]="startTimeAnesthesia"
+      [startTimeSurgery]="startTimeSurgery"
+      [timerValue]="timerValue"
+      [agents]="agents"
+      [events]="events"
+      [balanceItems]="balanceItems"
+      [expandedSections]="expandedSections"
+      (onIniciarAnestesia)="iniciarAnestesia()"
+      (onIniciarCirurgia)="iniciarCirurgia()"
+      (onFinalizarCirurgia)="finalizarCirurgia()"
+      (onToggleSection)="toggleSection($event)"
+      (onOpenAgentModal)="openAgentModal($event)"
+      (onDeleteAgent)="deleteAgent($event)"
+      (onOpenEventModal)="openEventModal($event.type, $event.item)"
+      (onDeleteEvent)="deleteEvent($event)"
+      (onOpenBalanceModal)="openBalanceModal($event)"
+      (onDeleteBalance)="deleteBalance($event)"
+    >
+    </app-monitorizacao-sidebar>
+  </div>
 </div>
