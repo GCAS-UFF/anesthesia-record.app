@@ -75,29 +75,35 @@ export class PatientListPage implements OnInit {
     this.loadData();
   }
 
-  async loadData() {
-    this.isRefreshing = true;
-    this.viewList = [];
+async loadData() {
+  this.isRefreshing = true;
+  this.viewList = [];
 
-    if (this.content) {
-      this.content.scrollToTop(400);
-    }
-
-    this.surgeryService
-      .getSurgeries(this.selectedDate, this.selectedStatus ?? undefined, this.currentPage, this.pageSize)
-      .subscribe({
-        next: (response: any) => {
-          const resultData = response.data || response;
-          this.totalItems = resultData.totalItems || 0;
-          this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1;
-          this.flattenData(resultData);
-          this.isRefreshing = false;
-        },
-        error: () => {
-          this.isRefreshing = false;
-        },
-      });
+  if (this.content) {
+    this.content.scrollToTop(400);
   }
+
+  this.surgeryService
+    .getSurgeries(
+      this.selectedDate,
+      this.searchQuery || undefined,
+      this.selectedStatus ?? undefined,
+      this.currentPage,
+      this.pageSize
+    )
+    .subscribe({
+      next: (response: any) => {
+        const resultData = response.data || response;
+        this.totalItems = resultData.totalItems || 0;
+        this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1;
+        this.flattenData(resultData);
+        this.isRefreshing = false;
+      },
+      error: () => {
+        this.isRefreshing = false;
+      },
+    });
+}
 
   flattenData(response: any) {
     this.viewList = [];
@@ -163,8 +169,10 @@ export class PatientListPage implements OnInit {
   //   });
   // }
 
-  onSearchChange(searchTerm: string) {
+  onSearchChange(searchTerm: string) {   
     this.searchQuery = searchTerm;
+    if (this.searchQuery.length > 3 || this.searchQuery.length === 0)  
+       this.loadData();   
   }
 
   changeStatus(status: SurgeryStatusEnum | null) {

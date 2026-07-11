@@ -14,13 +14,14 @@ export class SurgeryService {
   constructor(private http: HttpClient) { }
 
   /**
-   * Obtém a lista de pacientes com cirurgias filtrada por data e status.
+   * Obtém a lista de pacientes com cirurgias filtrada por data e status 
    */
-  getSurgeries(date?: string, status?: SurgeryStatusEnum, page: number = 1, size: number = 10): Observable<PatientResponse> {
+  getSurgeries(date?: string, searchQuery?: string, status?: SurgeryStatusEnum, page: number = 1, size: number = 10): Observable<PatientResponse> {
     const url = `${this.baseUrl}/surgeries`;
 
     const params: any = { page, size };
     if (date) params.date = `${date}T00:00:00Z`;
+    if (searchQuery) params.name = searchQuery;
     if (status !== undefined) params.status = status;
 
     return this.http.get<PatientResponse>(url, { params });

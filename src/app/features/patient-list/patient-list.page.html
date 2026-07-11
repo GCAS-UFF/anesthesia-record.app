@@ -9,7 +9,6 @@
   ></app-header-institucional>
 
   <main class="page-main">
-    <!-- Search + Segmented filter -->
     <section class="toolbar">
       <div class="search-wrap">
         <ion-icon
@@ -20,7 +19,7 @@
         <input
           type="text"
           class="search-input"
-          placeholder="Buscar por paciente, prontuário, procedimento..."
+          placeholder="Buscar por paciente ou prontuário"
           [value]="searchQuery"
           (input)="onSearchChange($any($event.target).value)"
         />
