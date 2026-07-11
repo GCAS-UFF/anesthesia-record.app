@@ -2,7 +2,7 @@ import { ApiService } from "./api.service";
 
 export abstract class BaseService<T> {
 
-  constructor(protected api: ApiService, protected endpoint: string) {}
+  constructor(protected api: ApiService, protected endpoint: string) { }
 
   getAll() {
     return this.api.get<T[]>(this.endpoint);
@@ -11,6 +11,11 @@ export abstract class BaseService<T> {
   getById(id: number) {
     return this.api.get<T>(`${this.endpoint}/${id}`);
   }
+
+  getByIds(id: number, id2: string) {
+    return this.api.get<T>(`${this.endpoint}/${id}/${id2}`);
+  }
+
 
   create(data: T) {
     return this.api.post<T>(this.endpoint, data);

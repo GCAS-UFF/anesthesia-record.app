@@ -13,7 +13,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
   constructor(api: ApiService) {
     // Aponta para o controller do backend: /api/AnesthesiaRecord
-    super(api, 'AnesthesiaRecord');
+    super(api, 'anesthesiarecord');
   }
 
   saveRecord(record: any): Observable<any> {
@@ -30,9 +30,9 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   /**
    * [FA-042] Carrega a ficha da API e mapeia de volta para o form
    */
-  getLatestByPatient(pacienteId: string): Observable<any | null> {
+  getLatestByPatient(id: string, patientId: string): Observable<any | null> {
     return new Observable(obs => {
-      this.getById(Number(pacienteId)).subscribe({
+      this.getByIds(Number(id), patientId).subscribe({
         next: (apiResponse: any) => {
           if (apiResponse && apiResponse.data) {
             const mappedForm = this.mapToAppFormat(apiResponse.data);

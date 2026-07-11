@@ -4,28 +4,28 @@ import { AlertController, ActionSheetController, ModalController, ToastControlle
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
-import { 
-  arrowBackOutline, 
-  documentTextOutline, 
-  settingsOutline, 
-  pulseOutline, 
-  warningOutline, 
-  listOutline, 
-  addOutline, 
-  trashOutline, 
-  medkitOutline, 
-  cutOutline, 
-  flaskOutline, 
-  bookmarkOutline, 
-  waterOutline, 
+import {
+  arrowBackOutline,
+  documentTextOutline,
+  settingsOutline,
+  pulseOutline,
+  warningOutline,
+  listOutline,
+  addOutline,
+  trashOutline,
+  medkitOutline,
+  cutOutline,
+  flaskOutline,
+  bookmarkOutline,
+  waterOutline,
   checkmarkDoneCircleOutline,
   checkmarkDoneOutline,
-  statsChartOutline, 
-  playOutline, 
-  stopOutline, 
-  saveOutline, 
-  closeOutline, 
-  createOutline, 
+  statsChartOutline,
+  playOutline,
+  stopOutline,
+  saveOutline,
+  closeOutline,
+  createOutline,
   triangle,
   refreshOutline,
   timeOutline
@@ -74,7 +74,8 @@ import { MonitorizacaoSidebarComponent } from './components/monitorizacao-sideba
   styleUrls: ['./monitorizacao.component.scss']
 })
 export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy {
-  pacienteId: string | null = null;
+  surgeryId: string | '' = '';
+  pacienteId: string | '' = '';
   patient: any = null;
   selectedSurgery: any = null;
   selectedProcedure: any = null;
@@ -91,22 +92,22 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
   // Dados Clínicos (Novo)
   agents: Agent[] = [];
   events: ClinicalEvent[] = [];
-  
+
   expandedSections: any = {
     agents: true,
     events: true,
     balance: true
   };
   balanceItems: FluidBalance[] = [];
-  
+
   // Controle de Posição
   posicoesPossiveis = [
-    'SUPINA', 'PRONA', 'SENTADO', 
-    'LATERAL ESQUERDO', 'LATERAL DIREITO', 
+    'SUPINA', 'PRONA', 'SENTADO',
+    'LATERAL ESQUERDO', 'LATERAL DIREITO',
     'TRENDELENBURG', 'LITOTÔMICA'
   ];
   posicaoAtual: string | null = null;
-  
+
   // Controle de Tempos e Timer
   startTimeAnesthesia: string | null = null;
   startTimeSurgery: string | null = null;
@@ -148,12 +149,12 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
       waterOutline,
       checkmarkDoneCircleOutline,
       checkmarkDoneOutline,
-      statsChartOutline, 
-      playOutline, 
-      stopOutline, 
-      saveOutline, 
-      closeOutline, 
-      createOutline, 
+      statsChartOutline,
+      playOutline,
+      stopOutline,
+      saveOutline,
+      closeOutline,
+      createOutline,
       triangle,
       refreshOutline,
       timeOutline
@@ -165,9 +166,10 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   ngOnInit() {
-    this.pacienteId = this.route.snapshot.paramMap.get('id');
+    this.surgeryId = this.route.snapshot.paramMap.get('id') || '';
+    this.pacienteId = this.route.snapshot.paramMap.get('pacienteId') || '';
     if (this.pacienteId) {
-      this.loadPatientData(this.pacienteId);
+      this.loadPatientData(this.surgeryId, this.pacienteId);
       this.loadFromLocalStorage();
       this.startAutoRefresh();
     }
@@ -179,7 +181,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
     this.autoRefreshInterval = setInterval(() => {
       if (this.pacienteId) {
         console.log('[Auto-Refresh] Atualizando dados cadastrais/procedimento do paciente...');
-        this.loadPatientData(this.pacienteId);
+        this.loadPatientData(this.surgeryId, this.pacienteId);
       }
     }, 30000);
   }
@@ -190,7 +192,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
     }
   }
 
-  private loadPatientData(id: string) {
+  private loadPatientData(id: string, patientId: string) {
     if (!this.patient) {
       this.isLoading = true;
     }
@@ -198,7 +200,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
       next: (res: any) => {
         const dataArray = res?.data?.data || res?.data || [];
         const surgeryData = dataArray.find((s: any) => (s.surgeryId || s.id)?.toString() === id.toString());
-        
+
         if (surgeryData) {
           this.patient = {
             ...surgeryData,
@@ -207,10 +209,10 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
           };
           this.selectedSurgery = { ...surgeryData, id: surgeryData.surgeryId || surgeryData.id };
           this.selectedProcedure = this.selectedSurgery.procedures?.find((p: any) => p.isPrimary) || this.selectedSurgery.procedures?.[0];
-          
+
           if (this.selectedSurgery?.id) {
             // Option B: Verificar Ficha Anestésica para garantir que a Monitorização tem onde salvar
-            this.anesthesiaRecordService.getLatestByPatient(this.selectedSurgery.id.toString()).subscribe({
+            this.anesthesiaRecordService.getLatestByPatient(this.selectedSurgery.id.toString(), patientId).subscribe({
               next: (ficha) => {
                 if (!ficha) {
                   this.createBlankRecordAndLoadMonitoring();
@@ -296,21 +298,21 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
         this.isSurgeryFinished = parsed.isSurgeryFinished || false;
         this.posicaoAtual = parsed.posicaoAtual || null;
         this.autoMonitoringIntervalMinutes = parsed.autoMonitoringIntervalMinutes || null;
-        
+
         if (parsed.timerValue) {
           this.timerValue = parsed.timerValue;
         }
-        
+
         if (this.isSurgeryStarted && !this.isSurgeryFinished) {
           this.startTimer();
         }
-        
-        this.hasData = this.vitalRecords.length > 0 || 
-                       !!this.startTimeAnesthesia || 
-                       !!this.startTimeSurgery || 
-                       this.agents.length > 0 || 
-                       this.events.length > 0 || 
-                       this.balanceItems.length > 0;
+
+        this.hasData = this.vitalRecords.length > 0 ||
+          !!this.startTimeAnesthesia ||
+          !!this.startTimeSurgery ||
+          this.agents.length > 0 ||
+          this.events.length > 0 ||
+          this.balanceItems.length > 0;
       } catch (e) {
         console.error('Erro ao recuperar do local storage', e);
       }
@@ -368,7 +370,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
     if (this.isSurgeryFinished) return;
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const defaultTime = this.startTimeAnesthesia || now;
-    
+
     const alert = await this.alertController.create({
       header: 'Início da Anestesia',
       inputs: [{ name: 'time', type: 'time', value: defaultTime }],
@@ -391,7 +393,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
     if (this.isSurgeryFinished) return;
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const defaultTime = this.startTimeSurgery || now;
-    
+
     const timeAlert = await this.alertController.create({
       header: 'Início da Cirurgia',
       inputs: [{ name: 'time', type: 'time', value: defaultTime }],
@@ -429,18 +431,18 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
       header: 'Frequência de Monitoramento',
       message: 'De quanto em quanto tempo (em minutos) o app deve aferir os sinais vitais automaticamente?',
       inputs: [
-        { 
+        {
           name: 'intervalMinutes',
-          type: 'number', 
-          placeholder: 'Ex: 5', 
-          min: 1, 
+          type: 'number',
+          placeholder: 'Ex: 5',
+          min: 1,
           max: 120,
           value: this.autoMonitoringIntervalMinutes || 5
         }
       ],
       buttons: [
-        { 
-          text: 'Confirmar', 
+        {
+          text: 'Confirmar',
           handler: (data) => {
             let value = parseInt(data.intervalMinutes, 10);
             if (isNaN(value) || value <= 0) value = 5; // Fallback se deixar vazio
@@ -461,19 +463,19 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
       header: 'Frequência de Monitoramento',
       message: 'De quanto em quanto tempo (em minutos) o app deve aferir os sinais vitais automaticamente?',
       inputs: [
-        { 
+        {
           name: 'intervalMinutes',
-          type: 'number', 
-          placeholder: 'Ex: 5', 
-          min: 1, 
+          type: 'number',
+          placeholder: 'Ex: 5',
+          min: 1,
           max: 120,
           value: this.autoMonitoringIntervalMinutes || 5
         }
       ],
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
-        { 
-          text: 'Confirmar', 
+        {
+          text: 'Confirmar',
           handler: (data) => {
             let value = parseInt(data.intervalMinutes, 10);
             if (isNaN(value) || value <= 0) value = 5;
@@ -491,7 +493,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
     const isFirstTime = !this.isSurgeryStarted;
     this.startTimeSurgery = time;
     this.isSurgeryStarted = true;
-    
+
     if (pos) {
       this.posicaoAtual = pos;
       this.events.push({
@@ -512,7 +514,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
     if (this.isSurgeryFinished || !this.isSurgeryStarted || this.posicaoAtual === novaPosicao) return;
 
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
+
     const alert = await this.alertController.create({
       header: 'Mudar Posição',
       subHeader: novaPosicao,
@@ -559,30 +561,30 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
             if (this.timerInterval) {
               clearInterval(this.timerInterval);
             }
-            
+
             // Consolidar Payload JSON
             const payload = this.buildMonitoringPayload();
             const storageKey = `monitoring_api_id_${this.selectedSurgery?.id}`;
             const monitoringId = localStorage.getItem(storageKey);
-            
+
             // Enviar para API Real
             if (monitoringId) {
-               this.monitoringService.updateMonitoringData(Number(monitoringId), payload).subscribe({
-                 next: () => {
-                   this.monitoringService.finalizeMonitoring(Number(monitoringId)).subscribe({
-                     next: (res) => console.log('Cirurgia finalizada na API!', res),
-                     error: (err) => console.error('Erro ao finalizar na API', err)
-                   });
-                 }
-               });
+              this.monitoringService.updateMonitoringData(Number(monitoringId), payload).subscribe({
+                next: () => {
+                  this.monitoringService.finalizeMonitoring(Number(monitoringId)).subscribe({
+                    next: (res) => console.log('Cirurgia finalizada na API!', res),
+                    error: (err) => console.error('Erro ao finalizar na API', err)
+                  });
+                }
+              });
             } else {
-               this.monitoringService.createMonitoringData(payload).subscribe({
-                 next: (res) => {
-                   if (res?.data?.id) {
-                     this.monitoringService.finalizeMonitoring(res.data.id).subscribe();
-                   }
-                 }
-               });
+              this.monitoringService.createMonitoringData(payload).subscribe({
+                next: (res) => {
+                  if (res?.data?.id) {
+                    this.monitoringService.finalizeMonitoring(res.data.id).subscribe();
+                  }
+                }
+              });
             }
           }
         }
@@ -610,8 +612,8 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
         const custom: MonitoringCustomFieldPayload[] = [];
         if (r.custom) {
           Object.keys(r.custom).forEach(k => {
-             const fieldLabel = this.customFields.find(f => f.key === k)?.label || k;
-             custom.push({ name: fieldLabel, value: r.custom![k] });
+            const fieldLabel = this.customFields.find(f => f.key === k)?.label || k;
+            custom.push({ name: fieldLabel, value: r.custom![k] });
           });
         }
         return {
@@ -660,7 +662,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
   private startTimer() {
     let secondsElapsed = 0;
     console.log('[Timer Debug] Iniciando timer. startTimeSurgery registrado:', this.startTimeSurgery);
-    
+
     if (this.startTimeSurgery) {
       // Regex robusto para extrair horas, minutos e segundos (opcionais), com suporte a AM/PM (opcional)
       const match = this.startTimeSurgery.match(/(\d+):(\d+)(?::(\d+))?\s*(AM|PM)?/i);
@@ -669,7 +671,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
         const minutes = parseInt(match[2], 10);
         const seconds = match[3] ? parseInt(match[3], 10) : 0;
         const ampm = match[4];
-        
+
         if (ampm) {
           if (ampm.toUpperCase() === 'PM' && hours < 12) {
             hours += 12;
@@ -677,14 +679,14 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
             hours = 0;
           }
         }
-        
+
         const now = new Date();
         const startDateTime = new Date();
         startDateTime.setHours(hours, minutes, seconds, 0);
-        
+
         console.log('[Timer Debug] startDateTime interpretado localmente:', startDateTime.toString());
         console.log('[Timer Debug] Horário atual (now):', now.toString());
-        
+
         if (now.getTime() > startDateTime.getTime()) {
           secondsElapsed = Math.floor((now.getTime() - startDateTime.getTime()) / 1000);
           console.log('[Timer Debug] Segundos decorridos calculados:', secondsElapsed);
@@ -700,7 +702,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
     const hours = Math.floor(secondsElapsed / 3600);
     const minutes = Math.floor((secondsElapsed % 3600) / 60);
     const seconds = secondsElapsed % 60;
-    this.timerValue = 
+    this.timerValue =
       `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
     this.timerInterval = setInterval(() => {
@@ -709,7 +711,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
       const mins = Math.floor((secondsElapsed % 3600) / 60);
       const secs = secondsElapsed % 60;
 
-      this.timerValue = 
+      this.timerValue =
         `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
       // Checa a cada 10 segundos se precisa repetir os sinais vitais
@@ -729,7 +731,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
 
     const lastRecord = this.vitalRecords[0];
     let newTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
+
     // Evita duplicata exata de horário no mesmo minuto se clicar muito rápido
     if (lastRecord && lastRecord.time === newTime) {
       const [h, m] = newTime.split(':');
@@ -965,7 +967,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
           text: 'Adicionar',
           handler: (data) => {
             if (!data.label) return false;
-            
+
             const key = 'custom_' + Date.now();
             this.customFields = [...this.customFields, { label: data.label, key: key }];
 
@@ -1056,7 +1058,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
           handler: () => {
             // Remove da lista de cabeçalhos
             this.customFields = this.customFields.filter(f => f.key !== field.key);
-            
+
             // Limpa os dados nos registros
             this.vitalRecords.forEach(rec => {
               if (rec.custom) {
@@ -1091,7 +1093,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
             this.startTimeAnesthesia = null;
             this.startTimeSurgery = null;
             this.posicaoAtual = null;
-            
+
             // Limpa dados
             this.vitalRecords = [];
             this.agents = [];
@@ -1145,7 +1147,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
     // Se passou o tempo configurado (ou mais) desde o último registro
     if (diffSeconds >= intervalSeconds) {
       const newTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      
+
       const existingIndex = this.vitalRecords.findIndex(r => r.time === newTime);
       if (existingIndex > -1) {
         // Se já existe um registro para o minuto atual, atualiza seus dados
@@ -1169,7 +1171,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
       // Emissão para recriar referência para change detection no OnPush
       this.vitalRecords = [...this.vitalRecords];
       console.log('[Auto-Repeat] Sinais vitais repetidos/atualizados:', newTime);
-      
+
       // FA-085: Transmissão Lógica Silenciosa
       this.sendMonitoringDataSilently();
     }

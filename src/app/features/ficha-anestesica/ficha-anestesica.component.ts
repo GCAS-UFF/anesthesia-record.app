@@ -62,7 +62,8 @@ import { AnesthesiaRecordModel } from 'src/app/shared/models/anesthesia-record.m
 })
 export class FichaAnestesicaComponent implements OnInit {
   form!: FormGroup;
-  pacienteId: string | null = null;
+  cirurgiaId: string | null = null;
+  patientId: string | null = null;
   patient: any = null;
   selectedSurgery: any = null;
   selectedProcedure: any = null;
@@ -226,10 +227,11 @@ export class FichaAnestesicaComponent implements OnInit {
     this.initForm();
   }
 
-  ngOnInit() {
-    this.pacienteId = this.route.snapshot.paramMap.get('id');
-    if (this.pacienteId) {
-      this.loadPatientData(this.pacienteId);
+  ngOnInit() {    
+    this.cirurgiaId = this.route.snapshot.paramMap.get('id');
+    this.patientId = this.route.snapshot.paramMap.get('patientId');
+    if (this.cirurgiaId && this.patientId) {
+      this.loadPatientData(this.cirurgiaId, this.patientId);
     }
     this.setupConditionalLogic();
 
@@ -237,8 +239,8 @@ export class FichaAnestesicaComponent implements OnInit {
     this.autoSaveSub = this.form.valueChanges.pipe(
       debounceTime(1000)
     ).subscribe(values => {
-      if (this.pacienteId) {
-        this.anesthesiaService.saveDraft(this.pacienteId, {
+      if (this.cirurgiaId) {
+        this.anesthesiaService.saveDraft(this.cirurgiaId, {
           ...values,
           antibioticsList: this.antibioticsList
         });
@@ -456,7 +458,7 @@ export class FichaAnestesicaComponent implements OnInit {
           aldGroup.get('dorUsouENV')?.setValue(false, { emitEvent: false });
           aldGroup.get('dorUsouPAINAD')?.setValue(false, { emitEvent: false });
           aldGroup.get('dorUsouBPS')?.setValue(false, { emitEvent: false });
-          
+
           const envVal = aldGroup.get('dorENV');
           envVal?.clearValidators();
           envVal?.setValue('', { emitEvent: false });
@@ -551,7 +553,7 @@ export class FichaAnestesicaComponent implements OnInit {
 
     if (aldGroup) {
       const isDorSim = aldGroup.get('dor')?.value === 'sim';
-      
+
       const useEnv = aldGroup.get('dorUsouENV')?.value;
       const envCtrl = aldGroup.get('dorENV');
       if (isDorSim && useEnv) {
@@ -583,21 +585,21 @@ export class FichaAnestesicaComponent implements OnInit {
 
   getInvalidControlsNames(): string[] {
     const invalidFields: string[] = [];
-    
+
     // Mapeamento de chaves do formulário para nomes amigáveis em português
     const fieldNamesMap: { [key: string]: string } = {
       // Segurança do Paciente
       'seguranca.identificadoAvaliado': 'Segurança: Identificado e avaliado',
       'seguranca.consentimentoAssinado': 'Segurança: Consentimento assinado',
       'seguranca.equipamentosChecados': 'Segurança: Equipamentos checados',
-      
+
       // Pré-Indução
       'preInducao.recebeuMedPrevia': 'Pré-Indução: Medicação prévia',
-      
+
       // Antibiótico
       'antibiotico.temAntibiotico': 'Antibiótico: Fez uso',
       'antibiotico.temRepique': 'Antibiótico: Opção de repique',
-      
+
       // Dados Vitais
       'dadosVitais.pa': 'Dados Vitais: PA',
       'dadosVitais.fr': 'Dados Vitais: FR',
@@ -606,17 +608,17 @@ export class FichaAnestesicaComponent implements OnInit {
       'dadosVitais.peso': 'Dados Vitais: Peso',
       'dadosVitais.asa': 'Dados Vitais: ASA',
       'dadosVitais.entradaSala': 'Dados Vitais: Entrada na sala',
-      
+
       // Equipe
       'equipe.cirurgiao': 'Equipe: Cirurgião',
       'equipe.assistente': 'Equipe: Assistente',
       'equipe.diagnosticoPre': 'Equipe: Diagnóstico pré-operatório',
       'equipe.horaInicioAnestesia': 'Equipe: Hora início da anestesia',
-      
+
       // Posição
       'posicao.usoCoxim': 'Posição: Uso de coxins',
       'posicao.dificuldadePuncao': 'Posição: Dificuldade de punção',
-      
+
       // Técnica Anestésica
       'tecnica.anestesiaGeral': 'Técnica: Anestesia Geral',
       'tecnica.circuitoAbsorvedor': 'Técnica: Circuito absorvedor',
@@ -627,13 +629,13 @@ export class FichaAnestesicaComponent implements OnInit {
       'tecnica.suplementacaoO2': 'Técnica: Suplementação de O2',
       'tecnica.bloqueioPlexo': 'Técnica: Bloqueio plexo',
       'tecnica.neuroestimulador': 'Técnica: Neuroestimulador',
-      
+
       // Pós-Procedimento
       'posProcedimento.cirurgiaRealizada': 'Pós-Procedimento: Cirurgia realizada',
       'posProcedimento.horaTerminoCirurgia': 'Pós-Procedimento: Hora término da cirurgia',
       'posProcedimento.diagnosticoPos': 'Pós-Procedimento: Diagnóstico pós-operatório',
       'posProcedimento.horaTerminoAnestesia': 'Pós-Procedimento: Hora término da anestesia',
-      
+
       // Alderete
       'alderete.consciencia': 'Alderete: Consciência',
       'alderete.atividade': 'Alderete: Atividade',
@@ -645,7 +647,7 @@ export class FichaAnestesicaComponent implements OnInit {
       'alderete.dorENV': 'Alderete: Valor ENV (0 a 10)',
       'alderete.dorPAINAD': 'Alderete: Valor PAINAD (0 a 10)',
       'alderete.dorBPS': 'Alderete: Valor BPS (3 a 12)',
-      
+
       // Assinaturas
       'assinaturas.primeiroAnestesista': 'Assinaturas: 1º Anestesista',
       'assinaturas.dataAssinatura': 'Assinaturas: Data'
@@ -655,7 +657,7 @@ export class FichaAnestesicaComponent implements OnInit {
       Object.keys(group.controls).forEach(key => {
         const control = group.controls[key];
         const path = prefix ? `${prefix}.${key}` : key;
-        
+
         if (control instanceof FormGroup) {
           checkControls(control, path);
         } else if (control.invalid) {
@@ -696,12 +698,12 @@ export class FichaAnestesicaComponent implements OnInit {
     return !!(group && group.invalid && (group.touched || this.showValidationErrors));
   }
 
-  private loadPatientData(id: string) {
+  private loadPatientData(id: string, patientId: string) {
     this.isLoading = true;
-    this.surgeryService.getSurgeries('2026-04-11').subscribe((res: any) => {
-      const dataArray = res?.data?.data || res?.data || [];
-      const surgeryData = dataArray.find((s: any) => (s.surgeryId || s.id)?.toString() === id.toString());
 
+    this.surgeryService.getPatientDate(Number(id), patientId).subscribe((res: any) => {      const surgeryData = res?.data?.data || res?.data || null;
+
+      
       if (surgeryData) {
         const patientWeight = surgeryData.weightKg || '92';
 
@@ -716,9 +718,9 @@ export class FichaAnestesicaComponent implements OnInit {
         this.selectedProcedure = this.selectedSurgery.procedures?.find((p: any) => p.isPrimary) || this.selectedSurgery.procedures?.[0];
 
         // [FA-042] Lógica de Auto-Save Draft PRIORITÁRIA
-        const draft = this.anesthesiaService.getDraft(this.pacienteId!);
+        const draft = this.anesthesiaService.getDraft(this.cirurgiaId!);
 
-        this.anesthesiaService.getLatestByPatient(this.pacienteId!).subscribe(savedRecord => {
+        this.anesthesiaService.getLatestByPatient(this.cirurgiaId!, patientId).subscribe(savedRecord => {
           if (draft) {
             console.log('Rascunho (Auto-Save) encontrado e carregado:', draft);
             this.form.patchValue(draft);
@@ -755,7 +757,7 @@ export class FichaAnestesicaComponent implements OnInit {
             ...value,
             antibioticsList: this.antibioticsList
           };
-          this.anesthesiaService.saveDraft(this.pacienteId!, draftData);
+          this.anesthesiaService.saveDraft(this.cirurgiaId!, draftData);
           console.log('Rascunho com antibióticos salvo automaticamente...');
         }
       });
@@ -780,7 +782,7 @@ export class FichaAnestesicaComponent implements OnInit {
           text: 'Limpar',
           cssClass: 'alert-button-danger',
           handler: () => {
-            this.anesthesiaService.clearLatestRecord(this.pacienteId!).subscribe(async () => {
+            this.anesthesiaService.clearLatestRecord(this.cirurgiaId!).subscribe(async () => {
               this.form.reset();
               this.antibioticsList = []; // Limpa a lista de antibióticos
               // Re-seta o estado inicial padrão conforme initForm
@@ -816,7 +818,7 @@ export class FichaAnestesicaComponent implements OnInit {
   imprimir() {
     console.log('Solicitando PDF da API...');
     if (this.selectedSurgery?.id) {
-        window.open(this.anesthesiaService.getPdfUrl(this.selectedSurgery.id), '_blank');
+      window.open(this.anesthesiaService.getPdfUrl(this.selectedSurgery.id), '_blank');
     }
   }
 
@@ -824,7 +826,7 @@ export class FichaAnestesicaComponent implements OnInit {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.showValidationErrors = true;
-      
+
       // Remove a classe após a animação para poder repetir se necessário
       setTimeout(() => this.showValidationErrors = false, 1000);
 
@@ -838,7 +840,7 @@ export class FichaAnestesicaComponent implements OnInit {
         if (isEnvInvalid) msg += 'ENV (0 a 10). ';
         if (isPainadInvalid) msg += 'PAINAD (0 a 10). ';
         if (isBpsInvalid) msg += 'BPS (3 a 12).';
-        
+
         const toast = await this.toastController.create({
           message: msg,
           duration: 4000,
@@ -863,12 +865,12 @@ export class FichaAnestesicaComponent implements OnInit {
 
     const record: AnesthesiaRecordModel = {
       ...this.form.value,
-      pacienteId: this.pacienteId,
+      cirurgiaId: this.cirurgiaId,
       antibioticsList: this.antibioticsList
     } as any;
 
     this.anesthesiaService.saveRecord(record).subscribe(async (res) => {
-      this.anesthesiaService.clearDraft(this.pacienteId!); // Limpa rascunho após salvar oficial
+      this.anesthesiaService.clearDraft(this.cirurgiaId!); // Limpa rascunho após salvar oficial
       this.isSaving = false;
       const toast = await this.toastController.create({
         message: 'Ficha Anestésica salva com sucesso!',
@@ -914,7 +916,7 @@ export class FichaAnestesicaComponent implements OnInit {
                 temRepique: 'nao', // Padrão inicial
                 repiques: []
               });
-              this.anesthesiaService.saveDraft(this.pacienteId!, { ...this.form.value, antibioticsList: this.antibioticsList });
+              this.anesthesiaService.saveDraft(this.cirurgiaId!, { ...this.form.value, antibioticsList: this.antibioticsList });
             }
           }
         }
@@ -940,7 +942,7 @@ export class FichaAnestesicaComponent implements OnInit {
                 dose: data.dose,
                 hora: data.hora || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
               });
-              this.anesthesiaService.saveDraft(this.pacienteId!, { ...this.form.value, antibioticsList: this.antibioticsList });
+              this.anesthesiaService.saveDraft(this.cirurgiaId!, { ...this.form.value, antibioticsList: this.antibioticsList });
             }
           }
         }
@@ -968,7 +970,7 @@ export class FichaAnestesicaComponent implements OnInit {
               this.antibioticsList[index].dose = data.dose;
               this.antibioticsList[index].via = data.via;
               this.antibioticsList[index].hora = data.hora;
-              this.anesthesiaService.saveDraft(this.pacienteId!, { ...this.form.value, antibioticsList: this.antibioticsList });
+              this.anesthesiaService.saveDraft(this.cirurgiaId!, { ...this.form.value, antibioticsList: this.antibioticsList });
             }
           }
         }
@@ -1007,16 +1009,16 @@ export class FichaAnestesicaComponent implements OnInit {
     } else if (value === 'nao') {
       this.antibioticsList[index].repiques = []; // Limpa os repiques se marcar NÃO
     }
-    this.anesthesiaService.saveDraft(this.pacienteId!, { ...this.form.value, antibioticsList: this.antibioticsList });
+    this.anesthesiaService.saveDraft(this.cirurgiaId!, { ...this.form.value, antibioticsList: this.antibioticsList });
   }
 
   removerAntibiotico(index: number) {
     this.antibioticsList.splice(index, 1);
-    this.anesthesiaService.saveDraft(this.pacienteId!, { ...this.form.value, antibioticsList: this.antibioticsList });
+    this.anesthesiaService.saveDraft(this.cirurgiaId!, { ...this.form.value, antibioticsList: this.antibioticsList });
   }
 
   removerRepique(atbIndex: number, repiqueIndex: number) {
     this.antibioticsList[atbIndex].repiques.splice(repiqueIndex, 1);
-    this.anesthesiaService.saveDraft(this.pacienteId!, { ...this.form.value, antibioticsList: this.antibioticsList });
+    this.anesthesiaService.saveDraft(this.cirurgiaId!, { ...this.form.value, antibioticsList: this.antibioticsList });
   }
 }

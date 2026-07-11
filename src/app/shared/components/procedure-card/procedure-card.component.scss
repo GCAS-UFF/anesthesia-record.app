@@ -1,8 +1,3 @@
-/* ================================================================
-   Procedure Card — Tablet-first (HUAP · UFF)
-   Layout horizontal: [ Sala | Detalhes | Ações ]
-   ================================================================ */
-
 :host { display: block; }
 
 .procedure-card {
@@ -21,7 +16,6 @@
   }
 }
 
-/* ---------- Left: Room + time badge ---------- */
 .card-side {
   width: 180px;
   flex-shrink: 0;
@@ -119,7 +113,6 @@
   50% { opacity: .5; }
 }
 
-/* ---------- Right: Body ---------- */
 .card-body {
   display: flex;
   flex: 1;
@@ -135,7 +128,6 @@
   min-width: 0;
 }
 
-/* Meta row (type + record) */
 .meta-row {
   display: flex;
   flex-wrap: wrap;
@@ -167,7 +159,6 @@
   }
 }
 
-/* Patient */
 .patient-name {
   font-family: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
   font-size: 22px;
@@ -186,7 +177,6 @@
   color: #64748b;
 }
 
-/* Procedure line */
 .procedure-line {
   display: flex;
   align-items: center;
@@ -202,7 +192,6 @@
   &.no-procedure { color: #3b82f6; }
 }
 
-/* ---------- Actions ---------- */
 .body-actions {
   display: flex;
   flex-direction: column;
@@ -255,7 +244,6 @@
   overflow: hidden;
 }
 
-/* ---------- Tablet portrait (narrower) ---------- */
 @media (max-width: 900px) {
   .card-side { width: 150px; padding: 18px 12px; }
   .side-room { font-size: 26px; }
@@ -264,7 +252,6 @@
   .btn { padding: 12px 18px; font-size: 13px; }
 }
 
-/* ---------- Mobile fallback (stacks) ---------- */
 @media (max-width: 640px) {
   .procedure-card { flex-direction: column; }
   .card-side {
@@ -281,8 +268,38 @@
   .body-actions .btn { flex: 1; }
 }
 
-/* Touch tuning */
 @media (hover: none) and (pointer: coarse) {
   .btn { cursor: default; }
   .btn:active { transform: scale(0.96); }
+}
+
+.anesthesist {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    font-size: 16px;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.btn-disabled {
+  background: #d1d5db;
+  color: #6b7280;
+  border-color: #d1d5db;
+  cursor: not-allowed;
+  opacity: .9;
+
+  ion-icon {
+    color: #6b7280;
+  }
 }

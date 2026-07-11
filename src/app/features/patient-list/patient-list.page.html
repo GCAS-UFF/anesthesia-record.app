@@ -105,8 +105,9 @@
           [age]="p.age"
           [record]="p.record"
           [id]="p.id"
+          [anesthesiologist]="p.anesthesiologist"
           (assume)="onAssume(p.id, p.patientId)"
-          (openFicha)="onOpenFicha(p.id)"
+          (openFicha)="onOpenFicha(p.id, p.patientId)"
           (viewRegistro)="onViewRegistro(p.id)"
         ></app-procedure-card>
 

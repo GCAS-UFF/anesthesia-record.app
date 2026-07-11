@@ -27,9 +27,12 @@ export class SurgeryService {
     return this.http.get<PatientResponse>(url, { params });
   }
 
-  /**
-   * Associa um médico responsável ao paciente/cirurgia
-   */
+  getPatientDate(id: number, patientId: string): Observable<PatientResponse> {
+    const url = `${this.baseUrl}/api/anesthesiarecord/${id}/${patientId}`;
+
+    return this.http.get<PatientResponse>(url);
+  }
+
   assumePatient(patientId: string, surgeryId: number, responsableId: number): Observable<any> {
     return this.http.patch(`${this.baseUrl}/surgeries/${patientId}/${surgeryId}/${responsableId}`, {});
   }

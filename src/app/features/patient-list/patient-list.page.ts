@@ -75,35 +75,35 @@ export class PatientListPage implements OnInit {
     this.loadData();
   }
 
-async loadData() {
-  this.isRefreshing = true;
-  this.viewList = [];
+  async loadData() {
+    this.isRefreshing = true;
+    this.viewList = [];
 
-  if (this.content) {
-    this.content.scrollToTop(400);
+    if (this.content) {
+      this.content.scrollToTop(400);
+    }
+
+    this.surgeryService
+      .getSurgeries(
+        this.selectedDate,
+        this.searchQuery || undefined,
+        this.selectedStatus ?? undefined,
+        this.currentPage,
+        this.pageSize
+      )
+      .subscribe({
+        next: (response: any) => {
+          const resultData = response.data || response;
+          this.totalItems = resultData.totalItems || 0;
+          this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1;
+          this.flattenData(resultData);
+          this.isRefreshing = false;
+        },
+        error: () => {
+          this.isRefreshing = false;
+        },
+      });
   }
-
-  this.surgeryService
-    .getSurgeries(
-      this.selectedDate,
-      this.searchQuery || undefined,
-      this.selectedStatus ?? undefined,
-      this.currentPage,
-      this.pageSize
-    )
-    .subscribe({
-      next: (response: any) => {
-        const resultData = response.data || response;
-        this.totalItems = resultData.totalItems || 0;
-        this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1;
-        this.flattenData(resultData);
-        this.isRefreshing = false;
-      },
-      error: () => {
-        this.isRefreshing = false;
-      },
-    });
-}
 
   flattenData(response: any) {
     this.viewList = [];
@@ -131,12 +131,13 @@ async loadData() {
         surgicalCenter: item.location?.surgicalCenter?.description || '',
         bed: item.currentLocation?.bed || '',
         floor: item.currentLocation?.floor || '',
+        anesthesiologist: item.firstAnesthesiologist?.fullName || '',
         unit: item.currentLocation?.unit?.description || '',
         procedure:
           primaryProc && primaryProc.description && primaryProc.description !== 'Não informado'
             ? primaryProc.description
             : 'Procedimento não informado',
-        status: item.status === 0 ? SurgeryStatusEnum.Agendado : item.status === 1 ? SurgeryStatusEnum.EmPreparacao : item.status === 2 ? SurgeryStatusEnum.EmProgresso : item.status === 3 ? SurgeryStatusEnum.Concluido :  item.status === 4 ? SurgeryStatusEnum.Cancelada : null,
+        status: item.status === 0 ? SurgeryStatusEnum.Agendado : item.status === 1 ? SurgeryStatusEnum.EmPreparacao : item.status === 2 ? SurgeryStatusEnum.EmProgresso : item.status === 3 ? SurgeryStatusEnum.Concluido : item.status === 4 ? SurgeryStatusEnum.Cancelada : null,
         date: this.datePipe.transform(dt, 'yyyy-MM-dd'),
         time: this.datePipe.transform(dt, 'HH:mm'),
         completedAt: completedTime,
@@ -144,35 +145,10 @@ async loadData() {
     });
   }
 
-  // get filteredProcedures() {
-  //   const q = this.searchQuery.toLowerCase();
-  //   const filtered = this.viewList.filter((p) => {
-  //     const matchSearch =
-  //       p.patientName.toLowerCase().includes(q) ||
-  //       p.record.includes(this.searchQuery) ||
-  //       p.procedure.toLowerCase().includes(q) ||
-  //       p.room.toLowerCase().includes(q);
-
-  //     const matchStatus = this.selectedStatus === null || p.status === this.selectedStatus;
-  //     const matchDate = !this.selectedDate || p.date === this.selectedDate;
-
-  //     return matchSearch && matchStatus && matchDate;
-  //   });
-
-  //   return filtered.sort((a, b) => {
-  //     if (a.status === 'waiting' && b.status === 'completed') return -1;
-  //     if (a.status === 'completed' && b.status === 'waiting') return 1;
-  //     if (a.status === 'waiting' && b.status === 'waiting') return a.time.localeCompare(b.time);
-  //     if (a.status === 'completed' && b.status === 'completed')
-  //       return b.completedAt.localeCompare(a.completedAt);
-  //     return 0;
-  //   });
-  // }
-
-  onSearchChange(searchTerm: string) {   
+  onSearchChange(searchTerm: string) {
     this.searchQuery = searchTerm;
-    if (this.searchQuery.length > 3 || this.searchQuery.length === 0)  
-       this.loadData();   
+    if (this.searchQuery.length > 3 || this.searchQuery.length === 0)
+      this.loadData();
   }
 
   changeStatus(status: SurgeryStatusEnum | null) {
@@ -254,8 +230,8 @@ async loadData() {
     this.router.navigate(['/monitorizacao', id]);
   }
 
-  onOpenFicha(id: string | number) {
-    this.router.navigate(['/ficha-anestesica', id]);
+  onOpenFicha(id: string | number, patientId: string) {
+    this.router.navigate(['/ficha-anestesica', id, patientId]);
   }
 
   onViewRegistro(id: string | number) {

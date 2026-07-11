@@ -21,7 +21,7 @@ export const routes: Routes = [
     loadComponent: () => import('./features/patient-list/patient-list.page').then(m => m.PatientListPage)
   },
   {
-    path: 'ficha-anestesica/:id',
+    path: 'ficha-anestesica/:id/:patientId',
     loadComponent: () => import('./features/ficha-anestesica/ficha-anestesica.component').then(m => m.FichaAnestesicaComponent)
   },
   {

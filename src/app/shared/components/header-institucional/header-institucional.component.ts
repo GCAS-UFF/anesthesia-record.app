@@ -43,6 +43,7 @@ export class HeaderInstitucionalComponent {
   navItems: NavItem[] = [
     { icon: 'grid-outline', label: 'Painel de Cirurgias', route: '/pacientes', active: true },        
     { icon: 'settings-outline', label: 'Configurações', route: '/config' },
+    { icon: 'people-outline', label: 'Meus Pacientes', route: '/meus-pacientes' },
     { icon: 'cloud-outline', label: 'Integração AGHU', route: '/integracoes' },
   ];
 
