@@ -3,18 +3,22 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular/standalone';
 import { IonContent, IonSpinner, IonSkeletonText, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { chevronBackOutline, chevronForwardOutline, checkmarkCircle } from 'ionicons/icons';
+import {
+  chevronBackOutline,
+  chevronForwardOutline,
+  checkmarkCircle,
+  searchOutline,
+  refreshOutline,
+} from 'ionicons/icons';
 import { Router } from '@angular/router';
 import { SurgeryService } from '../../core/services/surgery.service';
 import { AuthService } from '../../core/services/auth.service';
-import { PatientResponse } from '../../shared/models/patient.model';
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
-import { SearchBarComponent } from '../../shared/components/search-bar/search-bar.component';
-import { StatusChipComponent } from '../../shared/components/status-chip/status-chip.component';
 import { DateFilterComponent } from '../../shared/components/date-filter/date-filter.component';
 import { ProcedureCardComponent } from '../../shared/components/procedure-card/procedure-card.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { SurgeryStatusEnum } from 'src/app/core/models/api-enums.model';
 
 @Component({
   selector: 'app-patient-list',
@@ -28,22 +32,20 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
     IonIcon,
     StatusBarComponent,
     HeaderInstitucionalComponent,
-    SearchBarComponent,
-    StatusChipComponent,
     DateFilterComponent,
     ProcedureCardComponent,
-    EmptyStateComponent
+    EmptyStateComponent,
   ],
-  providers: [DatePipe]
+  providers: [DatePipe],
 })
 export class PatientListPage implements OnInit {
   searchQuery = '';
-  selectedStatus = 'all';
-  selectedDate = '2026-04-11';
+  selectedStatus: SurgeryStatusEnum | null = null;
+  selectedDate = Date.now() ? new Date().toISOString().split('T')[0] : '';
   isRefreshing = false;
   viewList: any[] = [];
+  readonly SurgeryStatusEnum = SurgeryStatusEnum;
 
-  // Paginação
   currentPage = 1;
   pageSize = 10;
   totalItems = 0;
@@ -58,51 +60,52 @@ export class PatientListPage implements OnInit {
     private loadingController: LoadingController,
     private toastController: ToastController,
     private surgeryService: SurgeryService,
-    private authService: AuthService
+    private authService: AuthService,
   ) {
-    addIcons({ chevronBackOutline, chevronForwardOutline, checkmarkCircle });
+    addIcons({
+      chevronBackOutline,
+      chevronForwardOutline,
+      checkmarkCircle,
+      searchOutline,
+      refreshOutline,
+    });
   }
 
   ngOnInit() {
-    // Carregamento inicial movido para o ngOnInit
     this.loadData();
   }
 
   async loadData() {
     this.isRefreshing = true;
-    this.viewList = []; // Limpa a lista para mostrar o skeleton
+    this.viewList = [];
 
-    // Spinner e skeleton já são controlados por isRefreshing.
-    // O LoadingController (modal) foi removido para evitar travamentos silenciosos em produção.
-
-    // Rola para o topo ao carregar novos dados
     if (this.content) {
       this.content.scrollToTop(400);
     }
 
-    // Fetch all for the date and filter in frontend to ensure reliability
-    this.surgeryService.getSurgeries(this.selectedDate, undefined, this.currentPage, this.pageSize).subscribe({
-      next: (response: any) => {
-        // A API agora usa um wrapper padronizado: { valid: true, data: { data: [...], totalItems: ... }, message: ... }
-        const resultData = response.data || response;
-        this.totalItems = resultData.totalItems || 0;
-        this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1;
-        this.flattenData(resultData);
-        this.isRefreshing = false;
-      },
-      error: () => {
-        this.isRefreshing = false;
-      }
-    });
+    this.surgeryService
+      .getSurgeries(this.selectedDate, this.selectedStatus ?? undefined, this.currentPage, this.pageSize)
+      .subscribe({
+        next: (response: any) => {
+          const resultData = response.data || response;
+          this.totalItems = resultData.totalItems || 0;
+          this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1;
+          this.flattenData(resultData);
+          this.isRefreshing = false;
+        },
+        error: () => {
+          this.isRefreshing = false;
+        },
+      });
   }
 
   flattenData(response: any) {
     this.viewList = [];
     const dataArray = response.data || [];
-    
+
     dataArray.forEach((item: any) => {
-      // O backend agora retorna uma lista achatada onde cada item já é a cirurgia com os dados do paciente embutidos
-      const primaryProc = item.procedures?.find((p: any) => p.isPrimary) || item.procedures?.[0];
+      const primaryProc =
+        item.procedures?.find((p: any) => p.isPrimary) || item.procedures?.[0];
       const dt = new Date(item.expectedAt || item.surgeryDate || new Date());
 
       let completedTime = null;
@@ -123,63 +126,59 @@ export class PatientListPage implements OnInit {
         bed: item.currentLocation?.bed || '',
         floor: item.currentLocation?.floor || '',
         unit: item.currentLocation?.unit?.description || '',
-        procedure: (primaryProc && primaryProc.description && primaryProc.description !== 'Não informado') 
-                   ? primaryProc.description 
-                   : 'Procedimento não informado',
-        status: item.status === 3 ? 'completed' : 'waiting',
+        procedure:
+          primaryProc && primaryProc.description && primaryProc.description !== 'Não informado'
+            ? primaryProc.description
+            : 'Procedimento não informado',
+        status: item.status === 0 ? SurgeryStatusEnum.Agendado : item.status === 1 ? SurgeryStatusEnum.EmPreparacao : item.status === 2 ? SurgeryStatusEnum.EmProgresso : item.status === 3 ? SurgeryStatusEnum.Concluido :  item.status === 4 ? SurgeryStatusEnum.Cancelada : null,
         date: this.datePipe.transform(dt, 'yyyy-MM-dd'),
         time: this.datePipe.transform(dt, 'HH:mm'),
-        completedAt: completedTime
+        completedAt: completedTime,
       });
     });
   }
 
-  get filteredProcedures() {
-    let filtered = this.viewList.filter(p => {
-      const matchSearch = p.patientName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        p.record.includes(this.searchQuery) ||
-        p.procedure.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        p.room.toLowerCase().includes(this.searchQuery.toLowerCase());
+  // get filteredProcedures() {
+  //   const q = this.searchQuery.toLowerCase();
+  //   const filtered = this.viewList.filter((p) => {
+  //     const matchSearch =
+  //       p.patientName.toLowerCase().includes(q) ||
+  //       p.record.includes(this.searchQuery) ||
+  //       p.procedure.toLowerCase().includes(q) ||
+  //       p.room.toLowerCase().includes(q);
 
-      const matchStatus = this.selectedStatus === 'all' || p.status === this.selectedStatus;
-      const matchDate = !this.selectedDate || p.date === this.selectedDate;
+  //     const matchStatus = this.selectedStatus === null || p.status === this.selectedStatus;
+  //     const matchDate = !this.selectedDate || p.date === this.selectedDate;
 
-      return matchSearch && matchStatus && matchDate;
-    });
+  //     return matchSearch && matchStatus && matchDate;
+  //   });
 
-    return filtered.sort((a, b) => {
-      if (a.status === 'waiting' && b.status === 'completed') return -1;
-      if (a.status === 'completed' && b.status === 'waiting') return 1;
-
-      if (a.status === 'waiting' && b.status === 'waiting') {
-        return a.time.localeCompare(b.time);
-      }
-
-      if (a.status === 'completed' && b.status === 'completed') {
-        return b.completedAt.localeCompare(a.completedAt);
-      }
-
-      return 0;
-    });
-  }
+  //   return filtered.sort((a, b) => {
+  //     if (a.status === 'waiting' && b.status === 'completed') return -1;
+  //     if (a.status === 'completed' && b.status === 'waiting') return 1;
+  //     if (a.status === 'waiting' && b.status === 'waiting') return a.time.localeCompare(b.time);
+  //     if (a.status === 'completed' && b.status === 'completed')
+  //       return b.completedAt.localeCompare(a.completedAt);
+  //     return 0;
+  //   });
+  // }
 
   onSearchChange(searchTerm: string) {
     this.searchQuery = searchTerm;
   }
 
-  changeStatus(status: string) {
+  changeStatus(status: SurgeryStatusEnum | null) {
     this.selectedStatus = status;
-    this.currentPage = 1; // Reset para primeira página ao mudar filtro
+    this.currentPage = 1;
     this.loadData();
   }
 
   onDateChange(newDate: string) {
     this.selectedDate = newDate;
-    this.currentPage = 1; // Reset para primeira página ao mudar filtro
+    this.currentPage = 1;
     this.loadData();
   }
 
-  // Métodos de Navegação
   nextPage() {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
@@ -199,22 +198,17 @@ export class PatientListPage implements OnInit {
       header: 'Assumir Paciente',
       message: 'Deseja realmente assumir este paciente e iniciar o preparo anestésico?',
       buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-          cssClass: 'secondary'
-        },
+        { text: 'Cancelar', role: 'cancel', cssClass: 'secondary' },
         {
           text: 'Confirmar',
           handler: async () => {
             const loading = await this.loadingController.create({
               message: 'Assumindo paciente...',
               duration: 1000,
-              spinner: 'circular'
+              spinner: 'circular',
             });
             await loading.present();
 
-            // Pega o ID do médico logado dinamicamente do AuthService
             const doctorId = this.authService.getCurrentUserId();
 
             this.surgeryService.assumePatient(patientId, Number(surgeryId), doctorId).subscribe({
@@ -224,7 +218,7 @@ export class PatientListPage implements OnInit {
                   message: 'Paciente assumido com sucesso!',
                   duration: 2000,
                   color: 'success',
-                  icon: 'checkmark-circle'
+                  icon: 'checkmark-circle',
                 });
                 await toast.present();
                 this.onOpenMonitorizacao(surgeryId);
@@ -232,16 +226,17 @@ export class PatientListPage implements OnInit {
               error: async () => {
                 await loading.dismiss();
                 const toast = await this.toastController.create({
-                  message: 'Falha de comunicação com a API. Não foi possível assumir o paciente.',
+                  message:
+                    'Falha de comunicação com a API. Não foi possível assumir o paciente.',
                   duration: 3000,
-                  color: 'danger'
+                  color: 'danger',
                 });
                 await toast.present();
-              }
+              },
             });
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
 
     await alert.present();
@@ -259,9 +254,6 @@ export class PatientListPage implements OnInit {
     this.router.navigate(['/registro-cirurgia', id]);
   }
 
-  /**
-   * FA-038 - Refresh manual da lista
-   */
   handleRefresh() {
     if (this.isRefreshing) return;
     this.loadData();

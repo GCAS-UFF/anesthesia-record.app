@@ -13,6 +13,7 @@ import {
   helpCircleOutline,
   logOutOutline,
   closeOutline,
+  cloudOutline,
 } from 'ionicons/icons';
 
 interface NavItem {
@@ -40,11 +41,9 @@ export class HeaderInstitucionalComponent {
   menuOpen = false;
 
   navItems: NavItem[] = [
-    { icon: 'grid-outline', label: 'Painel de Cirurgias', route: '/', active: true },
-    { icon: 'document-text-outline', label: 'Fichas Anestésicas', route: '/fichas' },
-    { icon: 'people-outline', label: 'Meus Pacientes', route: '/pacientes' },
+    { icon: 'grid-outline', label: 'Painel de Cirurgias', route: '/pacientes', active: true },        
     { icon: 'settings-outline', label: 'Configurações', route: '/config' },
-    { icon: 'help-circle-outline', label: 'Ajuda & Suporte', route: '/ajuda' },
+    { icon: 'cloud-outline', label: 'Integração AGHU', route: '/integracoes' },
   ];
 
   constructor(private router: Router) {
@@ -56,6 +55,7 @@ export class HeaderInstitucionalComponent {
       peopleOutline,
       settingsOutline,
       helpCircleOutline,
+      cloudOutline,
       logOutOutline,
       closeOutline,
     });

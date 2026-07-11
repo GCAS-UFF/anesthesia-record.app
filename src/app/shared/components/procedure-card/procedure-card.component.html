@@ -1,37 +1,79 @@
-<div class="procedure-card ion-activatable ripple-parent">
-    <ion-ripple-effect></ion-ripple-effect>
-    <div class="card-header">
-        <div class="header-badges">
-            <span class="room-badge">🏥 {{ room }}</span>
-            <span class="procedure-tag">🔪 {{ procedure }}</span>
-            <span class="status-badge" [ngClass]="status === 'waiting' ? 'waiting' : 'completed'">
-                {{ status === 'waiting' ? '⏳ Em Espera' : '✅ Realizado' }}
-            </span>
-        </div>
-        <div class="header-time">
-            <ng-container *ngIf="status === 'waiting'">⏰ Previsto: {{ time }}</ng-container>
-            <ng-container *ngIf="status === 'completed'">🏁 Concluído: {{ completedAt || '—' }}</ng-container>
-        </div>
+<article class="procedure-card"
+  [class.is-completed]="isCompleted"
+  [class.is-in-progress]="isInProgress">
+
+  <!-- Left: room + time badge -->
+  <aside class="card-side">
+    <div class="side-inner">
+      <span class="side-label">Sala de Cirurgia</span>
+      <span class="side-room">{{ room }}</span>
     </div>
-    <div class="patient-name">
-        {{ patientName }}
+
+    <div class="time-badge"
+      [class.badge-waiting]="SurgeryStatusEnum.Agendado === status"
+      [class.badge-in-progress]="SurgeryStatusEnum.EmProgresso === status"
+      [class.badge-completed]="SurgeryStatusEnum.Concluido === status"
+      [class.badge-cancelled]="SurgeryStatusEnum.Cancelada === status"
+      [class.badge-preparation]="SurgeryStatusEnum.EmPreparacao === status">
+      <span class="dot"></span>
+      <span class="label">
+        <ng-container *ngIf="SurgeryStatusEnum.Concluido === status">Realizado: {{ completedAt || '—' }}</ng-container>
+        <ng-container *ngIf="SurgeryStatusEnum.EmProgresso === status">Em andamento • {{ time }}</ng-container>
+        <ng-container *ngIf="SurgeryStatusEnum.Agendado === status">Previsto: {{ time }}</ng-container>
+        <ng-container *ngIf="SurgeryStatusEnum.Cancelada === status">Cancelado: {{ completedAt || '—' }}</ng-container>
+        <ng-container *ngIf="SurgeryStatusEnum.EmPreparacao === status">Em Preparação</ng-container>
+      </span>
     </div>
-    <div class="patient-details" style="display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; font-weight: 500; color: #475569; margin-bottom: 8px;">
-        <span style="background: #f1f5f9; padding: 2px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">👤 {{ age }} anos</span>
-        <span style="background: #f1f5f9; padding: 2px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">📋 {{ record }}</span>
+  </aside>
+
+  <!-- Right: details + actions -->
+  <div class="card-body">
+    <div class="body-details">
+      <div class="meta-row">
+        <span class="type-tag"
+          [class.type-eletiva]="type === 'Eletiva'"
+          [class.type-urgencia]="type === 'Urgência'"
+          [class.type-emergencia]="type === 'Emergência'">
+          {{ type }}
+        </span>
+        <span class="meta-text">
+          Prontuário: <span class="mono">{{ record }}</span> • ID: {{ id }}
+        </span>
+      </div>
+
+      <h2 class="patient-name">{{ patientName }}</h2>
+      <p class="patient-sub">{{ birthDate }} ({{ age }} anos)</p>
+
+      <div class="procedure-line" [class.no-procedure]="!hasProcedure">
+        <ion-icon name="medical-outline" aria-hidden="true"></ion-icon>
+        <span>{{ hasProcedure ? procedure : 'Procedimento não informado' }}</span>
+      </div>
     </div>
-    <div class="card-actions">
-        <button class="btn-assume ion-activatable ripple-parent" *ngIf="status === 'waiting'" (click)="onAssume()">
-            👤 Assumir Paciente
-            <ion-ripple-effect></ion-ripple-effect>
+
+    <div class="body-actions">
+      <ng-container *ngIf="SurgeryStatusEnum.Concluido === status; else waitingActions">
+        <button class="btn btn-primary ion-activatable ripple-parent"
+          (click)="onViewRegistro()">
+          <ion-icon name="document-text-outline"></ion-icon>
+          Ver Registro
+          <ion-ripple-effect></ion-ripple-effect>
         </button>
-        <button class="btn-ficha ion-activatable ripple-parent" *ngIf="status === 'waiting'" (click)="onOpenFicha()">
-            📄 Abrir Ficha Anestésica
-            <ion-ripple-effect></ion-ripple-effect>
+      </ng-container>
+
+      <ng-template #waitingActions>
+        <button class="btn btn-primary ion-activatable ripple-parent"
+          (click)="onAssume()">
+          <ion-icon name="person-outline"></ion-icon>
+          Assumir Paciente
+          <ion-ripple-effect></ion-ripple-effect>
         </button>
-        <button class="btn-registro ion-activatable ripple-parent" *ngIf="status === 'completed'" (click)="onViewRegistro()">
-            📋 Ver Registro da Cirurgia
-            <ion-ripple-effect></ion-ripple-effect>
+        <button class="btn btn-outline ion-activatable ripple-parent"
+          (click)="onOpenFicha()">
+          <ion-icon name="reader-outline"></ion-icon>
+          Abrir Ficha Anestésica
+          <ion-ripple-effect></ion-ripple-effect>
         </button>
+      </ng-template>
     </div>
-</div>
+  </div>
+</article>

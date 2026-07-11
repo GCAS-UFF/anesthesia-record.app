@@ -1,139 +1,178 @@
 <div class="app-container">
   <app-status-bar></app-status-bar>
+
   <app-header-institucional
     doctorName="Dra. Amanda Onishi"
     doctorInitials="AO"
-    [serverConnected]="true"
+    doctorRole="Anestesista"
+    [serverConnected]="false"
   ></app-header-institucional>
 
-  <app-search-bar
-    placeholder="Buscar por paciente, prontuário, procedimento ou sala..."
-    (search)="onSearchChange($event)"
-  >
-  </app-search-bar>
+  <main class="page-main">
+    <!-- Search + Segmented filter -->
+    <section class="toolbar">
+      <div class="search-wrap">
+        <ion-icon
+          name="search-outline"
+          class="search-icon"
+          aria-hidden="true"
+        ></ion-icon>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Buscar por paciente, prontuário, procedimento..."
+          [value]="searchQuery"
+          (input)="onSearchChange($any($event.target).value)"
+        />
+      </div>
 
-  <div class="filters-bar">
-    <div class="status-filters">
-      <app-status-chip
-        label="📋 Todos"
-        [active]="selectedStatus === 'all'"
-        (chipClick)="changeStatus('all')"
-      ></app-status-chip>
-      <app-status-chip
-        label="⏳ Em Espera"
-        [active]="selectedStatus === 'waiting'"
-        (chipClick)="changeStatus('waiting')"
-      ></app-status-chip>
-      <app-status-chip
-        label="✅ Realizados"
-        [active]="selectedStatus === 'completed'"
-        (chipClick)="changeStatus('completed')"
-      ></app-status-chip>
+      <div class="segmented" role="tablist" aria-label="Filtro de status">
+        <button
+          role="tab"
+          [attr.aria-selected]="selectedStatus === null"
+          [class.active]="selectedStatus === null"
+          (click)="changeStatus(null)"
+        >
+          Todos
+        </button>
+        <button
+          role="tab"
+          [attr.aria-selected]="selectedStatus === SurgeryStatusEnum.Agendado"
+          [class.active]="selectedStatus === SurgeryStatusEnum.Agendado"
+          (click)="changeStatus(SurgeryStatusEnum.Agendado)"
+        >
+          Agendados
+        </button>
+        <button
+          role="tab"
+          [attr.aria-selected]="selectedStatus === SurgeryStatusEnum.Concluido"
+          [class.active]="selectedStatus === SurgeryStatusEnum.Concluido"
+          (click)="changeStatus(SurgeryStatusEnum.Concluido)"
+        >
+          Realizados
+        </button>
+        <button
+          role="tab"
+          [attr.aria-selected]="selectedStatus === SurgeryStatusEnum.Cancelada"
+          [class.active]="selectedStatus === SurgeryStatusEnum.Cancelada"
+          (click)="changeStatus(SurgeryStatusEnum.Cancelada)"
+        >
+          Cancelados
+        </button>
+      </div>
+    </section>
 
-      <button
-        class="btn-refresh-inline"
-        (click)="handleRefresh()"
-        [disabled]="isRefreshing"
-        title="Atualizar Lista"
-      >
-        <ion-spinner
-          *ngIf="isRefreshing"
-          name="crescent"
-          style="width: 18px; height: 18px; color: #6366f1"
-        ></ion-spinner>
-        <span *ngIf="!isRefreshing" style="font-size: 16px">🔄</span>
-      </button>
-    </div>
-    <div style="display: flex; gap: 8px; align-items: center">
-      <app-date-filter
-        [date]="selectedDate"
-        (dateChange)="onDateChange($event)"
-      ></app-date-filter>
-    </div>
-    <div class="results-count">
-      {{ filteredProcedures.length }} procedimentos
-    </div>
-  </div>
+    <!-- Date + refresh + count -->
+    <section class="meta-bar">
+      <div class="meta-left">
+        <app-date-filter
+          [date]="selectedDate"
+          (dateChange)="onDateChange($event)"
+        ></app-date-filter>
 
-  <div class="main-content">
-    <div class="procedures-list">
-      <app-procedure-card
-        *ngFor="let p of filteredProcedures"
-        [patientName]="p.patientName"
-        [room]="p.room"
-        [surgicalCenter]="p.surgicalCenter"
-        [bed]="p.bed"
-        [floor]="p.floor"
-        [unit]="p.unit"
-        [procedure]="p.procedure"
-        [status]="p.status"
-        [time]="p.time"
-        [completedAt]="p.completedAt"
-        [birthDate]="p.birthDate"
-        [age]="p.age"
-        [record]="p.record"
-        [id]="p.id"
-        (assume)="onAssume(p.id, p.patientId)"
-        (openFicha)="onOpenFicha(p.id)"
-        (viewRegistro)="onViewRegistro(p.id)"
-      >
-      </app-procedure-card>
+        <button
+          class="refresh-btn"
+          (click)="handleRefresh()"
+          [disabled]="isRefreshing"
+          aria-label="Atualizar lista"
+          title="Atualizar lista"
+        >
+          <ion-spinner *ngIf="isRefreshing" name="crescent"></ion-spinner>
+          <ion-icon *ngIf="!isRefreshing" name="refresh-outline"></ion-icon>
+        </button>
+      </div>
 
-      <!-- Skeleton Loading State -->
+      <span class="count-pill">
+        {{ totalItems }} procedimentos hoje
+      </span>
+    </section>
+
+    <!-- Cards list -->
+    <section class="procedures-list">
+      <ng-container *ngIf="!isRefreshing">
+        <app-procedure-card
+          *ngFor="let p of viewList"
+          [patientName]="p.patientName"
+          [room]="p.room"
+          [surgicalCenter]="p.surgicalCenter"
+          [bed]="p.bed"
+          [floor]="p.floor"
+          [unit]="p.unit"
+          [procedure]="p.procedure"
+          [status]="p.status"
+          [time]="p.time"
+          [completedAt]="p.completedAt"
+          [birthDate]="p.birthDate"
+          [age]="p.age"
+          [record]="p.record"
+          [id]="p.id"
+          (assume)="onAssume(p.id, p.patientId)"
+          (openFicha)="onOpenFicha(p.id)"
+          (viewRegistro)="onViewRegistro(p.id)"
+        ></app-procedure-card>
+
+        <app-empty-state
+          *ngIf="totalItems === 0"
+          icon="📭"
+          message="Nenhum procedimento encontrado para os filtros selecionados."
+        ></app-empty-state>
+      </ng-container>
+
+      <!-- Skeleton loading -->
       <ng-container *ngIf="isRefreshing">
         <div class="skeleton-card" *ngFor="let item of [1,2,3]">
-          <div class="skeleton-header">
+          <div class="skeleton-side">
             <ion-skeleton-text
               animated
-              style="width: 80px; height: 20px; border-radius: 4px"
+              style="width: 70px; height: 14px"
             ></ion-skeleton-text>
             <ion-skeleton-text
               animated
-              style="width: 120px; height: 20px; border-radius: 4px"
+              style="width: 60px; height: 28px; margin-top: 8px"
             ></ion-skeleton-text>
             <ion-skeleton-text
               animated
-              style="width: 60px; height: 20px; border-radius: 4px"
+              style="
+                width: 120px;
+                height: 22px;
+                margin-top: 12px;
+                border-radius: 999px;
+              "
             ></ion-skeleton-text>
           </div>
           <div class="skeleton-body">
             <ion-skeleton-text
               animated
-              style="width: 40%; height: 24px; margin-bottom: 12px"
+              style="width: 180px; height: 14px"
             ></ion-skeleton-text>
-            <div style="display: flex; gap: 12px">
-              <ion-skeleton-text
-                animated
-                style="width: 30%; height: 16px"
-              ></ion-skeleton-text>
-              <ion-skeleton-text
-                animated
-                style="width: 30%; height: 16px"
-              ></ion-skeleton-text>
-            </div>
+            <ion-skeleton-text
+              animated
+              style="width: 60%; height: 24px; margin-top: 10px"
+            ></ion-skeleton-text>
+            <ion-skeleton-text
+              animated
+              style="width: 40%; height: 14px; margin-top: 8px"
+            ></ion-skeleton-text>
+            <ion-skeleton-text
+              animated
+              style="width: 50%; height: 16px; margin-top: 16px"
+            ></ion-skeleton-text>
           </div>
-          <div class="skeleton-footer">
+          <div class="skeleton-actions">
             <ion-skeleton-text
               animated
-              style="width: 140px; height: 36px; border-radius: 8px"
+              style="width: 160px; height: 44px; border-radius: 12px"
             ></ion-skeleton-text>
             <ion-skeleton-text
               animated
-              style="width: 140px; height: 36px; border-radius: 8px"
+              style="width: 160px; height: 44px; border-radius: 12px"
             ></ion-skeleton-text>
           </div>
         </div>
       </ng-container>
+    </section>
 
-      <app-empty-state
-        *ngIf="!isRefreshing && filteredProcedures.length === 0"
-        icon="📭"
-        message="Nenhum procedimento encontrado para os filtros selecionados."
-      >
-      </app-empty-state>
-    </div>
-
-    <!-- Paginação -->
+    <!-- Pagination -->
     <div class="pagination-container" *ngIf="totalItems > pageSize">
       <button
         (click)="prevPage()"
@@ -142,9 +181,9 @@
       >
         <ion-icon name="chevron-back-outline"></ion-icon> Anterior
       </button>
-      <span class="page-info"
-        >Página <strong>{{ currentPage }}</strong> de {{ totalPages }}</span
-      >
+      <span class="page-info">
+        Página <strong>{{ currentPage }}</strong> de {{ totalPages }}
+      </span>
       <button
         (click)="nextPage()"
         [disabled]="currentPage === totalPages"
@@ -153,5 +192,5 @@
         Próximo <ion-icon name="chevron-forward-outline"></ion-icon>
       </button>
     </div>
-  </div>
+  </main>
 </div>

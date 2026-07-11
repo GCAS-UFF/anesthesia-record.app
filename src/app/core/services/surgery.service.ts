@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { PatientResponse } from '../../shared/models/patient.model';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { SurgeryStatusEnum } from '../models/api-enums.model';
 
 @Injectable({
   providedIn: 'root'
@@ -15,12 +16,12 @@ export class SurgeryService {
   /**
    * Obtém a lista de pacientes com cirurgias filtrada por data e status.
    */
-  getSurgeries(date?: string, status?: string, page: number = 1, size: number = 10): Observable<PatientResponse> {
+  getSurgeries(date?: string, status?: SurgeryStatusEnum, page: number = 1, size: number = 10): Observable<PatientResponse> {
     const url = `${this.baseUrl}/surgeries`;
 
     const params: any = { page, size };
     if (date) params.date = `${date}T00:00:00Z`;
-    if (status && status !== 'all') params.status = status;
+    if (status !== undefined) params.status = status;
 
     return this.http.get<PatientResponse>(url, { params });
   }
