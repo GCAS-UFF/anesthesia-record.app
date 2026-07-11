@@ -21,7 +21,7 @@ export class SurgeryService {
 
     const params: any = { page, size };
     if (date) params.date = `${date}T00:00:00Z`;
-    if (searchQuery) params.name = searchQuery;
+    if (searchQuery) params.term = searchQuery;
     if (status !== undefined) params.status = status;
 
     return this.http.get<PatientResponse>(url, { params });
