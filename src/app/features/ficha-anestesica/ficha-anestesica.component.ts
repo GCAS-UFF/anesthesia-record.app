@@ -227,7 +227,7 @@ export class FichaAnestesicaComponent implements OnInit {
     this.initForm();
   }
 
-  ngOnInit() {    
+  ngOnInit() {
     this.cirurgiaId = this.route.snapshot.paramMap.get('id');
     this.patientId = this.route.snapshot.paramMap.get('patientId');
     if (this.cirurgiaId && this.patientId) {
@@ -701,50 +701,65 @@ export class FichaAnestesicaComponent implements OnInit {
   private loadPatientData(id: string, patientId: string) {
     this.isLoading = true;
 
-    this.surgeryService.getPatientDate(Number(id), patientId).subscribe((res: any) => {      const surgeryData = res?.data?.data || res?.data || null;
+    this.surgeryService.getPatientDate(Number(id), patientId).subscribe((res: any) => {
 
-      
-      if (surgeryData) {
-        const patientWeight = surgeryData.weightKg || '92';
+      const surgeryData = res?.data;
 
-        this.patient = {
-          ...surgeryData,
-          gender: surgeryData.gender || 'M',
-          weight: patientWeight.toString().replace(' kg', ''),
-          birthDate: this.formatDate(surgeryData.birthDate || '1985-03-15T00:00:00')
-        };
+      if (!surgeryData?.patient) {
+        this.isLoading = false;
+        return;
+      }
 
-        this.selectedSurgery = { ...surgeryData, id: surgeryData.surgeryId || surgeryData.id };
-        this.selectedProcedure = this.selectedSurgery.procedures?.find((p: any) => p.isPrimary) || this.selectedSurgery.procedures?.[0];
+      const patient = surgeryData.patient;
 
-        // [FA-042] Lógica de Auto-Save Draft PRIORITÁRIA
-        const draft = this.anesthesiaService.getDraft(this.cirurgiaId!);
+      this.patient = {
+        ...patient,
+        gender: patient.gender || 'M',
+        weight: (patient.weightKg ?? '').toString(),
+        birthDate: this.formatDate(patient.birthDate)
+      };
 
-        this.anesthesiaService.getLatestByPatient(this.cirurgiaId!, patientId).subscribe(savedRecord => {
+      this.selectedSurgery =
+        patient.surgeries?.find((x: any) => x.id === surgeryData.surgeryId)
+        ?? patient.surgeries?.[0];
+
+      this.selectedProcedure =
+        this.selectedSurgery?.procedures?.find((p: any) => p.isPrimary)
+        ?? this.selectedSurgery?.procedures?.[0];
+
+      const draft = this.anesthesiaService.getDraft(this.cirurgiaId!);
+
+      this.anesthesiaService
+        .getLatestByPatient(this.cirurgiaId!, patientId)
+        .subscribe(savedRecord => {
+
           if (draft) {
-            console.log('Rascunho (Auto-Save) encontrado e carregado:', draft);
             this.form.patchValue(draft);
+
             if (draft.antibioticsList) {
               this.antibioticsList = draft.antibioticsList;
             }
+
           } else if (savedRecord) {
-            console.log('Ficha oficial encontrada e carregada:', savedRecord);
+
             this.form.patchValue(savedRecord);
+
             if ((savedRecord as any).antibioticsList) {
               this.antibioticsList = (savedRecord as any).antibioticsList;
             }
+
           } else {
-            console.log('Nenhuma ficha ou rascunho encontrado.');
-            this.form.get('dadosVitais.peso')?.patchValue(this.patient.weight);
+
+            this.form
+              .get('dadosVitais.peso')
+              ?.patchValue(patient.weightKg);
+
           }
 
           this.syncConditionalValidators();
           this.isLoading = false;
-          this.startAutoSave(); // Inicia monitoramento após carregar
+          this.startAutoSave();
         });
-      } else {
-        this.isLoading = false;
-      }
     });
   }
 
