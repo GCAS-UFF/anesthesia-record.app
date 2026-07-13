@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
-import { delay, map, catchError, tap } from 'rxjs/operators';
+import { Observable, of, throwError, BehaviorSubject } from 'rxjs';
+import { map, catchError, tap } from 'rxjs/operators';
 import { LoginCredentials } from '../../features/login/login.model';
 import { environment } from 'src/environments/environment';
 
@@ -11,35 +11,43 @@ import { environment } from 'src/environments/environment';
 export class AuthService {
   private loggedInUser: any = null;
 
+  private userSubject = new BehaviorSubject<any>(null);
+  public user$ = this.userSubject.asObservable();
+
   constructor(private http: HttpClient) {
     this.checkSavedSession();
   }
 
-  /**
-   * Performs user login against the real API.
-   * Se a API falhar, cai no fallback mockado temporariamente.
-   */
+
   login(credentials: LoginCredentials): Observable<boolean> {
     const url = `${environment.apiUrl}/Auth/login`;
-    const payload = { 
-      login: credentials.username, 
-      password: credentials.password 
+    const payload = {
+      login: credentials.username,
+      password: credentials.password
     };
 
     return this.http.post<any>(url, payload).pipe(
       tap(response => {
         const token = response.data?.token || response.token || `token_${credentials.username}_${Date.now()}`;
-        const userId = response.data?.usuario?.id || response.data?.id || 8;
-        this.loggedInUser = { 
-          username: credentials.username, 
+        const userId = response.data?.usuario?.id || response.data?.id || 0;
+
+        this.loggedInUser = {
+          username: credentials.username,
           name: response.data?.usuario?.nome || response.data?.name || 'Médico Logado',
-          id: userId
+          id: userId,
+          sector: response.data?.usuario?.sector || 'Setor Desconhecido',
+          role: response.data?.usuario?.role || 'Anestesista'
         };
-        
+
         sessionStorage.setItem('userLoggedIn', 'true');
         sessionStorage.setItem('userCRM', credentials.username);
         sessionStorage.setItem('authToken', token);
         sessionStorage.setItem('userId', userId.toString());
+        sessionStorage.setItem('userSector', this.loggedInUser.sector);
+        sessionStorage.setItem('userRole', this.loggedInUser.role);
+        sessionStorage.setItem('name', this.loggedInUser.name);
+
+        this.userSubject.next(this.loggedInUser);
       }),
       map(() => true),
       catchError(err => {
@@ -49,26 +57,29 @@ export class AuthService {
     );
   }
 
-  /**
-   * Logs out the current user.
-   */
   logout(): void {
     this.loggedInUser = null;
+
+    this.userSubject.next(null);
+
     localStorage.removeItem('userLoggedIn');
     localStorage.removeItem('userCRM');
     localStorage.removeItem('authToken');
     localStorage.removeItem('userId');
+    localStorage.removeItem('name');
+    localStorage.removeItem('userSector');
+    localStorage.removeItem('userRole');
     localStorage.removeItem('lastSavedCRM');
     localStorage.removeItem('rememberMePreference');
     sessionStorage.removeItem('userLoggedIn');
     sessionStorage.removeItem('userCRM');
     sessionStorage.removeItem('authToken');
     sessionStorage.removeItem('userId');
+    sessionStorage.removeItem('name');
+    sessionStorage.removeItem('userSector');
+    sessionStorage.removeItem('userRole');
   }
 
-  /**
-   * Checks if the user is authenticated.
-   */
   isAuthenticated(): boolean {
     return (
       this.loggedInUser !== null ||
@@ -77,16 +88,10 @@ export class AuthService {
     );
   }
 
-  /**
-   * Returns the logged in user info.
-   */
   getUser() {
     return this.loggedInUser;
   }
 
-  /**
-   * Retrieves the current user's ID.
-   */
   getCurrentUserId(): number {
     if (this.loggedInUser && this.loggedInUser.id) {
       return Number(this.loggedInUser.id);
@@ -110,24 +115,36 @@ export class AuthService {
   }
 
   private checkSavedSession() {
-    const savedUserLocal = localStorage.getItem('userLoggedIn');
-    const savedCRMLocal = localStorage.getItem('userCRM');
-    const savedUserIdLocal = localStorage.getItem('userId');
+    let userData = this.getUserFromStorage('sessionStorage');
 
-    const savedUserSession = sessionStorage.getItem('userLoggedIn');
-    const savedCRMSession = sessionStorage.getItem('userCRM');
-    const savedUserIdSession = sessionStorage.getItem('userId');
-
-    if (savedUserLocal === 'true' && savedCRMLocal) {
-      this.loggedInUser = { 
-        username: savedCRMLocal,
-        id: savedUserIdLocal ? Number(savedUserIdLocal) : 8
-      };
-    } else if (savedUserSession === 'true' && savedCRMSession) {
-      this.loggedInUser = { 
-        username: savedCRMSession,
-        id: savedUserIdSession ? Number(savedUserIdSession) : 8
-      };
+    if (!userData) {
+      userData = this.getUserFromStorage('localStorage');
     }
+
+    if (userData) {
+      this.loggedInUser = userData;
+      // NOTIFICA QUE O USUÁRIO FOI RECUPERADO DO STORAGE
+      this.userSubject.next(this.loggedInUser);
+    }
+  }
+
+  private getUserFromStorage(storageType: 'sessionStorage' | 'localStorage'): any {
+    const storage = storageType === 'sessionStorage' ? sessionStorage : localStorage;
+
+    const isLoggedIn = storage.getItem('userLoggedIn');
+    if (isLoggedIn !== 'true')
+      return null;
+
+    const username = storage.getItem('userCRM');
+    if (!username)
+      return null;
+
+    return {
+      username: username,
+      id: Number(storage.getItem('userId')) || 8,
+      name: storage.getItem('name') || 'Usuário',
+      role: storage.getItem('userRole') || 'Médico',
+      sector: storage.getItem('userSector') || 'Setor Desconhecido'
+    };
   }
 }

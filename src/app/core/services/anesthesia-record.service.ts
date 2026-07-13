@@ -12,14 +12,13 @@ import { delay } from "rxjs/operators";
 export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> {
 
   constructor(api: ApiService) {
-    // Aponta para o controller do backend: /api/AnesthesiaRecord
     super(api, 'anesthesiarecord');
   }
-
-  saveRecord(record: any): Observable<any> {
+  
+  saveRecord(record: any): Observable<any> {    
     console.log('Serviço: Salvando ficha via API...', record);
     
-    const surgeryId = Number(record.pacienteId);
+    const surgeryId = Number(record.cirurgiaId);
     
     // Converte o form do Angular (aninhado) para o JSON flat da API
     const apiPayload = this.mapToApiFormat(record, surgeryId);
@@ -177,8 +176,8 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       clinicalDischargeCondition: 1, // Enum
       destination: 1, // Enum
       hasPain: app.alderete?.dor === 'sim',
-      firstAnesthesiologistId: 5,
-      firstAnesthesiologistName: "Dra. Amanda Onishi",
+      firstAnesthesiologistId: 0,
+      firstAnesthesiologistName: "",
       secondAnesthesiologistId: null,
       secondAnesthesiologistName: null
     };
