@@ -17,7 +17,8 @@ import {
   cloudOutline,
 } from 'ionicons/icons';
 import { AuthService } from 'src/app/core/services/auth.service';
-import { Subscription } from 'rxjs';
+import { catchError, interval, of, startWith, Subscription, switchMap } from 'rxjs';
+import { HealthService } from 'src/app/core/services/health.service';
 
 interface NavItem {
   icon: string;
@@ -38,7 +39,11 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   @Input() doctorCRM: string = '';
   @Input() doctorRole: string = '';
   @Input() doctorInitials: string = 'Dr(a)';
-  @Input() serverConnected: boolean = true;
+
+  serverConnected = false;  
+  aghuConnected = false;
+
+  private healthSubscription?: Subscription;
 
   menuOpen = false;
   private userSubscription: Subscription = new Subscription();
@@ -50,7 +55,7 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
     { icon: 'cloud-outline', label: 'Integração AGHU', route: '/integracoes' },
   ];
 
-  constructor(private router: Router, private authService: AuthService) {
+  constructor(private router: Router, private authService: AuthService, private healthService: HealthService) {
     addIcons({
       menuOutline,
       wifiOutline,
@@ -66,25 +71,30 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Carrega os dados iniciais
     this.loadUserData();
-    
-    // Escuta mudanças no usuário (login, logout, refresh)
+
     this.userSubscription = this.authService.user$.subscribe(user => {
       if (user) {
         this.updateUserData(user);
       } else {
-        // Usuário deslogado - pode limpar ou mostrar dados padrão
         this.doctorName = '';
         this.doctorRole = '';
         this.doctorInitials = 'Dr(a)';
       }
     });
+
+    this.userSubscription = this.authService.user$.subscribe(user => {
+      if (user) {
+        this.updateUserData(user);
+      }
+    });
+
+    this.startHealthCheck();
   }
 
   ngOnDestroy() {
-    // Limpa a inscrição para evitar memory leak
     this.userSubscription.unsubscribe();
+    this.healthSubscription?.unsubscribe();
   }
 
   loadUserData() {
@@ -118,6 +128,28 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
 
   closeMenu() {
     this.menuOpen = false;
+  }
+
+  private startHealthCheck(): void {    
+    this.healthSubscription = interval(15000)
+      .pipe(
+        startWith(0),
+        switchMap(() =>
+          this.healthService.checkHealth().pipe(
+            catchError(() => of(null))
+          )
+        )
+      )
+      .subscribe(response => {
+        if (!response?.data) {
+          this.serverConnected = false;
+          this.aghuConnected = false;
+          return;
+        }
+
+        this.serverConnected = response.data.database;
+        this.aghuConnected = response.data.aghu;
+      });
   }
 
   getInitials(fullName: string): string {

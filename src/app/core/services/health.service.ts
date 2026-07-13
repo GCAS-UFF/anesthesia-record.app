@@ -7,7 +7,7 @@ import { environment } from 'src/environments/environment';
   providedIn: 'root'
 })
 export class HealthService {
-  private baseUrl = environment.apiUrl.replace(/\/api$/, '');
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {
   }

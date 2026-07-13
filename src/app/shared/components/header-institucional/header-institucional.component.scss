@@ -237,3 +237,61 @@
   .doctor-chip .doctor-info { display: none; }
   .doctor-chip { padding: 4px; }
 }
+
+.status-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-item {
+  position: relative;
+  width: 42px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  cursor: default;
+  user-select: none;
+
+  ion-icon {
+    font-size: 20px;
+    transition: color .2s;
+  }
+
+  span {
+    margin-top: 2px;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+  }
+
+  &.connected ion-icon {
+    color: #10b981;
+  }
+
+  &.disconnected ion-icon {
+    color: #94a3b8;
+  }
+
+  &.disconnected::after {
+    content: "✕";
+    position: absolute;
+    top: -2px;
+    right: 5px;
+
+    color: #ef4444;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+
+    background: #fff;
+    border-radius: 50%;
+    padding: 0 1px;
+  }
+}
