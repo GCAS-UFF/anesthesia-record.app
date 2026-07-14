@@ -37,7 +37,7 @@ export const routes: Routes = [
     loadComponent: () => import('./features/my-patient/my-patients.page').then(m => m.MyPatientsPage)
   },
   {
-    path: 'integration',
+    path: 'integracoes',
     loadComponent: () => import('./features/aghu-integration/aghu-integration.page').then(m => m.AghuIntegrationPage)
   }
 ];
