@@ -67,6 +67,7 @@ export class FichaAnestesicaComponent implements OnInit {
   patient: any = null;
   selectedSurgery: any = null;
   selectedProcedure: any = null;
+  isCancelled = false;
 
   // Opções para os campos baseados na ficha HUAP
   viaPreOptions = [
@@ -711,6 +712,7 @@ export class FichaAnestesicaComponent implements OnInit {
       }
 
       const patient = surgeryData.patient;
+      this.isCancelled = patient.status;
 
       this.patient = {
         ...patient,

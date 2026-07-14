@@ -6,8 +6,9 @@ import {
   medicalOutline,
   personOutline,
   documentTextOutline,
-  readerOutline, fitnessOutline, heartOutline, 
-  checkmarkCircle} from 'ionicons/icons';
+  readerOutline, fitnessOutline, heartOutline,
+  checkmarkCircle
+} from 'ionicons/icons';
 import { SurgeryStatusEnum } from 'src/app/core/models/api-enums.model';
 
 export type ProcedureStatus = SurgeryStatusEnum | null;
@@ -23,6 +24,8 @@ export type ProcedureType = 'Eletiva' | 'Urgência' | 'Emergência';
 })
 export class ProcedureCardComponent {
   readonly SurgeryStatusEnum = SurgeryStatusEnum;
+
+  @Input() isCancelled = false;
   @Input() patientName = '';
   @Input() room = '';
   @Input() surgicalCenter = '';
@@ -45,13 +48,12 @@ export class ProcedureCardComponent {
   @Output() viewRegistro = new EventEmitter<void>();
 
   constructor() {
-    addIcons({heartOutline,medicalOutline,documentTextOutline,checkmarkCircle, personOutline,readerOutline,fitnessOutline});
+    addIcons({ heartOutline, medicalOutline, documentTextOutline, checkmarkCircle, personOutline, readerOutline, fitnessOutline });
   }
 
   get isCompleted(): boolean { return this.status === SurgeryStatusEnum.Concluido; }
   get isInProgress(): boolean { return this.status === SurgeryStatusEnum.EmProgresso; }
   get isWaiting(): boolean { return this.status === SurgeryStatusEnum.Agendado; }
-  get isCancelled(): boolean { return this.status === SurgeryStatusEnum.Cancelada; }
 
   get hasProcedure(): boolean {
     return !!this.procedure && this.procedure !== 'Procedimento não informado';

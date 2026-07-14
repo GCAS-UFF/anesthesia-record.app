@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { PatientResponse } from '../../shared/models/patient.model';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -9,13 +9,11 @@ import { SurgeryStatusEnum } from '../models/api-enums.model';
   providedIn: 'root'
 })
 export class SurgeryService {
-  private baseUrl = environment.apiUrl.replace(/\/api$/, '');
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) { }
 
-  /**
-   * Obtém a lista de pacientes com cirurgias filtrada por data e status 
-   */
+
   getSurgeries(date?: string, searchQuery?: string, status?: SurgeryStatusEnum, page: number = 1, size: number = 10): Observable<PatientResponse> {
     const url = `${this.baseUrl}/surgeries`;
 
@@ -28,9 +26,33 @@ export class SurgeryService {
   }
 
   getPatientDate(id: number, patientId: string): Observable<PatientResponse> {
-    const url = `${this.baseUrl}/api/anesthesiarecord/${id}/${patientId}`;
-
+    const url = `${this.baseUrl}/anesthesiarecord/${id}/${patientId}`;
     return this.http.get<PatientResponse>(url);
+  }
+
+  getMyPatients(doctorId: number, date?: string, searchQuery?: string, status?: SurgeryStatusEnum | null, page: number = 1, size: number = 10): Observable<PatientResponse> {
+
+    let params = new HttpParams()
+      .set('doctorId', doctorId)
+      .set('page', page)
+      .set('pageSize', size);
+
+    if (date) {
+      params = params.set('date', date);
+    }
+
+    if (searchQuery) {
+      params = params.set('term', searchQuery);
+    }
+
+    if (status !== null && status !== undefined) {
+      params = params.set('status', status);
+    }
+
+    return this.http.get<PatientResponse>(
+      `${this.baseUrl}/anesthesiarecord/my-patients`,
+      { params }
+    );
   }
 
   assumePatient(patientId: string, surgeryId: number, responsableId: number): Observable<any> {

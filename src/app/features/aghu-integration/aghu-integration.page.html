@@ -1,0 +1,145 @@
+<div class="app-container">
+  <app-status-bar></app-status-bar>
+
+  <app-header-institucional></app-header-institucional>
+
+  <main class="page-main">
+    <section class="page-header">
+      <div class="header-text">
+        <span class="eyebrow">
+          <ion-icon name="server-outline" aria-hidden="true"></ion-icon>
+          Integração de dados
+        </span>
+        <h1 class="page-title">Integração com AGHU</h1>
+        <p class="page-subtitle">
+          Traga os dados do sistema hospitalar (AGHU) para o app — medicamentos
+          e funcionários usados durante o atendimento anestésico.
+        </p>
+      </div>
+
+      <button
+        class="btn btn-primary run-all"
+        [disabled]="isAnyRunning"
+        (click)="runAll()"
+      >
+        <ion-icon name="cloud-download-outline" aria-hidden="true"></ion-icon>
+        Integrar tudo
+      </button>
+    </section>
+
+    <section
+      class="sky-scene"
+      [class.is-active]="isAnyRunning"
+      aria-hidden="true"
+    >
+      <div class="sky-inner">
+        <ion-icon name="server-outline" class="sky-server"></ion-icon>
+        <div class="sky-track">
+          <span class="cloud cloud-1"></span>
+          <span class="cloud cloud-2"></span>
+          <span class="cloud cloud-3"></span>
+        </div>
+        <ion-icon name="cloud-done-outline" class="sky-cloud"></ion-icon>
+      </div>
+      <p class="sky-label">
+        <ng-container *ngIf="isAnyRunning; else idleLabel">
+          Sincronizando dados com o AGHU…
+        </ng-container>
+        <ng-template #idleLabel> Pronto para integrar com o AGHU </ng-template>
+      </p>
+    </section>
+
+    <section class="cards-grid">
+      <article
+        *ngFor="let card of cards"
+        class="integration-card"
+        [class.is-running]="card.status === 'running'"
+        [class.is-success]="card.status === 'success'"
+        [class.is-error]="card.status === 'error'"
+      >
+        <header class="card-head">
+          <div class="card-icon" aria-hidden="true">
+            <ion-icon [name]="card.icon"></ion-icon>
+          </div>
+          <div class="card-title-wrap">
+            <h2 class="card-title">{{ card.title }}</h2>
+            <p class="card-desc">{{ card.description }}</p>
+          </div>
+          <span class="status-chip" [attr.data-status]="card.status">
+            <ng-container [ngSwitch]="card.status">
+              <ng-container *ngSwitchCase="'idle'">
+                <ion-icon name="time-outline"></ion-icon> Aguardando
+              </ng-container>
+              <ng-container *ngSwitchCase="'running'">
+                <ion-spinner name="crescent"></ion-spinner> Integrando…
+              </ng-container>
+              <ng-container *ngSwitchCase="'success'">
+                <ion-icon name="checkmark-circle"></ion-icon> Concluído
+              </ng-container>
+              <ng-container *ngSwitchCase="'error'">
+                <ion-icon name="alert-circle-outline"></ion-icon> Erro
+              </ng-container>
+            </ng-container>
+          </span>
+        </header>
+
+        <div class="card-body">
+          <div
+            class="progress-track"
+            [class.indeterminate]="card.status === 'running'"
+          >
+            <div
+              class="progress-fill"
+              [style.width.%]="card.status === 'running' ? card.progress : (card.status === 'success' ? 100 : 0)"
+            ></div>
+          </div>
+
+          <dl class="meta-grid">
+            <div>
+              <dt>Última sincronização</dt>
+              <dd>{{ formatDate(card.lastSyncAt) }}</dd>
+            </div>
+            <div>
+              <dt>Registros importados</dt>
+              <dd>{{ card.lastCount !== undefined ? card.lastCount : '—' }}</dd>
+            </div>
+          </dl>
+
+          <p
+            class="error-msg"
+            *ngIf="card.status === 'error' && card.errorMessage"
+          >
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            {{ card.errorMessage }}
+          </p>
+        </div>
+
+        <footer class="card-actions">
+          <button
+            class="btn btn-primary"
+            [disabled]="card.status === 'running'"
+            (click)="runIntegration(card)"
+          >
+            <ion-spinner
+              *ngIf="card.status === 'running'"
+              name="crescent"
+            ></ion-spinner>
+            <ion-icon
+              *ngIf="card.status !== 'running'"
+              [name]="card.status === 'error' ? 'refresh-outline' : 'cloud-download-outline'"
+              aria-hidden="true"
+            ></ion-icon>
+            <span *ngIf="card.status === 'idle'">
+              Integrar {{ card.title.toLowerCase() }}
+            </span>
+            <span *ngIf="card.status === 'running'">Aguarde…</span>
+            <span *ngIf="card.status === 'success'">
+              Sincronizar novamente
+            </span>
+            <span *ngIf="card.status === 'error'">Tentar novamente</span>
+          </button>
+        </footer>
+      </article>
+    </section>
+  </main>
+</div>

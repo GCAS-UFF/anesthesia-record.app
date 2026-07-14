@@ -6,12 +6,14 @@
   <main class="page-main">
     <section class="page-header">
       <div>
-        <h1 class="page-title">Todos os Pacientes</h1>
+        <h1 class="page-title">Meus Pacientes</h1>
         <p class="page-subtitle">
-          Pacientes aguardando responsável — Assuma, crie ou visualize as fichas anestésicas.
+          Pacientes sob sua responsabilidade — retome a monitorização ou
+          consulte a ficha anestésica.
         </p>
       </div>
     </section>
+
     <section class="toolbar">
       <div class="search-wrap">
         <ion-icon
@@ -31,40 +33,31 @@
       <div class="segmented" role="tablist" aria-label="Filtro de status">
         <button
           role="tab"
-          [attr.aria-selected]="selectedStatus === null"
-          [class.active]="selectedStatus === null"
-          (click)="changeStatus(null)"
+          [attr.aria-selected]="selectedStatus === 'all'"
+          [class.active]="selectedStatus === 'all'"
+          (click)="changeStatus('all')"
         >
           Todos
         </button>
         <button
           role="tab"
-          [attr.aria-selected]="selectedStatus === SurgeryStatusEnum.Agendado"
-          [class.active]="selectedStatus === SurgeryStatusEnum.Agendado"
-          (click)="changeStatus(SurgeryStatusEnum.Agendado)"
+          [attr.aria-selected]="selectedStatus === 'inProgress'"
+          [class.active]="selectedStatus === 'inProgress'"
+          (click)="changeStatus('inProgress')"
         >
-          Agendados
+          Em Atendimento
         </button>
         <button
           role="tab"
-          [attr.aria-selected]="selectedStatus === SurgeryStatusEnum.Concluido"
-          [class.active]="selectedStatus === SurgeryStatusEnum.Concluido"
-          (click)="changeStatus(SurgeryStatusEnum.Concluido)"
+          [attr.aria-selected]="selectedStatus === 'completed'"
+          [class.active]="selectedStatus === 'completed'"
+          (click)="changeStatus('completed')"
         >
           Realizados
-        </button>
-        <button
-          role="tab"
-          [attr.aria-selected]="selectedStatus === SurgeryStatusEnum.Cancelada"
-          [class.active]="selectedStatus === SurgeryStatusEnum.Cancelada"
-          (click)="changeStatus(SurgeryStatusEnum.Cancelada)"
-        >
-          Cancelados
         </button>
       </div>
     </section>
 
-    <!-- Date + refresh + count -->
     <section class="meta-bar">
       <div class="meta-left">
         <app-date-filter
@@ -84,42 +77,94 @@
         </button>
       </div>
 
-      <span class="count-pill"> {{ totalItems }} procedimentos hoje </span>
+      <span class="count-pill"> {{ totalItems }} pacientes seus </span>
     </section>
 
-    <!-- Cards list -->
     <section class="procedures-list">
       <ng-container *ngIf="!isRefreshing">
-        <app-procedure-card
+        <article
           *ngFor="let p of viewList"
-          [patientName]="p.patientName"
-          [room]="p.room"
-          [surgicalCenter]="p.surgicalCenter"
-          [bed]="p.bed"
-          [floor]="p.floor"
-          [unit]="p.unit"
-          [procedure]="p.procedure"
-          [status]="p.status"
-          [time]="p.time"
-          [completedAt]="p.completedAt"
-          [birthDate]="p.birthDate"
-          [age]="p.age"
-          [record]="p.record"
-          [id]="p.id"
-          [anesthesiologist]="p.anesthesiologist"
-          (assume)="onAssume(p.id, p.patientId)"
-          (openFicha)="onOpenFicha(p.id, p.patientId)"
-          (viewRegistro)="onViewRegistro(p.id)"
-        ></app-procedure-card>
+          class="procedure-card"
+          [class.is-progress]="SurgeryStatusEnum.EmProgresso === p.status"
+          [class.is-completed]="SurgeryStatusEnum.Concluido === p.status"
+        >
+          <div class="card-side">
+            <span class="side-label">Sala de Cirurgia</span>
+            <span class="side-room">{{ p.room || '—' }}</span>
+
+            <div
+              class="time-badge"
+              [class.badge-waiting]="SurgeryStatusEnum.Agendado === p.status"
+              [class.badge-in-progress]="SurgeryStatusEnum.EmProgresso === p.status"
+              [class.badge-completed]="SurgeryStatusEnum.Concluido === p.status"
+              [class.badge-cancelled]="SurgeryStatusEnum.Cancelada === p.status"
+              [class.badge-preparation]="SurgeryStatusEnum.EmPreparacao === p.status"
+            >
+              <span class="dot"></span>
+              <span *ngIf="SurgeryStatusEnum.Concluido === p.status"
+                >Realizado: {{ p.completedAt }}</span
+              >
+              <span *ngIf="SurgeryStatusEnum.EmProgresso === p.status"
+                >Em atendimento • {{ p.time }}</span
+              >
+              <span *ngIf="p.status === SurgeryStatusEnum.Agendado"
+                >Previsto: {{ p.time }}</span
+              >
+              <ng-container *ngIf="SurgeryStatusEnum.Cancelada === p.status">
+                Cancelado: —
+              </ng-container>
+
+              <ng-container *ngIf="SurgeryStatusEnum.EmPreparacao === p.status">
+                Em Preparação
+              </ng-container>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="meta-line">
+              <span class="type-tag">Meu paciente</span>
+              <span class="meta-text">
+                Prontuário: <strong>{{ p.record }}</strong> • ID: {{ p.id }}
+              </span>
+            </div>
+            <h2 class="patient-name">{{ p.patientName }}</h2>
+            <p class="patient-info">{{ p.birthDate }} ({{ p.age }} anos)</p>
+
+            <div class="procedure-line">
+              <ion-icon name="medical-outline"></ion-icon>
+              <span>{{ p.procedure }}</span>
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <button
+              *ngIf="SurgeryStatusEnum.EmProgresso === p.status"
+              class="btn btn-primary"
+              (click)="onOpenMonitorizacao(p.id)"
+            >
+              <ion-icon name="pulse-outline"></ion-icon>
+              Continuar Monitorização
+            </button>
+
+            <button
+              class="btn"
+              [class.btn-primary]="SurgeryStatusEnum.Concluido === p.status"
+              [class.btn-outline]="SurgeryStatusEnum.Concluido === p.status"
+              (click)="onOpenFicha(p.id, p.patientId)"
+            >
+              <ion-icon name="document-text-outline"></ion-icon>
+              Ver Ficha
+            </button>
+          </div>
+        </article>
 
         <app-empty-state
           *ngIf="totalItems === 0"
           icon="📭"
-          message="Nenhum procedimento encontrado para os filtros selecionados."
+          message="Você ainda não tem pacientes para os filtros selecionados."
         ></app-empty-state>
       </ng-container>
 
-      <!-- Skeleton loading -->
       <ng-container *ngIf="isRefreshing">
         <div class="skeleton-card" *ngFor="let item of [1,2,3]">
           <div class="skeleton-side">
@@ -162,18 +207,17 @@
           <div class="skeleton-actions">
             <ion-skeleton-text
               animated
-              style="width: 160px; height: 44px; border-radius: 12px"
+              style="width: 200px; height: 48px; border-radius: 12px"
             ></ion-skeleton-text>
             <ion-skeleton-text
               animated
-              style="width: 160px; height: 44px; border-radius: 12px"
+              style="width: 160px; height: 48px; border-radius: 12px"
             ></ion-skeleton-text>
           </div>
         </div>
       </ng-container>
     </section>
 
-    <!-- Pagination -->
     <div class="pagination-container" *ngIf="totalItems > pageSize">
       <button
         (click)="prevPage()"

@@ -31,5 +31,13 @@ export const routes: Routes = [
   {
     path: 'registro-cirurgia/:id',
     loadComponent: () => import('./features/registro-cirurgia/registro-cirurgia.component').then(m => m.RegistroCirurgiaComponent)
+  },
+  {
+    path: 'meus-pacientes/:id',
+    loadComponent: () => import('./features/my-patient/my-patients.page').then(m => m.MyPatientsPage)
+  },
+  {
+    path: 'integration',
+    loadComponent: () => import('./features/aghu-integration/aghu-integration.page').then(m => m.AghuIntegrationPage)
   }
 ];

@@ -78,11 +78,11 @@
 
     <div class="body-actions">
       <ng-container
-        *ngIf="SurgeryStatusEnum.Concluido === status; else waitingActions"
+        *ngIf="SurgeryStatusEnum.Concluido === status || SurgeryStatusEnum.Cancelada === status; else waitingActions"
       >
         <button
           class="btn btn-primary ion-activatable ripple-parent"
-          (click)="onViewRegistro()"
+          (click)="onOpenFicha()"
         >
           <ion-icon name="document-text-outline"></ion-icon>
           Ver Registro
@@ -95,7 +95,7 @@
           class="btn"
           [class.btn-primary]="!anesthesiologist"
           [class.btn-disabled]="anesthesiologist"
-          [disabled]="!!anesthesiologist"
+          [disabled]="!!anesthesiologist || isCancelled"
           (click)="onAssume()"
         >
           <ion-icon [name]="anesthesiologist ? 'checkmark-circle' : 'person-outline'">

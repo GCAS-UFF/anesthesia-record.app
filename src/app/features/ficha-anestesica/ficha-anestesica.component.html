@@ -1,10 +1,8 @@
 <div class="app-container">
   <app-status-bar></app-status-bar>
-  <app-header-institucional
-  ></app-header-institucional>
+  <app-header-institucional></app-header-institucional>
 
   <div class="main-content">
-    <!-- Header de Navegação -->
     <div class="navigation-header">
       <ion-button fill="outline" (click)="voltar()" class="btn-back">
         <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
@@ -14,7 +12,6 @@
       <div class="spacer"></div>
     </div>
 
-    <!-- Skeleton Loading -->
     <div *ngIf="isLoading" class="skeleton-container">
       <div class="skeleton-item" style="height: 180px"></div>
       <div class="form-grid-2col">
@@ -24,7 +21,7 @@
       <div class="skeleton-item" style="height: 400px"></div>
     </div>
 
-    <!-- Card do Paciente (Só mostra quando não está carregando) -->
+  
     <app-patient-info-card
       *ngIf="!isLoading"
       [patientName]="patient?.fullName || ''"
@@ -52,7 +49,6 @@
       class="ficha-form-container"
     >
       <div class="form-grid-2col">
-        <!-- 1. SEGURANÇA DO PACIENTE -->
         <app-form-section
           title="Segurança do Paciente"
           icon="🛡️"
@@ -95,7 +91,6 @@
           </div>
         </app-form-section>
 
-        <!-- 2. PRÉ-INDUÇÃO -->
         <app-form-section
           title="Pré-Indução"
           icon="💉"
@@ -116,7 +111,6 @@
             *ngIf="form.get('preInducao.recebeuMedPrevia')?.value === 'sim'"
             style="margin-top: 12px"
           >
-            <!-- Ponto 1: Fármaco aproximado da hora -->
             <div
               style="display: grid; grid-template-columns: 120px 1fr; gap: 12px"
             >
@@ -131,7 +125,6 @@
               /></app-form-field>
             </div>
 
-            <!-- Ponto 1: Distanciado das opções de via -->
             <div style="margin-top: 0px">
               <app-radio-group
                 label="VIA"
@@ -151,7 +144,6 @@
         </app-form-section>
       </div>
 
-      <!-- 3. ANTIBIÓTICO PROFILÁTICO -->
       <app-form-section
         title="Antibiótico Profilático"
         icon="💊"
@@ -273,7 +265,6 @@
         </div>
       </app-form-section>
 
-      <!-- 4. DADOS VITAIS -->
       <app-dados-vitais-section
         [formGroup]="getFormGroup('dadosVitais')"
         [class.shake-error]="
@@ -281,7 +272,7 @@
         "
       ></app-dados-vitais-section>
 
-      <!-- 5. EQUIPE CIRÚRGICA (Ponto 3: Diminua espaçamento vertical) -->
+    
       <app-form-section
         title="Equipe Cirúrgica e Pré-Procedimento"
         icon="👨‍⚕️"
@@ -311,7 +302,7 @@
         </div>
       </app-form-section>
 
-      <!-- 6. POSIÇÃO OPERATÓRIA (Ponto 4: Alinhar Local Coxins com Uso) -->
+      
       <app-form-section
         title="Posição Operatória"
         icon="📐"
@@ -335,7 +326,7 @@
         </app-form-field>
 
         <div class="posicao-extra-row" style="margin-top: 20px">
-          <!-- Ponto 4: Alinhamento e aproximação dos Locais -->
+         
           <div style="display: flex; align-items: start; gap: 20px">
             <div style="min-width: 235px">
               <app-radio-group
@@ -394,7 +385,6 @@
         </div>
       </app-form-section>
 
-      <!-- 7. TÉCNICA ANESTÉSICA -->
       <app-tecnica-anestesica-section
         [formGroup]="getFormGroup('tecnica')"
         [class.shake-error]="
@@ -402,7 +392,7 @@
         "
       ></app-tecnica-anestesica-section>
 
-      <!-- 8. PÓS-PROCEDIMENTO -->
+     
       <app-form-section
         title="Pós-Procedimento"
         icon="🔄"
@@ -429,7 +419,7 @@
         </div>
       </app-form-section>
 
-      <!-- 9. ÍNDICE DE ALDRETE E KROULIK (Ponto 10: Centralizado e estreito) -->
+      
       <app-form-section
         title="Índice de Alderete e Kroulik"
         icon="📋"
@@ -471,10 +461,10 @@
           </div>
         </div>
 
-        <!-- Ponto 10: Card Total Alderete Reorganizado -->
+        
         <div class="alderete-total-centered-container">
           <div class="aldrete-total-premium-card">
-            <!-- Linha 1: Título Centralizado -->
+           
             <div class="alderete-card-header">
               <span class="aldrete-total-label">Total Alderete & Kroulik</span>
             </div>
@@ -512,7 +502,7 @@
               </div>
             </div>
           </div>
-          <!-- Barra de Progresso Visual -->
+       
           <div class="alderete-progress-wrapper compact">
             <div
               class="alderete-progress-bar"
@@ -526,7 +516,7 @@
           class="form-grid-2col"
           style="margin-top: 32px; align-items: start"
         >
-          <!-- Ponto 11: Sem "Outra" -->
+        
           <app-checkbox-group
             label="CONDIÇÕES CLÍNICAS ALTA?"
             [options]="condicoesAltaOptions"
@@ -546,7 +536,7 @@
             class="dor-main-row"
             style="display: flex; gap: 40px; align-items: flex-end"
           >
-            <!-- Pergunta Principal -->
+           
             <div class="dor-question">
               <app-radio-group
                 label="PRESENÇA DE DOR?"
@@ -556,7 +546,7 @@
               ></app-radio-group>
             </div>
 
-            <!-- Ponto 12: Escalas Alinhadas com SIM/NAO -->
+           
             <div
               *ngIf="form.get('alderete.dor')?.value === 'sim'"
               class="dor-scales-wrapper"
@@ -634,7 +624,6 @@
         </div>
       </app-form-section>
 
-      <!-- 10. ASSINATURAS -->
       <app-form-section
         title="Assinaturas"
         icon="✍️"
@@ -662,13 +651,12 @@
         </div>
       </app-form-section>
 
-      <!-- Ponto 13: Botões Centralizados -->
       <div class="form-actions-centered">
         <ion-button
           color="primary"
           type="submit"
           class="btn-pill"
-          [disabled]="isSaving"
+          [disabled]="isSaving || isCancelled"
         >
           <ion-spinner
             name="crescent"
@@ -686,11 +674,13 @@
           fill="outline"
           (click)="confirmarLimpeza()"
           class="btn-pill btn-secondary"
+          [disabled]="isSaving || isCancelled"
         >
           <ion-icon name="sync-outline" slot="start"></ion-icon> Limpar
           Formulário
         </ion-button>
         <ion-button
+          [disabled]="isSaving || isCancelled"
           fill="outline"
           (click)="imprimir()"
           class="btn-pill btn-secondary"
