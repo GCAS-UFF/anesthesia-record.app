@@ -656,7 +656,7 @@
           color="primary"
           type="submit"
           class="btn-pill"
-          [disabled]="isSaving || isCancelled"
+          [disabled]="isSaving || isCancelled || !canEdit"
         >
           <ion-spinner
             name="crescent"
@@ -674,13 +674,12 @@
           fill="outline"
           (click)="confirmarLimpeza()"
           class="btn-pill btn-secondary"
-          [disabled]="isSaving || isCancelled"
+          [disabled]="isSaving || isCancelled || !canEdit"
         >
           <ion-icon name="sync-outline" slot="start"></ion-icon> Limpar
           Formulário
         </ion-button>
         <ion-button
-          [disabled]="isSaving || isCancelled"
           fill="outline"
           (click)="imprimir()"
           class="btn-pill btn-secondary"

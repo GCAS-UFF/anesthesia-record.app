@@ -127,7 +127,7 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   }
 
   private startHealthCheck(): void {
-    this.healthSubscription = interval(15000)
+    this.healthSubscription = interval(60000)
       .pipe(
         startWith(0),
         switchMap(() =>

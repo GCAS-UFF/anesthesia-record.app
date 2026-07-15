@@ -4,8 +4,8 @@ import { AlertController, ToastController } from '@ionic/angular/standalone';
 import { IonButton, IonIcon, IonCheckbox, IonSpinner } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Observable, of, Subscription } from "rxjs";
-import { delay, debounceTime } from "rxjs/operators";
+import { Subscription } from "rxjs";
+import { debounceTime } from "rxjs/operators";
 import { addIcons } from 'ionicons';
 import {
   pencilOutline,
@@ -36,6 +36,7 @@ import { DadosVitaisSectionComponent } from './components/dados-vitais-section/d
 import { SurgeryService } from 'src/app/core/services/surgery.service';
 import { AnesthesiaRecordService } from 'src/app/core/services/anesthesia-record.service';
 import { AnesthesiaRecordModel } from 'src/app/shared/models/anesthesia-record.model';
+import { AuthService } from 'src/app/core/services/auth.service';
 
 @Component({
   selector: 'app-ficha-anestesica',
@@ -68,6 +69,8 @@ export class FichaAnestesicaComponent implements OnInit {
   selectedSurgery: any = null;
   selectedProcedure: any = null;
   isCancelled = false;
+  canEdit = true;
+  loggedUser: any;
 
   // Opções para os campos baseados na ficha HUAP
   viaPreOptions = [
@@ -210,7 +213,8 @@ export class FichaAnestesicaComponent implements OnInit {
     private anesthesiaService: AnesthesiaRecordService,
     private alertController: AlertController,
     private toastController: ToastController,
-    private location: Location
+    private location: Location,
+    private authService: AuthService
   ) {
     addIcons({
       pencilOutline,
@@ -225,10 +229,11 @@ export class FichaAnestesicaComponent implements OnInit {
       addOutline,
       timeOutline
     });
-    this.initForm();
+    this.initForm();    
   }
 
   ngOnInit() {
+    this.loggedUser = this.authService.getUser();
     this.cirurgiaId = this.route.snapshot.paramMap.get('id');
     this.patientId = this.route.snapshot.paramMap.get('patientId');
     if (this.cirurgiaId && this.patientId) {
@@ -703,16 +708,15 @@ export class FichaAnestesicaComponent implements OnInit {
     this.isLoading = true;
 
     this.surgeryService.getPatientDate(Number(id), patientId).subscribe((res: any) => {
-
       const surgeryData = res?.data;
-
       if (!surgeryData?.patient) {
         this.isLoading = false;
         return;
       }
-
+      
       const patient = surgeryData.patient;
       this.isCancelled = patient.status;
+      this.canEdit = surgeryData.firstAnesthesiologistId === this.loggedUser?.id
 
       this.patient = {
         ...patient,
