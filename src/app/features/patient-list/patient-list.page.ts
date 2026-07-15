@@ -47,6 +47,7 @@ export class PatientListPage implements OnInit {
   readonly SurgeryStatusEnum = SurgeryStatusEnum;
   currentUserId: number | null = null;
   canAssumePatient = true;
+  private userSubscription?: any;
 
   currentPage = 1;
   pageSize = 10;
@@ -75,6 +76,14 @@ export class PatientListPage implements OnInit {
 
   ngOnInit() {
     this.loadData();
+  }
+
+  ionViewWillEnter() {
+    this.loadData();
+  }
+
+  ngOnDestroy() {
+    this.userSubscription?.unsubscribe();
   }
 
   async loadData() {
@@ -110,15 +119,15 @@ export class PatientListPage implements OnInit {
       });
   }
 
-  isCurrentUserFirstAnesthesiologist(procedure: any): boolean {    
+  isCurrentUserFirstAnesthesiologist(procedure: any): boolean {
     if (!procedure.anesthesiologist)
       return false;
 
     return procedure.anesthesiologist.id === this.currentUserId;
   }
 
-  isUserAssignedToThisPatient(procedure: any): boolean {    
-    if (!procedure?.anesthesiologist?.id) 
+  isUserAssignedToThisPatient(procedure: any): boolean {
+    if (!procedure?.anesthesiologist?.id)
       return false;
 
     return procedure.anesthesiologist.id === this.currentUserId;

@@ -27,16 +27,49 @@
         <span>AGHU</span>
       </div>
 
-      <div class="doctor-chip">
-        <div class="avatar">{{ doctorInitials }}</div>
-        <div class="doctor-info">
-          <span class="doctor-name">{{ doctorName }}</span>
-          <span class="doctor-role">{{ doctorRole }}</span>
+      <div class="doctor-chip-wrapper">
+        <div
+          class="doctor-chip"
+          (click)="toggleUserMenu()"
+          [class.menu-open]="userMenuOpen"
+        >
+          <div class="avatar">{{ doctorInitials }}</div>
+          <div class="doctor-info">
+            <span class="doctor-name">{{ doctorName }}</span>
+            <span class="doctor-role">{{ doctorRole }}</span>
+          </div>
+          <ion-icon name="chevron-down-outline" class="chevron"></ion-icon>
+        </div>
+
+        <div
+          class="user-menu"
+          *ngIf="userMenuOpen"
+          (click)="closeUserMenu($event)"
+        >
+          <button class="user-menu-item" (click)="goToSettings()">
+            <ion-icon name="settings-outline"></ion-icon>
+            <span>Configurações</span>
+          </button>
+          <button class="user-menu-item logout" (click)="handleLogout()">
+            <ion-icon name="log-out-outline"></ion-icon>
+            <span>Sair</span>
+          </button>
         </div>
       </div>
     </div>
   </div>
 </header>
+
+<div class="user-menu" *ngIf="userMenuOpen" (click)="closeUserMenu($event)">
+  <button class="user-menu-item" (click)="goToSettings()">
+    <ion-icon name="settings-outline"></ion-icon>
+    <span>Configurações</span>
+  </button>
+  <button class="user-menu-item logout" (click)="handleLogout()">
+    <ion-icon name="log-out-outline"></ion-icon>
+    <span>Sair</span>
+  </button>
+</div>
 
 <div
   class="drawer-backdrop"
@@ -70,11 +103,4 @@
       <span>{{ item.label }}</span>
     </button>
   </nav>
-
-  <div class="drawer-footer">
-    <button class="nav-item logout" (click)="handleLogout()">
-      <ion-icon name="log-out-outline"></ion-icon>
-      <span>Sair</span>
-    </button>
-  </div>
 </aside>
