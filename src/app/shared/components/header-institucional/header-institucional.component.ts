@@ -131,25 +131,25 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   }
 
   private startHealthCheck(): void {
-     this.healthSubscription = interval(15000)
-       .pipe(
-         startWith(0),
-         switchMap(() =>
-           this.healthService.checkHealth().pipe(
-             catchError(() => of(null))
-           )
-         )
-       )
-       .subscribe(response => {
-         if (!response?.data) {
-           this.serverConnected = false;
-           this.aghuConnected = false;
-           return;
-         }
+    //  this.healthSubscription = interval(15000)
+    //    .pipe(
+    //      startWith(0),
+    //      switchMap(() =>
+    //        this.healthService.checkHealth().pipe(
+    //          catchError(() => of(null))
+    //        )
+    //      )
+    //    )
+    //    .subscribe(response => {
+    //      if (!response?.data) {
+    //        this.serverConnected = false;
+    //        this.aghuConnected = false;
+    //        return;
+    //      }
 
-         this.serverConnected = response.data.database;
-         this.aghuConnected = response.data.aghu;
-       });
+    //      this.serverConnected = response.data.database;
+    //      this.aghuConnected = response.data.aghu;
+    //    });
   }
 
   getInitials(fullName: string): string {

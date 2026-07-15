@@ -43,7 +43,10 @@ export class ProcedureCardComponent {
   @Input() record = '';
   @Input() id: number | string = '';
 
-  @Output() assume = new EventEmitter<void>();
+  @Input() canAssumePatient = true;
+  @Input() isCurrentAnesthesiologist = false;
+
+  @Output() assume = new EventEmitter<boolean>();
   @Output() openFicha = new EventEmitter<void>();
   @Output() viewRegistro = new EventEmitter<void>();
 
@@ -59,7 +62,26 @@ export class ProcedureCardComponent {
     return !!this.procedure && this.procedure !== 'Procedimento não informado';
   }
 
-  onAssume() { this.assume.emit(); }
+  get canAssumeThisPatient(): boolean {
+    
+    // Se já é o anestesista responsável por este paciente → pode clicar (Ir para Cirurgia)
+    if (this.isCurrentAnesthesiologist) {
+      return true;
+    }
+
+    // Se o paciente JÁ TEM anestesista (e não é o usuário atual) → NÃO pode assumir
+    if (this.anesthesiologist && this.anesthesiologist.trim() !== '') {
+      return false;
+    }
+
+    // Caso contrário, só pode assumir se tiver permissão geral
+    return this.canAssumePatient;
+  }
+
+  onAssume() {
+    this.assume.emit(this.isCurrentAnesthesiologist);
+  }
+
   onOpenFicha() { this.openFicha.emit(); }
   onViewRegistro() { this.viewRegistro.emit(); }
 }

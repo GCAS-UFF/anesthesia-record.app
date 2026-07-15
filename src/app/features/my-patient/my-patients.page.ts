@@ -125,6 +125,37 @@ export class MyPatientsPage implements OnInit {
       });
   }
 
+  isMonitorizable(status: SurgeryStatusEnum | null): boolean {
+    if (status == null)
+      return false;
+
+    return [
+      SurgeryStatusEnum.Agendado,
+      SurgeryStatusEnum.EmPreparacao,
+      SurgeryStatusEnum.EmProgresso
+    ].includes(status);
+  }
+
+  canGoToMonitorizacao(status: SurgeryStatusEnum | null): boolean {    
+    if (status == null)
+      return false;
+
+    return this.isMonitorizable(status);
+  }
+
+  getMonitorizacaoButtonText(status: SurgeryStatusEnum | null): string {
+    switch (status) {
+      case SurgeryStatusEnum.EmProgresso:
+        return 'Continuar Monitorização';
+      case SurgeryStatusEnum.EmPreparacao:
+        return 'Iniciar Monitorização';
+      case SurgeryStatusEnum.Agendado:
+        return 'Acessar Monitorização';
+      default:
+        return 'Monitorização';
+    }
+  }
+
   flattenData(response: any) {
     this.viewList = [];
     const dataArray = response.data || [];
@@ -168,7 +199,7 @@ export class MyPatientsPage implements OnInit {
     });
   }
 
-  private applyStatusFilter() {    
+  private applyStatusFilter() {
     if (this.selectedStatus === 'all')
       return;
 

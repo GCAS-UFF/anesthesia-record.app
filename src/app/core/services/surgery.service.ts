@@ -14,13 +14,16 @@ export class SurgeryService {
   constructor(private http: HttpClient) { }
 
 
-  getSurgeries(date?: string, searchQuery?: string, status?: SurgeryStatusEnum, page: number = 1, size: number = 10): Observable<PatientResponse> {
-    const url = `${this.baseUrl}/surgeries`;
+  getSurgeries(doctorId: number, date?: string, searchQuery?: string, status?: SurgeryStatusEnum, page: number = 1, size: number = 10): Observable<PatientResponse> {
+    const url = `${this.baseUrl}/surgeries/${doctorId}`;
 
-    const params: any = { page, size };
-    if (date) params.date = `${date}T00:00:00Z`;
-    if (searchQuery) params.term = searchQuery;
-    if (status !== undefined) params.status = status;
+    const params: any = { page, size};
+    if (date) 
+      params.date = `${date}T00:00:00Z`;
+    if (searchQuery) 
+      params.term = searchQuery;
+    if (status !== undefined) 
+      params.status = status;
 
     return this.http.get<PatientResponse>(url, { params });
   }

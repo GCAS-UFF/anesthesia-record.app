@@ -78,7 +78,11 @@
 
     <div class="body-actions">
       <ng-container
-        *ngIf="SurgeryStatusEnum.Concluido === status || SurgeryStatusEnum.Cancelada === status; else waitingActions"
+        *ngIf="
+          SurgeryStatusEnum.Concluido === status ||
+            SurgeryStatusEnum.Cancelada === status;
+          else waitingActions
+        "
       >
         <button
           class="btn btn-primary ion-activatable ripple-parent"
@@ -93,15 +97,25 @@
       <ng-template #waitingActions>
         <button
           class="btn"
-          [class.btn-primary]="!anesthesiologist"
-          [class.btn-disabled]="anesthesiologist"
-          [disabled]="!!anesthesiologist || isCancelled"
+          [class.btn-primary]="!anesthesiologist || isCurrentAnesthesiologist"
+          [class.btn-disabled]="!canAssumeThisPatient"
+          [disabled]="!canAssumeThisPatient"
           (click)="onAssume()"
         >
-          <ion-icon [name]="anesthesiologist ? 'checkmark-circle' : 'person-outline'">
+          <ion-icon
+            [name]="
+              isCurrentAnesthesiologist ? 'checkmark-circle' : 'person-outline'
+            "
+          >
           </ion-icon>
 
-          {{ anesthesiologist ? "Paciente com responsável" : "Assumir Paciente" }}
+          {{
+            isCurrentAnesthesiologist
+              ? "Ir para Cirurgia"
+              : anesthesiologist
+                ? "Paciente com responsável"
+                : "Assumir Paciente"
+          }}
         </button>
         <button
           class="btn btn-outline ion-activatable ripple-parent"

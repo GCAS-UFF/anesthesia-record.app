@@ -45,6 +45,8 @@ export class PatientListPage implements OnInit {
   isRefreshing = false;
   viewList: any[] = [];
   readonly SurgeryStatusEnum = SurgeryStatusEnum;
+  currentUserId: number | null = null;
+  canAssumePatient = true;
 
   currentPage = 1;
   pageSize = 10;
@@ -77,6 +79,7 @@ export class PatientListPage implements OnInit {
 
   async loadData() {
     this.isRefreshing = true;
+    this.currentUserId = Number(this.authService.getCurrentUserId());
     this.viewList = [];
 
     if (this.content) {
@@ -85,6 +88,7 @@ export class PatientListPage implements OnInit {
 
     this.surgeryService
       .getSurgeries(
+        this.currentUserId,
         this.selectedDate,
         this.searchQuery || undefined,
         this.selectedStatus ?? undefined,
@@ -97,12 +101,34 @@ export class PatientListPage implements OnInit {
           this.totalItems = resultData.totalItems || 0;
           this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1;
           this.flattenData(resultData);
+          this.canAssumePatient = resultData.canAssumePatient;
           this.isRefreshing = false;
         },
         error: () => {
           this.isRefreshing = false;
         },
       });
+  }
+
+  isCurrentUserFirstAnesthesiologist(procedure: any): boolean {    
+    if (!procedure.anesthesiologist)
+      return false;
+
+    return procedure.anesthesiologist.id === this.currentUserId;
+  }
+
+  isUserAssignedToThisPatient(procedure: any): boolean {    
+    if (!procedure?.anesthesiologist?.id) 
+      return false;
+
+    return procedure.anesthesiologist.id === this.currentUserId;
+  }
+
+  isCurrentUserAssigned(procedure: any): boolean {
+    if (!procedure.anesthesiologist?.id)
+      return false;
+
+    return procedure.anesthesiologist.id === this.currentUserId;
   }
 
   flattenData(response: any) {
@@ -131,7 +157,7 @@ export class PatientListPage implements OnInit {
         surgicalCenter: item.location?.surgicalCenter?.description || '',
         bed: item.currentLocation?.bed || '',
         floor: item.currentLocation?.floor || '',
-        anesthesiologist: item.firstAnesthesiologist?.fullName || '',
+        anesthesiologist: item.firstAnesthesiologist || null,
         unit: item.currentLocation?.unit?.description || '',
         procedure:
           primaryProc && primaryProc.description && primaryProc.description !== 'Não informado'
@@ -177,7 +203,12 @@ export class PatientListPage implements OnInit {
     }
   }
 
-  async onAssume(surgeryId: string | number, patientId: string) {
+  async onAssume(surgeryId: string | number, patientId: string, isAlreadyAssigned: boolean = false) {
+    if (isAlreadyAssigned) {
+      this.onOpenMonitorizacao(surgeryId);
+      return;
+    }
+
     const alert = await this.alertController.create({
       header: 'Assumir Paciente',
       message: 'Deseja realmente assumir este paciente e iniciar o preparo anestésico?',
@@ -210,8 +241,7 @@ export class PatientListPage implements OnInit {
               error: async () => {
                 await loading.dismiss();
                 const toast = await this.toastController.create({
-                  message:
-                    'Falha de comunicação com a API. Não foi possível assumir o paciente.',
+                  message: 'Falha de comunicação com a API. Não foi possível assumir o paciente.',
                   duration: 3000,
                   color: 'danger',
                 });

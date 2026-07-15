@@ -8,7 +8,8 @@
       <div>
         <h1 class="page-title">Todos os Pacientes</h1>
         <p class="page-subtitle">
-          Pacientes aguardando responsável — Assuma, crie ou visualize as fichas anestésicas.
+          Pacientes aguardando responsável — Assuma, crie ou visualize as fichas
+          anestésicas.
         </p>
       </div>
     </section>
@@ -106,8 +107,10 @@
           [age]="p.age"
           [record]="p.record"
           [id]="p.id"
-          [anesthesiologist]="p.anesthesiologist"
-          (assume)="onAssume(p.id, p.patientId)"
+          [anesthesiologist]="p.anesthesiologist?.fullName || ''"
+          [isCurrentAnesthesiologist]="isUserAssignedToThisPatient(p)"
+          [canAssumePatient]="canAssumePatient"
+          (assume)="onAssume(p.id, p.patientId, $event)"
           (openFicha)="onOpenFicha(p.id, p.patientId)"
           (viewRegistro)="onViewRegistro(p.id)"
         ></app-procedure-card>

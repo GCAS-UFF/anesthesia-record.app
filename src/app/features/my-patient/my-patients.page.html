@@ -138,22 +138,20 @@
 
           <div class="card-actions">
             <button
-              *ngIf="SurgeryStatusEnum.EmProgresso === p.status"
+              *ngIf="canGoToMonitorizacao(p.status)"
               class="btn btn-primary"
               (click)="onOpenMonitorizacao(p.id)"
             >
               <ion-icon name="pulse-outline"></ion-icon>
-              Continuar Monitorização
+              {{ getMonitorizacaoButtonText(p.status) }}
             </button>
 
             <button
-              class="btn"
-              [class.btn-primary]="SurgeryStatusEnum.Concluido === p.status"
-              [class.btn-outline]="SurgeryStatusEnum.Concluido === p.status"
+              class="btn btn-outline"
               (click)="onOpenFicha(p.id, p.patientId)"
             >
               <ion-icon name="document-text-outline"></ion-icon>
-              Ver Ficha
+              Ver Ficha Anestésica
             </button>
           </div>
         </article>

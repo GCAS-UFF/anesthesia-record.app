@@ -196,7 +196,7 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
     if (!this.patient) {
       this.isLoading = true;
     }
-    this.surgeryService.getSurgeries(new Date().toISOString().split('T')[0]).subscribe({
+    this.surgeryService.getSurgeries(this.authService.getCurrentUserId(), new Date().toISOString().split('T')[0]).subscribe({
       next: (res: any) => {
         const dataArray = res?.data?.data || res?.data || [];
         const surgeryData = dataArray.find((s: any) => (s.surgeryId || s.id)?.toString() === id.toString());
@@ -281,7 +281,9 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   private loadFromLocalStorage() {
-    if (!this.pacienteId) return;
+    if (!this.pacienteId) 
+      return;
+    
     const data = localStorage.getItem(`monitoring_record_${this.pacienteId}`);
     if (data) {
       try {
