@@ -41,6 +41,7 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   doctorId: number = 0;
   @Input() doctorInitials: string = 'Dr(a)';
 
+  private isLoggingOut = false;
   serverConnected = false;
   aghuConnected = false;
 
@@ -75,11 +76,12 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
     this.loadUserData();
 
     this.userSubscription = this.authService.user$.subscribe(user => {
-      if (user) {
-        this.updateUserData(user);
-      } else {
-        this.logout();
+      if (!user) {
+        this.handleLogout();     // ← Use este método em vez de logout direto
+        return;
       }
+
+      this.updateUserData(user);
     });
 
     this.startHealthCheck();
@@ -130,6 +132,7 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
     this.menuOpen = false;
   }
 
+  // Método que faz a verificação de conexão // Comentado para poder não atrapalhar o debugger
   private startHealthCheck(): void {
     //  this.healthSubscription = interval(15000)
     //    .pipe(
@@ -161,10 +164,20 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
       .join('');
   }
 
+  handleLogout(): void {
+    if (this.isLoggingOut)
+      return;
+
+    this.isLoggingOut = true;
+
+    this.authService.logout();
+    this.router.navigate(['/login'], { replaceUrl: true });
+  }
+
   navigate(item: NavItem) {
     this.closeMenu();
 
-    if (!item.route) 
+    if (!item.route)
       return;
 
     if (item.route === '/meus-pacientes') {
@@ -173,11 +186,5 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
     }
 
     this.router.navigate([item.route]);
-  }
-
-  logout() {
-    this.closeMenu();
-    this.authService.logout();
-    this.router.navigate(['/login']);
   }
 }

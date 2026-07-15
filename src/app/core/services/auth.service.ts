@@ -59,25 +59,14 @@ export class AuthService {
 
   logout(): void {
     this.loggedInUser = null;
-
     this.userSubject.next(null);
 
-    localStorage.removeItem('userLoggedIn');
-    localStorage.removeItem('userCRM');
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('name');
-    localStorage.removeItem('userSector');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('lastSavedCRM');
-    localStorage.removeItem('rememberMePreference');
-    sessionStorage.removeItem('userLoggedIn');
-    sessionStorage.removeItem('userCRM');
-    sessionStorage.removeItem('authToken');
-    sessionStorage.removeItem('userId');
-    sessionStorage.removeItem('name');
-    sessionStorage.removeItem('userSector');
-    sessionStorage.removeItem('userRole');
+    const keys = ['userLoggedIn', 'userCRM', 'authToken', 'userId', 'name', 'userSector', 'userRole', 'lastSavedCRM', 'rememberMePreference'];
+
+    keys.forEach(key => {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    });
   }
 
   isAuthenticated(): boolean {
@@ -123,7 +112,6 @@ export class AuthService {
 
     if (userData) {
       this.loggedInUser = userData;
-      // NOTIFICA QUE O USUÁRIO FOI RECUPERADO DO STORAGE
       this.userSubject.next(this.loggedInUser);
     }
   }
