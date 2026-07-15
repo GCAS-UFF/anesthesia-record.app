@@ -5,7 +5,6 @@ import { IonCheckbox } from '@ionic/angular/standalone';
 import { FormSectionComponent } from '../../../../shared/components/form-section/form-section.component';
 import { RadioGroupComponent } from '../../../../shared/components/radio-group/radio-group.component';
 import { CheckboxGroupComponent } from '../../../../shared/components/checkbox-group/checkbox-group.component';
-import { FormFieldComponent } from '../../../../shared/components/form-field/form-field.component';
 
 @Component({
   selector: 'app-tecnica-anestesica-section',
@@ -16,8 +15,7 @@ import { FormFieldComponent } from '../../../../shared/components/form-field/for
     IonCheckbox,
     FormSectionComponent,
     RadioGroupComponent,
-    CheckboxGroupComponent,
-    FormFieldComponent
+    CheckboxGroupComponent
   ],
   templateUrl: './tecnica-anestesica-section.component.html',
   styleUrls: ['./tecnica-anestesica-section.component.scss'],
@@ -26,11 +24,7 @@ import { FormFieldComponent } from '../../../../shared/components/form-field/for
 export class TecnicaAnestesicaSectionComponent implements OnInit {
   @Input() formGroup!: FormGroup;
 
-  // Options
-  yesNoOptions = [
-    { label: 'Sim', value: 'sim' },
-    { label: 'Não', value: 'nao' }
-  ];
+  yesNoOptions = [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'nao' }];
 
   assistidaOptions = [
     { label: 'Espontânea', value: 'Espontanea' },
@@ -66,8 +60,18 @@ export class TecnicaAnestesicaSectionComponent implements OnInit {
     { label: 'Nasofaringe', value: 'Nasofaringe' }
   ];
 
-  constructor() { }
-
   ngOnInit() { }
 
+  toggleO2(checked: boolean, value: string) {
+    const ctrl = this.formGroup.get('tipoSuplementacaoO2');
+    const current: string[] = ctrl?.value || [];
+    let next: string[];
+    if (checked) {
+      next = current.includes(value) ? current : [...current, value];
+    } else {
+      next = current.filter(v => v !== value);
+    }
+    ctrl?.setValue(next);
+    ctrl?.markAsDirty();
+  }
 }
