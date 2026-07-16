@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { AlertController, ToastController } from '@ionic/angular/standalone';
 import { IonButton, IonIcon, IonCheckbox, IonSpinner, IonModal } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
+
 
 import { Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -23,7 +24,7 @@ import {
   shieldCheckmarkOutline,
   checkmarkCircle,
   createOutline,
-  lockClosedOutline
+  lockClosedOutline, arrowUpOutline
 } from 'ionicons/icons';
 
 // Shared Components
@@ -108,35 +109,40 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   yesNoOptions = [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'nao' }];
 
   aldereteFields = [
-    { label: 'Consciência', control: 'consciencia', icon: '🧠',
+    {
+      label: 'Consciência', control: 'consciencia', icon: '🧠',
       options: [
         { score: 2, text: 'Totalmente desperto' },
         { score: 1, text: 'Desperta quando chamado' },
         { score: 0, text: 'Não responde' }
       ]
     },
-    { label: 'Atividade', control: 'atividade', icon: '🏃',
+    {
+      label: 'Atividade', control: 'atividade', icon: '🏃',
       options: [
         { score: 2, text: 'Movimento de todas extremidades' },
         { score: 1, text: 'Movimento de duas extremidades' },
         { score: 0, text: 'Incapaz de se mover' }
       ]
     },
-    { label: 'Circulação', control: 'circulacao', icon: '❤️',
+    {
+      label: 'Circulação', control: 'circulacao', icon: '❤️',
       options: [
         { score: 2, text: 'PA ± 20% do pré-anestésico' },
         { score: 1, text: 'PA 20% a 50% do pré-anestésico' },
         { score: 0, text: 'PA ± 50% do pré-anestésico' }
       ]
     },
-    { label: 'Respiração', control: 'respiracao', icon: '🫁',
+    {
+      label: 'Respiração', control: 'respiracao', icon: '🫁',
       options: [
         { score: 2, text: 'Respira profundamente e tosse' },
         { score: 1, text: 'Dispnéia, hipoventilação' },
         { score: 0, text: 'Apneia' }
       ]
     },
-    { label: 'SpO2', control: 'saturacao', icon: '🩸',
+    {
+      label: 'SpO2', control: 'saturacao', icon: '🩸',
       options: [
         { score: 2, text: 'Mantém SpO2 > 90% em ar ambiente' },
         { score: 1, text: 'Necessita O2 para SpO2 > 90%' },
@@ -154,6 +160,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   signatureAgreed = false;
   signatureTypedName = '';
   signatureError = '';
+  showScrollTop = false;
 
   private autoSaveSub?: Subscription;
 
@@ -168,12 +175,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     private location: Location,
     private authService: AuthService
   ) {
-    addIcons({
-      pencilOutline, trashOutline, closeCircleOutline, returnDownForwardOutline,
-      saveOutline, syncOutline, printOutline, arrowBackOutline, closeOutline,
-      addOutline, timeOutline, shieldCheckmarkOutline, checkmarkCircle,
-      createOutline, lockClosedOutline
-    });
+    addIcons({ arrowUpOutline, arrowBackOutline, checkmarkCircle, addOutline, trashOutline, returnDownForwardOutline, closeCircleOutline, timeOutline, lockClosedOutline, shieldCheckmarkOutline, syncOutline, printOutline, createOutline, pencilOutline, saveOutline, closeOutline });
     this.initForm();
   }
 
@@ -192,7 +194,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.autoSaveSub?.unsubscribe();
   }
 
-  
+
   private initForm() {
     this.form = this.fb.group({
       seguranca: this.fb.group({
@@ -416,7 +418,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     valueControl?.updateValueAndValidity({ emitEvent: false });
   }
 
-  
+
   addingAtb = false;
   newAtb: any = { nome: '', dose: '', via: 'IV', hora: '' };
 
@@ -470,7 +472,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       ],
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
-        { text: 'Adicionar', handler: (data) => {
+        {
+          text: 'Adicionar', handler: (data) => {
             if (data.dose) {
               this.antibioticsList[atbIndex].repiques.push({
                 dose: data.dose,
@@ -495,7 +498,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.persistDraft();
   }
 
-  
+
   get aldereteTotal(): number {
     const g = this.form.get('alderete') as FormGroup;
     if (!g) return 0;
@@ -510,7 +513,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     return { text: 'Monitoramento Intenso', color: '#ef4444' };
   }
 
-  
+
   getFormGroup(name: string): FormGroup {
     return this.form.get(name) as FormGroup;
   }
@@ -582,7 +585,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     await t.present();
   }
 
-  
+
   async confirmarLimpeza() {
     const alert = await this.alertController.create({
       header: 'Limpar Formulário?',
@@ -599,9 +602,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  private doLimpar() {    
+  private doLimpar() {
     this.initForm();
-    this.antibioticsList = [];    
+    this.antibioticsList = [];
     this.setupConditionalLogic();
     this.startAutoSave();
 
@@ -609,10 +612,10 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       this.form.get('dadosVitais.peso')?.patchValue(this.patient.weight);
     }
 
-   
+
     if (this.cirurgiaId) {
       this.anesthesiaService.clearLatestRecord(this.cirurgiaId).subscribe({
-        next: () => {},
+        next: () => { },
         error: () => this.toast('Rascunho local limpo. Falhou ao limpar no servidor.', 'warning')
       });
     }
@@ -624,7 +627,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }, 100);
   }
 
-  
+
   openSignModal() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -663,7 +666,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       this.signatureError = `O nome digitado não confere com o do profissional logado (${expected}).`;
       return;
     }
-    
+
     this.form.get('assinaturas.primeiroAnestesista')?.setValue(typed);
     this.form.get('assinaturas.dataAssinatura')?.setValue(new Date().toISOString().split('T')[0]);
     this.isSignModalOpen = false;
@@ -694,6 +697,18 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         this.isSaving = false;
         this.toast('Erro ao salvar ficha. Tente novamente.', 'danger');
       }
+    });
+  }
+
+  @HostListener('window:scroll', [])
+  onWindowScroll() {
+    this.showScrollTop = window.scrollY > 180;
+  }
+
+  scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
     });
   }
 

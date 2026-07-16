@@ -11,14 +11,15 @@ export class IntegrationService {
   }
 
   async syncEmployees(): Promise<any> {
-    return await firstValueFrom(
-      this.http.post<any>(`${environment.apiUrl}/integrations/sync/professionals`, {})
-    );
+    return await firstValueFrom(this.http.post<any>(`${environment.apiUrl}/integrations/sync/professionals`, {}));
   }
 
   async syncMedications(): Promise<any> {
-    return await firstValueFrom(
-      this.http.post<any>(`${environment.apiUrl}/integrations/sync/medicines`, {})
+    return await firstValueFrom(this.http.post<any>(`${environment.apiUrl}/integrations/sync/medicines`, {}));
+  }
+
+  syncProcedures() {
+    return firstValueFrom(this.http.post<any>(`${environment.apiUrl}/integrations/sync/procedures`, {})
     );
   }
 }

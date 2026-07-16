@@ -3,12 +3,12 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { ToastController } from '@ionic/angular/standalone';
 import { IonSpinner, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { cloudDownloadOutline, medkitOutline, peopleOutline, checkmarkCircle, alertCircleOutline, refreshOutline, timeOutline, cloudDoneOutline, serverOutline } from 'ionicons/icons';
+import { cloudDownloadOutline, medkitOutline, clipboardOutline, peopleOutline, checkmarkCircle, alertCircleOutline, refreshOutline, timeOutline, cloudDoneOutline, serverOutline, medicalOutline } from 'ionicons/icons';
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
 import { IntegrationService } from 'src/app/core/services/integration.service';
 
-type IntegrationKey = 'medications' | 'employees';
+type IntegrationKey = 'medications' | 'employees' | 'procedures';
 type IntegrationStatus = 'idle' | 'running' | 'success' | 'error';
 
 interface IntegrationCardState {
@@ -55,6 +55,14 @@ export class AghuIntegrationPage implements OnDestroy {
       status: 'idle',
       progress: 0,
     },
+    {
+      key: 'procedures',
+      title: 'Procedimentos',
+      description: 'Sincroniza os procedimentos cirúrgicos cadastrados no AGHU para utilização no sistema.',
+      icon: 'clipboard-outline',
+      status: 'idle',
+      progress: 0,
+    },
   ];
 
   private timers = new Map<IntegrationKey, any>();
@@ -74,6 +82,8 @@ export class AghuIntegrationPage implements OnDestroy {
       timeOutline,
       cloudDoneOutline,
       serverOutline,
+      medicalOutline,
+      clipboardOutline
     });
   }
 
@@ -106,7 +116,21 @@ export class AghuIntegrationPage implements OnDestroy {
     this.timers.set(card.key, timer);
 
     try {
-      const result =  card.key === 'medications' ? await this.integrationService.syncMedications() : await this.integrationService.syncEmployees();       
+      let result;
+
+      switch (card.key) {
+        case 'medications':
+          result = await this.integrationService.syncMedications();
+          break;
+
+        case 'employees':
+          result = await this.integrationService.syncEmployees();
+          break;
+
+        case 'procedures':
+          result = await this.integrationService.syncProcedures();
+          break;
+      }
 
       card.progress = 100;
       card.status = 'success';

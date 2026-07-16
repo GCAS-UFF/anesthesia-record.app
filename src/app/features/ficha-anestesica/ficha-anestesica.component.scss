@@ -1170,3 +1170,51 @@
     font-size: 16px;
   }
 }
+
+.scroll-top-btn {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+
+  width: 56px;
+  height: 56px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: var(--fa-blue);
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 10px 24px rgba(37, 99, 235, .35);
+
+  cursor: pointer;
+  z-index: 9999;
+
+  transition: .25s ease;
+
+  ion-icon {
+    font-size: 24px;
+  }
+
+  &:hover {
+    transform: translateY(-3px);
+    background: var(--fa-blue-dark);
+  }
+
+  &:active {
+    transform: scale(.95);
+  }
+}
+
+@media (max-width: 768px) {
+  .scroll-top-btn {
+    right: 18px;
+    bottom: 18px;
+    width: 52px;
+    height: 52px;
+  }
+}
