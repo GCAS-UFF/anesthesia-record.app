@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { AlertController, ToastController } from '@ionic/angular/standalone';
 import { IonButton, IonIcon, IonCheckbox, IonSpinner, IonModal } from '@ionic/angular/standalone';
@@ -76,6 +76,20 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   isCancelled = false;
   canEdit = true;
   loggedUser: any;
+
+  isMenuOpen = false;
+
+  @HostListener('document:ionDidOpen', ['$event'])
+  onSideMenuOpen(ev: Event) {
+    const tag = (ev.target as HTMLElement | null)?.tagName?.toLowerCase();
+    if (tag === 'ion-menu') this.isMenuOpen = true;
+  }
+
+  @HostListener('document:ionDidClose', ['$event'])
+  onSideMenuClose(ev: Event) {
+    const tag = (ev.target as HTMLElement | null)?.tagName?.toLowerCase();
+    if (tag === 'ion-menu') this.isMenuOpen = false;
+  }
 
   viaPreOptions = [
     { label: 'VO', value: 'VO' },
@@ -568,7 +582,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   get aldereteTotal(): number {
     const g = this.form.get('alderete') as FormGroup;
-    if (!g) return 0;
+    if (!g) 
+      return 0;
+
     return ['consciencia', 'atividade', 'circulacao', 'respiracao', 'saturacao']
       .reduce((total, k) => total + (parseInt(g.get(k)?.value, 10) || 0), 0);
   }
@@ -729,6 +745,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       this.signatureError = `O nome digitado não confere com o do profissional logado (${expected}).`;
       return;
     }
+
     this.form.get('assinaturas.primeiroAnestesista')?.setValue(typed);
     this.form.get('assinaturas.dataAssinatura')?.setValue(new Date().toISOString().split('T')[0]);
     this.isSignModalOpen = false;
@@ -770,5 +787,27 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   voltar() {
     this.location.back();
+  }
+
+  /**
+   * Finaliza a cirurgia.
+   *
+   * TODO: implementar o fluxo real (confirmação, chamada ao serviço para
+   * marcar a cirurgia como finalizada, atualização de estado local, etc.).
+   * Esta é apenas a base do método que será acionado pelo botão
+   * "Finalizar Cirurgia" na barra de ações da ficha.
+   */
+  async finalizarCirurgia(): Promise<void> {
+    if (!this.selectedSurgery?.id) {
+      return;
+    }
+
+    // Placeholder — a lógica real será implementada posteriormente.
+    // Exemplo de próximos passos:
+    //   1. Confirmar com o usuário via AlertController.
+    //   2. Validar/assinar a ficha se necessário.
+    //   3. Chamar o serviço (ex.: this.surgeryService.finalize(id)).
+    //   4. Exibir toast de sucesso e navegar de volta.
+    console.log('[finalizarCirurgia] TODO: implementar', this.selectedSurgery.id);
   }
 }

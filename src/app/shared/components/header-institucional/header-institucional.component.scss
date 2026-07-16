@@ -378,9 +378,124 @@
   }
 }
 
-/* Ajuste para telas pequenas */
 @media (max-width: 480px) {
   .user-menu {
     right: -10px;
+  }
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-back-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  height: 38px;
+  padding: 0 14px;
+  margin: 0;
+
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 999px;
+  color: inherit;            
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease,
+    opacity 0.2s ease;
+
+  ion-icon {
+    font-size: 18px;
+  }
+
+  span {
+    display: inline-block;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+
+@media (max-width: 520px) {
+  .header-back-btn {
+    padding: 0 10px;
+    height: 36px;
+
+    span { display: none; }   
+    ion-icon { font-size: 20px; }
+  }
+}
+
+.header-back-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  height: 38px;
+  padding: 0 14px;
+  margin: 0;
+
+  background: #3b82f6;
+  border: 1px solid #3b82f6;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(59, 130, 246, 0.25);
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease,
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
+
+  ion-icon { font-size: 18px; }
+  span { display: inline-block; }
+
+  &:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+  }
+
+  &:active { transform: scale(0.96); }
+
+  &:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+
+  &.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 }

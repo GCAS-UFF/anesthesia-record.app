@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, OnDestroy, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
@@ -13,6 +13,7 @@ import {
   logOutOutline,
   closeOutline,
   chevronDownOutline,
+  arrowBackOutline,
 } from 'ionicons/icons';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { catchError, interval, of, startWith, Subscription, switchMap } from 'rxjs';
@@ -37,6 +38,7 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   @Input() doctorCRM: string = '';
   @Input() doctorRole: string = '';
   doctorId: number = 0;
+  @Input() showBackButton = false;
   @Input() doctorInitials: string = 'Dr(a)';
 
   private isLoggingOut = false;
@@ -57,10 +59,12 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
+    private location: Location,
     private authService: AuthService,
     private healthService: HealthService
   ) {
     addIcons({
+      arrowBackOutline,
       menuOutline,
       wifiOutline,
       gridOutline,
@@ -72,7 +76,6 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
       chevronDownOutline,
     });
   }
-
   ngOnInit() {
     this.loadUserData();
 
@@ -120,6 +123,10 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
 
   openMenu() {
     this.menuOpen = true;
+  }
+
+  voltar() {
+    this.location.back();
   }
 
   closeMenu() {

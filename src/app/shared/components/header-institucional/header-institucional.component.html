@@ -3,6 +3,17 @@
     <button class="menu-btn" (click)="openMenu()" aria-label="Abrir menu">
       <ion-icon name="menu-outline"></ion-icon>
     </button>
+    <button
+      type="button"
+      class="header-back-btn"
+      [class.is-hidden]="menuOpen"
+      *ngIf="showBackButton"
+      (click)="voltar()"
+      aria-label="Voltar"
+    >
+      <ion-icon name="arrow-back-outline"></ion-icon>
+      Voltar
+    </button>
   </div>
 
   <div class="header-right">
