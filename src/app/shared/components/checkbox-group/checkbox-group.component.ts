@@ -14,7 +14,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@a
              [class.active]="isSelected(option.value)"
              (click)="toggle(option.value)">
           <div class="checkbox-box">
-            <ion-icon *ngIf="isSelected(option.value)" name="checkmark-outline"></ion-icon>
+            <ion-icon *ngIf="isSelected(option.value)" name="checkmark-circle"></ion-icon>
           </div>
           <span class="option-label">{{ option.label }}</span>
         </div>

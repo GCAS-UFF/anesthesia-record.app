@@ -350,7 +350,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     const dorControl = aldGroup.get('dor');
 
     dorControl?.setValue(value);
-    dorControl?.markAsTouched();
+    dorControl?.markAsTouched(); // Importante: marca como tocado
 
     if (value === 'nao') {
       this.clearDorScales(true);
@@ -366,7 +366,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
     if (!this.isDorPresente()) {
       aldGroup.get('dor')?.setValue('sim');
-      aldGroup.get('dor')?.markAsTouched();
+      aldGroup.get('dor')?.markAsTouched(); // Marca como tocado
     }
 
     aldGroup.get(flagKey)?.setValue(checked);
@@ -376,10 +376,41 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   isDorSectionInvalid(): boolean {
     const aldGroup = this.form.get('alderete') as FormGroup;
-    return ['dor', 'dorENV', 'dorPAINAD', 'dorBPS'].some(key => {
-      const control = aldGroup.get(key);
-      return !!(control?.invalid && (control.touched || this.showValidationErrors));
-    });
+    const dorControl = aldGroup.get('dor');
+
+    // Só marca como inválido se o usuário já tentou enviar (showValidationErrors) OU se o campo foi tocado
+    const shouldShowError = this.showValidationErrors || dorControl?.touched || dorControl?.dirty;
+
+    if (!shouldShowError) return false;
+
+    // Verifica se o campo 'dor' está vazio
+    if (!dorControl?.value || dorControl.value.trim() === '') {
+      return true;
+    }
+
+    // Se 'dor' for 'sim', verifica as escalas
+    if (this.isDorPresente()) {
+      const hasScaleError = ['dorENV', 'dorPAINAD', 'dorBPS'].some(key => {
+        const control = aldGroup.get(key);
+        // Só considera erro se a escala estiver ativa E inválida
+        const isActive = aldGroup.get(this.getFlagKey(key))?.value;
+        if (!isActive) return false;
+        return !!(control?.invalid && (control.touched || this.showValidationErrors));
+      });
+      return hasScaleError;
+    }
+
+    return false;
+  }
+
+  // Método auxiliar para mapear valueKey -> flagKey
+  private getFlagKey(valueKey: string): string {
+    const map: { [key: string]: string } = {
+      'dorENV': 'dorUsouENV',
+      'dorPAINAD': 'dorUsouPAINAD',
+      'dorBPS': 'dorUsouBPS'
+    };
+    return map[valueKey] || '';
   }
 
   private applyDorScaleValidators() {

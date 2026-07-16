@@ -576,7 +576,11 @@
           ></app-checkbox-group>
         </div>
 
-        <div class="dor-section-container">
+        <div
+          class="dor-section-container"
+          [class.dor-invalid]="isDorSectionInvalid()"
+          [class.shake-error]="showValidationErrors && isDorSectionInvalid()"
+        >
           <div class="dor-header">
             <span class="dor-title">Presença de dor? <strong>*</strong></span>
             <div
