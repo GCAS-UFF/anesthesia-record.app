@@ -1246,22 +1246,47 @@
   }
 }
 
-
 .dor-section-container {
   margin-top: 22px;
-  background: #fef2f2;
+  background: #fff;                   
   border-radius: var(--fa-radius);
   padding: 22px;
-  border: 1px solid #fee2e2;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  
+  border: 1.5px solid var(--fa-line);
+  transition: all 0.25s ease;
+
   &.dor-invalid {
+    background: #fef2f2;
     border-color: #fca5a5;
     box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.08);
   }
-  
-  /* O shake-error é aplicado apenas durante a validação */
+
+
   &.shake-error {
     animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+
+  .dor-header {
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .dor-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--fa-muted);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    strong {
+      color: var(--fa-danger);
+    }
+  }
+
+  .dor-choice-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
   }
 }
