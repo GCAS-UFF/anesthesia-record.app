@@ -1,10 +1,9 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { AlertController, ToastController } from '@ionic/angular/standalone';
 import { IonButton, IonIcon, IonCheckbox, IonSpinner, IonModal } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
-
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, ValidationErrors, Validators } from '@angular/forms';
 
 import { Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -24,7 +23,9 @@ import {
   shieldCheckmarkOutline,
   checkmarkCircle,
   createOutline,
-  lockClosedOutline, arrowUpOutline, alertCircleOutline } from 'ionicons/icons';
+  lockClosedOutline,
+  alertCircleOutline
+} from 'ionicons/icons';
 
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
@@ -158,9 +159,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   signatureAgreed = false;
   signatureTypedName = '';
   signatureError = '';
-  showScrollTop = false;
 
   private autoSaveSub?: Subscription;
+  private conditionalSubs: Subscription[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -173,7 +174,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     private location: Location,
     private authService: AuthService
   ) {
-    addIcons({arrowBackOutline,checkmarkCircle,addOutline,trashOutline,returnDownForwardOutline,closeCircleOutline,timeOutline,alertCircleOutline,lockClosedOutline,shieldCheckmarkOutline,syncOutline,printOutline,createOutline,arrowUpOutline,pencilOutline,saveOutline,closeOutline});
+    addIcons({
+      pencilOutline, trashOutline, closeCircleOutline, returnDownForwardOutline,
+      saveOutline, syncOutline, printOutline, arrowBackOutline, closeOutline,
+      addOutline, timeOutline, shieldCheckmarkOutline, checkmarkCircle,
+      createOutline, lockClosedOutline, alertCircleOutline
+    });
     this.initForm();
   }
 
@@ -190,8 +196,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.autoSaveSub?.unsubscribe();
+    this.conditionalSubs.forEach(sub => sub.unsubscribe());
   }
-
 
   private initForm() {
     this.form = this.fb.group({
@@ -276,9 +282,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         dorUsouPAINAD: [false], dorPAINAD: [''],
         dorUsouBPS: [false], dorBPS: [''],
         conduta: ['']
-      }, {
-        validators: this.dorGroupValidator
-      }),
+      }, { validators: this.dorGroupValidator }),
       assinaturas: this.fb.group({
         primeiroAnestesista: [''],
         segundoAnestesista: [''],
@@ -287,27 +291,15 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     });
   }
 
-  private dorGroupValidator = (group: FormGroup) => {
-    const dor = group.get('dor')?.value;
-
-    if (!this.isDorSimValue(dor)) return null;
-
-    const hasValidScale = this.dorScales.some(scale => {
-      const flag = group.get(scale.flagKey)?.value === true;
-      const valueCtrl = group.get(scale.valueKey);
-
-      return flag && valueCtrl?.valid === true;
-    });
-
-    return hasValidScale ? null : { dorScaleRequired: true };
-  };
-
   private setupConditionalLogic() {
+    this.conditionalSubs.forEach(sub => sub.unsubscribe());
+    this.conditionalSubs = [];
+
     const atbGroup = this.form.get('antibiotico') as FormGroup;
     const tecGroup = this.form.get('tecnica') as FormGroup;
     const aldGroup = this.form.get('alderete') as FormGroup;
 
-    tecGroup?.get('bloqueiosEspinhais')?.valueChanges.subscribe(val => {
+    const bloqueiosSub = tecGroup?.get('bloqueiosEspinhais')?.valueChanges.subscribe(val => {
       const c1 = tecGroup.get('cateter');
       const c2 = tecGroup.get('opioide');
       if (val === 'sim') {
@@ -319,15 +311,17 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       }
       c1?.updateValueAndValidity(); c2?.updateValueAndValidity();
     });
+    if (bloqueiosSub) this.conditionalSubs.push(bloqueiosSub);
 
-    tecGroup?.get('bloqueioPlexo')?.valueChanges.subscribe(val => {
+    const plexoSub = tecGroup?.get('bloqueioPlexo')?.valueChanges.subscribe(val => {
       const c = tecGroup.get('neuroestimulador');
       if (val === 'sim') c?.setValidators([Validators.required]);
       else { c?.clearValidators(); c?.setValue(''); }
       c?.updateValueAndValidity();
     });
+    if (plexoSub) this.conditionalSubs.push(plexoSub);
 
-    aldGroup?.get('dor')?.valueChanges.subscribe(val => {
+    const dorSub = aldGroup?.get('dor')?.valueChanges.subscribe(val => {
       if (this.isDorSimValue(val)) {
         this.applyDorScaleValidators();
       } else {
@@ -335,15 +329,21 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       }
       aldGroup.updateValueAndValidity({ emitEvent: false });
     });
+    if (dorSub) this.conditionalSubs.push(dorSub);
 
-    const dorSub = (flagKey: string, valueKey: string, min: number, max: number) => {
-      aldGroup?.get(flagKey)?.valueChanges.subscribe(checked => {
-        this.syncDorScaleValidator(flagKey, valueKey, min, max, !!checked);
+    const scaleSub = (flagKey: string, valueKey: string, min: number, max: number) => {
+      const flagSub = aldGroup?.get(flagKey)?.valueChanges.subscribe(checked => {
+        this.syncDorScaleValidator(flagKey, valueKey, min, max, this.asChecked(checked));
       });
+      const valueSub = aldGroup?.get(valueKey)?.valueChanges.subscribe(() => {
+        aldGroup.updateValueAndValidity({ emitEvent: false });
+      });
+      if (flagSub) this.conditionalSubs.push(flagSub);
+      if (valueSub) this.conditionalSubs.push(valueSub);
     };
-    dorSub('dorUsouENV', 'dorENV', 0, 10);
-    dorSub('dorUsouPAINAD', 'dorPAINAD', 0, 10);
-    dorSub('dorUsouBPS', 'dorBPS', 3, 12);
+    scaleSub('dorUsouENV', 'dorENV', 0, 10);
+    scaleSub('dorUsouPAINAD', 'dorPAINAD', 0, 10);
+    scaleSub('dorUsouBPS', 'dorBPS', 3, 12);
   }
 
   private dorScales = [
@@ -356,6 +356,41 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     return String(value || '').trim().toLowerCase() === 'sim';
   }
 
+  private asChecked(value: unknown): boolean {
+    return value === true || value === 1 || String(value).trim().toLowerCase() === 'true';
+  }
+
+  private isDorScaleValueValid(value: unknown, min: number, max: number): boolean {
+    const text = String(value ?? '').trim();
+    if (!/^\d+$/.test(text)) return false;
+
+    const numberValue = Number(text);
+    return Number.isInteger(numberValue) && numberValue >= min && numberValue <= max;
+  }
+
+  private dorGroupValidator = (control: AbstractControl): ValidationErrors | null => {
+    const group = control as FormGroup;
+
+    if (!this.isDorSimValue(group.get('dor')?.value)) {
+      return null;
+    }
+
+    const selectedScales = this.dorScales.filter(scale => this.asChecked(group.get(scale.flagKey)?.value));
+    if (selectedScales.length === 0) {
+      return { dorScaleRequired: true };
+    }
+
+    const hasInvalidSelectedScale = selectedScales.some(scale =>
+      !this.isDorScaleValueValid(group.get(scale.valueKey)?.value, scale.min, scale.max)
+    );
+
+    return hasInvalidSelectedScale ? { dorScaleInvalid: true } : null;
+  };
+
+  isDorScaleSelected(flagKey: string): boolean {
+    return this.asChecked(this.form.get(`alderete.${flagKey}`)?.value);
+  }
+
   isDorPresente(): boolean {
     return this.isDorSimValue(this.form.get('alderete.dor')?.value);
   }
@@ -364,7 +399,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     const aldGroup = this.form.get('alderete') as FormGroup;
     const dorControl = aldGroup.get('dor');
 
-    dorControl?.setValue(value, { emitEvent: true });
+    dorControl?.setValue(value, { emitEvent: false });
     dorControl?.markAsTouched();
     dorControl?.markAsDirty();
 
@@ -374,73 +409,66 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       this.applyDorScaleValidators();
     }
 
-    aldGroup.updateValueAndValidity({ emitEvent: true });
+    aldGroup.updateValueAndValidity({ emitEvent: false });
   }
 
   toggleDorScale(flagKey: string, valueKey: string, min: number, max: number, checked: boolean) {
     const aldGroup = this.form.get('alderete') as FormGroup;
 
     if (!this.isDorPresente()) {
-      aldGroup.get('dor')?.setValue('sim', { emitEvent: true });
+      aldGroup.get('dor')?.setValue('sim', { emitEvent: false });
       aldGroup.get('dor')?.markAsTouched();
     }
 
-    aldGroup.get(flagKey)?.setValue(checked, { emitEvent: true });
+    aldGroup.get(flagKey)?.setValue(checked, { emitEvent: false });
+    aldGroup.get(flagKey)?.markAsTouched();
+    aldGroup.get(flagKey)?.markAsDirty();
     this.syncDorScaleValidator(flagKey, valueKey, min, max, checked);
-
-    aldGroup.updateValueAndValidity({ emitEvent: true });
+    aldGroup.updateValueAndValidity({ emitEvent: false });
   }
 
   isDorSectionInvalid(): boolean {
     const aldGroup = this.form.get('alderete') as FormGroup;
     const dorControl = aldGroup.get('dor');
+    const shouldShow = this.showValidationErrors ||
+      !!dorControl?.touched ||
+      this.dorScales.some(scale =>
+        !!aldGroup.get(scale.flagKey)?.touched || !!aldGroup.get(scale.valueKey)?.touched
+      );
 
-    if (!this.showValidationErrors && !dorControl?.touched) 
-      return false;
+    if (!shouldShow) return false;
+    if (dorControl?.invalid) return true;
+    if (!this.isDorPresente()) return false;
 
-    if (!this.isDorPresente()) 
-      return false;
-
-    const hasGroupError = aldGroup.errors?.['dorScaleRequired'];
-    const hasIndividualError = this.dorScales.some(scale => {
-      const valueCtrl = aldGroup.get(scale.valueKey);
-      return !!valueCtrl?.value && valueCtrl?.invalid;
-    });
-
-    return !!(hasGroupError || hasIndividualError);
-  }
-
-  private getFlagKey(valueKey: string): string {
-    const map: { [key: string]: string } = {
-      'dorENV': 'dorUsouENV',
-      'dorPAINAD': 'dorUsouPAINAD',
-      'dorBPS': 'dorUsouBPS'
-    };
-    return map[valueKey] || '';
+    return !!aldGroup.errors?.['dorScaleRequired'] ||
+      !!aldGroup.errors?.['dorScaleInvalid'] ||
+      this.dorScales.some(scale => {
+        const valueControl = aldGroup.get(scale.valueKey);
+        return this.asChecked(aldGroup.get(scale.flagKey)?.value) && !!valueControl?.invalid;
+      });
   }
 
   private applyDorScaleValidators() {
     this.dorScales.forEach(scale => {
-      const checked = !!this.form.get(`alderete.${scale.flagKey}`)?.value;
-      this.syncDorScaleValidator(scale.flagKey, scale.valueKey, scale.min, scale.max, checked);
+      const checked = this.asChecked(this.form.get(`alderete.${scale.flagKey}`)?.value);
+      this.form.get(`alderete.${scale.flagKey}`)?.setValue(checked, { emitEvent: false });
+      this.syncDorScaleValidator(scale.flagKey, scale.valueKey, scale.min, scale.max, checked, false);
     });
+    (this.form.get('alderete') as FormGroup).updateValueAndValidity({ emitEvent: false });
   }
 
-  private clearDorScales(clearValues = true) {
+  private clearDorScales(clearValues: boolean) {
     const aldGroup = this.form.get('alderete') as FormGroup;
-
     this.dorScales.forEach(scale => {
       aldGroup.get(scale.flagKey)?.setValue(false, { emitEvent: false });
-      const ctrl = aldGroup.get(scale.valueKey);
-      ctrl?.clearValidators();
-      if (clearValues) ctrl?.setValue('', { emitEvent: false });
-      ctrl?.updateValueAndValidity({ emitEvent: false });
+      const valueControl = aldGroup.get(scale.valueKey);
+      valueControl?.clearValidators();
+      if (clearValues) valueControl?.setValue('', { emitEvent: false });
+      valueControl?.updateValueAndValidity({ emitEvent: false });
     });
-
-    aldGroup.updateValueAndValidity({ emitEvent: true });
   }
 
-  private syncDorScaleValidator(flagKey: string, valueKey: string, min: number, max: number, checked: boolean) {
+  private syncDorScaleValidator(flagKey: string, valueKey: string, min: number, max: number, checked: boolean, updateGroup = true) {
     const aldGroup = this.form.get('alderete') as FormGroup;
     const valueControl = aldGroup.get(valueKey);
 
@@ -453,13 +481,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       ]);
     } else {
       valueControl?.clearValidators();
-      valueControl?.setValue('', { emitEvent: false });
     }
 
     valueControl?.updateValueAndValidity({ emitEvent: false });
-    aldGroup.updateValueAndValidity({ emitEvent: true });
+    if (updateGroup) aldGroup.updateValueAndValidity({ emitEvent: false });
   }
-
 
   addingAtb = false;
   newAtb: any = { nome: '', dose: '', via: 'IV', hora: '' };
@@ -540,7 +566,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.persistDraft();
   }
 
-
   get aldereteTotal(): number {
     const g = this.form.get('alderete') as FormGroup;
     if (!g) return 0;
@@ -554,7 +579,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     if (s >= 5) return { text: 'Em Observação', color: '#f59e0b' };
     return { text: 'Monitoramento Intenso', color: '#ef4444' };
   }
-
 
   getFormGroup(name: string): FormGroup {
     return this.form.get(name) as FormGroup;
@@ -627,7 +651,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     await t.present();
   }
 
-
   async confirmarLimpeza() {
     const alert = await this.alertController.create({
       header: 'Limpar Formulário?',
@@ -654,7 +677,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       this.form.get('dadosVitais.peso')?.patchValue(this.patient.weight);
     }
 
-
     if (this.cirurgiaId) {
       this.anesthesiaService.clearLatestRecord(this.cirurgiaId).subscribe({
         next: () => { },
@@ -668,7 +690,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       document.querySelector('.main-content')?.scrollTo({ top: 0, behavior: 'smooth' });
     }, 100);
   }
-
 
   openSignModal() {
     if (this.form.invalid) {
@@ -708,7 +729,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       this.signatureError = `O nome digitado não confere com o do profissional logado (${expected}).`;
       return;
     }
-
     this.form.get('assinaturas.primeiroAnestesista')?.setValue(typed);
     this.form.get('assinaturas.dataAssinatura')?.setValue(new Date().toISOString().split('T')[0]);
     this.isSignModalOpen = false;
@@ -739,18 +759,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         this.isSaving = false;
         this.toast('Erro ao salvar ficha. Tente novamente.', 'danger');
       }
-    });
-  }
-
-  @HostListener('window:scroll', [])
-  onWindowScroll() {
-    this.showScrollTop = window.scrollY > 180;
-  }
-
-  scrollToTop() {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
     });
   }
 

@@ -2,6 +2,12 @@
   <app-status-bar></app-status-bar>
   <app-header-institucional></app-header-institucional>
 
+  <button type="button" class="floating-back" (click)="voltar()" aria-label="Voltar">
+    <ion-icon name="arrow-back-outline"></ion-icon>
+    <span>Voltar</span>
+  </button>
+
+
   <div class="main-content">
     <div class="navigation-header">
       <ion-button fill="clear" (click)="voltar()" class="btn-back">
@@ -38,207 +44,98 @@
       [weight]="patient?.weight || '--'"
       [record]="patient?.medicalRecordNumber || ''"
       [procedure]="selectedProcedure?.description || ''"
-      [surgicalCenter]="
-        selectedSurgery?.location?.surgicalCenter?.description || ''
-      "
+      [surgicalCenter]="selectedSurgery?.location?.surgicalCenter?.description || ''"
       [room]="selectedSurgery?.location?.room || ''"
       [unit]="patient?.currentLocation?.unit?.description || ''"
       [floor]="patient?.currentLocation?.floor || ''"
       [bed]="patient?.currentLocation?.bed || '--'"
-      [allergies]="patient?.allergies || []"
-    >
+      [allergies]="patient?.allergies || []">
     </app-patient-info-card>
 
-    <form
-      *ngIf="form && !isLoading"
-      [formGroup]="form"
-      (ngSubmit)="openSignModal()"
-      class="ficha-form-container"
-    >
+    <form *ngIf="form && !isLoading" [formGroup]="form" (ngSubmit)="openSignModal()" class="ficha-form-container">
+
       <div class="form-grid-2col">
-        <app-form-section
-          title="Segurança do Paciente"
-          icon="🛡️"
-          formGroupName="seguranca"
-          [class.shake-error]="
-            showValidationErrors && isSectionInvalid('seguranca')
-          "
-        >
+        <app-form-section title="Segurança do Paciente" icon="🛡️" formGroupName="seguranca"
+          [class.shake-error]="showValidationErrors && isSectionInvalid('seguranca')">
           <div class="stack-md">
-            <app-radio-group
-              label="Paciente identificado e avaliado antes da indução?"
-              [options]="yesNoOptions"
-              formControlName="identificadoAvaliado"
-              [required]="true"
-            ></app-radio-group>
-            <app-radio-group
-              label="Termo de consentimento anestésico assinado?"
-              [options]="yesNoOptions"
-              formControlName="consentimentoAssinado"
-              [required]="true"
-            ></app-radio-group>
-            <app-radio-group
-              label="Equipamento de anestesia e acessórios checados?"
-              [options]="yesNoOptions"
-              formControlName="equipamentosChecados"
-              [required]="true"
-            ></app-radio-group>
+            <app-radio-group label="Paciente identificado e avaliado antes da indução?"
+              [options]="yesNoOptions" formControlName="identificadoAvaliado" [required]="true"></app-radio-group>
+            <app-radio-group label="Termo de consentimento anestésico assinado?"
+              [options]="yesNoOptions" formControlName="consentimentoAssinado" [required]="true"></app-radio-group>
+            <app-radio-group label="Equipamento de anestesia e acessórios checados?"
+              [options]="yesNoOptions" formControlName="equipamentosChecados" [required]="true"></app-radio-group>
             <div class="field-block">
-              <label class="field-label"
-                >Atenção (Observações de Segurança)</label
-              >
-              <textarea
-                formControlName="atencao"
-                rows="2"
-                class="textarea-input"
-              ></textarea>
+              <label class="field-label">Atenção (Observações de Segurança)</label>
+              <textarea formControlName="atencao" rows="2" class="textarea-input"></textarea>
             </div>
           </div>
         </app-form-section>
 
-        <app-form-section
-          title="Pré-Indução"
-          icon="💉"
-          formGroupName="preInducao"
-          [class.shake-error]="
-            showValidationErrors && isSectionInvalid('preInducao')
-          "
-        >
-          <app-radio-group
-            label="Medicação pré-anestésica?"
-            [options]="yesNoOptions"
-            formControlName="recebeuMedPrevia"
-            [required]="true"
-          ></app-radio-group>
+        <app-form-section title="Pré-Indução" icon="💉" formGroupName="preInducao"
+          [class.shake-error]="showValidationErrors && isSectionInvalid('preInducao')">
+          <app-radio-group label="Medicação pré-anestésica?"
+            [options]="yesNoOptions" formControlName="recebeuMedPrevia" [required]="true"></app-radio-group>
 
-          <div
-            class="conditional-fields"
-            *ngIf="form.get('preInducao.recebeuMedPrevia')?.value === 'sim'"
-          >
+          <div class="conditional-fields" *ngIf="form.get('preInducao.recebeuMedPrevia')?.value === 'sim'">
             <div class="grid-hora-farmaco">
               <div class="field-block">
                 <label class="field-label">Hora</label>
-                <input type="time" formControlName="hora" class="text-input" />
+                <input type="time" formControlName="hora" class="text-input">
               </div>
               <div class="field-block">
                 <label class="field-label">Fármaco</label>
-                <input
-                  type="text"
-                  formControlName="farmaco"
-                  placeholder="Nome do fármaco"
-                  class="text-input"
-                />
+                <input type="text" formControlName="farmaco" placeholder="Nome do fármaco" class="text-input">
               </div>
             </div>
-            <app-radio-group
-              label="Via"
-              [options]="viaPreOptions"
-              formControlName="via"
-            ></app-radio-group>
-            <div
-              class="field-block"
-              *ngIf="form.get('preInducao.via')?.value === 'Outras'"
-            >
+            <app-radio-group label="Via" [options]="viaPreOptions" formControlName="via"></app-radio-group>
+            <div class="field-block" *ngIf="form.get('preInducao.via')?.value === 'Outras'">
               <label class="field-label">Especifique via</label>
-              <input
-                type="text"
-                formControlName="outrasVia"
-                class="text-input"
-              />
+              <input type="text" formControlName="outrasVia" class="text-input">
             </div>
           </div>
         </app-form-section>
       </div>
 
-      <app-form-section
-        title="Antibiótico Profilático"
-        icon="💊"
-        formGroupName="antibiotico"
-      >
-        <app-radio-group
-          label="Fez uso de Antibiótico Profilático?"
-          [options]="yesNoOptions"
-          formControlName="temAntibiotico"
-          [required]="true"
-        ></app-radio-group>
+      <app-form-section title="Antibiótico Profilático" icon="💊" formGroupName="antibiotico">
+        <app-radio-group label="Fez uso de Antibiótico Profilático?"
+          [options]="yesNoOptions" formControlName="temAntibiotico" [required]="true"></app-radio-group>
 
-        <div
-          *ngIf="form.get('antibiotico.temAntibiotico')?.value === 'sim'"
-          class="atb-container"
-        >
+        <div *ngIf="form.get('antibiotico.temAntibiotico')?.value === 'sim'" class="atb-container">
+
           <div class="atb-list" *ngIf="antibioticsList.length">
-            <div
-              *ngFor="let atb of antibioticsList; let i = index"
-              class="atb-item"
-            >
+            <div *ngFor="let atb of antibioticsList; let i = index" class="atb-item">
               <div class="atb-main">
                 <div class="atb-info">
                   <span class="atb-name">{{ atb.nome }}</span>
-                  <span class="atb-details"
-                    >{{ atb.dose }} • {{ atb.via }} • {{ atb.hora }}</span
-                  >
+                  <span class="atb-details">{{ atb.dose }} • {{ atb.via }} • {{ atb.hora }}</span>
                 </div>
                 <div class="atb-actions">
                   <div class="atb-repique-inline">
                     <span class="inline-label">Repique?</span>
                     <div class="inline-radios">
-                      <button
-                        type="button"
-                        class="inline-opt"
-                        [class.active]="atb.temRepique === 'sim'"
-                        (click)="toggleRepique(i, 'sim')"
-                      >
-                        SIM
-                      </button>
-                      <button
-                        type="button"
-                        class="inline-opt"
-                        [class.active]="atb.temRepique === 'nao'"
-                        (click)="toggleRepique(i, 'nao')"
-                      >
-                        NÃO
-                      </button>
+                      <button type="button" class="inline-opt" [class.active]="atb.temRepique === 'sim'"
+                        (click)="toggleRepique(i, 'sim')">SIM</button>
+                      <button type="button" class="inline-opt" [class.active]="atb.temRepique === 'nao'"
+                        (click)="toggleRepique(i, 'nao')">NÃO</button>
                     </div>
                   </div>
-                  <ion-button
-                    *ngIf="atb.temRepique === 'sim'"
-                    fill="clear"
-                    color="success"
-                    size="small"
-                    (click)="adicionarRepique(i)"
-                    title="Adicionar Repique"
-                  >
+                  <ion-button *ngIf="atb.temRepique === 'sim'" fill="clear" color="success" size="small"
+                    (click)="adicionarRepique(i)" title="Adicionar Repique">
                     <ion-icon name="add-outline" slot="icon-only"></ion-icon>
                   </ion-button>
-                  <ion-button
-                    fill="clear"
-                    color="danger"
-                    size="small"
-                    (click)="removerAntibiotico(i)"
-                  >
+                  <ion-button fill="clear" color="danger" size="small" (click)="removerAntibiotico(i)">
                     <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
                   </ion-button>
                 </div>
               </div>
               <div class="repique-list" *ngIf="atb.repiques?.length">
-                <div
-                  *ngFor="let rep of atb.repiques; let j = index"
-                  class="repique-item"
-                >
+                <div *ngFor="let rep of atb.repiques; let j = index" class="repique-item">
                   <div class="repique-info">
                     <ion-icon name="return-down-forward-outline"></ion-icon>
                     <span>Repique: {{ rep.dose }} • {{ rep.hora }}</span>
                   </div>
-                  <ion-button
-                    fill="clear"
-                    color="danger"
-                    size="small"
-                    (click)="removerRepique(i, j)"
-                  >
-                    <ion-icon
-                      name="close-circle-outline"
-                      slot="icon-only"
-                    ></ion-icon>
+                  <ion-button fill="clear" color="danger" size="small" (click)="removerRepique(i, j)">
+                    <ion-icon name="close-circle-outline" slot="icon-only"></ion-icon>
                   </ion-button>
                 </div>
               </div>
@@ -256,49 +153,26 @@
             <div class="atb-add-grid">
               <div class="field-block">
                 <label class="field-label">Nome *</label>
-                <input
-                  type="text"
-                  [(ngModel)]="newAtb.nome"
-                  [ngModelOptions]="{ standalone: true }"
-                  placeholder="Ex: Cefazolina"
-                  class="text-input"
-                  autofocus
-                />
+                <input type="text" [(ngModel)]="newAtb.nome" [ngModelOptions]="{standalone: true}"
+                  placeholder="Ex: Cefazolina" class="text-input" autofocus>
               </div>
               <div class="field-block">
                 <label class="field-label">Dose *</label>
-                <input
-                  type="text"
-                  [(ngModel)]="newAtb.dose"
-                  [ngModelOptions]="{ standalone: true }"
-                  placeholder="Ex: 2g"
-                  class="text-input"
-                />
+                <input type="text" [(ngModel)]="newAtb.dose" [ngModelOptions]="{standalone: true}"
+                  placeholder="Ex: 2g" class="text-input">
               </div>
               <div class="field-block">
                 <label class="field-label">Via</label>
-                <input
-                  type="text"
-                  [(ngModel)]="newAtb.via"
-                  [ngModelOptions]="{ standalone: true }"
-                  placeholder="IV"
-                  class="text-input"
-                />
+                <input type="text" [(ngModel)]="newAtb.via" [ngModelOptions]="{standalone: true}"
+                  placeholder="IV" class="text-input">
               </div>
               <div class="field-block">
                 <label class="field-label">Hora</label>
-                <input
-                  type="time"
-                  [(ngModel)]="newAtb.hora"
-                  [ngModelOptions]="{ standalone: true }"
-                  class="text-input"
-                />
+                <input type="time" [(ngModel)]="newAtb.hora" [ngModelOptions]="{standalone: true}" class="text-input">
               </div>
             </div>
             <div class="atb-add-actions">
-              <button type="button" class="btn-ghost" (click)="cancelAddAtb()">
-                Cancelar
-              </button>
+              <button type="button" class="btn-ghost" (click)="cancelAddAtb()">Cancelar</button>
               <button type="button" class="btn-solid" (click)="confirmAddAtb()">
                 <ion-icon name="add-outline"></ion-icon> Adicionar
               </button>
@@ -309,97 +183,49 @@
 
       <app-dados-vitais-section
         [formGroup]="getFormGroup('dadosVitais')"
-        [class.shake-error]="
-          showValidationErrors && isSectionInvalid('dadosVitais')
-        "
-      >
+        [class.shake-error]="showValidationErrors && isSectionInvalid('dadosVitais')">
       </app-dados-vitais-section>
 
-      <app-form-section
-        title="Equipe Cirúrgica e Pré-Procedimento"
-        icon="👨‍⚕️"
-        formGroupName="equipe"
-        [class.shake-error]="showValidationErrors && isSectionInvalid('equipe')"
-      >
+      <app-form-section title="Equipe Cirúrgica e Pré-Procedimento" icon="👨‍⚕️" formGroupName="equipe"
+        [class.shake-error]="showValidationErrors && isSectionInvalid('equipe')">
         <div class="grid-equipe">
           <div class="field-block">
             <label class="field-label">Cirurgião *</label>
-            <input type="text" formControlName="cirurgiao" class="text-input" />
+            <input type="text" formControlName="cirurgiao" class="text-input">
           </div>
           <div class="field-block">
             <label class="field-label">Assistente *</label>
-            <input
-              type="text"
-              formControlName="assistente"
-              class="text-input"
-            />
+            <input type="text" formControlName="assistente" class="text-input">
           </div>
           <div class="field-block col-span-2">
             <label class="field-label">Diagnóstico pré-operatório *</label>
-            <input
-              type="text"
-              formControlName="diagnosticoPre"
-              class="text-input"
-            />
+            <input type="text" formControlName="diagnosticoPre" class="text-input">
           </div>
           <div class="field-block">
             <label class="field-label">Hora início da anestesia *</label>
-            <input
-              type="time"
-              formControlName="horaInicioAnestesia"
-              class="text-input"
-            />
+            <input type="time" formControlName="horaInicioAnestesia" class="text-input">
           </div>
         </div>
       </app-form-section>
 
-      <app-form-section
-        title="Posição Operatória"
-        icon="📐"
-        formGroupName="posicao"
-        [class.shake-error]="
-          showValidationErrors && isSectionInvalid('posicao')
-        "
-      >
-        <app-checkbox-group
-          label="Posição"
-          [options]="posicaoOptions"
-          formControlName="posicoes"
-        ></app-checkbox-group>
+      <app-form-section title="Posição Operatória" icon="📐" formGroupName="posicao"
+        [class.shake-error]="showValidationErrors && isSectionInvalid('posicao')">
+        <app-checkbox-group label="Posição" [options]="posicaoOptions" formControlName="posicoes"></app-checkbox-group>
 
-        <div
-          class="field-block"
-          *ngIf="form.get('posicao.posicoes')?.value?.includes('Outra')"
-        >
+        <div class="field-block" *ngIf="form.get('posicao.posicoes')?.value?.includes('Outra')">
           <label class="field-label">Especifique posição</label>
-          <input
-            type="text"
-            formControlName="outrasPosicao"
-            class="text-input"
-          />
+          <input type="text" formControlName="outrasPosicao" class="text-input">
         </div>
 
         <div class="posicao-extra-row">
           <div class="row-flex">
             <div class="min-235">
-              <app-radio-group
-                label="Uso de coxins?"
-                [options]="yesNoOptions"
-                formControlName="usoCoxim"
-                [required]="true"
-              ></app-radio-group>
+              <app-radio-group label="Uso de coxins?" [options]="yesNoOptions"
+                formControlName="usoCoxim" [required]="true"></app-radio-group>
             </div>
-            <div
-              class="field-block flex-1"
-              *ngIf="form.get('posicao.usoCoxim')?.value === 'sim'"
-            >
+            <div class="field-block flex-1" *ngIf="form.get('posicao.usoCoxim')?.value === 'sim'">
               <label class="field-label">Local dos coxins</label>
-              <input
-                type="text"
-                formControlName="localCoxim"
-                placeholder="Ex: Cabeça, ombros..."
-                class="text-input"
-              />
+              <input type="text" formControlName="localCoxim" placeholder="Ex: Cabeça, ombros..." class="text-input">
             </div>
           </div>
 
@@ -408,29 +234,17 @@
           <div class="acesso-venoso-area">
             <div class="row-flex">
               <div class="min-235">
-                <app-checkbox-group
-                  label="Acesso venoso"
-                  [options]="acessoVenosoOptions"
-                  formControlName="acessoVenoso"
-                ></app-checkbox-group>
+                <app-checkbox-group label="Acesso venoso" [options]="acessoVenosoOptions"
+                  formControlName="acessoVenoso"></app-checkbox-group>
               </div>
               <div class="field-block flex-1">
                 <label class="field-label">Local do acesso</label>
-                <input
-                  type="text"
-                  formControlName="localAcesso"
-                  placeholder="Ex: MSD, Jugular..."
-                  class="text-input"
-                />
+                <input type="text" formControlName="localAcesso" placeholder="Ex: MSD, Jugular..." class="text-input">
               </div>
             </div>
             <div class="dificuldade-row">
-              <app-radio-group
-                label="Dificuldade de punção?"
-                [options]="yesNoOptions"
-                formControlName="dificuldadePuncao"
-                [required]="true"
-              ></app-radio-group>
+              <app-radio-group label="Dificuldade de punção?" [options]="yesNoOptions"
+                formControlName="dificuldadePuncao" [required]="true"></app-radio-group>
             </div>
           </div>
         </div>
@@ -438,62 +252,34 @@
 
       <app-tecnica-anestesica-section
         [formGroup]="getFormGroup('tecnica')"
-        [class.shake-error]="
-          showValidationErrors && isSectionInvalid('tecnica')
-        "
-      >
+        [class.shake-error]="showValidationErrors && isSectionInvalid('tecnica')">
       </app-tecnica-anestesica-section>
 
-      <app-form-section
-        title="Pós-Procedimento"
-        icon="🔄"
-        formGroupName="posProcedimento"
-        [class.shake-error]="
-          showValidationErrors && isSectionInvalid('posProcedimento')
-        "
-      >
+      <app-form-section title="Pós-Procedimento" icon="🔄" formGroupName="posProcedimento"
+        [class.shake-error]="showValidationErrors && isSectionInvalid('posProcedimento')">
         <div class="grid-pos">
           <div class="field-block">
             <label class="field-label">Cirurgia realizada *</label>
-            <input
-              type="text"
-              formControlName="cirurgiaRealizada"
-              class="text-input"
-            />
+            <input type="text" formControlName="cirurgiaRealizada" class="text-input">
           </div>
           <div class="field-block">
             <label class="field-label">Hora término cirurgia *</label>
-            <input
-              type="time"
-              formControlName="horaTerminoCirurgia"
-              class="text-input"
-            />
+            <input type="time" formControlName="horaTerminoCirurgia" class="text-input">
           </div>
           <div class="field-block">
             <label class="field-label">Diagnóstico pós-operatório *</label>
-            <input
-              type="text"
-              formControlName="diagnosticoPos"
-              class="text-input"
-            />
+            <input type="text" formControlName="diagnosticoPos" class="text-input">
           </div>
           <div class="field-block">
             <label class="field-label">Hora término anestesia *</label>
-            <input
-              type="time"
-              formControlName="horaTerminoAnestesia"
-              class="text-input"
-            />
+            <input type="time" formControlName="horaTerminoAnestesia" class="text-input">
           </div>
         </div>
       </app-form-section>
 
-      <app-form-section
-        title="Índice de Alderete e Kroulik"
-        icon="📋"
-        subtitle="Avaliação para alta da sala"
-        formGroupName="alderete"
-      >
+      <app-form-section title="Índice de Alderete e Kroulik" icon="📋"
+        subtitle="Avaliação para alta da sala" formGroupName="alderete">
+
         <div class="alderete-stations">
           <div class="station-card" *ngFor="let item of aldereteFields">
             <div class="station-header">
@@ -501,17 +287,9 @@
               <span class="station-label">{{ item.label }}</span>
             </div>
             <div class="score-selector">
-              <button
-                type="button"
-                *ngFor="let opt of item.options"
-                class="score-btn"
-                [class.active]="
-                  form.get('alderete.' + item.control)?.value === opt.score
-                "
-                (click)="
-                  form.get('alderete.' + item.control)?.setValue(opt.score)
-                "
-              >
+              <button type="button" *ngFor="let opt of item.options" class="score-btn"
+                [class.active]="form.get('alderete.' + item.control)?.value === opt.score"
+                (click)="form.get('alderete.' + item.control)?.setValue(opt.score)">
                 <span class="score-num">{{ opt.score }}</span>
                 <span class="score-desc">{{ opt.text }}</span>
               </button>
@@ -525,37 +303,24 @@
               <span class="aldrete-total-label">Total Alderete & Kroulik</span>
             </div>
             <div class="alderete-card-body">
-              <div
-                class="score-circle"
-                [style.border-color]="aldereteStatus.color"
-              >
-                <span
-                  class="score-value"
-                  [style.color]="aldereteStatus.color"
-                  >{{ aldereteTotal }}</span
-                >
+              <div class="score-circle" [style.border-color]="aldereteStatus.color">
+                <span class="score-value" [style.color]="aldereteStatus.color">{{ aldereteTotal }}</span>
                 <span class="score-divider">/</span>
                 <span class="score-max">10</span>
               </div>
               <div class="status-tag-container">
-                <span
-                  class="status-tag"
-                  [style.background]="aldereteStatus.color"
-                  >{{ aldereteStatus.text }}</span
-                >
+                <span class="status-tag" [style.background]="aldereteStatus.color">{{ aldereteStatus.text }}</span>
               </div>
               <div class="eval-time">
                 <ion-icon name="time-outline"></ion-icon>
-                <input type="time" formControlName="horaAvaliacao" />
+                <input type="time" formControlName="horaAvaliacao">
               </div>
             </div>
           </div>
           <div class="alderete-progress-wrapper compact">
-            <div
-              class="alderete-progress-bar"
+            <div class="alderete-progress-bar"
               [style.width.%]="aldereteTotal * 10"
-              [style.background]="aldereteStatus.color"
-            ></div>
+              [style.background]="aldereteStatus.color"></div>
           </div>
         </div>
 
@@ -564,49 +329,30 @@
             <ion-icon name="checkmark-circle"></ion-icon>
             <div>
               <div class="dest-info-title">Destino: RPA</div>
-              <div class="dest-info-sub">
-                Todos os pacientes seguem para a Recuperação Pós-Anestésica
-              </div>
+              <div class="dest-info-sub">Todos os pacientes seguem para a Recuperação Pós-Anestésica</div>
             </div>
           </div>
-          <app-checkbox-group
-            label="Condições clínicas na alta"
-            [options]="condicoesAltaOptions"
-            formControlName="condicoesClinicasAlta"
-          ></app-checkbox-group>
+          <app-checkbox-group label="Condições clínicas na alta"
+            [options]="condicoesAltaOptions" formControlName="condicoesClinicasAlta"></app-checkbox-group>
         </div>
 
-        <div
-          class="dor-section-container"
-          [class.dor-invalid]="isDorSectionInvalid()"
-          [class.shake-error]="showValidationErrors && isDorSectionInvalid()"
-        >
+        <div class="dor-section-container" [class.dor-invalid]="isDorSectionInvalid()">
           <div class="dor-header">
             <div *ngIf="isDorSectionInvalid()" class="dor-error-msg">
               <ion-icon name="alert-circle-outline"></ion-icon>
-              Selecione e preencha pelo menos uma escala de dor
+              Se marcar “Sim”, selecione pelo menos uma escala e preencha o valor.
             </div>
             <span class="dor-title">Presença de dor? <strong>*</strong></span>
-            <div
-              class="dor-choice-group"
-              role="radiogroup"
-              aria-label="Presença de dor"
-            >
-              <button
-                type="button"
-                class="dor-choice"
+            <div class="dor-choice-group" role="radiogroup" aria-label="Presença de dor">
+              <button type="button" class="dor-choice"
                 [class.active]="form.get('alderete.dor')?.value === 'sim'"
-                (click)="setDor('sim')"
-              >
+                (click)="setDor('sim')">
                 <span class="choice-dot"></span>
                 Sim
               </button>
-              <button
-                type="button"
-                class="dor-choice"
+              <button type="button" class="dor-choice"
                 [class.active]="form.get('alderete.dor')?.value === 'nao'"
-                (click)="setDor('nao')"
-              >
+                (click)="setDor('nao')">
                 <span class="choice-dot"></span>
                 Não
               </button>
@@ -614,215 +360,108 @@
           </div>
 
           <div *ngIf="isDorPresente()" class="dor-scales-grid">
-            <div
-              class="scale-card"
-              [class.active]="form.get('alderete.dorUsouENV')?.value"
-            >
-              <button
-                type="button"
-                class="scale-toggle"
-                role="checkbox"
-                [attr.aria-checked]="!!form.get('alderete.dorUsouENV')?.value"
-                (click)="
-                  toggleDorScale(
-                    'dorUsouENV',
-                    'dorENV',
-                    0,
-                    10,
-                    !form.get('alderete.dorUsouENV')?.value
-                  )
-                "
-              >
+
+            <div class="scale-card" [class.active]="isDorScaleSelected('dorUsouENV')">
+              <button type="button" class="scale-toggle" role="checkbox"
+                [attr.aria-checked]="isDorScaleSelected('dorUsouENV')"
+                (click)="toggleDorScale('dorUsouENV', 'dorENV', 0, 10, !isDorScaleSelected('dorUsouENV'))">
                 <span class="fake-checkbox"></span>
-                <span class="scale-name"> ENV </span>
+                <span class="scale-name">
+                  ENV
+                </span>
                 <span class="scale-hint">0 a 10</span>
               </button>
-              <input
-                type="number"
-                formControlName="dorENV"
-                min="0"
-                max="10"
-                step="1"
-                class="scale-input"
-                placeholder="0-10"
-                [readonly]="!form.get('alderete.dorUsouENV')?.value"
-                [class.readonly]="!form.get('alderete.dorUsouENV')?.value"
-              />
+              <input type="number" formControlName="dorENV" min="0" max="10" step="1"
+                class="scale-input" placeholder="0-10"
+                [readonly]="!isDorScaleSelected('dorUsouENV')"
+                [class.readonly]="!isDorScaleSelected('dorUsouENV')">
             </div>
 
-            <div
-              class="scale-card"
-              [class.active]="form.get('alderete.dorUsouPAINAD')?.value"
-            >
-              <button
-                type="button"
-                class="scale-toggle"
-                role="checkbox"
-                [attr.aria-checked]="
-                  !!form.get('alderete.dorUsouPAINAD')?.value
-                "
-                (click)="
-                  toggleDorScale(
-                    'dorUsouPAINAD',
-                    'dorPAINAD',
-                    0,
-                    10,
-                    !form.get('alderete.dorUsouPAINAD')?.value
-                  )
-                "
-              >
+            <div class="scale-card" [class.active]="isDorScaleSelected('dorUsouPAINAD')">
+              <button type="button" class="scale-toggle" role="checkbox"
+                [attr.aria-checked]="isDorScaleSelected('dorUsouPAINAD')"
+                (click)="toggleDorScale('dorUsouPAINAD', 'dorPAINAD', 0, 10, !isDorScaleSelected('dorUsouPAINAD'))">
                 <span class="fake-checkbox"></span>
-                <span class="scale-name"> PAINAD </span>
+                <span class="scale-name">
+                  PAINAD
+                </span>
                 <span class="scale-hint">0 a 10</span>
               </button>
-              <input
-                type="number"
-                formControlName="dorPAINAD"
-                min="0"
-                max="10"
-                step="1"
-                class="scale-input"
-                placeholder="0-10"
-                [readonly]="!form.get('alderete.dorUsouPAINAD')?.value"
-                [class.readonly]="!form.get('alderete.dorUsouPAINAD')?.value"
-              />
+              <input type="number" formControlName="dorPAINAD" min="0" max="10" step="1"
+                class="scale-input" placeholder="0-10"
+                [readonly]="!isDorScaleSelected('dorUsouPAINAD')"
+                [class.readonly]="!isDorScaleSelected('dorUsouPAINAD')">
             </div>
 
             <!-- BPS -->
-            <div
-              class="scale-card"
-              [class.active]="form.get('alderete.dorUsouBPS')?.value"
-            >
-              <button
-                type="button"
-                class="scale-toggle"
-                role="checkbox"
-                [attr.aria-checked]="!!form.get('alderete.dorUsouBPS')?.value"
-                (click)="
-                  toggleDorScale(
-                    'dorUsouBPS',
-                    'dorBPS',
-                    3,
-                    12,
-                    !form.get('alderete.dorUsouBPS')?.value
-                  )
-                "
-              >
+            <div class="scale-card" [class.active]="isDorScaleSelected('dorUsouBPS')">
+              <button type="button" class="scale-toggle" role="checkbox"
+                [attr.aria-checked]="isDorScaleSelected('dorUsouBPS')"
+                (click)="toggleDorScale('dorUsouBPS', 'dorBPS', 3, 12, !isDorScaleSelected('dorUsouBPS'))">
                 <span class="fake-checkbox"></span>
-                <span class="scale-name"> BPS </span>
+                <span class="scale-name">
+                  BPS
+                </span>
                 <span class="scale-hint">3 a 12</span>
               </button>
-              <input
-                type="number"
-                formControlName="dorBPS"
-                min="3"
-                max="12"
-                step="1"
-                class="scale-input"
-                placeholder="3-12"
-                [readonly]="!form.get('alderete.dorUsouBPS')?.value"
-                [class.readonly]="!form.get('alderete.dorUsouBPS')?.value"
-              />
+              <input type="number" formControlName="dorBPS" min="3" max="12" step="1"
+                class="scale-input" placeholder="3-12"
+                [readonly]="!isDorScaleSelected('dorUsouBPS')"
+                [class.readonly]="!isDorScaleSelected('dorUsouBPS')">
             </div>
           </div>
 
           <div class="dor-conduta-row" *ngIf="isDorPresente()">
             <div class="field-block">
               <label class="field-label">Conduta tomada</label>
-              <textarea
-                formControlName="conduta"
-                rows="2"
-                class="textarea-input"
-                placeholder="Descreva a conduta realizada..."
-              ></textarea>
+              <textarea formControlName="conduta" rows="2" class="textarea-input"
+                placeholder="Descreva a conduta realizada..."></textarea>
             </div>
           </div>
         </div>
       </app-form-section>
 
-      <app-form-section
-        title="Assinaturas"
-        icon="✍️"
-        formGroupName="assinaturas"
-        [class.shake-error]="
-          showValidationErrors && isSectionInvalid('assinaturas')
-        "
-      >
+      <app-form-section title="Assinaturas" icon="✍️" formGroupName="assinaturas"
+        [class.shake-error]="showValidationErrors && isSectionInvalid('assinaturas')">
+
         <div class="signature-notice">
           <ion-icon name="lock-closed-outline"></ion-icon>
-          <span
-            >Ao clicar em <strong>Assinar e Salvar</strong> uma confirmação
-            digital será solicitada, e o campo do 1º anestesista será preenchido
-            automaticamente com o nome do profissional logado.</span
-          >
+          <span>Ao clicar em <strong>Assinar e Salvar</strong> uma confirmação digital será solicitada,
+          e o campo do 1º anestesista será preenchido automaticamente com o nome do profissional logado.</span>
         </div>
 
         <div class="grid-assinaturas">
           <div class="field-block">
             <label class="field-label">1º Anestesiologista *</label>
-            <input
-              type="text"
-              formControlName="primeiroAnestesista"
-              placeholder="Preenchido pela assinatura digital"
-              class="text-input"
-              readonly
-            />
+            <input type="text" formControlName="primeiroAnestesista" placeholder="Preenchido pela assinatura digital"
+              class="text-input" readonly>
           </div>
           <div class="field-block">
             <label class="field-label">2º Anestesiologista</label>
-            <input
-              type="text"
-              formControlName="segundoAnestesista"
-              placeholder="Nome / CRM"
-              class="text-input"
-            />
+            <input type="text" formControlName="segundoAnestesista" placeholder="Nome / CRM" class="text-input">
           </div>
           <div class="field-block">
             <label class="field-label">Data *</label>
-            <input
-              type="date"
-              formControlName="dataAssinatura"
-              class="text-input"
-            />
+            <input type="date" formControlName="dataAssinatura" class="text-input">
           </div>
         </div>
       </app-form-section>
 
       <div class="form-actions">
-        <ion-button
-          color="primary"
-          type="submit"
-          class="btn-primary-pill"
-          [disabled]="isSaving || isCancelled || !canEdit"
-        >
-          <ion-spinner
-            name="crescent"
-            *ngIf="isSaving"
-            slot="start"
-          ></ion-spinner>
-          <ion-icon
-            name="shield-checkmark-outline"
-            *ngIf="!isSaving"
-            slot="start"
-          ></ion-icon>
-          {{ isSaving ? "Salvando..." : "Assinar e Salvar Ficha" }}
+        <ion-button color="primary" type="submit" class="btn-primary-pill"
+          [disabled]="isSaving || isCancelled || !canEdit">
+          <ion-spinner name="crescent" *ngIf="isSaving" slot="start"></ion-spinner>
+          <ion-icon name="shield-checkmark-outline" *ngIf="!isSaving" slot="start"></ion-icon>
+          {{ isSaving ? 'Salvando...' : 'Assinar e Salvar Ficha' }}
         </ion-button>
 
-        <ion-button
-          fill="outline"
-          (click)="confirmarLimpeza()"
-          class="btn-secondary-pill"
-          [disabled]="isSaving || isCancelled || !canEdit"
-        >
+        <ion-button fill="outline" (click)="confirmarLimpeza()" class="btn-secondary-pill"
+          [disabled]="isSaving || isCancelled || !canEdit">
           <ion-icon name="sync-outline" slot="start"></ion-icon>
           Limpar Formulário
         </ion-button>
 
-        <ion-button
-          fill="outline"
-          (click)="imprimir()"
-          class="btn-secondary-pill"
-        >
+        <ion-button fill="outline" (click)="imprimir()" class="btn-secondary-pill">
           <ion-icon name="print-outline" slot="start"></ion-icon>
           Imprimir
         </ion-button>
@@ -830,11 +469,7 @@
     </form>
   </div>
 
-  <ion-modal
-    [isOpen]="isSignModalOpen"
-    (didDismiss)="closeSignModal()"
-    class="sign-modal"
-  >
+  <ion-modal [isOpen]="isSignModalOpen" (didDismiss)="closeSignModal()" class="sign-modal">
     <ng-template>
       <div class="sign-modal-body">
         <div class="sign-modal-icon">
@@ -842,34 +477,27 @@
         </div>
         <h2 class="sign-modal-title">Confirmar e Assinar Digitalmente</h2>
         <p class="sign-modal-subtitle">
-          Ao assinar, você declara que revisou todos os dados desta ficha
-          anestésica e assume responsabilidade profissional pelas informações
-          registradas.
+          Ao assinar, você declara que revisou todos os dados desta ficha anestésica
+          e assume responsabilidade profissional pelas informações registradas.
         </p>
 
         <div class="sign-check-row">
           <ion-checkbox
-            [(ngModel)]="signatureAgreed"
-            [ngModelOptions]="{ standalone: true }"
+            [checked]="signatureAgreed"
+            (ionChange)="signatureAgreed = $event.detail.checked"
             labelPlacement="end"
-          >
-            Confirmo que revisei e estou de acordo com todos os dados<br />
-            preenchidos.
+            class="sign-check">
+            <span class="sign-check-label">
+              Confirmo que revisei e estou de acordo com todos os dados preenchidos.
+            </span>
           </ion-checkbox>
         </div>
 
         <div class="sign-name-block">
-          <label class="field-label"
-            >Digite seu nome completo para assinar</label
-          >
-          <input
-            type="text"
-            class="text-input sign-input"
-            [(ngModel)]="signatureTypedName"
+          <label class="field-label">Digite seu nome completo para assinar</label>
+          <input type="text" class="text-input sign-input" [(ngModel)]="signatureTypedName"
             [placeholder]="expectedSignatureName || 'Nome completo'"
-            autocomplete="off"
-            spellcheck="false"
-          />
+            autocomplete="off" spellcheck="false">
           <p class="sign-hint" *ngIf="expectedSignatureName">
             Profissional logado: <strong>{{ expectedSignatureName }}</strong>
           </p>
@@ -880,18 +508,9 @@
         </p>
 
         <div class="sign-modal-actions">
-          <ion-button
-            fill="outline"
-            class="btn-secondary-pill"
-            (click)="closeSignModal()"
-            >Cancelar</ion-button
-          >
-          <ion-button
-            color="primary"
-            class="btn-primary-pill"
-            (click)="confirmarESalvar()"
-            [disabled]="!signatureAgreed || !signatureTypedName.trim()"
-          >
+          <ion-button fill="outline" class="btn-secondary-pill" (click)="closeSignModal()">Cancelar</ion-button>
+          <ion-button color="primary" class="btn-primary-pill" (click)="confirmarESalvar()"
+            [disabled]="!signatureAgreed || !signatureTypedName.trim()">
             <ion-icon name="create-outline" slot="start"></ion-icon>
             Assinar e Salvar
           </ion-button>
@@ -899,12 +518,4 @@
       </div>
     </ng-template>
   </ion-modal>
-  <button
-    *ngIf="showScrollTop"
-    class="scroll-top-btn"
-    type="button"
-    (click)="scrollToTop()"
-  >
-    <ion-icon name="arrow-up-outline"></ion-icon>
-  </button>
 </div>
