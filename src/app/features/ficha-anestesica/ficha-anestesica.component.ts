@@ -27,7 +27,6 @@ import {
   lockClosedOutline, arrowUpOutline
 } from 'ionicons/icons';
 
-// Shared Components
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
 import { PatientInfoCardComponent } from '../../shared/components/patient-info-card/patient-info-card.component';
@@ -278,6 +277,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         dorUsouPAINAD: [false], dorPAINAD: [''],
         dorUsouBPS: [false], dorBPS: [''],
         conduta: ['']
+      }, {
+        validators: this.dorGroupValidator
       }),
       assinaturas: this.fb.group({
         primeiroAnestesista: [''],
@@ -286,6 +287,21 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       })
     });
   }
+
+  private dorGroupValidator = (group: FormGroup) => {
+    const dor = group.get('dor')?.value;
+
+    if (!this.isDorSimValue(dor)) return null;
+
+    const hasValidScale = this.dorScales.some(scale => {
+      const flag = group.get(scale.flagKey)?.value === true;
+      const valueCtrl = group.get(scale.valueKey);
+
+      return flag && valueCtrl?.valid === true;
+    });
+
+    return hasValidScale ? null : { dorScaleRequired: true };
+  };
 
   private setupConditionalLogic() {
     const atbGroup = this.form.get('antibiotico') as FormGroup;
@@ -349,8 +365,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     const aldGroup = this.form.get('alderete') as FormGroup;
     const dorControl = aldGroup.get('dor');
 
-    dorControl?.setValue(value);
-    dorControl?.markAsTouched(); // Importante: marca como tocado
+    dorControl?.setValue(value, { emitEvent: true });
+    dorControl?.markAsTouched();
+    dorControl?.markAsDirty();
 
     if (value === 'nao') {
       this.clearDorScales(true);
@@ -358,52 +375,42 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       this.applyDorScaleValidators();
     }
 
-    aldGroup.updateValueAndValidity({ emitEvent: false });
+    aldGroup.updateValueAndValidity({ emitEvent: true });
   }
 
   toggleDorScale(flagKey: string, valueKey: string, min: number, max: number, checked: boolean) {
     const aldGroup = this.form.get('alderete') as FormGroup;
 
     if (!this.isDorPresente()) {
-      aldGroup.get('dor')?.setValue('sim');
-      aldGroup.get('dor')?.markAsTouched(); // Marca como tocado
+      aldGroup.get('dor')?.setValue('sim', { emitEvent: true });
+      aldGroup.get('dor')?.markAsTouched();
     }
 
-    aldGroup.get(flagKey)?.setValue(checked);
+    aldGroup.get(flagKey)?.setValue(checked, { emitEvent: true });
     this.syncDorScaleValidator(flagKey, valueKey, min, max, checked);
-    aldGroup.updateValueAndValidity({ emitEvent: false });
+
+    aldGroup.updateValueAndValidity({ emitEvent: true });
   }
 
   isDorSectionInvalid(): boolean {
     const aldGroup = this.form.get('alderete') as FormGroup;
     const dorControl = aldGroup.get('dor');
 
-    // Só marca como inválido se o usuário já tentou enviar (showValidationErrors) OU se o campo foi tocado
-    const shouldShowError = this.showValidationErrors || dorControl?.touched || dorControl?.dirty;
+    if (!this.showValidationErrors && !dorControl?.touched) 
+      return false;
 
-    if (!shouldShowError) return false;
+    if (!this.isDorPresente()) 
+      return false;
 
-    // Verifica se o campo 'dor' está vazio
-    if (!dorControl?.value || dorControl.value.trim() === '') {
-      return true;
-    }
+    const hasGroupError = aldGroup.errors?.['dorScaleRequired'];
+    const hasIndividualError = this.dorScales.some(scale => {
+      const valueCtrl = aldGroup.get(scale.valueKey);
+      return !!valueCtrl?.value && valueCtrl?.invalid;
+    });
 
-    // Se 'dor' for 'sim', verifica as escalas
-    if (this.isDorPresente()) {
-      const hasScaleError = ['dorENV', 'dorPAINAD', 'dorBPS'].some(key => {
-        const control = aldGroup.get(key);
-        // Só considera erro se a escala estiver ativa E inválida
-        const isActive = aldGroup.get(this.getFlagKey(key))?.value;
-        if (!isActive) return false;
-        return !!(control?.invalid && (control.touched || this.showValidationErrors));
-      });
-      return hasScaleError;
-    }
-
-    return false;
+    return !!(hasGroupError || hasIndividualError);
   }
 
-  // Método auxiliar para mapear valueKey -> flagKey
   private getFlagKey(valueKey: string): string {
     const map: { [key: string]: string } = {
       'dorENV': 'dorUsouENV',
@@ -420,15 +427,18 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     });
   }
 
-  private clearDorScales(clearValues: boolean) {
+  private clearDorScales(clearValues = true) {
     const aldGroup = this.form.get('alderete') as FormGroup;
+
     this.dorScales.forEach(scale => {
       aldGroup.get(scale.flagKey)?.setValue(false, { emitEvent: false });
-      const valueControl = aldGroup.get(scale.valueKey);
-      valueControl?.clearValidators();
-      if (clearValues) valueControl?.setValue('', { emitEvent: false });
-      valueControl?.updateValueAndValidity({ emitEvent: false });
+      const ctrl = aldGroup.get(scale.valueKey);
+      ctrl?.clearValidators();
+      if (clearValues) ctrl?.setValue('', { emitEvent: false });
+      ctrl?.updateValueAndValidity({ emitEvent: false });
     });
+
+    aldGroup.updateValueAndValidity({ emitEvent: true });
   }
 
   private syncDorScaleValidator(flagKey: string, valueKey: string, min: number, max: number, checked: boolean) {
@@ -444,9 +454,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       ]);
     } else {
       valueControl?.clearValidators();
+      valueControl?.setValue('', { emitEvent: false });
     }
 
     valueControl?.updateValueAndValidity({ emitEvent: false });
+    aldGroup.updateValueAndValidity({ emitEvent: true });
   }
 
 
