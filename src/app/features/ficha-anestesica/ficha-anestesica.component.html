@@ -582,6 +582,10 @@
           [class.shake-error]="showValidationErrors && isDorSectionInvalid()"
         >
           <div class="dor-header">
+            <div *ngIf="isDorSectionInvalid()" class="dor-error-msg">
+              <ion-icon name="alert-circle-outline"></ion-icon>
+              Selecione e preencha pelo menos uma escala de dor
+            </div>
             <span class="dor-title">Presença de dor? <strong>*</strong></span>
             <div
               class="dor-choice-group"

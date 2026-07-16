@@ -1290,3 +1290,13 @@
     flex-wrap: wrap;
   }
 }
+
+.dor-error-msg {
+  color: #ef4444;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
