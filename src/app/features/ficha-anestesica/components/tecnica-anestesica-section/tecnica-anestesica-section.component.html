@@ -1,28 +1,41 @@
 <app-form-section title="Técnica Anestésica" icon="⚕️" [formGroup]="formGroup">
-
-
   <div class="tec-grid-3col">
-
     <div class="technique-card">
       <div class="card-header-simple">Anestesia Geral</div>
-      <app-radio-group label="Anestesia Geral?" [options]="yesNoOptions"
-        formControlName="anestesiaGeral" [required]="true"></app-radio-group>
+      <app-radio-group
+        label="Anestesia Geral?"
+        [options]="yesNoOptions"
+        formControlName="anestesiaGeral"
+        [required]="true"
+      ></app-radio-group>
 
       <div class="divider"></div>
 
       <div class="group-title">Respiração</div>
       <div class="sub-group">
         <div class="sub-label">Assistida:</div>
-        <app-checkbox-group [options]="assistidaOptions" formControlName="respiracaoAssistida"
-          direction="horizontal" class="grid-checkbox-2col"></app-checkbox-group>
+        <app-checkbox-group
+          [options]="assistidaOptions"
+          formControlName="respiracaoAssistida"
+          direction="horizontal"
+          class="grid-checkbox-2col"
+        ></app-checkbox-group>
         <div class="sub-label mt-12">Controlada:</div>
-        <app-checkbox-group [options]="controladaOptions" formControlName="respiracaoControlada"
-          direction="horizontal" class="grid-checkbox-2col"></app-checkbox-group>
+        <app-checkbox-group
+          [options]="controladaOptions"
+          formControlName="respiracaoControlada"
+          direction="horizontal"
+          class="grid-checkbox-2col"
+        ></app-checkbox-group>
       </div>
 
       <div class="divider"></div>
-      <app-radio-group label="Circuito (Absorvedor CO₂)?" [options]="yesNoOptions"
-        formControlName="circuitoAbsorvedor" [required]="true"></app-radio-group>
+      <app-radio-group
+        label="Circuito (Absorvedor CO₂)?"
+        [options]="yesNoOptions"
+        formControlName="circuitoAbsorvedor"
+        [required]="true"
+      ></app-radio-group>
     </div>
 
     <div class="technique-card">
@@ -31,45 +44,92 @@
 
       <div class="va-device-list">
         <div class="va-row">
-          <ion-checkbox formControlName="vaGuedel" labelPlacement="end">Guedel</ion-checkbox>
-          <div class="va-n-box"><span>Nº</span><input type="text" formControlName="guedelNo" class="va-small-input"></div>
+          <ion-checkbox formControlName="vaGuedel" labelPlacement="end"
+            >Guedel</ion-checkbox
+          >
+          <div class="va-n-box">
+            <span>Nº</span
+            ><input
+              type="text"
+              formControlName="guedelNo"
+              class="va-small-input"
+            />
+          </div>
         </div>
         <div class="va-row">
-          <ion-checkbox formControlName="vaMascLaringea" labelPlacement="end">Másc. Laríngea</ion-checkbox>
-          <div class="va-n-box"><span>Nº</span><input type="text" formControlName="mascLaringeaNo" class="va-small-input"></div>
+          <ion-checkbox formControlName="vaMascLaringea" labelPlacement="end"
+            >Másc. Laríngea</ion-checkbox
+          >
+          <div class="va-n-box">
+            <span>Nº</span
+            ><input
+              type="text"
+              formControlName="mascLaringeaNo"
+              class="va-small-input"
+            />
+          </div>
         </div>
         <div class="va-row">
-          <ion-checkbox formControlName="vaMascFacial" labelPlacement="end">Másc. Facial</ion-checkbox>
-          <div class="va-n-box"><span>Nº</span><input type="text" formControlName="mascFacialNo" class="va-small-input"></div>
+          <ion-checkbox formControlName="vaMascFacial" labelPlacement="end"
+            >Másc. Facial</ion-checkbox
+          >
+          <div class="va-n-box">
+            <span>Nº</span
+            ><input
+              type="text"
+              formControlName="mascFacialNo"
+              class="va-small-input"
+            />
+          </div>
         </div>
         <div class="va-row">
-          <ion-checkbox formControlName="vaTubo" labelPlacement="end">Tubo</ion-checkbox>
-          <div class="va-n-box"><span>Nº</span><input type="text" formControlName="tuboNo" class="va-small-input"></div>
+          <ion-checkbox formControlName="vaTubo" labelPlacement="end"
+            >Tubo</ion-checkbox
+          >
+          <div class="va-n-box">
+            <span>Nº</span
+            ><input
+              type="text"
+              formControlName="tuboNo"
+              class="va-small-input"
+            />
+          </div>
         </div>
 
-      
         <div class="va-tubo-details" *ngIf="formGroup.get('vaTubo')?.value">
           <div class="tubo-col">
             <div class="checkbox-tile">
-              <ion-checkbox formControlName="cuff" labelPlacement="end">Cuff</ion-checkbox>
+              <ion-checkbox formControlName="cuff" labelPlacement="end"
+                >Cuff</ion-checkbox
+              >
             </div>
             <div class="checkbox-tile">
-              <ion-checkbox formControlName="oral" labelPlacement="end">Oral</ion-checkbox>
+              <ion-checkbox formControlName="oral" labelPlacement="end"
+                >Oral</ion-checkbox
+              >
             </div>
             <div class="checkbox-tile">
-              <ion-checkbox formControlName="nasal" labelPlacement="end">Nasal</ion-checkbox>
+              <ion-checkbox formControlName="nasal" labelPlacement="end"
+                >Nasal</ion-checkbox
+              >
             </div>
           </div>
           <div class="iot-col">
             <div class="checkbox-tile iot-title">
-              <ion-checkbox formControlName="iot" labelPlacement="end">IOT</ion-checkbox>
+              <ion-checkbox formControlName="iot" labelPlacement="end"
+                >IOT</ion-checkbox
+              >
             </div>
             <div class="iot-sub" *ngIf="formGroup.get('iot')?.value">
               <div class="checkbox-tile">
-                <ion-checkbox formControlName="facil" labelPlacement="end">Fácil</ion-checkbox>
+                <ion-checkbox formControlName="facil" labelPlacement="end"
+                  >Fácil</ion-checkbox
+                >
               </div>
               <div class="checkbox-tile">
-                <ion-checkbox formControlName="dificil" labelPlacement="end">Difícil</ion-checkbox>
+                <ion-checkbox formControlName="dificil" labelPlacement="end"
+                  >Difícil</ion-checkbox
+                >
               </div>
             </div>
           </div>
@@ -83,20 +143,33 @@
       <div class="group-title mini">Tipo</div>
       <div class="va-tiles-grid">
         <div class="checkbox-tile">
-          <ion-checkbox formControlName="tipoSimples" labelPlacement="end">Simples</ion-checkbox>
+          <ion-checkbox formControlName="tipoSimples" labelPlacement="end"
+            >Simples</ion-checkbox
+          >
         </div>
         <div class="checkbox-tile">
-          <ion-checkbox formControlName="tipoEndobronquico" labelPlacement="end">Endobrônquico</ion-checkbox>
+          <ion-checkbox formControlName="tipoEndobronquico" labelPlacement="end"
+            >Endobrônquico</ion-checkbox
+          >
         </div>
         <div class="checkbox-tile">
-          <ion-checkbox formControlName="tipoAramado" labelPlacement="end">Aramado</ion-checkbox>
+          <ion-checkbox formControlName="tipoAramado" labelPlacement="end"
+            >Aramado</ion-checkbox
+          >
         </div>
         <div class="checkbox-tile">
-          <ion-checkbox formControlName="tipoOutras" labelPlacement="end">Outras</ion-checkbox>
+          <ion-checkbox formControlName="tipoOutras" labelPlacement="end"
+            >Outras</ion-checkbox
+          >
         </div>
       </div>
       <div class="tile-input-row" *ngIf="formGroup.get('tipoOutras')?.value">
-        <input type="text" formControlName="tipoOutrasTexto" placeholder="Quais?" class="tile-input">
+        <input
+          type="text"
+          formControlName="tipoOutrasTexto"
+          placeholder="Quais?"
+          class="tile-input"
+        />
       </div>
 
       <div class="divider light"></div>
@@ -104,106 +177,199 @@
       <div class="group-title mini">Técnicas</div>
       <div class="va-tiles-grid">
         <div class="checkbox-tile">
-          <ion-checkbox formControlName="tecLaringoscopia" labelPlacement="end">Laringoscopia</ion-checkbox>
+          <ion-checkbox formControlName="tecLaringoscopia" labelPlacement="end"
+            >Laringoscopia</ion-checkbox
+          >
         </div>
         <div class="checkbox-tile">
-          <ion-checkbox formControlName="tecRetrograda" labelPlacement="end">Retrógrada</ion-checkbox>
+          <ion-checkbox formControlName="tecRetrograda" labelPlacement="end"
+            >Retrógrada</ion-checkbox
+          >
         </div>
         <div class="checkbox-tile">
-          <ion-checkbox formControlName="tecVideolaringoscopia" labelPlacement="end">Videolaringoscopia</ion-checkbox>
+          <ion-checkbox
+            formControlName="tecVideolaringoscopia"
+            labelPlacement="end"
+            >Videolaringoscopia</ion-checkbox
+          >
         </div>
         <div class="checkbox-tile">
-          <ion-checkbox formControlName="tecBroncofibroscopia" labelPlacement="end">Broncofibroscopia</ion-checkbox>
+          <ion-checkbox
+            formControlName="tecBroncofibroscopia"
+            labelPlacement="end"
+            >Broncofibroscopia</ion-checkbox
+          >
         </div>
         <div class="checkbox-tile">
-          <ion-checkbox formControlName="tecTraqueostomia" labelPlacement="end">Traqueostomia</ion-checkbox>
+          <ion-checkbox formControlName="tecTraqueostomia" labelPlacement="end"
+            >Traqueostomia</ion-checkbox
+          >
         </div>
         <div class="checkbox-tile">
-          <ion-checkbox formControlName="tecVAOutras" labelPlacement="end">Outras</ion-checkbox>
+          <ion-checkbox formControlName="tecVAOutras" labelPlacement="end"
+            >Outras</ion-checkbox
+          >
         </div>
       </div>
       <div class="tile-input-row" *ngIf="formGroup.get('tecVAOutras')?.value">
-        <input type="text" formControlName="tecVAOutrasTexto" placeholder="Quais?" class="tile-input">
+        <input
+          type="text"
+          formControlName="tecVAOutrasTexto"
+          placeholder="Quais?"
+          class="tile-input"
+        />
       </div>
     </div>
   </div>
 
   <div class="tec-grid-3col mt-24">
-
     <div class="technique-card">
       <div class="card-header-simple">Bloqueios Espinhais</div>
-      <app-radio-group label="Realizado?" [options]="yesNoOptions"
-        formControlName="bloqueiosEspinhais" [required]="true"></app-radio-group>
+      <app-radio-group
+        label="Realizado?"
+        [options]="yesNoOptions"
+        formControlName="bloqueiosEspinhais"
+        [required]="true"
+      ></app-radio-group>
 
-      <div *ngIf="formGroup.get('bloqueiosEspinhais')?.value === 'sim'" class="cond-block">
+      <div
+        *ngIf="formGroup.get('bloqueiosEspinhais')?.value === 'sim'"
+        class="cond-block"
+      >
         <div class="divider light"></div>
         <div class="group-title mini">Nível de punção</div>
-        <app-checkbox-group [options]="nivelPuncaoOptions" formControlName="nivelPuncao"
-          direction="horizontal" class="grid-checkbox-2col"></app-checkbox-group>
+        <app-checkbox-group
+          [options]="nivelPuncaoOptions"
+          formControlName="nivelPuncao"
+          direction="horizontal"
+          class="grid-checkbox-2col"
+        ></app-checkbox-group>
 
         <div class="divider light"></div>
-        <app-radio-group label="Posição"
-          [options]="[{label:'Sentada', value:'Sentada'}, {label:'Decúbito Lateral', value:'Decubito'}]"
-          formControlName="posicaoPuncao" direction="horizontal"></app-radio-group>
+        <app-radio-group
+          label="Posição"
+          [options]="[
+            { label: 'Sentada', value: 'Sentada' },
+            { label: 'Decúbito Lateral', value: 'Decubito' },
+          ]"
+          formControlName="posicaoPuncao"
+          direction="horizontal"
+        ></app-radio-group>
 
-        <app-radio-group label="Cateter?" [options]="yesNoOptions"
-          formControlName="cateter" [required]="true"></app-radio-group>
-        <app-radio-group label="Opióide?" [options]="yesNoOptions"
-          formControlName="opioide" [required]="true"></app-radio-group>
+        <app-radio-group
+          label="Cateter?"
+          [options]="yesNoOptions"
+          formControlName="cateter"
+          [required]="true"
+        ></app-radio-group>
+        <app-radio-group
+          label="Opióide?"
+          [options]="yesNoOptions"
+          formControlName="opioide"
+          [required]="true"
+        ></app-radio-group>
 
         <div class="field-block">
           <label class="field-label">Número de punções</label>
-          <input type="text" formControlName="numeroPuncoes" class="tile-input">
+          <input
+            type="text"
+            formControlName="numeroPuncoes"
+            class="tile-input"
+          />
         </div>
       </div>
     </div>
 
     <div class="technique-card">
       <div class="card-header-simple">Sedação e Oxigênio</div>
-      <app-radio-group label="Sedação?" [options]="yesNoOptions"
-        formControlName="sedacao" [required]="true"></app-radio-group>
+      <app-radio-group
+        label="Sedação?"
+        [options]="yesNoOptions"
+        formControlName="sedacao"
+        [required]="true"
+      ></app-radio-group>
 
       <div class="divider light"></div>
 
-      <app-radio-group label="Suplementação de O₂?" [options]="yesNoOptions"
-        formControlName="suplementacaoO2" [required]="true"></app-radio-group>
+      <app-radio-group
+        label="Suplementação de O₂?"
+        [options]="yesNoOptions"
+        formControlName="suplementacaoO2"
+        [required]="true"
+      ></app-radio-group>
 
-      <div *ngIf="formGroup.get('suplementacaoO2')?.value === 'sim'" class="cond-block">
+      <div
+        *ngIf="formGroup.get('suplementacaoO2')?.value === 'sim'"
+        class="cond-block"
+      >
         <div class="group-title mini">Tipo</div>
         <div class="va-tiles-grid">
           <div class="checkbox-tile" *ngFor="let opt of suplementacaoO2Options">
             <ion-checkbox
-              [checked]="(formGroup.get('tipoSuplementacaoO2')?.value || []).includes(opt.value)"
+              [checked]="
+                (formGroup.get('tipoSuplementacaoO2')?.value || []).includes(
+                  opt.value
+                )
+              "
               (ionChange)="toggleO2($event.detail.checked, opt.value)"
-              labelPlacement="end">
+              labelPlacement="end"
+            >
               {{ opt.label }}
             </ion-checkbox>
           </div>
           <div class="checkbox-tile">
-            <ion-checkbox formControlName="suplementacaoO2TemOutros" labelPlacement="end">Outros</ion-checkbox>
+            <ion-checkbox
+              formControlName="suplementacaoO2TemOutros"
+              labelPlacement="end"
+              >Outros</ion-checkbox
+            >
           </div>
         </div>
-        <div class="tile-input-row" *ngIf="formGroup.get('suplementacaoO2TemOutros')?.value">
-          <input type="text" formControlName="suplementacaoO2Outros"
-            placeholder="Especifique..." class="tile-input">
+        <div
+          class="tile-input-row"
+          *ngIf="formGroup.get('suplementacaoO2TemOutros')?.value"
+        >
+          <input
+            type="text"
+            formControlName="suplementacaoO2Outros"
+            placeholder="Especifique..."
+            class="tile-input"
+          />
         </div>
       </div>
     </div>
 
     <div class="technique-card">
       <div class="card-header-simple">Bloqueio Plexo / Neuro</div>
-      <app-radio-group label="Bloqueio Plexo?" [options]="yesNoOptions"
-        formControlName="bloqueioPlexo" [required]="true"></app-radio-group>
+      <app-radio-group
+        label="Bloqueio Plexo?"
+        [options]="yesNoOptions"
+        formControlName="bloqueioPlexo"
+        [required]="true"
+      ></app-radio-group>
 
-      <div *ngIf="formGroup.get('bloqueioPlexo')?.value === 'sim'" class="cond-block">
+      <div
+        *ngIf="formGroup.get('bloqueioPlexo')?.value === 'sim'"
+        class="cond-block"
+      >
         <div class="divider light"></div>
-        <app-radio-group label="Neuroestimulador?" [options]="yesNoOptions"
-          formControlName="neuroestimulador" [required]="true"></app-radio-group>
+        <app-radio-group
+          label="Neuroestimulador?"
+          [options]="yesNoOptions"
+          formControlName="neuroestimulador"
+          [required]="true"
+        ></app-radio-group>
 
-        <div *ngIf="formGroup.get('neuroestimulador')?.value === 'sim'" class="cond-sub">
+        <div
+          *ngIf="formGroup.get('neuroestimulador')?.value === 'sim'"
+          class="cond-sub"
+        >
           <div class="group-title mini">Nervos estimulados</div>
-          <app-checkbox-group [options]="nervosEstimuladosOptions" formControlName="nervosEstimulados"
-            direction="vertical"></app-checkbox-group>
+          <app-checkbox-group
+            [options]="nervosEstimuladosOptions"
+            formControlName="nervosEstimulados"
+            direction="vertical"
+          ></app-checkbox-group>
         </div>
       </div>
     </div>

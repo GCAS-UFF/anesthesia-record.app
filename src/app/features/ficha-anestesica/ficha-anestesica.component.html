@@ -318,17 +318,58 @@
         [class.shake-error]="showValidationErrors && isSectionInvalid('equipe')"
       >
         <div class="grid-equipe">
+          <!-- Cirurgião e Assistente: DDL pesquisável (nome ou código). Salva o ID. -->
           <div class="field-block">
             <label class="field-label">Cirurgião *</label>
-            <input type="text" formControlName="cirurgiao" class="text-input" />
+            <div class="ddl" [class.open]="isDdlOpen('cirurgiao')">
+              <button type="button" class="ddl-trigger text-input" (click)="toggleDdl('cirurgiao')">
+                <span class="ddl-value" [class.placeholder]="!form.get('equipe.cirurgiao')?.value">
+                  {{ getSelectedLabel(equipeLista, form.get('equipe.cirurgiao')?.value) || 'Selecionar cirurgião...' }}
+                </span>
+                <ion-icon name="chevron-down-outline"></ion-icon>
+              </button>
+              <div class="ddl-panel" *ngIf="isDdlOpen('cirurgiao')">
+                <input class="ddl-search" type="text" placeholder="Buscar por nome ou código..."
+                  [ngModel]="ddlFilter['cirurgiao']" (ngModelChange)="setDdlFilter('cirurgiao', $event)"
+                  [ngModelOptions]="{ standalone: true }" autofocus />
+                <ul class="ddl-list">
+                  <li *ngFor="let opt of filterList(equipeLista, 'cirurgiao')"
+                      (click)="selectDdlOption(form.get('equipe.cirurgiao'), 'cirurgiao', opt.id)">
+                    <span class="ddl-code" *ngIf="opt.codigo">{{ opt.codigo }}</span>
+                    <span class="ddl-name">{{ opt.name }}</span>
+                  </li>
+                  <li *ngIf="filterList(equipeLista, 'cirurgiao').length === 0" class="ddl-empty">
+                    Nenhum resultado
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
           <div class="field-block">
             <label class="field-label">Assistente *</label>
-            <input
-              type="text"
-              formControlName="assistente"
-              class="text-input"
-            />
+            <div class="ddl" [class.open]="isDdlOpen('assistente')">
+              <button type="button" class="ddl-trigger text-input" (click)="toggleDdl('assistente')">
+                <span class="ddl-value" [class.placeholder]="!form.get('equipe.assistente')?.value">
+                  {{ getSelectedLabel(equipeLista, form.get('equipe.assistente')?.value) || 'Selecionar assistente...' }}
+                </span>
+                <ion-icon name="chevron-down-outline"></ion-icon>
+              </button>
+              <div class="ddl-panel" *ngIf="isDdlOpen('assistente')">
+                <input class="ddl-search" type="text" placeholder="Buscar por nome ou código..."
+                  [ngModel]="ddlFilter['assistente']" (ngModelChange)="setDdlFilter('assistente', $event)"
+                  [ngModelOptions]="{ standalone: true }" autofocus />
+                <ul class="ddl-list">
+                  <li *ngFor="let opt of filterList(equipeLista, 'assistente')"
+                      (click)="selectDdlOption(form.get('equipe.assistente'), 'assistente', opt.id)">
+                    <span class="ddl-code" *ngIf="opt.codigo">{{ opt.codigo }}</span>
+                    <span class="ddl-name">{{ opt.name }}</span>
+                  </li>
+                  <li *ngIf="filterList(equipeLista, 'assistente').length === 0" class="ddl-empty">
+                    Nenhum resultado
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
           <div class="field-block col-span-2">
             <label class="field-label">Diagnóstico pré-operatório *</label>
@@ -448,15 +489,70 @@
           showValidationErrors && isSectionInvalid('posProcedimento')
         "
       >
-        <div class="grid-pos">
-          <div class="field-block">
-            <label class="field-label">Cirurgia realizada *</label>
-            <input
-              type="text"
-              formControlName="cirurgiaRealizada"
-              class="text-input"
-            />
+        <!-- Cirurgias realizadas: lista dinâmica (FormArray) — DDL de procedimento + hora + flag "Principal" exclusiva. -->
+        <div class="procedimentos-list" formArrayName="procedimentos">
+          <div
+            class="procedimento-row"
+            *ngFor="let row of procedimentosArray.controls; let i = index"
+            [formGroupName]="i"
+          >
+            <div class="proc-index">#{{ i + 1 }}</div>
+            <div class="field-block proc-nome">
+              <label class="field-label">Cirurgia realizada *</label>
+              <div class="ddl" [class.open]="isDdlOpen('proc-' + i)">
+                <button type="button" class="ddl-trigger text-input" (click)="toggleDdl('proc-' + i)">
+                  <span class="ddl-value" [class.placeholder]="!row.get('procedimentoId')?.value">
+                    {{ getSelectedLabel(procedimentoLista, row.get('procedimentoId')?.value) || 'Selecionar procedimento...' }}
+                  </span>
+                  <ion-icon name="chevron-down-outline"></ion-icon>
+                </button>
+                <div class="ddl-panel" *ngIf="isDdlOpen('proc-' + i)">
+                  <input class="ddl-search" type="text" placeholder="Buscar procedimento..."
+                    [ngModel]="ddlFilter['proc-' + i]" (ngModelChange)="setDdlFilter('proc-' + i, $event)"
+                    [ngModelOptions]="{ standalone: true }" autofocus />
+                  <ul class="ddl-list">
+                    <li *ngFor="let opt of filterList(procedimentoLista, 'proc-' + i)"
+                        (click)="selectDdlOption(row.get('procedimentoId'), 'proc-' + i, opt.id)">
+                      <span class="ddl-code" *ngIf="opt.codigo">{{ opt.codigo }}</span>
+                      <span class="ddl-name">{{ opt.name }}</span>
+                    </li>
+                    <li *ngIf="filterList(procedimentoLista, 'proc-' + i).length === 0" class="ddl-empty">
+                      Nenhum resultado
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="field-block proc-hora">
+              <label class="field-label">Hora *</label>
+              <input type="time" formControlName="hora" class="text-input" />
+            </div>
+            <div class="proc-principal">
+              <label class="proc-principal-check">
+                <input
+                  type="checkbox"
+                  [checked]="row.get('principal')?.value"
+                  (change)="setPrincipal(i, $any($event.target).checked)"
+                />
+                <span>Principal</span>
+              </label>
+            </div>
+            <button
+              type="button"
+              class="proc-remove-btn"
+              (click)="removeProcedimento(i)"
+              aria-label="Remover procedimento"
+            >
+              <ion-icon name="trash-outline"></ion-icon>
+            </button>
           </div>
+          <button type="button" class="btn-add-proc" (click)="addProcedimento()">
+            <ion-icon name="add-outline"></ion-icon>
+            Adicionar procedimento
+          </button>
+        </div>
+
+        <div class="grid-pos">
           <div class="field-block">
             <label class="field-label">Hora término cirurgia *</label>
             <input
@@ -754,13 +850,30 @@
             />
           </div>
           <div class="field-block">
-            <label class="field-label">2º Anestesiologista</label>
-            <input
-              type="text"
-              formControlName="segundoAnestesista"
-              placeholder="Nome / CRM"
-              class="text-input"
-            />
+            <label class="field-label">2º Anestesiologista</label>            
+            <div class="ddl" [class.open]="isDdlOpen('segundoAnestesista')">
+              <button type="button" class="ddl-trigger text-input" (click)="toggleDdl('segundoAnestesista')">
+                <span class="ddl-value" [class.placeholder]="!form.get('assinaturas.segundoAnestesista')?.value">
+                  {{ getSelectedLabel(anestesistasLista, form.get('assinaturas.segundoAnestesista')?.value) || 'Selecionar anestesiologista...' }}
+                </span>
+                <ion-icon name="chevron-down-outline"></ion-icon>
+              </button>
+              <div class="ddl-panel" *ngIf="isDdlOpen('segundoAnestesista')">
+                <input class="ddl-search" type="text" placeholder="Buscar por nome ou código..."
+                  [ngModel]="ddlFilter['segundoAnestesista']" (ngModelChange)="setDdlFilter('segundoAnestesista', $event)"
+                  [ngModelOptions]="{ standalone: true }" autofocus />
+                <ul class="ddl-list">
+                  <li *ngFor="let opt of filterList(anestesistasLista, 'segundoAnestesista')"
+                      (click)="selectDdlOption(form.get('assinaturas.segundoAnestesista'), 'segundoAnestesista', opt.id)">
+                    <span class="ddl-code" *ngIf="opt.codigo">{{ opt.codigo }}</span>
+                    <span class="ddl-name">{{ opt.name }}</span>
+                  </li>
+                  <li *ngIf="filterList(anestesistasLista, 'segundoAnestesista').length === 0" class="ddl-empty">
+                    Nenhum resultado
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
           <div class="field-block">
             <label class="field-label">Data *</label>

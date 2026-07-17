@@ -3,7 +3,7 @@ import { environment } from "src/environments/environment";
 import { ApiService } from "./base/api.service";
 import { BaseService } from "./base/base.service";
 import { AnesthesiaRecordModel } from "../../shared/models/anesthesia-record.model";
-import { from, interval, lastValueFrom, Observable, of, Subscription } from "rxjs";
+import { from, interval, Observable, of, Subscription } from "rxjs";
 import { catchError, concatMap, delay, map, startWith } from "rxjs/operators";
 import { BehaviorSubject } from 'rxjs';
 import { finalize } from 'rxjs/operators';
@@ -33,7 +33,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
   saveRecord(record: any): Observable<any> {
     console.log('Serviço: Salvando ficha via API...', record);
-    const surgeryId = Number(record.cirurgiaId);
+    const surgeryId = Number(record.cirurgiaId ?? record.surgeryId ?? record.id);
 
     const apiPayload = this.mapToApiFormat(record, surgeryId);
 
@@ -46,7 +46,6 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   }
 
   syncPendingDrafts(): void {
-
     if (this.syncing)
       return;
 
@@ -221,7 +220,9 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   }
 
   private formatTimeForApi(timeStr: string | undefined | null): string {
-    if (!timeStr) return '00:00:00';
+    if (!timeStr) 
+      return '00:00:00';
+    
     if (timeStr.includes('T')) {
       const timePart = timeStr.split('T')[1];
       return timePart.substring(0, 8);
@@ -232,17 +233,56 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     return timeStr.substring(0, 8);
   }
 
-  // Mapper do App (Aninhado) para a API (Flat)
+  private pick<T>(...values: T[]): T | undefined {
+    for (const v of values) {
+      if (v !== undefined && v !== null) return v;
+    }
+    return undefined;
+  }
+
   private mapToApiFormat(app: any, surgeryId: number): any {
     const todayDate = new Date().toISOString().split('T')[0];
     const parsedAsa = app.dadosVitais?.asa ? parseInt(app.dadosVitais.asa.replace('ASA ', '')) : 1;
 
+    const surgeries = Array.isArray(app.cirurgias)
+      ? app.cirurgias
+      : Array.isArray(app.posProcedimento?.procedimentos)
+        ? app.posProcedimento.procedimentos.map((p: any) => ({
+          id: p.id ?? p.procedimentoId ?? null,
+          description: p.description ?? p.descricao ?? '',
+          cid: p.cid ?? null,
+          hora: p.hora ?? '',
+          isPrimary: !!(p.isPrimary ?? p.principal)
+        }))
+        : [];
+
+    const principal = surgeries.find((c: any) => c.isPrimary) || surgeries[0];
+
+    const firstAnesthesiologistId = this.pick(
+      app.firstAnesthesiologistId,
+      app.assinaturas?.primeiroAnestesistaId, 0   );     
+ 
+    const firstAnesthesiologistName = this.pick(
+      app.firstAnesthesiologistName,
+      app.assinaturas?.primeiroAnestesista, '');   
+    
+    const secondAnesthesiologistId = this.pick(
+      app.secondAnesthesiologistId,
+      app.assinaturas?.segundoAnestesistaId,
+      null
+    );
+    const secondAnesthesiologistName = this.pick(
+      app.secondAnesthesiologistName,
+      app.assinaturas?.segundoAnestesista,
+      null
+    );
+
     return {
       id: surgeryId,
       surgeryId: surgeryId,
-      patientId: app.patientId || 1, // Fallback caso não seja passado
-      externalPatientId: app.externalPatientId || "EXT-000",
+      patientId: app.patientId || 1,
       recordDate: app.recordDate || todayDate,
+      surgeries: surgeries,
       patientIdentifiedBeforeInduction: app.seguranca?.identificadoAvaliado === 'sim',
       anestheticConsentSigned: app.seguranca?.consentimentoAssinado === 'sim',
       anesthesiaEquipmentChecked: app.seguranca?.equipamentosChecados === 'sim',
@@ -259,24 +299,26 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       anesthesiaStartTime: this.formatTimeForApi(app.equipe?.horaInicioAnestesia),
       surgeryEndTime: this.formatTimeForApi(app.posProcedimento?.horaTerminoCirurgia),
       anesthesiaEndTime: this.formatTimeForApi(app.posProcedimento?.horaTerminoAnestesia),
-      surgeon: app.equipe?.cirurgiao || '',
-      assistant: app.equipe?.assistente || '',
+      surgeon: this.pick(app.surgeon, app.equipe?.cirurgiao, '') || '',
+      surgeonId: this.pick(app.surgeonId, app.equipe?.cirurgiaoId, null),
+      assistant: this.pick(app.assistant, app.equipe?.assistente, '') || '',
+      assistantId: this.pick(app.assistantId, app.equipe?.assistenteId, null),
       preOperativeDiagnosis: app.equipe?.diagnosticoPre || '',
-      surgicalPosition: 1, // hardcoded Enum
+      surgicalPosition: 1,
       usesCushions: app.posicao?.usoCoxim === 'sim',
-      venousAccessType: 1, // hardcoded Enum
+      venousAccessType: 1,
       venousAccessLocation: app.posicao?.localAcesso || '',
       difficultVenousPuncture: app.posicao?.dificuldadePuncao === 'sim',
       generalAnesthesia: app.tecnica?.anestesiaGeral === 'sim',
-      respirationMode: 1, // Enum
-      controlledVentilationMode: 1, // Enum
+      respirationMode: 1,
+      controlledVentilationMode: 1,
       co2AbsorberCircuit: app.tecnica?.circuitoAbsorvedor === 'sim',
-      airwayDeviceType: 1, // Enum
+      airwayDeviceType: 1,
       airwayDeviceNumber: "7.5",
       oralTube: app.tecnica?.oral || false,
       nasalTube: app.tecnica?.nasal || false,
       intubationDifficulty: app.tecnica?.dificil ? 2 : 1,
-      airwayType: 1, // Enum
+      airwayType: 1,
       otherAirwayTypeDescription: null,
       laryngoscopy: app.tecnica?.tecLaringoscopia || false,
       retrogradeTechnique: app.tecnica?.tecRetrograda || false,
@@ -288,7 +330,12 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       sedationPerformed: app.tecnica?.sedacao === 'sim',
       oxygenSupplementation: app.tecnica?.suplementacaoO2 === 'sim',
       plexusBlockPerformed: app.tecnica?.bloqueioPlexo === 'sim',
-      surgeryPerformed: app.posProcedimento?.cirurgiaRealizada || '',
+      surgeryPerformed: this.pick(
+        app.surgeryPerformed,
+        principal?.description,
+        app.posProcedimento?.cirurgiaRealizada,
+        ''
+      ) || '',
       postOperativeDiagnosis: app.posProcedimento?.diagnosticoPos || '',
       consciousnessScore: Number(app.alderete?.consciencia) || 0,
       activityScore: Number(app.alderete?.atividade) || 0,
@@ -296,17 +343,16 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       respirationScore: Number(app.alderete?.respiracao) || 0,
       oxygenSaturationScore: Number(app.alderete?.saturacao) || 0,
       totalAldreteKroulikScore: 10,
-      clinicalDischargeCondition: 1, // Enum
-      destination: 1, // Enum
+      clinicalDischargeCondition: 1,
+      destination: 1,
       hasPain: app.alderete?.dor === 'sim',
-      firstAnesthesiologistId: 0,
-      firstAnesthesiologistName: "",
-      secondAnesthesiologistId: null,
-      secondAnesthesiologistName: null
+      firstAnesthesiologistId: firstAnesthesiologistId ?? 0,
+      firstAnesthesiologistName: firstAnesthesiologistName ?? '',
+      secondAnesthesiologistId: secondAnesthesiologistId ?? null,
+      secondAnesthesiologistName: secondAnesthesiologistName ?? null
     };
   }
 
-  // Mapper da API (Flat) para o App (Aninhado)
   private mapToAppFormat(api: any): any {
     return {
       id: api.id,
@@ -334,7 +380,9 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       },
       equipe: {
         cirurgiao: api.surgeon,
+        cirurgiaoId: api.surgeonId ?? null,
         assistente: api.assistant,
+        assistenteId: api.assistantId ?? null,
         diagnosticoPre: api.preOperativeDiagnosis,
         horaInicioAnestesia: api.anesthesiaStartTime
       },
@@ -361,6 +409,15 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       },
       posProcedimento: {
         cirurgiaRealizada: api.surgeryPerformed,
+        procedimentos: Array.isArray(api.cirurgias)
+          ? api.cirurgias.map((c: any) => ({
+            id: c.id ?? null,
+            description: c.description ?? '',
+            cid: c.cid ?? null,
+            hora: c.hora ?? '',
+            isPrimary: !!c.isPrimary
+          }))
+          : [],
         horaTerminoCirurgia: api.surgeryEndTime,
         diagnosticoPos: api.postOperativeDiagnosis,
         horaTerminoAnestesia: api.anesthesiaEndTime
@@ -373,7 +430,12 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         saturacao: api.oxygenSaturationScore?.toString(),
         dor: api.hasPain ? 'sim' : 'nao'
       },
-      assinaturas: {}
+      assinaturas: {
+        primeiroAnestesista: api.firstAnesthesiologistName ?? '',
+        primeiroAnestesistaId: api.firstAnesthesiologistId ?? null,
+        segundoAnestesista: api.secondAnesthesiologistName ?? '',
+        segundoAnestesistaId: api.secondAnesthesiologistId ?? null
+      }
     };
   }
 }

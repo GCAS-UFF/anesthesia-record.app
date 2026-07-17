@@ -3,7 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { AlertController, ToastController } from '@ionic/angular/standalone';
 import { IonButton, IonIcon, IonCheckbox, IonSpinner, IonModal } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, ValidationErrors, Validators } from '@angular/forms';
 
 import { Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -25,7 +25,9 @@ import {
   createOutline,
   lockClosedOutline,
   shieldCheckmark,
-  alertCircleOutline, cloudDoneOutline } from 'ionicons/icons';
+  chevronDownOutline,
+  alertCircleOutline, cloudDoneOutline
+} from 'ionicons/icons';
 
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
@@ -40,6 +42,8 @@ import { SurgeryService } from 'src/app/core/services/surgery.service';
 import { AnesthesiaRecordService } from 'src/app/core/services/anesthesia-record.service';
 import { AnesthesiaRecordModel } from 'src/app/shared/models/anesthesia-record.model';
 import { AuthService } from 'src/app/core/services/auth.service';
+import { MasterDataService } from 'src/app/core/services/master-data.service';
+
 
 @Component({
   selector: 'app-ficha-anestesica',
@@ -76,6 +80,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   canEdit = true;
   loggedUser: any;
 
+  medicationsLista: { id: string; name: string; codigo?: string }[] = [];
+
   isMenuOpen = false;
 
   @HostListener('document:ionDidOpen', ['$event'])
@@ -88,6 +94,13 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   onSideMenuClose(ev: Event) {
     const tag = (ev.target as HTMLElement | null)?.tagName?.toLowerCase();
     if (tag === 'ion-menu') this.isMenuOpen = false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(ev: MouseEvent) {
+    if (!this.openDdl) return;
+    const target = ev.target as HTMLElement | null;
+    if (target && !target.closest('.ddl')) this.openDdl = null;
   }
 
   viaPreOptions = [
@@ -176,6 +189,13 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   private autoSaveSub?: Subscription;
   private conditionalSubs: Subscription[] = [];
 
+  procedimentoLista: { id: string; name: string; codigo?: string }[] = [];
+  equipeLista: { id: string; name: string; codigo?: string }[] = [];
+  anestesistasLista: { id: string; name: string; codigo?: string }[] = [];
+
+  openDdl: string | null = null;
+  ddlFilter: Record<string, string> = {};
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -185,9 +205,10 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     private alertController: AlertController,
     private toastController: ToastController,
     private location: Location,
-    private authService: AuthService
+    private authService: AuthService,
+    private masterData: MasterDataService
   ) {
-    addIcons({checkmarkCircle,addOutline,trashOutline,returnDownForwardOutline,closeCircleOutline,timeOutline,alertCircleOutline,lockClosedOutline,shieldCheckmarkOutline,syncOutline,printOutline,shieldCheckmark,cloudDoneOutline,createOutline,pencilOutline,saveOutline,arrowBackOutline,closeOutline});
+    addIcons({ checkmarkCircle, addOutline, trashOutline, returnDownForwardOutline, closeCircleOutline, timeOutline, alertCircleOutline, lockClosedOutline, shieldCheckmarkOutline, syncOutline, printOutline, shieldCheckmark, cloudDoneOutline, createOutline, pencilOutline, saveOutline, arrowBackOutline, closeOutline, chevronDownOutline });
     this.initForm();
   }
 
@@ -195,6 +216,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.loggedUser = this.authService.getUser();
     this.cirurgiaId = this.route.snapshot.paramMap.get('id');
     this.patientId = this.route.snapshot.paramMap.get('patientId');
+    this.loadDropdownLists();
     if (this.cirurgiaId && this.patientId) {
       this.loadPatientData(this.cirurgiaId, this.patientId);
     }
@@ -275,7 +297,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         nervosEstimuladosOutros: ['']
       }),
       posProcedimento: this.fb.group({
-        cirurgiaRealizada: ['', Validators.required],
+        procedimentos: this.fb.array([this.createProcedimentoRow()]),
         horaTerminoCirurgia: ['', Validators.required],
         diagnosticoPos: ['', Validators.required],
         horaTerminoAnestesia: ['', Validators.required]
@@ -576,7 +598,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   get aldereteTotal(): number {
     const g = this.form.get('alderete') as FormGroup;
-    if (!g) 
+    if (!g)
       return 0;
 
     return ['consciencia', 'atividade', 'circulacao', 'respiracao', 'saturacao']
@@ -637,12 +659,15 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       const draft = this.anesthesiaService.getDraft(this.cirurgiaId!);
       this.anesthesiaService.getLatestByPatient(this.cirurgiaId!, patientId).subscribe(savedRecord => {
         if (draft) {
+          this.hydrateProcedimentos((draft as any)?.posProcedimento?.procedimentos);
           this.form.patchValue(draft);
           if (draft.antibioticsList) this.antibioticsList = draft.antibioticsList;
         } else if (savedRecord) {
+          this.hydrateProcedimentos((savedRecord as any)?.posProcedimento?.procedimentos);
           this.form.patchValue(savedRecord);
           if ((savedRecord as any).antibioticsList) this.antibioticsList = (savedRecord as any).antibioticsList;
         } else {
+          this.hydrateProcedimentos(this.buildProcedimentosFromSurgery());
           this.form.get('dadosVitais.peso')?.patchValue(patient.weightKg);
         }
         this.isLoading = false;
@@ -729,6 +754,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       this.signatureError = 'Você precisa marcar a confirmação de veracidade dos dados.';
       return;
     }
+
     const typed = this.signatureTypedName.trim();
     const expected = this.expectedSignatureName;
     if (!typed) {
@@ -748,17 +774,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   private executarSalvamento() {
     this.isSaving = true;
-    const record: AnesthesiaRecordModel = {
-      ...this.form.value,
-      cirurgiaId: this.cirurgiaId,
-      antibioticsList: this.antibioticsList,
-      alderete: { ...this.form.value.alderete, destino: 'RPA' },
-      signature: {
-        signedBy: this.form.value.assinaturas.primeiroAnestesista,
-        signedAt: new Date().toISOString(),
-        userId: this.loggedUser?.id
-      }
-    } as any;
+    const record = this.buildPayload();
 
     this.anesthesiaService.saveRecord(record).subscribe({
       next: async () => {
@@ -773,6 +789,79 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     });
   }
 
+  private buildPayload(): AnesthesiaRecordModel {
+    const raw = this.form.value;
+
+    const resolveProfessional = (id: any) => {
+      if (!id) return null;
+      const found = this.asArray(this.masterData.getProfessionalsCache())
+        .find((p: any) => String(p.id) === String(id));
+      return found
+        ? { id: found.id, name: found.name, registration: found.registration }
+        : { id, name: null, registration: null };
+    };
+
+    const resolveProcedure = (id: any) => {
+      if (!id) return null;
+      const found = this.asArray(this.masterData.getProceduresCache())
+        .find((p: any) => String(p.id) === String(id));
+      return found
+        ? { id: found.id, description: found.description, cid: found.cid }
+        : { id, description: null, cid: null };
+    };
+
+    const procedimentos = (raw.posProcedimento?.procedimentos || [])
+      .filter((p: any) => p.procedimentoId)
+      .map((p: any) => ({
+        ...resolveProcedure(p.procedimentoId),
+        hora: p.hora,
+        isPrimary: !!p.principal
+      }));
+
+    const primaryProc = procedimentos.find((p: any) => p.isPrimary) ?? procedimentos[0] ?? null;
+    const segundoResolved = resolveProfessional(raw.assinaturas?.segundoAnestesista);
+    const primeiroResolved = resolveProfessional(this.loggedUser?.id);
+
+    return {
+      ...raw,
+      cirurgiaId: this.cirurgiaId,
+      patientId: this.patientId,
+      surgeryId: this.selectedSurgery?.id ?? null,
+      antibioticsList: this.antibioticsList,
+      cirurgias: procedimentos,
+      surgeryPerformed: primaryProc?.description ?? '',
+      firstAnesthesiologistId: primeiroResolved?.id ?? this.loggedUser?.id ?? 0,
+      firstAnesthesiologistName: primeiroResolved?.name ?? raw.assinaturas?.primeiroAnestesista ?? '',
+      secondAnesthesiologistId: segundoResolved?.id ?? null,
+      secondAnesthesiologistName: segundoResolved?.name ?? null,
+      equipe: {
+        ...raw.equipe,
+        cirurgiao: resolveProfessional(raw.equipe?.cirurgiao),
+        assistente: resolveProfessional(raw.equipe?.assistente)
+      },
+      posProcedimento: {
+        ...raw.posProcedimento,
+        procedimentos
+      },
+      alderete: { ...raw.alderete, destino: 'RPA' },
+      assinaturas: {
+        ...raw.assinaturas,
+        primeiroAnestesista: primeiroResolved
+          ?? { id: this.loggedUser?.id, name: raw.assinaturas?.primeiroAnestesista },
+        segundoAnestesista: segundoResolved
+      },
+      signature: {
+        signedBy: raw.assinaturas?.primeiroAnestesista,
+        signedAt: new Date().toISOString(),
+        userId: this.loggedUser?.id
+      },
+      meta: {
+        submittedAt: new Date().toISOString(),
+        appVersion: 'tablet-1.0'
+      }
+    } as any as AnesthesiaRecordModel;
+  }
+
   imprimir() {
     if (this.selectedSurgery?.id) {
       window.open(this.anesthesiaService.getPdfUrl(this.selectedSurgery.id), '_blank');
@@ -782,26 +871,166 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   voltar() {
     this.location.back();
   }
-
-  /**
-   * Finaliza a cirurgia.
-   *
-   * TODO: implementar o fluxo real (confirmação, chamada ao serviço para
-   * marcar a cirurgia como finalizada, atualização de estado local, etc.).
-   * Esta é apenas a base do método que será acionado pelo botão
-   * "Finalizar Cirurgia" na barra de ações da ficha.
-   */
+ 
   async finalizarCirurgia(): Promise<void> {
     if (!this.selectedSurgery?.id) {
       return;
     }
 
-    // Placeholder — a lógica real será implementada posteriormente.
-    // Exemplo de próximos passos:
-    //   1. Confirmar com o usuário via AlertController.
-    //   2. Validar/assinar a ficha se necessário.
-    //   3. Chamar o serviço (ex.: this.surgeryService.finalize(id)).
-    //   4. Exibir toast de sucesso e navegar de volta.
     console.log('[finalizarCirurgia] TODO: implementar', this.selectedSurgery.id);
+  }
+
+  get procedimentosArray(): FormArray {
+    return this.form.get('posProcedimento.procedimentos') as FormArray;
+  }
+
+  private createProcedimentoRow(data?: { procedimentoId?: string; hora?: string; principal?: boolean }): FormGroup {
+    return this.fb.group({
+      procedimentoId: [data?.procedimentoId ?? '', Validators.required],
+      hora: [data?.hora ?? '', Validators.required],
+      principal: [data?.principal ?? false]
+    });
+  }
+
+  addProcedimento(): void {
+    this.procedimentosArray.push(this.createProcedimentoRow());
+  }
+
+  removeProcedimento(index: number): void {
+    if (this.procedimentosArray.length <= 1) {
+      this.procedimentosArray.at(0).reset({ procedimentoId: '', hora: '', principal: false });
+      return;
+    }
+    const wasPrincipal = !!this.procedimentosArray.at(index)?.get('principal')?.value;
+    this.procedimentosArray.removeAt(index);
+    if (wasPrincipal && this.procedimentosArray.length > 0) {
+      this.procedimentosArray.at(0).get('principal')?.setValue(true);
+    }
+  }
+
+  setPrincipal(index: number, checked: boolean): void {
+    this.procedimentosArray.controls.forEach((ctrl, i) => {
+      ctrl.get('principal')?.setValue(i === index ? checked : false, { emitEvent: false });
+    });
+    this.procedimentosArray.updateValueAndValidity();
+  }
+
+  private hydrateProcedimentos(items?: Array<{ procedimentoId?: string; hora?: string; principal?: boolean }> | null): void {
+    if (!items || !items.length) return;
+    const arr = this.procedimentosArray;
+    while (arr.length) arr.removeAt(0);
+    items.forEach(it => arr.push(this.createProcedimentoRow(it)));
+    const hasPrincipal = arr.controls.some(c => !!c.get('principal')?.value);
+    if (!hasPrincipal) arr.at(0).get('principal')?.setValue(true);
+  }
+
+  private buildProcedimentosFromSurgery(): Array<{ procedimentoId: string; hora: string; principal: boolean }> {
+    const procs = this.selectedSurgery?.procedures ?? [];
+    if (!procs.length) return [];
+    return procs.map((p: any) => ({
+      procedimentoId: String(p.id ?? p.procedimentoId ?? ''),
+      hora: p.hora ?? '',
+      principal: !!p.isPrimary
+    })).filter((p: any) => p.procedimentoId);
+  }
+
+  private asArray(value: any): any[] {
+    if (Array.isArray(value))
+      return value;
+
+    if (value && Array.isArray(value.data))
+      return value.data;
+
+    return [];
+  }
+
+  private loadDropdownLists(): void {
+    const professionals = this.asArray(this.masterData.getProfessionalsCache());
+    const procedures = this.asArray(this.masterData.getProceduresCache());
+    const medications = this.asArray(this.masterData.getMedicationsCache());
+
+    const mappedProfs = professionals.map((p: any) => ({
+      id: String(p.id),
+      name: p.name,
+      codigo: p.registration || p.login || ''
+    }));
+
+    this.equipeLista = mappedProfs;
+    this.anestesistasLista = mappedProfs;
+
+    this.procedimentoLista = procedures.map((p: any) => ({
+      id: String(p.id),
+      name: p.description,
+      codigo: p.cid || ''
+    }));
+
+    this.medicationsLista = medications.map((m: any) => ({
+      id: String(m.id),
+      name: m.description
+    }));
+
+    if (!this.masterData.hasCache()) {
+      this.masterData.downloadMasterData().subscribe({
+        next: (res) => {
+          this.masterData.saveProfessionals(res.professionals || []);
+          this.masterData.saveProcedures(res.procedures || []);
+          this.masterData.saveMedications(res.medications || []);
+          this.loadDropdownLists();
+        },
+        error: () => this.toast('Não foi possível carregar as listas do AGHU.', 'warning')
+      });
+    }
+  }
+
+  toggleDdl(key: string): void {
+    this.openDdl = this.openDdl === key ? null : key;
+
+    if (this.openDdl && this.ddlFilter[key] == null)
+      this.ddlFilter[key] = '';
+  }
+
+  closeDdl(): void {
+    this.openDdl = null;
+  }
+
+  isDdlOpen(key: string): boolean {
+    return this.openDdl === key;
+  }
+
+  setDdlFilter(key: string, value: string): void {
+    this.ddlFilter[key] = value ?? '';
+  }
+
+  filterList(list: Array<{ id: string; name: string; codigo?: string }>, key: string) {
+    const term = (this.ddlFilter[key] || '').trim().toLowerCase();
+
+    if (!term)
+      return list;
+
+    return list.filter(item =>
+      item.name?.toLowerCase().includes(term) ||
+      String(item.id ?? '').toLowerCase().includes(term) ||
+      String(item.codigo ?? '').toLowerCase().includes(term)
+    );
+  }
+
+  selectDdlOption(control: AbstractControl | null, key: string, id: string): void {
+    control?.setValue(id);
+    control?.markAsDirty();
+    control?.markAsTouched();
+    this.ddlFilter[key] = '';
+    this.openDdl = null;
+  }
+
+  getSelectedLabel(list: Array<{ id: string; name: string; codigo?: string }>, id: any): string {
+    if (!id)
+      return '';
+
+    const found = list.find(i => String(i.id) === String(id));
+
+    if (!found)
+      return '';
+
+    return found.codigo ? `${found.codigo} — ${found.name}` : found.name;
   }
 }
