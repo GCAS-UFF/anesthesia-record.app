@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { addIcons } from 'ionicons';
+import { AlertController } from '@ionic/angular';
 import {
   menuOutline,
   wifiOutline,
@@ -61,6 +62,7 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
     private router: Router,
     private location: Location,
     private authService: AuthService,
+    private alertController: AlertController,
     private healthService: HealthService
   ) {
     addIcons({
@@ -169,13 +171,31 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
     this.router.navigate(['/config']);
   }
 
-  handleLogout(): void {
+  async handleLogout(): Promise<void> {
     if (this.isLoggingOut) return;
 
-    this.isLoggingOut = true;
-    this.closeUserMenu();
-    this.authService.logout();
-    this.router.navigate(['/login'], { replaceUrl: true });
+    const alert = await this.alertController.create({
+      header: 'Sair',
+      message: 'Deseja realmente sair da aplicação?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Sair',
+          role: 'destructive',
+          handler: () => {
+            this.isLoggingOut = true;
+            this.closeUserMenu();
+            this.authService.logout();
+            this.router.navigate(['/login'], { replaceUrl: true });
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   navigate(item: NavItem) {
