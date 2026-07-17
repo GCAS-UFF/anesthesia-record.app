@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, throwError, BehaviorSubject } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
+import { Observable, of, throwError, BehaviorSubject, interval } from 'rxjs';
+import { map, catchError, tap, startWith } from 'rxjs/operators';
 import { LoginCredentials } from '../../features/login/login.model';
 import { environment } from 'src/environments/environment';
 
@@ -88,7 +88,7 @@ export class AuthService {
     const sessionUserId = sessionStorage.getItem('userId') || localStorage.getItem('userId');
     return sessionUserId ? Number(sessionUserId) : 8; // Retorna 8 (Admin) como fallback seguro
   }
-
+  
   /**
    * Retrieves the last used CRM/CPF for auto-prefill.
    */

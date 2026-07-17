@@ -15,10 +15,13 @@ import {
   closeOutline,
   chevronDownOutline,
   arrowBackOutline,
+  cloudUploadOutline
 } from 'ionicons/icons';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { catchError, interval, of, startWith, Subscription, switchMap } from 'rxjs';
 import { HealthService } from 'src/app/core/services/health.service';
+import { SyncStatus } from 'src/app/core/enums/sync-statut.enum';
+import { AnesthesiaRecordService } from 'src/app/core/services/anesthesia-record.service';
 
 interface NavItem {
   icon: string;
@@ -46,8 +49,14 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   serverConnected = false;
   aghuConnected = false;
 
+  SyncStatus = SyncStatus;
+  syncStatus: SyncStatus = SyncStatus.Synced;
+  pendingDrafts = 0;
+  isSyncing = false;
+
   private healthSubscription?: Subscription;
   private userSubscription: Subscription = new Subscription();
+  private draftSubscription?: Subscription;
 
   menuOpen = false;
   userMenuOpen = false;
@@ -63,7 +72,8 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
     private location: Location,
     private authService: AuthService,
     private alertController: AlertController,
-    private healthService: HealthService
+    private healthService: HealthService,
+    private anesthesiaRecordService: AnesthesiaRecordService
   ) {
     addIcons({
       arrowBackOutline,
@@ -76,10 +86,28 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
       logOutOutline,
       closeOutline,
       chevronDownOutline,
+      cloudUploadOutline
     });
   }
+
   ngOnInit() {
     this.loadUserData();
+
+    this.draftSubscription =
+      this.anesthesiaRecordService.pendingDraftsCount$
+        .subscribe(count => {
+
+          this.pendingDrafts = count;
+
+          if (this.syncStatus === SyncStatus.Syncing) {
+            return;
+          }
+
+          this.syncStatus =
+            count > 0
+              ? SyncStatus.Pending
+              : SyncStatus.Synced;
+        });
 
     this.userSubscription = this.authService.user$.subscribe(user => {
       if (!user) {
@@ -95,6 +123,7 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.userSubscription.unsubscribe();
     this.healthSubscription?.unsubscribe();
+    this.draftSubscription?.unsubscribe();
   }
 
   loadUserData() {
@@ -154,6 +183,10 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
 
         this.serverConnected = response.data.database;
         this.aghuConnected = response.data.aghu;
+
+        this.anesthesiaRecordService.setServerStatus(
+          response.data.database && response.data.aghu
+        );
       });
   }
 

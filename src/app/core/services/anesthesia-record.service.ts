@@ -3,27 +3,121 @@ import { environment } from "src/environments/environment";
 import { ApiService } from "./base/api.service";
 import { BaseService } from "./base/base.service";
 import { AnesthesiaRecordModel } from "../../shared/models/anesthesia-record.model";
-import { Observable, of } from "rxjs";
-import { delay } from "rxjs/operators";
+import { from, interval, lastValueFrom, Observable, of, Subscription } from "rxjs";
+import { catchError, concatMap, delay, map, startWith } from "rxjs/operators";
+import { BehaviorSubject } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> {
 
+  private pendingDraftsCountSubject = new BehaviorSubject<number>(0);
+  pendingDraftsCount$ = this.pendingDraftsCountSubject.asObservable();
+
+  private syncingSubject = new BehaviorSubject<boolean>(false);
+  syncing$ = this.syncingSubject.asObservable();
+
+  private autoSyncSubscription?: Subscription;
+  private syncing = false;
+  private serverOnline = true;
+
+  private readonly DRAFT_PREFIX = 'draft_anesthesia_';
+
   constructor(api: ApiService) {
     super(api, 'anesthesiarecord');
+
+    this.updatePendingStatus();
   }
-  
-  saveRecord(record: any): Observable<any> {    
+
+  saveRecord(record: any): Observable<any> {
     console.log('Serviço: Salvando ficha via API...', record);
-    
     const surgeryId = Number(record.cirurgiaId);
-    
-    // Converte o form do Angular (aninhado) para o JSON flat da API
+
     const apiPayload = this.mapToApiFormat(record, surgeryId);
-    
-    return this.update(surgeryId, apiPayload);
+
+    return this.update(surgeryId, apiPayload).pipe(
+      map(response => ({
+        response,
+        surgeryId
+      }))
+    );
+  }
+
+  syncPendingDrafts(): void {
+
+    if (this.syncing)
+      return;
+
+    this.syncing = true;
+
+    this.startSync();
+
+    const drafts = this.getPendingDrafts();
+
+    from(drafts)
+      .pipe(
+        concatMap(draft =>
+          this.saveRecord(draft).pipe(
+            catchError(error => {
+              console.error('Erro ao sincronizar ficha', draft, error);
+              return of(null);
+            })
+
+          )
+
+        ),
+        finalize(() => {
+          this.syncing = false;
+          this.finishSync();
+        })
+      )
+      .subscribe(result => {
+
+        if (!result)
+          return;
+
+        this.clearDraft(result.surgeryId.toString());
+      });
+  }
+
+  private getPendingDrafts(): any[] {
+    return Object.keys(localStorage)
+      .filter(key => key.startsWith(this.DRAFT_PREFIX))
+      .map(key => JSON.parse(localStorage.getItem(key)!));
+  }
+
+  setServerStatus(isOnline: boolean): void {
+    this.serverOnline = isOnline;
+  }
+
+  startAutoSync(): void {
+
+    if (this.autoSyncSubscription) {
+      return;
+    }
+
+    this.autoSyncSubscription = interval(10000)
+      .pipe(startWith(0))
+      .subscribe(() => {
+
+        if (!navigator.onLine)
+          return;
+
+        if (!this.serverOnline)
+          return;
+
+        if (this.getPendingDraftsCount() === 0)
+          return;
+
+        this.syncPendingDrafts();
+      });
+  }
+
+  stopAutoSync(): void {
+    this.autoSyncSubscription?.unsubscribe();
+    this.autoSyncSubscription = undefined;
   }
 
   /**
@@ -47,6 +141,32 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         }
       });
     });
+  }
+
+  private updatePendingStatus(): void {
+    const count = Object.keys(localStorage)
+      .filter(key => key.startsWith(this.DRAFT_PREFIX))
+      .length;
+
+    this.pendingDraftsCountSubject.next(count);
+  }
+
+  refreshPendingDrafts(): void {
+    this.updatePendingStatus();
+  }
+
+  startSync(): void {
+    this.syncingSubject.next(true);
+  }
+
+  finishSync(): void {
+    this.syncingSubject.next(false);
+  }
+
+  getPendingDraftsCount(): number {
+    return Object.keys(localStorage)
+      .filter(key => key.startsWith(this.DRAFT_PREFIX))
+      .length;
   }
 
   /**
@@ -76,6 +196,8 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       pacienteId,
       updatedAt: new Date().toISOString()
     }));
+
+    this.updatePendingStatus();
   }
 
   /**
@@ -91,6 +213,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
    */
   clearDraft(pacienteId: string): void {
     localStorage.removeItem(`draft_anesthesia_${pacienteId}`);
+    this.updatePendingStatus();
   }
 
   getPdfUrl(id: number): string {
