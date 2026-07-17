@@ -12,6 +12,6 @@ export class AppComponent {
   }
 
   ngOnInit(): void {
-    this.anesthesiaRecordService.startAutoSync();
+    //this.anesthesiaRecordService.startAutoSync();
   }
 }

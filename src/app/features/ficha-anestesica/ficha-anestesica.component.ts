@@ -24,8 +24,8 @@ import {
   checkmarkCircle,
   createOutline,
   lockClosedOutline,
-  alertCircleOutline
-} from 'ionicons/icons';
+  shieldCheckmark,
+  alertCircleOutline, cloudDoneOutline } from 'ionicons/icons';
 
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
@@ -53,7 +53,6 @@ import { AuthService } from 'src/app/core/services/auth.service';
     IonModal,
     ReactiveFormsModule,
     FormsModule,
-
     StatusBarComponent,
     HeaderInstitucionalComponent,
     PatientInfoCardComponent,
@@ -188,12 +187,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     private location: Location,
     private authService: AuthService
   ) {
-    addIcons({
-      pencilOutline, trashOutline, closeCircleOutline, returnDownForwardOutline,
-      saveOutline, syncOutline, printOutline, arrowBackOutline, closeOutline,
-      addOutline, timeOutline, shieldCheckmarkOutline, checkmarkCircle,
-      createOutline, lockClosedOutline, alertCircleOutline
-    });
+    addIcons({checkmarkCircle,addOutline,trashOutline,returnDownForwardOutline,closeCircleOutline,timeOutline,alertCircleOutline,lockClosedOutline,shieldCheckmarkOutline,syncOutline,printOutline,shieldCheckmark,cloudDoneOutline,createOutline,pencilOutline,saveOutline,arrowBackOutline,closeOutline});
     this.initForm();
   }
 

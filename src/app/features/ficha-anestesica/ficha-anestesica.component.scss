@@ -79,7 +79,7 @@
 
 .main-content {
   flex: 1;
-  padding: 24px 28px 120px;
+  padding: 24px 28px 60px;
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
@@ -971,7 +971,7 @@
   justify-content: center;
   gap: 16px;
   margin-top: 32px;
-  padding: 28px 0 60px;
+  padding: 0px 0 0px;
   border-top: 2px solid #f1f5f9;
   flex-wrap: wrap;
 }
@@ -1228,4 +1228,197 @@
   --border-color-checked: var(--fa-blue);
 
   --checkmark-color: #ef4444;
+}
+
+.signature-watermark {
+  margin-top: 42px;
+  padding: 24px;
+  border-top: 1px dashed #dbe3ef;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+
+  opacity: .72;
+
+  transition: .25s;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.signature-watermark-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(37, 99, 235, .06);
+  border: 2px solid rgba(37,99,235,.12);
+
+  ion-icon{
+    font-size:28px;
+    color:var(--fa-blue);
+  }
+}
+
+.signature-watermark-content{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.signature-title{
+  font-size:13px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:1.4px;
+  color:#64748b;
+}
+
+.signature-text{
+  font-size:14px;
+  line-height:1.7;
+  color:#475569;
+
+  strong{
+    color:#0f172a;
+    font-weight:800;
+  }
+}
+
+@media (max-width:700px){
+
+  .signature-watermark{
+    flex-direction:column;
+    text-align:center;
+    padding:20px 12px;
+  }
+
+  .signature-watermark-content{
+    align-items:center;
+  }
+}
+
+.signature-watermark {
+  position: relative;
+  margin-top: 48px;
+  padding: 26px 28px;
+  border-top: 2px dashed #dbe3ef;
+
+  display: flex;
+  align-items: center;
+  gap: 22px;
+
+  overflow: hidden;
+}
+
+.signature-watermark::before {
+  content: "ASSINADO";
+  position: absolute;
+  right: -30px;
+  top: -10px;
+
+  font-size: 80px;
+  font-weight: 900;
+  letter-spacing: 8px;
+
+  color: rgba(37, 99, 235, .04);
+
+  transform: rotate(-18deg);
+
+  pointer-events: none;
+}
+
+.signature-watermark-icon {
+
+  width: 72px;
+  height: 72px;
+
+  border-radius: 50%;
+
+  background: linear-gradient(
+    135deg,
+    rgba(37,99,235,.10),
+    rgba(37,99,235,.03)
+  );
+
+  border: 2px solid rgba(37,99,235,.15);
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  flex-shrink:0;
+
+  ion-icon{
+      font-size:38px;
+      color:#2563eb;
+  }
+}
+
+.signature-watermark-content{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.signature-title{
+    font-size:13px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:2px;
+    color:#2563eb;
+}
+
+.signature-text{
+    font-size:15px;
+    line-height:1.8;
+    color:#475569;
+
+    strong{
+        color:#0f172a;
+        font-weight:800;
+    }
+}
+
+.signature-meta{
+
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+
+    margin-top:6px;
+
+    span{
+
+        display:flex;
+        align-items:center;
+        gap:6px;
+
+        padding:8px 12px;
+
+        background:#f8fafc;
+
+        border-radius:999px;
+
+        border:1px solid #e2e8f0;
+
+        font-size:12px;
+
+        font-weight:700;
+
+        color:#64748b;
+    }
+
+    ion-icon{
+        font-size:16px;
+        color:#2563eb;
+    }
 }
