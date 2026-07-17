@@ -1,0 +1,66 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
+import { environment } from 'src/environments/environment';
+import { StorageService } from './storage.service';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class MasterDataService {
+
+  constructor(
+    private http: HttpClient,
+    private storage: StorageService
+  ) { }
+
+  getProfessionals() {
+    return this.http.get<any[]>(`${environment.apiUrl}/professionals`);
+  }
+
+  getProcedures() {
+    return this.http.get<any[]>(`${environment.apiUrl}/procedures`);
+  }
+
+  getMedications() {
+    return this.http.get<any[]>(`${environment.apiUrl}/drugs`);
+  }
+
+  saveProfessionals(list: any[]) {
+    this.storage.set('cache_professionals', list);
+  }
+
+  saveProcedures(list: any[]) {
+    this.storage.set('cache_procedures', list);
+  }
+
+  saveMedications(list: any[]) {
+    this.storage.set('cache_medications', list);
+  }
+
+  getProfessionalsCache() {
+    return this.storage.get<any[]>('cache_professionals') ?? [];
+  }
+
+  getProceduresCache() {
+    return this.storage.get<any[]>('cache_procedures') ?? [];
+  }
+
+  getMedicationsCache() {
+    return this.storage.get<any[]>('cache_medications') ?? [];
+  }
+
+  hasCache(): boolean {
+    return this.storage.has('cache_professionals')
+      && this.storage.has('cache_procedures')
+      && this.storage.has('cache_medications');
+  }
+
+  downloadMasterData() {
+    return forkJoin({
+      professionals: this.getProfessionals(),
+      procedures: this.getProcedures(),
+      medications: this.getMedications()
+    });
+  }
+}

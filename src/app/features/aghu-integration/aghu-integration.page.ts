@@ -1,12 +1,14 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { ToastController } from '@ionic/angular/standalone';
+import { ToastController, LoadingController } from '@ionic/angular/standalone';
 import { IonSpinner, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { cloudDownloadOutline, medkitOutline, clipboardOutline, peopleOutline, checkmarkCircle, alertCircleOutline, refreshOutline, timeOutline, cloudDoneOutline, serverOutline, medicalOutline } from 'ionicons/icons';
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
 import { IntegrationService } from 'src/app/core/services/integration.service';
+import { firstValueFrom } from 'rxjs';
+import { MasterDataService } from 'src/app/core/services/master-data.service';
 
 type IntegrationKey = 'medications' | 'employees' | 'procedures';
 type IntegrationStatus = 'idle' | 'running' | 'success' | 'error';
@@ -67,7 +69,8 @@ export class AghuIntegrationPage implements OnDestroy, OnInit {
 
   private timers = new Map<IntegrationKey, any>();
 
-  constructor(private toastController: ToastController, private integrationService: IntegrationService, private datePipe: DatePipe) {
+  constructor(private toastController: ToastController, private integrationService: IntegrationService, private datePipe: DatePipe, private masterDataService: MasterDataService, 
+    private loadingController: LoadingController) {
     addIcons({
       cloudDownloadOutline,
       medkitOutline,
@@ -102,7 +105,8 @@ export class AghuIntegrationPage implements OnDestroy, OnInit {
   }
 
   async runIntegration(card: IntegrationCardState) {
-    if (card.status === 'running') return;
+    if (card.status === 'running')
+      return;
 
     card.status = 'running';
     card.progress = 5;
@@ -134,8 +138,8 @@ export class AghuIntegrationPage implements OnDestroy, OnInit {
 
       card.progress = 100;
       card.status = 'success';
-      
-      card.lastCount = result?.data;      
+
+      card.lastCount = result?.data;
       await this.getLastIntegration();
 
       await this.showToast(`${card.title} sincronizados com sucesso (${card.lastCount} registros).`, 'success',);
@@ -149,6 +153,7 @@ export class AghuIntegrationPage implements OnDestroy, OnInit {
       const t = this.timers.get(card.key);
       if (t) clearInterval(t);
       this.timers.delete(card.key);
+      this.updateMasterData();
     }
   }
 
@@ -157,6 +162,30 @@ export class AghuIntegrationPage implements OnDestroy, OnInit {
       if (c.status !== 'running') {
         this.runIntegration(c);
       }
+    }
+  }
+
+  private async updateMasterData() {
+    const loading = await this.loadingController.create({
+      spinner: 'crescent',
+      message: 'Baixando medicamentos, profissionais e procedimentos...',
+      backdropDismiss: false
+    });
+
+    await loading.present();
+
+    try {
+
+      const result = await firstValueFrom(
+        this.masterDataService.downloadMasterData()
+      );
+
+      this.masterDataService.saveProfessionals(result.professionals);
+      this.masterDataService.saveProcedures(result.procedures);
+      this.masterDataService.saveMedications(result.medications);
+
+    } finally {
+      await loading.dismiss();
     }
   }
 

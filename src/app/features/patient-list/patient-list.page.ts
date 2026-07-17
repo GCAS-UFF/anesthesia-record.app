@@ -19,6 +19,8 @@ import { DateFilterComponent } from '../../shared/components/date-filter/date-fi
 import { ProcedureCardComponent } from '../../shared/components/procedure-card/procedure-card.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { SurgeryStatusEnum } from 'src/app/core/models/api-enums.model';
+import { MasterDataService } from 'src/app/core/services/master-data.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-patient-list',
@@ -64,6 +66,7 @@ export class PatientListPage implements OnInit {
     private toastController: ToastController,
     private surgeryService: SurgeryService,
     private authService: AuthService,
+    private masterDataService: MasterDataService
   ) {
     addIcons({
       chevronBackOutline,
@@ -75,6 +78,7 @@ export class PatientListPage implements OnInit {
   }
 
   ngOnInit() {
+    this.ensureMasterData();
     this.loadData();
   }
 
@@ -84,6 +88,33 @@ export class PatientListPage implements OnInit {
 
   ngOnDestroy() {
     this.userSubscription?.unsubscribe();
+  }
+
+  private async ensureMasterData() {
+    if (this.masterDataService.hasCache())
+      return;
+
+    const loading = await this.loadingController.create({
+      spinner: 'crescent',
+      message: 'Baixando medicamentos, profissionais e procedimentos...',
+      backdropDismiss: false
+    });
+
+    await loading.present();
+
+    try {
+
+      const result = await firstValueFrom(
+        this.masterDataService.downloadMasterData()
+      );
+
+      this.masterDataService.saveProfessionals(result.professionals);
+      this.masterDataService.saveProcedures(result.procedures);
+      this.masterDataService.saveMedications(result.medications);
+
+    } finally {
+      await loading.dismiss();
+    }
   }
 
   async loadData() {
