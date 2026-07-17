@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LoginFacade } from './login.facade';
@@ -11,6 +11,11 @@ import { ConnectionStatusComponent } from '../../shared/components/connection-st
 import { Router } from '@angular/router';
 
 import { AuthService } from '../../core/services/auth.service';
+import { catchError, interval, of, startWith, Subscription, switchMap } from 'rxjs';
+import { addIcons } from 'ionicons';
+import { wifiOutline, cloudOutline } from 'ionicons/icons';
+import { HealthService } from 'src/app/core/services/health.service';
+import { IonIcon } from "@ionic/angular/standalone";
 
 /**
  * LoginPage
@@ -20,38 +25,54 @@ import { AuthService } from '../../core/services/auth.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [
+  imports: [IonIcon, 
     CommonModule,
     ReactiveFormsModule,
     CustomInputComponent,
     LoadingButtonComponent,
-    ErrorMessageComponent,
-    ConnectionStatusComponent
+    ErrorMessageComponent
   ],
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
   providers: [LoginFacade]
 })
-export class LoginPage implements OnInit {
+export class LoginPage implements OnInit, OnDestroy {
   form: FormGroup;
   loading = false;
   error: string | null = null;
 
+  serverConnected = false;
+  aghuConnected = false;
+
+  private healthSubscription?: Subscription;
+
   constructor(
-    private fb: FormBuilder, 
-    public facade: LoginFacade, 
+    private fb: FormBuilder,
+    public facade: LoginFacade,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private healthService: HealthService
   ) {
+    addIcons({
+      wifiOutline,
+      cloudOutline
+    });
+
     const lastCRM = this.authService.getLastCRM();
-    const rememberMePref = this.authService.getRememberMePreference();
+
     this.form = this.fb.group({
-      username: [lastCRM, [Validators.required]],
-      password: ['', [Validators.required]]
+      username: [lastCRM, Validators.required],
+      password: ['', Validators.required]
     });
   }
 
-  ngOnInit() {}
+  ngOnDestroy(): void {
+    this.healthSubscription?.unsubscribe();
+  }
+
+  ngOnInit() {
+    this.startHealthCheck();
+  }
 
   /**
    * Handles login form submission.
@@ -60,9 +81,9 @@ export class LoginPage implements OnInit {
     if (this.form.invalid) return;
     this.loading = true;
     this.error = null;
-    
+
     const { username, password } = this.form.value;
-    
+
     this.facade.login({ username, password })
       .subscribe({
         next: () => {
@@ -73,6 +94,28 @@ export class LoginPage implements OnInit {
           this.error = err;
           this.loading = false;
         }
+      });
+  }
+
+  private startHealthCheck(): void {
+    this.healthSubscription = interval(10000)
+      .pipe(
+        startWith(0),
+        switchMap(() =>
+          this.healthService.checkHealth().pipe(
+            catchError(() => of(null))
+          )
+        )
+      )
+      .subscribe(response => {
+        if (!response?.data) {
+          this.serverConnected = false;
+          this.aghuConnected = false;
+          return;
+        }
+
+        this.serverConnected = response.data.database;
+        this.aghuConnected = response.data.aghu;
       });
   }
 

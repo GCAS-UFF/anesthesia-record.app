@@ -1,71 +1,100 @@
 <div class="fullscreen-container">
-    <!-- Status Bar -->
-    <div class="status-bar">
-        <span class="time">10:31</span>
-        <span class="date">Sábado, 21 de Março</span>
-    </div>
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span class="time">10:31</span>
+    <span class="date">Sábado, 21 de Março</span>
+  </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="login-card">
-            <div class="login-header">
-                <div class="login-logo-wrapper">
-                    <img src="assets/Logo.png" alt="Logo do Sistema" class="login-logo-img">
-                </div>
-                <h1 class="login-system-name">Sistema Interno de Gerenciamento Anestésico</h1>
-            </div>
-
-            <!-- Mensagem de Erro -->
-            <app-error-message [message]="error || ''"></app-error-message>
-
-            <!-- Status de Conexão -->
-            <app-connection-status></app-connection-status>
-
-            <!-- Formulário -->
-            <form [formGroup]="form" (ngSubmit)="submit()" autocomplete="off">
-                <app-custom-input
-                    label="Usuário"
-                    icon="👨‍⚕️"
-                    inputIcon="📋"
-                    type="text"
-                    placeholder="Digite seu usuário"
-                    [required]="true"
-                    autocomplete="nope"
-                    (focused)="clearError()"
-                    formControlName="username">
-                </app-custom-input>
-
-                <app-custom-input
-                    label="Senha"
-                    icon="🔒"
-                    inputIcon="●"
-                    type="password"
-                    placeholder="Digite sua senha"
-                    [required]="true"
-                    autocomplete="new-password"
-                    (focused)="clearError()"
-                    formControlName="password">
-                </app-custom-input>
-
-                <div class="form-options">
-                    <a href="#" class="forgot-link">Esqueceu a senha?</a>
-                </div>
-
-                <app-loading-button
-                    [loading]="loading"
-                    [disabled]="form.invalid"
-                    type="submit">
-                    <span>→</span>
-                    <span>ENTRAR</span>
-                </app-loading-button>
-            </form>
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo-wrapper">
+          <img
+            src="assets/Logo.png"
+            alt="Logo do Sistema"
+            class="login-logo-img"
+          />
         </div>
-    </div>
+        <h1 class="login-system-name">
+          Sistema Interno de Gerenciamento Anestésico
+        </h1>
+      </div>
 
-    <!-- Footer -->
-    <div class="footer">
-        <div class="footer-text">
-            Sistema Interno de Gerenciamento Anestésico - v1.0 • <a href="#">Suporte</a> • <a href="#">Política de Privacidade</a>
+      <!-- Mensagem de Erro -->
+      <app-error-message [message]="error || ''"></app-error-message>
+
+      <div class="status-group">
+        <div
+          class="status-item"
+          [class.connected]="serverConnected"
+          [class.disconnected]="!serverConnected"
+          title="Conexão com a rede"
+        >
+          <ion-icon name="wifi-outline"></ion-icon>
+          <span>Rede</span>
         </div>
+
+        <div
+          class="status-item"
+          [class.connected]="aghuConnected"
+          [class.disconnected]="!aghuConnected"
+          title="Integração AGHU"
+        >
+          <ion-icon name="cloud-outline"></ion-icon>
+          <span>AGHU</span>
+        </div>
+      </div>
+
+      <!-- Formulário -->
+      <form [formGroup]="form" (ngSubmit)="submit()" autocomplete="off">
+        <app-custom-input
+          label="Usuário"
+          icon="👨‍⚕️"
+          inputIcon="📋"
+          type="text"
+          placeholder="Digite seu usuário"
+          [required]="true"
+          autocomplete="nope"
+          (focused)="clearError()"
+          formControlName="username"
+        >
+        </app-custom-input>
+
+        <app-custom-input
+          label="Senha"
+          icon="🔒"
+          inputIcon="●"
+          type="password"
+          placeholder="Digite sua senha"
+          [required]="true"
+          autocomplete="new-password"
+          (focused)="clearError()"
+          formControlName="password"
+        >
+        </app-custom-input>
+
+        <div class="form-options">
+          <a href="#" class="forgot-link">Esqueceu a senha?</a>
+        </div>
+
+        <app-loading-button
+          [loading]="loading"
+          [disabled]="form.invalid"
+          type="submit"
+        >
+          <span>→</span>
+          <span>ENTRAR</span>
+        </app-loading-button>
+      </form>
     </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-text">
+      Sistema Interno de Gerenciamento Anestésico - v1.0 •
+      <a href="#">Suporte</a> • <a href="#">Política de Privacidade</a>
+    </div>
+  </div>
 </div>

@@ -198,3 +198,39 @@
         align-items: flex-start;
     }
 }
+
+.status-group {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 16px 0 24px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 8px 14px;
+
+  border-radius: 999px;
+
+  font-size: .9rem;
+  font-weight: 600;
+
+  transition: .2s;
+}
+
+.status-item ion-icon {
+  font-size: 18px;
+}
+
+.status-item.connected {
+  background: rgba(34, 197, 94, .12);
+  color: #16a34a;
+}
+
+.status-item.disconnected {
+  background: rgba(239, 68, 68, .12);
+  color: #dc2626;
+}
