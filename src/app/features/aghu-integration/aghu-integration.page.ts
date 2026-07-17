@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ToastController } from '@ionic/angular/standalone';
 import { IonSpinner, IonIcon } from '@ionic/angular/standalone';
@@ -37,7 +37,7 @@ interface IntegrationCardState {
   ],
   providers: [DatePipe],
 })
-export class AghuIntegrationPage implements OnDestroy {
+export class AghuIntegrationPage implements OnDestroy, OnInit {
   cards: IntegrationCardState[] = [
     {
       key: 'medications',
@@ -67,11 +67,7 @@ export class AghuIntegrationPage implements OnDestroy {
 
   private timers = new Map<IntegrationKey, any>();
 
-  constructor(
-    private toastController: ToastController,
-    private integrationService: IntegrationService,
-    private datePipe: DatePipe,
-  ) {
+  constructor(private toastController: ToastController, private integrationService: IntegrationService, private datePipe: DatePipe) {
     addIcons({
       cloudDownloadOutline,
       medkitOutline,
@@ -85,6 +81,10 @@ export class AghuIntegrationPage implements OnDestroy {
       medicalOutline,
       clipboardOutline
     });
+  }
+
+  ngOnInit(): void {
+    this.getLastIntegration();
   }
 
   ngOnDestroy(): void {
@@ -134,13 +134,11 @@ export class AghuIntegrationPage implements OnDestroy {
 
       card.progress = 100;
       card.status = 'success';
-      card.lastSyncAt = new Date().toISOString();
-      card.lastCount = result?.data;
+      
+      card.lastCount = result?.data;      
+      await this.getLastIntegration();
 
-      await this.showToast(
-        `${card.title} sincronizados com sucesso (${card.lastCount} registros).`,
-        'success',
-      );
+      await this.showToast(`${card.title} sincronizados com sucesso (${card.lastCount} registros).`, 'success',);
     } catch (err: any) {
       card.status = 'error';
       card.progress = 0;
@@ -162,10 +160,38 @@ export class AghuIntegrationPage implements OnDestroy {
     }
   }
 
-  private async showToast(
-    message: string,
-    color: 'success' | 'danger' | 'medium' = 'medium',
-  ) {
+  async getLastIntegration() {
+    try {
+      const response: any = await this.integrationService.getLastIntegraionTime();
+
+      if (!response?.valid) {
+        return;
+      }
+
+      const data = response.data;
+
+      this.cards.forEach(card => {
+        switch (card.key) {
+          case 'medications':
+            card.lastSyncAt = data.medicines;
+            break;
+
+          case 'employees':
+            card.lastSyncAt = data.professionals;
+            break;
+
+          case 'procedures':
+            card.lastSyncAt = data.procedures;
+            break;
+        }
+      });
+
+    } catch (error) {
+      console.error('Erro ao carregar última integração', error);
+    }
+  }
+
+  private async showToast(message: string, color: 'success' | 'danger' | 'medium' = 'medium') {
     const toast = await this.toastController.create({
       message,
       duration: 2600,

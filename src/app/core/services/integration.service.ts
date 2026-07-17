@@ -22,4 +22,9 @@ export class IntegrationService {
     return firstValueFrom(this.http.post<any>(`${environment.apiUrl}/integrations/sync/procedures`, {})
     );
   }
+
+  async getLastIntegraionTime(): Promise<any> {
+    return firstValueFrom(this.http.get(`${environment.apiUrl}/integrations/sync/last-integrations`)
+    );
+  }
 }
