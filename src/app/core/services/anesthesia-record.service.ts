@@ -246,7 +246,6 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       recordDate: app.recordDate || todayDate,
 
       surgeries: surgeries,
-      cirurgias: surgeries,
 
       patientIdentifiedBeforeInduction: app.seguranca?.identificadoAvaliado === 'sim',
       anestheticConsentSigned: app.seguranca?.consentimentoAssinado === 'sim',
