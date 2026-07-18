@@ -27,30 +27,21 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
   constructor(api: ApiService) {
     super(api, 'anesthesiarecord');
-
     this.updatePendingStatus();
   }
 
   saveRecord(record: any): Observable<any> {
     console.log('Serviço: Salvando ficha via API...', record);
     const surgeryId = Number(record.cirurgiaId ?? record.surgeryId ?? record.id);
-
     const apiPayload = this.mapToApiFormat(record, surgeryId);
-
     return this.update(surgeryId, apiPayload).pipe(
-      map(response => ({
-        response,
-        surgeryId
-      }))
+      map(response => ({ response, surgeryId }))
     );
   }
 
   syncPendingDrafts(): void {
-    if (this.syncing)
-      return;
-
+    if (this.syncing) return;
     this.syncing = true;
-
     this.startSync();
 
     const drafts = this.getPendingDrafts();
@@ -63,9 +54,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
               console.error('Erro ao sincronizar ficha', draft, error);
               return of(null);
             })
-
           )
-
         ),
         finalize(() => {
           this.syncing = false;
@@ -73,10 +62,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         })
       )
       .subscribe(result => {
-
-        if (!result)
-          return;
-
+        if (!result) return;
         this.clearDraft(result.surgeryId.toString());
       });
   }
@@ -92,24 +78,13 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   }
 
   startAutoSync(): void {
-
-    if (this.autoSyncSubscription) {
-      return;
-    }
-
+    if (this.autoSyncSubscription) return;
     this.autoSyncSubscription = interval(10000)
       .pipe(startWith(0))
       .subscribe(() => {
-
-        if (!navigator.onLine)
-          return;
-
-        if (!this.serverOnline)
-          return;
-
-        if (this.getPendingDraftsCount() === 0)
-          return;
-
+        if (!navigator.onLine) return;
+        if (!this.serverOnline) return;
+        if (this.getPendingDraftsCount() === 0) return;
         this.syncPendingDrafts();
       });
   }
@@ -119,9 +94,6 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     this.autoSyncSubscription = undefined;
   }
 
-  /**
-   * [FA-042] Carrega a ficha da API e mapeia de volta para o form
-   */
   getLatestByPatient(id: string, patientId: string): Observable<any | null> {
     return new Observable(obs => {
       this.getByIds(Number(id), patientId).subscribe({
@@ -144,72 +116,43 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
   private updatePendingStatus(): void {
     const count = Object.keys(localStorage)
-      .filter(key => key.startsWith(this.DRAFT_PREFIX))
-      .length;
-
+      .filter(key => key.startsWith(this.DRAFT_PREFIX)).length;
     this.pendingDraftsCountSubject.next(count);
   }
 
-  refreshPendingDrafts(): void {
-    this.updatePendingStatus();
-  }
-
-  startSync(): void {
-    this.syncingSubject.next(true);
-  }
-
-  finishSync(): void {
-    this.syncingSubject.next(false);
-  }
+  refreshPendingDrafts(): void { this.updatePendingStatus(); }
+  startSync(): void { this.syncingSubject.next(true); }
+  finishSync(): void { this.syncingSubject.next(false); }
 
   getPendingDraftsCount(): number {
     return Object.keys(localStorage)
-      .filter(key => key.startsWith(this.DRAFT_PREFIX))
-      .length;
+      .filter(key => key.startsWith(this.DRAFT_PREFIX)).length;
   }
 
-  /**
-   * [NOVO] Cria uma ficha anestésica em branco (e consequentemente o MonitoringRecord)
-   * para que a Monitorização possa salvar dados via PUT.
-   */
   createBlankRecord(surgeryId: number): Observable<any> {
     const apiPayload = this.mapToApiFormat({}, surgeryId);
     return this.create(apiPayload);
   }
 
-  /**
-   * [FA-042] Remove rascunho de ficha de um paciente (usado ao "Limpar" a ficha)
-   */
   clearLatestRecord(pacienteId: string): Observable<boolean> {
-    console.log('Serviço: Limpando rascunho do paciente...', pacienteId);
     this.clearDraft(pacienteId);
     return of(true).pipe(delay(100));
   }
 
-  /**
-   * [FA-042] Salva um rascunho temporário (Auto-Save)
-   */
   saveDraft(pacienteId: string, record: any): void {
     localStorage.setItem(`draft_anesthesia_${pacienteId}`, JSON.stringify({
       ...record,
       pacienteId,
       updatedAt: new Date().toISOString()
     }));
-
     this.updatePendingStatus();
   }
 
-  /**
-   * [FA-042] Recupera o rascunho temporário
-   */
   getDraft(pacienteId: string): any {
     const draft = localStorage.getItem(`draft_anesthesia_${pacienteId}`);
     return draft ? JSON.parse(draft) : null;
   }
 
-  /**
-   * [FA-042] Remove o rascunho temporário
-   */
   clearDraft(pacienteId: string): void {
     localStorage.removeItem(`draft_anesthesia_${pacienteId}`);
     this.updatePendingStatus();
@@ -220,9 +163,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   }
 
   private formatTimeForApi(timeStr: string | undefined | null): string {
-    if (!timeStr) 
-      return '00:00:00';
-    
+    if (!timeStr) return '00:00:00';
     if (timeStr.includes('T')) {
       const timePart = timeStr.split('T')[1];
       return timePart.substring(0, 8);
@@ -260,35 +201,69 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
     const firstAnesthesiologistId = this.pick(
       app.firstAnesthesiologistId,
-      app.assinaturas?.primeiroAnestesistaId, 0   );     
- 
+      app.assinaturas?.primeiroAnestesistaId, 0);
     const firstAnesthesiologistName = this.pick(
       app.firstAnesthesiologistName,
-      app.assinaturas?.primeiroAnestesista, '');   
-    
+      app.assinaturas?.primeiroAnestesista, '');
     const secondAnesthesiologistId = this.pick(
       app.secondAnesthesiologistId,
-      app.assinaturas?.segundoAnestesistaId,
-      null
-    );
+      app.assinaturas?.segundoAnestesistaId, null);
     const secondAnesthesiologistName = this.pick(
       app.secondAnesthesiologistName,
-      app.assinaturas?.segundoAnestesista,
-      null
-    );
+      app.assinaturas?.segundoAnestesista, null);
+
+    const preMed = app.preInducao || {};
+    const preAnestheticMedicationId = this.pick(preMed.medication?.id, preMed.farmacoId, null);
+    const preAnestheticMedicationName = this.pick(preMed.medication?.name, preMed.farmaco, '') || '';
+    const preAnestheticMedicationDose = preMed.dose ?? preMed.dosagem ?? '';
+    const preAnestheticMedicationRoute = preMed.via ?? '';
+    const preAnestheticMedicationOtherRoute = preMed.outrasVia ?? '';
+    const preAnestheticMedicationTime = this.formatTimeForApi(preMed.hora);
+
+    const antibioticsRaw = Array.isArray(app.antibioticsList) ? app.antibioticsList : [];
+    const antibioticsList = antibioticsRaw.map((atb: any) => ({
+      medicationId: atb.medicationId ?? null,
+      medicationName: atb.medicationName ?? atb.nome ?? '',
+      name: atb.medicationName ?? atb.nome ?? '',
+      dose: atb.dose ?? '',
+      route: atb.via ?? '',
+      time: this.formatTimeForApi(atb.hora),
+      hasBooster: (atb.temRepique === 'sim') || (Array.isArray(atb.repiques) && atb.repiques.length > 0),
+      boosters: Array.isArray(atb.repiques) ? atb.repiques.map((r: any) => ({
+        medicationId: r.medicationId ?? atb.medicationId ?? null,
+        medicationName: r.medicationName ?? atb.medicationName ?? atb.nome ?? '',
+        name: r.medicationName ?? atb.medicationName ?? atb.nome ?? '',
+        dose: r.dose ?? '',
+        route: r.via ?? atb.via ?? '',
+        time: this.formatTimeForApi(r.hora)
+      })) : []
+    }));
 
     return {
       id: surgeryId,
       surgeryId: surgeryId,
       patientId: app.patientId || 1,
       recordDate: app.recordDate || todayDate,
+
       surgeries: surgeries,
+      cirurgias: surgeries,
+
       patientIdentifiedBeforeInduction: app.seguranca?.identificadoAvaliado === 'sim',
       anestheticConsentSigned: app.seguranca?.consentimentoAssinado === 'sim',
       anesthesiaEquipmentChecked: app.seguranca?.equipamentosChecados === 'sim',
       safetyObservations: app.seguranca?.atencao || '',
+
       preAnestheticMedication: app.preInducao?.recebeuMedPrevia === 'sim',
+      preAnestheticMedicationId,
+      preAnestheticMedicationName,
+      preAnestheticMedicationDose,
+      preAnestheticMedicationRoute,
+      preAnestheticMedicationOtherRoute,
+      preAnestheticMedicationTime,
+
       prophylacticAntibioticUsed: app.antibiotico?.temAntibiotico === 'sim',
+      antibioticsList,
+
       bloodPressure: app.dadosVitais?.pa || '',
       respiratoryRate: Number(app.dadosVitais?.fr) || 0,
       temperature: Number(app.dadosVitais?.temp) || 0,
@@ -354,6 +329,24 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   }
 
   private mapToAppFormat(api: any): any {
+    const antibioticsList = Array.isArray(api.antibioticsList) ? api.antibioticsList.map((a: any) => ({
+      medicationId: a.medicationId ?? null,
+      medicationName: a.medicationName ?? a.name ?? '',
+      nome: a.medicationName ?? a.name ?? '',
+      dose: a.dose ?? '',
+      via: a.route ?? a.via ?? 'IV',
+      hora: a.time ?? a.hora ?? '',
+      temRepique: a.hasBooster ? 'sim' : 'nao',
+      repiques: Array.isArray(a.boosters) ? a.boosters.map((r: any) => ({
+        medicationId: r.medicationId ?? a.medicationId ?? null,
+        medicationName: r.medicationName ?? r.name ?? a.medicationName ?? '',
+        nome: r.medicationName ?? r.name ?? a.medicationName ?? '',
+        dose: r.dose ?? '',
+        via: r.route ?? r.via ?? a.route ?? 'IV',
+        hora: r.time ?? r.hora ?? ''
+      })) : []
+    })) : [];
+
     return {
       id: api.id,
       pacienteId: api.id?.toString(),
@@ -364,11 +357,18 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         atencao: api.safetyObservations
       },
       preInducao: {
-        recebeuMedPrevia: api.preAnestheticMedication ? 'sim' : 'nao'
+        recebeuMedPrevia: api.preAnestheticMedication ? 'sim' : 'nao',
+        farmacoId: api.preAnestheticMedicationId ?? null,
+        farmaco: api.preAnestheticMedicationName ?? '',
+        dose: api.preAnestheticMedicationDose ?? '',
+        via: api.preAnestheticMedicationRoute ?? '',
+        outrasVia: api.preAnestheticMedicationOtherRoute ?? '',
+        hora: api.preAnestheticMedicationTime ?? ''
       },
       antibiotico: {
         temAntibiotico: api.prophylacticAntibioticUsed ? 'sim' : 'nao'
       },
+      antibioticsList,
       dadosVitais: {
         pa: api.bloodPressure,
         fr: api.respiratoryRate?.toString(),
@@ -409,8 +409,8 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       },
       posProcedimento: {
         cirurgiaRealizada: api.surgeryPerformed,
-        procedimentos: Array.isArray(api.cirurgias)
-          ? api.cirurgias.map((c: any) => ({
+        procedimentos: Array.isArray(api.cirurgias ?? api.surgeries)
+          ? (api.cirurgias ?? api.surgeries).map((c: any) => ({
             id: c.id ?? null,
             description: c.description ?? '',
             cid: c.cid ?? null,

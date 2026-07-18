@@ -239,7 +239,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       }),
       preInducao: this.fb.group({
         recebeuMedPrevia: ['', Validators.required],
-        hora: [''], farmaco: [''], via: [''], outrasVia: ['']
+        hora: [''], farmaco: [''], farmacoId: [''], via: [''], outrasVia: ['']
       }),
       antibiotico: this.fb.group({
         temAntibiotico: ['', Validators.required]
@@ -518,26 +518,47 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   addingAtb = false;
-  newAtb: any = { nome: '', dose: '', via: 'IV', hora: '' };
+  newAtb: any = { medicationId: '', nome: '', dose: '', via: 'IV', hora: '' };
 
   startAddAtb() {
     this.addingAtb = true;
     this.newAtb = {
-      nome: '', dose: '', via: 'IV',
+      medicationId: '', nome: '', dose: '', via: 'IV',
       hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
+    this.ddlFilter['atb-new'] = '';
   }
 
   cancelAddAtb() { this.addingAtb = false; }
 
+  /** Seleciona o fármaco (medicamento) do ATB a partir da lista mestre. */
+  selectAtbMedication(id: string): void {
+    const found = this.medicationsLista.find(m => String(m.id) === String(id));
+    this.newAtb.medicationId = id;
+    this.newAtb.nome = found?.name || '';
+    this.ddlFilter['atb-new'] = '';
+    this.openDdl = null;
+  }
+
+  /** Seleciona o fármaco da medicação pré-anestésica a partir da lista mestre. */
+  selectPreFarmaco(id: string): void {
+    const found = this.medicationsLista.find(m => String(m.id) === String(id));
+    this.form.get('preInducao.farmacoId')?.setValue(id);
+    this.form.get('preInducao.farmaco')?.setValue(found?.name || '');
+    this.form.get('preInducao.farmaco')?.markAsDirty();
+    this.ddlFilter['preFarmaco'] = '';
+    this.openDdl = null;
+  }
+
   confirmAddAtb() {
     if (!this.newAtb.nome?.trim() || !this.newAtb.dose?.trim()) {
-      this.toast('Informe pelo menos Nome e Dose.', 'warning');
+      this.toast('Selecione o antibiótico e informe a Dose.', 'warning');
       return;
     }
     this.antibioticsList = [
       ...this.antibioticsList,
       {
+        medicationId: this.newAtb.medicationId || null,
         nome: this.newAtb.nome.trim(),
         dose: this.newAtb.dose.trim(),
         via: (this.newAtb.via || 'IV').trim(),
@@ -822,12 +843,49 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     const segundoResolved = resolveProfessional(raw.assinaturas?.segundoAnestesista);
     const primeiroResolved = resolveProfessional(this.loggedUser?.id);
 
+    const resolveMedication = (id: any, fallbackName?: string) => {
+      if (!id && !fallbackName) return null;
+      const found = id
+        ? this.asArray(this.masterData.getMedicationsCache())
+          .find((m: any) => String(m.id) === String(id))
+        : null;
+      return {
+        id: found?.id ?? id ?? null,
+        name: found?.description ?? found?.name ?? fallbackName ?? null
+      };
+    };
+
+    const antibioticsPayload = (this.antibioticsList || []).map((atb: any) => {
+      const med = resolveMedication(atb.medicationId, atb.nome);
+      return {
+        medicationId: med?.id ?? null,
+        medicationName: med?.name ?? atb.nome ?? null,
+        nome: atb.nome,
+        dose: atb.dose,
+        via: atb.via,
+        hora: atb.hora,
+        temRepique: atb.temRepique,
+        repiques: (atb.repiques || []).map((r: any) => ({
+          medicationId: med?.id ?? null,
+          medicationName: med?.name ?? atb.nome ?? null,
+          dose: r.dose,
+          hora: r.hora
+        }))
+      };
+    });
+
+    const preFarmacoResolved = resolveMedication(
+      raw.preInducao?.farmacoId,
+      raw.preInducao?.farmaco
+    );
+
     return {
       ...raw,
       cirurgiaId: this.cirurgiaId,
       patientId: this.patientId,
       surgeryId: this.selectedSurgery?.id ?? null,
-      antibioticsList: this.antibioticsList,
+      antibioticsList: antibioticsPayload,
+      antibiotics: antibioticsPayload,
       cirurgias: procedimentos,
       surgeryPerformed: primaryProc?.description ?? '',
       firstAnesthesiologistId: primeiroResolved?.id ?? this.loggedUser?.id ?? 0,
@@ -838,6 +896,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         ...raw.equipe,
         cirurgiao: resolveProfessional(raw.equipe?.cirurgiao),
         assistente: resolveProfessional(raw.equipe?.assistente)
+      },
+      preInducao: {
+        ...raw.preInducao,
+        farmacoId: preFarmacoResolved?.id ?? null,
+        farmaco: preFarmacoResolved?.name ?? raw.preInducao?.farmaco ?? '',
+        medication: preFarmacoResolved
       },
       posProcedimento: {
         ...raw.posProcedimento,
@@ -871,7 +935,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   voltar() {
     this.location.back();
   }
- 
+
   async finalizarCirurgia(): Promise<void> {
     if (!this.selectedSurgery?.id) {
       return;
@@ -982,11 +1046,41 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleDdl(key: string): void {
-    this.openDdl = this.openDdl === key ? null : key;
+  ddlPos: { top: number; left: number; width: number } | null = null;
+
+  toggleDdl(key: string, ev?: Event): void {
+    const willOpen = this.openDdl !== key;
+    this.openDdl = willOpen ? key : null;
 
     if (this.openDdl && this.ddlFilter[key] == null)
       this.ddlFilter[key] = '';
+
+    if (willOpen && ev) {
+      const btn = (ev.currentTarget as HTMLElement) || (ev.target as HTMLElement);
+      const trigger = btn?.closest('.ddl-trigger') as HTMLElement | null;
+      if (trigger) {
+        const r = trigger.getBoundingClientRect();
+        const MAX_W = Math.min(420, window.innerWidth - 32);
+        const MIN_W = Math.min(220, MAX_W);
+        const width = Math.max(MIN_W, Math.min(r.width, MAX_W));
+        let left = r.left;
+        if (left + width > window.innerWidth - 16) {
+          left = Math.max(16, window.innerWidth - 16 - width);
+        }
+        this.ddlPos = { top: r.bottom + 6, left, width };
+      }
+    } else {
+      this.ddlPos = null;
+    }
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  @HostListener('window:resize')
+  onWindowChange() {
+    if (this.openDdl) {
+      this.openDdl = null;
+      this.ddlPos = null;
+    }
   }
 
   closeDdl(): void {

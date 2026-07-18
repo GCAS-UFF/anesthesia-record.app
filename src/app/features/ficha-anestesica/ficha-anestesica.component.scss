@@ -1415,6 +1415,7 @@
 .ddl {
   position: relative;
   width: 100%;
+  min-width: 0;
 }
 .ddl-trigger {
   display: flex;
@@ -1451,11 +1452,11 @@
   }
 }
 .ddl-panel {
-  position: absolute;
-  top: calc(100% + 6px);
+  position: fixed;
+  top: 0;
   left: 0;
-  right: 0;
-  z-index: 40;
+  z-index: 10000;
+
   background: #fff;
   border: 1.5px solid var(--fa-line);
   border-radius: 12px;
@@ -1465,6 +1466,10 @@
   flex-direction: column;
   gap: 8px;
   max-height: 320px;
+
+  min-width: 220px;
+  max-width: min(420px, calc(100vw - 32px));
+  box-sizing: border-box;
 }
 .ddl-search {
   width: 100%;
@@ -1529,13 +1534,19 @@
 }
 .procedimento-row {
   display: grid;
-  grid-template-columns: 36px 1fr 140px auto 40px;
+  grid-template-columns: 36px minmax(0, 1fr) 140px auto 40px;
   gap: 12px;
   align-items: end;
   padding: 12px;
   background: #f8fafc;
   border: 1.5px solid var(--fa-line);
   border-radius: 14px;
+
+  > .field-block,
+  > .proc-nome,
+  > .proc-hora {
+    min-width: 0;
+  }
 }
 .proc-index {
   align-self: center;
