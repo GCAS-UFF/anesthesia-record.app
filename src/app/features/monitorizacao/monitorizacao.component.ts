@@ -74,6 +74,7 @@ import { MonitorizacaoSidebarComponent } from './components/monitorizacao-sideba
   styleUrls: ['./monitorizacao.component.scss']
 })
 export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy {
+
   surgeryId: string | '' = '';
   pacienteId: string | '' = '';
   patient: any = null;
@@ -281,9 +282,9 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   private loadFromLocalStorage() {
-    if (!this.pacienteId) 
+    if (!this.pacienteId)
       return;
-    
+
     const data = localStorage.getItem(`monitoring_record_${this.pacienteId}`);
     if (data) {
       try {
@@ -1196,5 +1197,9 @@ export class MonitorizacaoComponent implements OnInit, AfterViewInit, OnDestroy 
     this.events = [...this.events];
     this.balanceItems = [...this.balanceItems];
     this.saveToLocalStorage();
+  }
+
+  openAnestesicaRecord() {
+    throw new Error('Method not implemented.');
   }
 }

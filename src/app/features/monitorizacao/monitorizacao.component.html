@@ -1,35 +1,12 @@
 <div class="app-container">
   <app-status-bar></app-status-bar>
   <app-header-institucional
-  ></app-header-institucional>
-
-  <!-- Barra de Navegação Fixa -->
-  <div class="nav-bar">
-    <button class="back-button" (click)="voltar()">
-      <ion-icon name="arrow-back-outline"></ion-icon> Voltar
-    </button>
-    <div class="page-title">Monitoramento Intraoperatório</div>
-    <div class="header-actions">
-      <ion-button
-        color="medium"
-        fill="outline"
-        (click)="reiniciarTeste()"
-        class="btn-ficha-header"
-        style="margin-right: 8px"
-      >
-        <ion-icon name="refresh-outline" slot="start"></ion-icon>
-        REINICIAR TESTE
-      </ion-button>
-      <ion-button
-        color="primary"
-        (click)="abrirFicha()"
-        class="btn-ficha-header"
-      >
-        <ion-icon name="document-text-outline" slot="start"></ion-icon>
-        ABRIR FICHA ANESTÉSICA
-      </ion-button>
-    </div>
-  </div>
+    [showBackButton]="true"
+    [showPreAnestesicaButton]="true"
+    preAnestesicaButtonLabel="Ficha Anestésica"
+    (openPreAnestesica)="openAnestesicaRecord()"
+  >
+  </app-header-institucional>
 
   <div class="main-content">
     <!-- COLUNA ESQUERDA: Monitoramento -->

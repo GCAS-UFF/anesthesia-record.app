@@ -26,8 +26,10 @@ import {
   lockClosedOutline,
   shieldCheckmark,
   chevronDownOutline,
-  alertCircleOutline, cloudDoneOutline
-} from 'ionicons/icons';
+  alertCircleOutline, 
+  cloudDoneOutline,
+  medicalSharp, fitnessOutline,
+ } from 'ionicons/icons';
 
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
@@ -79,6 +81,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   isCancelled = false;
   canEdit = true;
   loggedUser: any;
+
+  isPreViewerOpen = false;
+  preAnesthesiaData: any = null;
 
   medicationsLista: { id: string; name: string; codigo?: string }[] = [];
 
@@ -208,8 +213,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private masterData: MasterDataService
   ) {
-    addIcons({ checkmarkCircle, addOutline, trashOutline, returnDownForwardOutline, closeCircleOutline, timeOutline, alertCircleOutline, lockClosedOutline, shieldCheckmarkOutline, syncOutline, printOutline, shieldCheckmark, cloudDoneOutline, createOutline, pencilOutline, saveOutline, arrowBackOutline, closeOutline, chevronDownOutline });
+    addIcons({checkmarkCircle,chevronDownOutline,addOutline,trashOutline,returnDownForwardOutline,closeCircleOutline,timeOutline,alertCircleOutline,lockClosedOutline,shieldCheckmarkOutline,syncOutline,printOutline,fitnessOutline,createOutline,medicalSharp,shieldCheckmark,cloudDoneOutline,pencilOutline,saveOutline,arrowBackOutline,closeOutline});
     this.initForm();
+
+    // Chamar isso junto com o carregamento da ficha, pois SEMPRE vamos ter a pre anestésica preenchida
+    // this.preAnesthesiaData = response.preAnesthesia ?? null;
   }
 
   ngOnInit() {
@@ -936,7 +944,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.location.back();
   }
 
-  async finalizarCirurgia(): Promise<void> {
+  async irParaCirurgia(): Promise<void> {
     if (!this.selectedSurgery?.id) {
       return;
     }
@@ -1126,5 +1134,16 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       return '';
 
     return found.codigo ? `${found.codigo} — ${found.name}` : found.name;
+  }
+
+  openPreAnestesica() {
+    if (!this.preAnesthesiaData) {
+      // opcional: toast avisando "Ficha pré-anestésica não disponível"
+    }
+    this.isPreViewerOpen = true;
+  }
+
+  closePreAnestesica() {
+    this.isPreViewerOpen = false;
   }
 }

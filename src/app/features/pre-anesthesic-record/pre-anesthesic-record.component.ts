@@ -87,7 +87,6 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   readonly tevOptions = ['Baixo', 'Moderado', 'Alto'];
   readonly nvpoOptions = ['Baixo', 'Moderado', 'Alto'];
 
-  // Escala numérica de dor (0 a 10)
   readonly dorScale = [0,1,2,3,4,5,6,7,8,9,10];
 
   readonly sections: PreAnesthesiaSection[] = [

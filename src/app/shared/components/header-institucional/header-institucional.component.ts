@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, HostListener, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
@@ -15,6 +15,8 @@ import {
   closeOutline,
   chevronDownOutline,
   arrowBackOutline,
+  documentTextOutline,
+  medkit
 } from 'ionicons/icons';
 import { Subscription } from 'rxjs';
 
@@ -36,10 +38,13 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   @Input() doctorName: string = '';
   @Input() doctorCRM: string = '';
   @Input() doctorRole: string = '';
-  doctorId: number = 0;
   @Input() showBackButton = false;
   @Input() doctorInitials: string = 'Dr(a)';
+  @Input() showPreAnestesicaButton = false;
+  @Output() openPreAnestesica = new EventEmitter<void>();
+  @Input() preAnestesicaButtonLabel = 'Ficha Pré-Anestésica';
 
+  doctorId: number = 0;
   private isLoggingOut = false;
 
   private userSubscription: Subscription = new Subscription();
@@ -69,6 +74,8 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
       logOutOutline,
       closeOutline,
       chevronDownOutline,
+      documentTextOutline,
+      medkit
     });
   }
 

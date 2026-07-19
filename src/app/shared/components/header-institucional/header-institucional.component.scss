@@ -387,3 +387,60 @@
     }
   }
 }
+
+.header-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 8px 12px;
+  height: 40px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease,
+    opacity 0.2s ease,
+    visibility 0.2s ease;
+
+  ion-icon {
+    font-size: 18px;
+  }
+
+  &:hover {
+    background: #f8fafc;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  }
+  &:active {
+    transform: scale(0.97);
+  }
+
+  &.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+.header-pre-btn {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+
+  &:hover {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  }
+}
+
+@media (max-width: 640px) {
+  .header-pill-btn {
+    padding: 8px 12px 8px 10px;
+    font-size: 12px;
+  }
+}

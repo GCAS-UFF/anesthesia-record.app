@@ -1,5 +1,4 @@
 <app-status-bar></app-status-bar>
-<!-- Header institucional (mesmo do restante do app) -->
 <app-header-institucional [showBackButton]="true" (backClick)="goBack()"></app-header-institucional>
 
 <div class="pre-page" [formGroup]="form">
@@ -27,10 +26,8 @@
     </div>
   </header>
 
-  <!-- Layout tablet: navegação lateral + conteúdo -->
   <div class="pre-layout">
 
-    <!-- Índice lateral -->
     <aside class="pre-nav">
       <div class="pre-nav__scroll">
         <button
@@ -46,10 +43,8 @@
       </div>
     </aside>
 
-    <!-- Conteúdo rolável -->
     <main class="pre-scroll">
 
-      <!-- 1. PROCEDIMENTO -->
       <section id="sec-procedimento" class="pre-section" formGroupName="procedimento">
         <div class="pre-section__head">
           <span class="pre-section__num">01</span>
@@ -79,7 +74,6 @@
         </div>
       </section>
 
-      <!-- 2. EXAME FÍSICO -->
       <section id="sec-exame-fisico" class="pre-section" formGroupName="exameFisico">
         <div class="pre-section__head">
           <span class="pre-section__num">02</span>
@@ -138,7 +132,6 @@
         </div>
       </section>
 
-      <!-- 3. NÍVEL DE DOR -->
       <section id="sec-nivel-dor" class="pre-section" formGroupName="nivelDor">
         <div class="pre-section__head">
           <span class="pre-section__num">03</span>
@@ -167,7 +160,6 @@
         </div>
       </section>
 
-      <!-- 4. CARDIOVASCULAR -->
       <section id="sec-cardio" class="pre-section" formGroupName="cardio">
         <div class="pre-section__head">
           <span class="pre-section__num">04</span>
@@ -196,7 +188,6 @@
         </div>
       </section>
 
-      <!-- 5. RESPIRATÓRIA -->
       <section id="sec-respiratoria" class="pre-section" formGroupName="respiratoria">
         <div class="pre-section__head">
           <span class="pre-section__num">05</span>
@@ -230,7 +221,6 @@
         </div>
       </section>
 
-      <!-- 6. NEUROLÓGICA -->
       <section id="sec-neurologica" class="pre-section" formGroupName="neurologica">
         <div class="pre-section__head">
           <span class="pre-section__num">06</span>
@@ -249,7 +239,6 @@
         </label>
       </section>
 
-      <!-- 7. RENAL -->
       <section id="sec-renal" class="pre-section" formGroupName="renal">
         <div class="pre-section__head">
           <span class="pre-section__num">07</span>
@@ -268,7 +257,6 @@
         </label>
       </section>
 
-      <!-- 8. ENDÓCRINA -->
       <section id="sec-endocrina" class="pre-section" formGroupName="endocrina">
         <div class="pre-section__head">
           <span class="pre-section__num">08</span>
@@ -287,7 +275,6 @@
         </label>
       </section>
 
-      <!-- 9. GINECOLÓGICA -->
       <section id="sec-ginecologica" class="pre-section" formGroupName="ginecologica">
         <div class="pre-section__head">
           <span class="pre-section__num">09</span>
@@ -362,7 +349,6 @@
         </div>
       </section>
 
-      <!-- 10. OUTROS -->
       <section id="sec-outros" class="pre-section" formGroupName="outros">
         <div class="pre-section__head">
           <span class="pre-section__num">10</span>
@@ -393,7 +379,6 @@
         </label>
       </section>
 
-      <!-- 11. HISTÓRICO PREGRESSO -->
       <section id="sec-historico" class="pre-section" formGroupName="historico">
         <div class="pre-section__head">
           <span class="pre-section__num">11</span>
@@ -469,7 +454,6 @@
         </label>
       </section>
 
-      <!-- 12. HÁBITOS -->
       <section id="sec-habitos" class="pre-section" formGroupName="habitos">
         <div class="pre-section__head">
           <span class="pre-section__num">12</span>
@@ -506,7 +490,6 @@
         </div>
       </section>
 
-      <!-- 13. ALERGIAS -->
       <section id="sec-alergias" class="pre-section" formGroupName="alergias">
         <div class="pre-section__head">
           <span class="pre-section__num">13</span>
@@ -525,7 +508,6 @@
         </label>
       </section>
 
-      <!-- 14. EXAMES -->
       <section id="sec-exames" class="pre-section" formGroupName="exames">
         <div class="pre-section__head">
           <span class="pre-section__num">14</span>
@@ -551,7 +533,6 @@
         </label>
       </section>
 
-      <!-- 15. CONDIÇÕES CLÍNICAS / VIA AÉREA -->
       <section id="sec-condicoes-clinicas" class="pre-section" formGroupName="condicoesClinicas">
         <div class="pre-section__head">
           <span class="pre-section__num">15</span>
@@ -628,7 +609,6 @@
         </div>
       </section>
 
-      <!-- 16. PROGRAMAÇÃO -->
       <section id="sec-programacao" class="pre-section" formGroupName="programacao">
         <div class="pre-section__head">
           <span class="pre-section__num">16</span>
@@ -660,7 +640,6 @@
         </label>
       </section>
 
-      <!-- 17. EXTRAS -->
       <section id="sec-extras" class="pre-section" formGroupName="extras">
         <div class="pre-section__head">
           <span class="pre-section__num">17</span>
@@ -753,7 +732,6 @@
         </div>
       </section>
 
-      <!-- Rodapé com CTA -->
       <footer class="pre-footer">
         <div class="pre-footer__meta">
           <span *ngIf="lastSavedAt">

@@ -3,6 +3,7 @@
     <button class="menu-btn" (click)="openMenu()" aria-label="Abrir menu">
       <ion-icon name="menu-outline"></ion-icon>
     </button>
+
     <button
       type="button"
       class="header-back-btn"
@@ -14,51 +15,52 @@
       <ion-icon name="arrow-back-outline"></ion-icon>
       Voltar
     </button>
+
+    <button
+      type="button"
+      class="header-pill-btn header-pre-btn"
+      [class.is-hidden]="menuOpen"
+      *ngIf="showPreAnestesicaButton"
+      (click)="openPreAnestesica.emit()"
+      [attr.aria-label]="preAnestesicaButtonLabel"
+    >
+      <ion-icon name="document-text-outline"></ion-icon>
+      {{ preAnestesicaButtonLabel }}
+    </button>
   </div>
 
-  <div class="header-right">   
-      <div class="doctor-chip-wrapper">
-        <div
-          class="doctor-chip"
-          (click)="toggleUserMenu()"
-          [class.menu-open]="userMenuOpen"
-        >
-          <div class="avatar">{{ doctorInitials }}</div>
-          <div class="doctor-info">
-            <span class="doctor-name">{{ doctorName }}</span>
-            <span class="doctor-role">{{ doctorRole }}</span>
-          </div>
-          <ion-icon name="chevron-down-outline" class="chevron"></ion-icon>
+  <div class="header-right">
+    <div class="doctor-chip-wrapper">
+      <div
+        class="doctor-chip"
+        (click)="toggleUserMenu()"
+        [class.menu-open]="userMenuOpen"
+      >
+        <div class="avatar">{{ doctorInitials }}</div>
+        <div class="doctor-info">
+          <span class="doctor-name">{{ doctorName }}</span>
+          <span class="doctor-role">{{ doctorRole }}</span>
         </div>
-
-        <div
-          class="user-menu"
-          *ngIf="userMenuOpen"
-          (click)="closeUserMenu($event)"
-        >
-          <button class="user-menu-item" (click)="goToSettings()">
-            <ion-icon name="settings-outline"></ion-icon>
-            <span>Configurações</span>
-          </button>
-          <button class="user-menu-item logout" (click)="handleLogout()">
-            <ion-icon name="log-out-outline"></ion-icon>
-            <span>Sair</span>
-          </button>
-        </div>
+        <ion-icon name="chevron-down-outline" class="chevron"></ion-icon>
       </div>
-    </div>  
-</header>
 
-<div class="user-menu" *ngIf="userMenuOpen" (click)="closeUserMenu($event)">
-  <button class="user-menu-item" (click)="goToSettings()">
-    <ion-icon name="settings-outline"></ion-icon>
-    <span>Configurações</span>
-  </button>
-  <button class="user-menu-item logout" (click)="handleLogout()">
-    <ion-icon name="log-out-outline"></ion-icon>
-    <span>Sair</span>
-  </button>
-</div>
+      <div
+        class="user-menu"
+        *ngIf="userMenuOpen"
+        (click)="closeUserMenu($event)"
+      >
+        <button class="user-menu-item" (click)="goToSettings()">
+          <ion-icon name="settings-outline"></ion-icon>
+          <span>Configurações</span>
+        </button>
+        <button class="user-menu-item logout" (click)="handleLogout()">
+          <ion-icon name="log-out-outline"></ion-icon>
+          <span>Sair</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
 
 <div
   class="drawer-backdrop"
