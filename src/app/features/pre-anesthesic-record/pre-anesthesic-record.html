@@ -1,0 +1,1566 @@
+<app-status-bar></app-status-bar>
+<app-header-institucional
+  [showBackButton]="true"
+  (backClick)="goBack()"
+></app-header-institucional>
+
+<div class="pre-page" [formGroup]="form">
+  <header class="pre-topbar">
+    <div class="pre-topbar__title">
+      <span class="chip-tag">Ficha</span>
+      <h1>Avaliação Pré-Anestésica</h1>
+    </div>
+
+    <div class="pre-topbar__actions">
+      <span class="save-status" *ngIf="lastSavedAt">
+        <ion-icon name="cloud-done-outline"></ion-icon>
+        Rascunho salvo {{ lastSavedAt | date:'HH:mm' }}
+      </span>
+      <ion-button fill="clear" size="small" (click)="saveDraft()">
+        <ion-icon slot="start" name="save-outline"></ion-icon>
+        Salvar rascunho
+      </ion-button>
+      <ion-button class="btn-primary" (click)="salvar()" [disabled]="isSaving">
+        <ion-spinner *ngIf="isSaving" name="dots" slot="start"></ion-spinner>
+        <ion-icon *ngIf="!isSaving" slot="start" name="save-outline"></ion-icon>
+        Finalizar avaliação
+      </ion-button>
+    </div>
+  </header>
+
+  <div class="pre-layout">
+    <aside class="pre-nav">
+      <div class="pre-nav__scroll">
+        <button
+          type="button"
+          *ngFor="let s of sections"
+          class="pre-nav__item"
+          [class.active]="activeSectionId === s.id"
+          (click)="goToSection(s.id)"
+        >
+          <span class="pre-nav__index">{{ s.index }}</span>
+          <span class="pre-nav__label">{{ s.title }}</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="pre-scroll">
+      <section
+        id="sec-procedimento"
+        class="pre-section"
+        formGroupName="procedimento"
+      >
+        <div class="pre-section__head">
+          <span class="pre-section__num">01</span>
+          <div>
+            <h2>Procedimento</h2>
+            <p>Informações do agendamento cirúrgico.</p>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <label class="field field--col-2">
+            <span>Cirurgia(s) Proposta(s)</span>
+            <input
+              type="text"
+              formControlName="cirurgiaProposta"
+              placeholder="Ex.: Colecistectomia videolaparoscópica"
+            />
+          </label>
+          <label class="field">
+            <span>Lateralidade</span>
+            <input
+              type="text"
+              formControlName="lateralidade"
+              placeholder="Direita / Esquerda / Não se aplica"
+            />
+          </label>
+          <label class="field">
+            <span>Data da consulta</span>
+            <input type="datetime-local" formControlName="dataConsulta" />
+          </label>
+          <label class="field field--col-2">
+            <span>Observações</span>
+            <textarea
+              rows="2"
+              formControlName="observacao"
+              placeholder="Detalhes adicionais do procedimento"
+            ></textarea>
+          </label>
+        </div>
+      </section>
+
+      <section
+        id="sec-exame-fisico"
+        class="pre-section"
+        formGroupName="exameFisico"
+      >
+        <div class="pre-section__head">
+          <span class="pre-section__num">02</span>
+          <div>
+            <h2>Exame Físico</h2>
+            <p>Antropometria e sinais vitais basais.</p>
+          </div>
+        </div>
+
+        <div class="grid-5">
+          <label class="field">
+            <span>Peso (kg)</span>
+            <input type="number" step="0.1" formControlName="peso" />
+          </label>
+          <label class="field">
+            <span>Altura (cm)</span>
+            <input type="number" formControlName="altura" />
+          </label>
+          <label class="field field--readonly">
+            <span>IMC</span>
+            <input type="number" formControlName="imc" readonly />
+          </label>
+          <label class="field field--readonly">
+            <span>Peso ideal (kg)</span>
+            <input type="number" formControlName="pesoIdeal" readonly />
+          </label>
+          <label class="field field--readonly">
+            <span>Peso ideal corrigido</span>
+            <input
+              type="number"
+              formControlName="pesoIdealCorrigido"
+              readonly
+            />
+          </label>
+        </div>
+
+        <div class="grid-4">
+          <label class="field">
+            <span>Frequência cardíaca (bpm)</span>
+            <input type="number" formControlName="frequenciaCardiaca" />
+          </label>
+          <label class="field">
+            <span>PA sistólica (mmHg)</span>
+            <input type="number" formControlName="pressaoSistolica" />
+          </label>
+          <label class="field">
+            <span>PA diastólica (mmHg)</span>
+            <input type="number" formControlName="pressaoDiastolica" />
+          </label>
+          <div class="field-pair">
+            <label class="field">
+              <span>Jejum sólidos (h)</span>
+              <input type="number" formControlName="jejumSolidos" />
+            </label>
+            <label class="field">
+              <span>Jejum líquidos (h)</span>
+              <input type="number" formControlName="jejumLiquidos" />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section id="sec-nivel-dor" class="pre-section" formGroupName="nivelDor">
+        <div class="pre-section__head">
+          <span class="pre-section__num">03</span>
+          <div>
+            <h2>Nível de Dor</h2>
+            <p>Escala numérica de dor (0 a 10) referida pelo paciente.</p>
+          </div>
+        </div>
+
+        <div class="qa-row qa-row--column">
+          <span class="qa-label">Nível referido</span>
+          <div class="chip-group chip-group--scale">
+            <button
+              type="button"
+              *ngFor="let n of dorScale"
+              class="chip chip--scale"
+              [class.active]="isValue('nivelDor.nivel', n)"
+              [attr.data-level]="n"
+              (click)="setNivelDor(n)"
+            >
+              {{ n }}
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="qa-row qa-row--column"
+          *ngIf="form.get('nivelDor.nivel')?.value !== null"
+        >
+          <span class="qa-label">Classificação</span>
+          <div class="dor-label">
+            {{ form.get('nivelDor.descricao')?.value }}
+          </div>
+        </div>
+      </section>
+
+      <section id="sec-cardio" class="pre-section" formGroupName="cardio">
+        <div class="pre-section__head">
+          <span class="pre-section__num">04</span>
+          <div><h2>Condição Cardiovascular</h2></div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Possui afecções cardiovasculares?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('cardio.possuiAfeccoes', true)"
+              (click)="setBool('cardio.possuiAfeccoes', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('cardio.possuiAfeccoes', false)"
+              (click)="setBool('cardio.possuiAfeccoes', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <label
+          class="field field--full"
+          *ngIf="isBool('cardio.possuiAfeccoes', true)"
+        >
+          <span>Descrever</span>
+          <input
+            type="text"
+            formControlName="detalhes"
+            placeholder="HAS, ICC, arritmia..."
+          />
+        </label>
+
+        <div class="qa-row qa-row--column">
+          <span class="qa-label">Qual a capacidade funcional em METs?</span>
+          <div class="chip-group">
+            <button
+              type="button"
+              *ngFor="let opt of metsOptions"
+              class="chip chip--outline"
+              [class.active]="isValue('cardio.capacidadeMets', opt)"
+              (click)="setValue('cardio.capacidadeMets', opt)"
+            >
+              {{ opt }}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="sec-respiratoria"
+        class="pre-section"
+        formGroupName="respiratoria"
+      >
+        <div class="pre-section__head">
+          <span class="pre-section__num">05</span>
+          <div><h2>Condição Respiratória</h2></div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Possui afecções respiratórias?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('respiratoria.possuiAfeccoes', true)"
+              (click)="setBool('respiratoria.possuiAfeccoes', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('respiratoria.possuiAfeccoes', false)"
+              (click)="setBool('respiratoria.possuiAfeccoes', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <div class="grid-2" *ngIf="isBool('respiratoria.possuiAfeccoes', true)">
+          <label class="field">
+            <span>Descrever</span>
+            <input
+              type="text"
+              formControlName="detalhes"
+              placeholder="DPOC, enfisema..."
+            />
+          </label>
+          <label class="checkbox-tile">
+            <input type="checkbox" formControlName="asma" />
+            <span>Asma</span>
+          </label>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Risco de broncoaspiração?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('respiratoria.riscoBroncoaspiracao', true)"
+              (click)="setBool('respiratoria.riscoBroncoaspiracao', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('respiratoria.riscoBroncoaspiracao', false)"
+              (click)="setBool('respiratoria.riscoBroncoaspiracao', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="sec-neurologica"
+        class="pre-section"
+        formGroupName="neurologica"
+      >
+        <div class="pre-section__head">
+          <span class="pre-section__num">06</span>
+          <div><h2>Condição Neurológica</h2></div>
+        </div>
+        <div class="qa-row">
+          <span class="qa-label">Possui afecções neurológicas?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('neurologica.possuiAfeccoes', true)"
+              (click)="setBool('neurologica.possuiAfeccoes', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('neurologica.possuiAfeccoes', false)"
+              (click)="setBool('neurologica.possuiAfeccoes', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <label
+          class="field field--full"
+          *ngIf="isBool('neurologica.possuiAfeccoes', true)"
+        >
+          <span>Descrever</span>
+          <input
+            type="text"
+            formControlName="detalhes"
+            placeholder="Epilepsia, AVC prévio..."
+          />
+        </label>
+      </section>
+
+      <section id="sec-renal" class="pre-section" formGroupName="renal">
+        <div class="pre-section__head">
+          <span class="pre-section__num">07</span>
+          <div><h2>Condição Renal</h2></div>
+        </div>
+        <div class="qa-row">
+          <span class="qa-label">Possui afecções renais?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('renal.possuiAfeccoes', true)"
+              (click)="setBool('renal.possuiAfeccoes', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('renal.possuiAfeccoes', false)"
+              (click)="setBool('renal.possuiAfeccoes', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <label
+          class="field field--full"
+          *ngIf="isBool('renal.possuiAfeccoes', true)"
+        >
+          <span>Descrever</span>
+          <input
+            type="text"
+            formControlName="detalhes"
+            placeholder="IRC, diálise..."
+          />
+        </label>
+      </section>
+
+      <section id="sec-endocrina" class="pre-section" formGroupName="endocrina">
+        <div class="pre-section__head">
+          <span class="pre-section__num">08</span>
+          <div><h2>Condição Endócrina</h2></div>
+        </div>
+        <div class="qa-row">
+          <span class="qa-label">Possui afecções do aparelho endócrino?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('endocrina.possuiAfeccoes', true)"
+              (click)="setBool('endocrina.possuiAfeccoes', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('endocrina.possuiAfeccoes', false)"
+              (click)="setBool('endocrina.possuiAfeccoes', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <label
+          class="field field--full"
+          *ngIf="isBool('endocrina.possuiAfeccoes', true)"
+        >
+          <span>Descrever</span>
+          <input
+            type="text"
+            formControlName="detalhes"
+            placeholder="Diabetes, hipotireoidismo..."
+          />
+        </label>
+      </section>
+
+      <section
+        id="sec-ginecologica"
+        class="pre-section"
+        formGroupName="ginecologica"
+      >
+        <div class="pre-section__head">
+          <span class="pre-section__num">09</span>
+          <div><h2>Condição Ginecológica</h2></div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Possui afecções ginecológicas?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('ginecologica.possuiAfeccoes', true)"
+              (click)="setBool('ginecologica.possuiAfeccoes', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('ginecologica.possuiAfeccoes', false)"
+              (click)="setBool('ginecologica.possuiAfeccoes', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <label
+          class="field field--full"
+          *ngIf="isBool('ginecologica.possuiAfeccoes', true)"
+        >
+          <span>Descrever</span>
+          <input type="text" formControlName="detalhes" />
+        </label>
+
+        <div class="qa-row">
+          <span class="qa-label">Já teve a primeira menstruação?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('ginecologica.primeiraMenstruacao', true)"
+              (click)="setBool('ginecologica.primeiraMenstruacao', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('ginecologica.primeiraMenstruacao', false)"
+              (click)="setBool('ginecologica.primeiraMenstruacao', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Está grávida?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('ginecologica.estaGravida', true)"
+              (click)="setBool('ginecologica.estaGravida', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('ginecologica.estaGravida', false)"
+              (click)="setBool('ginecologica.estaGravida', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+
+        <div class="grid-2" *ngIf="isBool('ginecologica.estaGravida', true)">
+          <label class="field">
+            <span>Idade gestacional (semanas)</span>
+            <input type="number" formControlName="idadeGestacional" />
+          </label>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Possui alguma comorbidade gestacional?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('ginecologica.comorbidadeGestacional', true)"
+              (click)="setBool('ginecologica.comorbidadeGestacional', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('ginecologica.comorbidadeGestacional', false)"
+              (click)="setBool('ginecologica.comorbidadeGestacional', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Sofrimento fetal identificado?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('ginecologica.sofrimentoFetal', true)"
+              (click)="setBool('ginecologica.sofrimentoFetal', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('ginecologica.sofrimentoFetal', false)"
+              (click)="setBool('ginecologica.sofrimentoFetal', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Já teve gestações anteriores?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('ginecologica.gestacoesAnteriores', true)"
+              (click)="setBool('ginecologica.gestacoesAnteriores', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('ginecologica.gestacoesAnteriores', false)"
+              (click)="setBool('ginecologica.gestacoesAnteriores', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Está na menopausa?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('ginecologica.menopausa', true)"
+              (click)="setBool('ginecologica.menopausa', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('ginecologica.menopausa', false)"
+              (click)="setBool('ginecologica.menopausa', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="sec-outros" class="pre-section" formGroupName="outros">
+        <div class="pre-section__head">
+          <span class="pre-section__num">10</span>
+          <div><h2>Outros</h2></div>
+        </div>
+        <div class="qa-row">
+          <span class="qa-label"
+            >Possui outro problema de saúde ou realiza outros tipos de
+            tratamento?</span
+          >
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('outros.outroProblemaSaude', true)"
+              (click)="setBool('outros.outroProblemaSaude', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('outros.outroProblemaSaude', false)"
+              (click)="setBool('outros.outroProblemaSaude', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <label
+          class="field field--full"
+          *ngIf="isBool('outros.outroProblemaSaude', true)"
+        >
+          <span>Descrever</span>
+          <input type="text" formControlName="detalhes" />
+        </label>
+
+        <div class="qa-row">
+          <span class="qa-label">É portador de alguma síndrome conhecida?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('outros.sindromeConhecida', true)"
+              (click)="setBool('outros.sindromeConhecida', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('outros.sindromeConhecida', false)"
+              (click)="setBool('outros.sindromeConhecida', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <label
+          class="field field--full"
+          *ngIf="isBool('outros.sindromeConhecida', true)"
+        >
+          <span>Qual síndrome?</span>
+          <input type="text" formControlName="sindromeDetalhe" />
+        </label>
+      </section>
+
+      <section id="sec-historico" class="pre-section" formGroupName="historico">
+        <div class="pre-section__head">
+          <span class="pre-section__num">11</span>
+          <div><h2>Histórico Pregresso</h2></div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Faz uso regular de algum medicamento?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('historico.usoRegularMedicamento', true)"
+              (click)="setBool('historico.usoRegularMedicamento', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('historico.usoRegularMedicamento', false)"
+              (click)="setBool('historico.usoRegularMedicamento', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <label
+          class="field field--full"
+          *ngIf="isBool('historico.usoRegularMedicamento', true)"
+        >
+          <span>Medicamentos, dose e tempo de uso</span>
+          <textarea
+            rows="2"
+            formControlName="medicamentos"
+            placeholder="Ex.: Hemitartarato de Zolpidem 5mg — tempo: não informado"
+          ></textarea>
+        </label>
+
+        <div class="qa-row">
+          <span class="qa-label">Recebeu anestesia anteriormente?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('historico.anestesiaAnterior', true)"
+              (click)="setBool('historico.anestesiaAnterior', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('historico.anestesiaAnterior', false)"
+              (click)="setBool('historico.anestesiaAnterior', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <label
+          class="field field--full"
+          *ngIf="isBool('historico.anestesiaAnterior', true)"
+        >
+          <span>Tipos / observações</span>
+          <input
+            type="text"
+            formControlName="anestesiaAnteriorDetalhe"
+            placeholder="Raquidiana, Geral Balanceada Venosa Inalatória (AGVI)..."
+          />
+        </label>
+
+        <div class="qa-row">
+          <span class="qa-label">História de vacinação recente?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('historico.vacinacaoRecente', true)"
+              (click)="setBool('historico.vacinacaoRecente', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('historico.vacinacaoRecente', false)"
+              (click)="setBool('historico.vacinacaoRecente', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">História de prematuridade?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('historico.prematuridade', true)"
+              (click)="setBool('historico.prematuridade', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('historico.prematuridade', false)"
+              (click)="setBool('historico.prematuridade', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label"
+            >História familiar de Hipertermia Maligna?</span
+          >
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('historico.hipertermiaMalignaFamiliar', true)"
+              (click)="setBool('historico.hipertermiaMalignaFamiliar', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('historico.hipertermiaMalignaFamiliar', false)"
+              (click)="setBool('historico.hipertermiaMalignaFamiliar', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Diagnóstico de Autismo?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('historico.autismoDiagnostico', true)"
+              (click)="setBool('historico.autismoDiagnostico', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('historico.autismoDiagnostico', false)"
+              (click)="setBool('historico.autismoDiagnostico', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Histórico de cirurgias anteriores?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('historico.cirurgiasAnteriores', true)"
+              (click)="setBool('historico.cirurgiasAnteriores', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('historico.cirurgiasAnteriores', false)"
+              (click)="setBool('historico.cirurgiasAnteriores', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <label
+          class="field field--full"
+          *ngIf="isBool('historico.cirurgiasAnteriores', true)"
+        >
+          <span>Observações</span>
+          <input
+            type="text"
+            formControlName="cirurgiasAnterioresDetalhe"
+            placeholder="Ex.: Cesariana e prótese de mama"
+          />
+        </label>
+      </section>
+
+      <section id="sec-habitos" class="pre-section" formGroupName="habitos">
+        <div class="pre-section__head">
+          <span class="pre-section__num">12</span>
+          <div><h2>Hábitos</h2></div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Usuário de drogas ilícitas?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('habitos.drogasIlicitas', true)"
+              (click)="setBool('habitos.drogasIlicitas', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('habitos.drogasIlicitas', false)"
+              (click)="setBool('habitos.drogasIlicitas', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <div class="qa-row">
+          <span class="qa-label">Fumante ou ex-fumante?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('habitos.fumante', true)"
+              (click)="setBool('habitos.fumante', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('habitos.fumante', false)"
+              (click)="setBool('habitos.fumante', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <div class="qa-row">
+          <span class="qa-label">História de Tabagismo Passivo?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('habitos.tabagismoPassivo', true)"
+              (click)="setBool('habitos.tabagismoPassivo', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('habitos.tabagismoPassivo', false)"
+              (click)="setBool('habitos.tabagismoPassivo', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <div class="qa-row">
+          <span class="qa-label">Ingere bebida alcoólica?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('habitos.alcool', true)"
+              (click)="setBool('habitos.alcool', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('habitos.alcool', false)"
+              (click)="setBool('habitos.alcool', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="sec-alergias" class="pre-section" formGroupName="alergias">
+        <div class="pre-section__head">
+          <span class="pre-section__num">13</span>
+          <div><h2>Alergias</h2></div>
+        </div>
+        <div class="qa-row">
+          <span class="qa-label"
+            >Possui alergia a alguma substância ou medicamento?</span
+          >
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('alergias.possuiAlergia', true)"
+              (click)="setBool('alergias.possuiAlergia', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('alergias.possuiAlergia', false)"
+              (click)="setBool('alergias.possuiAlergia', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <label
+          class="field field--full"
+          *ngIf="isBool('alergias.possuiAlergia', true)"
+        >
+          <span>Descrever alergias</span>
+          <textarea
+            rows="2"
+            formControlName="detalhes"
+            placeholder="Ex.: Dipirona, Látex..."
+          ></textarea>
+        </label>
+      </section>
+
+      <section id="sec-exames" class="pre-section" formGroupName="exames">
+        <div class="pre-section__head">
+          <span class="pre-section__num">14</span>
+          <div><h2>Exames</h2></div>
+        </div>
+        <div class="qa-row">
+          <span class="qa-label">Possui exames disponíveis?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('exames.possuiExames', true)"
+              (click)="setBool('exames.possuiExames', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('exames.possuiExames', false)"
+              (click)="setBool('exames.possuiExames', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <div class="qa-row">
+          <span class="qa-label">Soropositivo para HIV?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('exames.soropositivoHIV', true)"
+              (click)="setBool('exames.soropositivoHIV', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('exames.soropositivoHIV', false)"
+              (click)="setBool('exames.soropositivoHIV', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <label class="field field--full">
+          <span>Observações sobre exames</span>
+          <textarea rows="2" formControlName="observacao"></textarea>
+        </label>
+      </section>
+
+      <section
+        id="sec-condicoes-clinicas"
+        class="pre-section"
+        formGroupName="condicoesClinicas"
+      >
+        <div class="pre-section__head">
+          <span class="pre-section__num">15</span>
+          <div>
+            <h2>Condições Clínicas &amp; Via Aérea</h2>
+            <p>
+              Classificação ASA, Mallampati e critérios preditores de via aérea
+              difícil.
+            </p>
+          </div>
+        </div>
+
+        <div class="qa-row qa-row--column">
+          <span class="qa-label">Classificação ASA <em class="req">*</em></span>
+          <div class="chip-group">
+            <button
+              type="button"
+              *ngFor="let opt of asaOptions"
+              class="chip chip--outline"
+              [class.active]="isValue('condicoesClinicas.classificacaoASA', opt)"
+              (click)="setValue('condicoesClinicas.classificacaoASA', opt)"
+            >
+              {{ opt }}
+            </button>
+          </div>
+        </div>
+
+        <div class="qa-row qa-row--column">
+          <span class="qa-label">Classificação de Mallampati</span>
+          <div class="chip-group">
+            <button
+              type="button"
+              *ngFor="let opt of mallampatiOptions"
+              class="chip chip--outline"
+              [class.active]="isValue('condicoesClinicas.mallampati', opt)"
+              (click)="setValue('condicoesClinicas.mallampati', opt)"
+            >
+              {{ opt }}
+            </button>
+          </div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Abertura bucal &lt; 3 cm?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('condicoesClinicas.aberturaBucalMenor3cm', true)"
+              (click)="setBool('condicoesClinicas.aberturaBucalMenor3cm', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('condicoesClinicas.aberturaBucalMenor3cm', false)"
+              (click)="setBool('condicoesClinicas.aberturaBucalMenor3cm', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <div class="qa-row">
+          <span class="qa-label">Distância tireomentoniana reduzida?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('condicoesClinicas.distanciaTireomentoniana', true)"
+              (click)="setBool('condicoesClinicas.distanciaTireomentoniana', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('condicoesClinicas.distanciaTireomentoniana', false)"
+              (click)="setBool('condicoesClinicas.distanciaTireomentoniana', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <div class="qa-row">
+          <span class="qa-label">Extensão cervical limitada?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('condicoesClinicas.extensaoCervicalLimitada', true)"
+              (click)="setBool('condicoesClinicas.extensaoCervicalLimitada', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('condicoesClinicas.extensaoCervicalLimitada', false)"
+              (click)="setBool('condicoesClinicas.extensaoCervicalLimitada', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <div class="qa-row">
+          <span class="qa-label">Dentição alterada?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('condicoesClinicas.denticaoAlterada', true)"
+              (click)="setBool('condicoesClinicas.denticaoAlterada', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('condicoesClinicas.denticaoAlterada', false)"
+              (click)="setBool('condicoesClinicas.denticaoAlterada', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <div class="qa-row">
+          <span class="qa-label">Prótese dentária?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('condicoesClinicas.proteseDentaria', true)"
+              (click)="setBool('condicoesClinicas.proteseDentaria', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('condicoesClinicas.proteseDentaria', false)"
+              (click)="setBool('condicoesClinicas.proteseDentaria', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <div class="qa-row">
+          <span class="qa-label">Previsão de IOT difícil?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('condicoesClinicas.previsaoIotDificil', true)"
+              (click)="setBool('condicoesClinicas.previsaoIotDificil', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('condicoesClinicas.previsaoIotDificil', false)"
+              (click)="setBool('condicoesClinicas.previsaoIotDificil', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="sec-programacao"
+        class="pre-section"
+        formGroupName="programacao"
+      >
+        <div class="pre-section__head">
+          <span class="pre-section__num">16</span>
+          <div><h2>Programação</h2></div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Técnica anestésica proposta?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('programacao.tecnicaAnestesicaProposta', true)"
+              (click)="setBool('programacao.tecnicaAnestesicaProposta', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('programacao.tecnicaAnestesicaProposta', false)"
+              (click)="setBool('programacao.tecnicaAnestesicaProposta', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <label
+          class="field field--full"
+          *ngIf="isBool('programacao.tecnicaAnestesicaProposta', true)"
+        >
+          <span>Descrever técnica</span>
+          <input
+            type="text"
+            formControlName="tecnicaDetalhe"
+            placeholder="Sedação, AGVI, Raquidiana..."
+          />
+        </label>
+
+        <div class="qa-row">
+          <span class="qa-label">Medicação pré-anestésica?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('programacao.medicacaoPreAnestesica', true)"
+              (click)="setBool('programacao.medicacaoPreAnestesica', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('programacao.medicacaoPreAnestesica', false)"
+              (click)="setBool('programacao.medicacaoPreAnestesica', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <label
+          class="field field--full"
+          *ngIf="isBool('programacao.medicacaoPreAnestesica', true)"
+        >
+          <span>Descrever medicação</span>
+          <input
+            type="text"
+            formControlName="medicacaoDetalhe"
+            placeholder="Fármaco, dose, via..."
+          />
+        </label>
+      </section>
+
+      <section id="sec-extras" class="pre-section" formGroupName="extras">
+        <div class="pre-section__head">
+          <span class="pre-section__num">17</span>
+          <div><h2>Extras</h2></div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Solicitação de sangue?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('extras.solicitacaoSangue', true)"
+              (click)="setBool('extras.solicitacaoSangue', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('extras.solicitacaoSangue', false)"
+              (click)="setBool('extras.solicitacaoSangue', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <div class="qa-row">
+          <span class="qa-label">Solicitação de UTI?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('extras.solicitacaoUti', true)"
+              (click)="setBool('extras.solicitacaoUti', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('extras.solicitacaoUti', false)"
+              (click)="setBool('extras.solicitacaoUti', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <div class="qa-row">
+          <span class="qa-label">Outras observações?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('extras.outrasObservacoes', true)"
+              (click)="setBool('extras.outrasObservacoes', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('extras.outrasObservacoes', false)"
+              (click)="setBool('extras.outrasObservacoes', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+        <label
+          class="field field--full"
+          *ngIf="isBool('extras.outrasObservacoes', true)"
+        >
+          <span>Descrever</span>
+          <textarea
+            rows="2"
+            formControlName="outrasObservacoesTexto"
+          ></textarea>
+        </label>
+
+        <div class="qa-row">
+          <span class="qa-label">Risco de Sangramento?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('extras.riscoSangramento', true)"
+              (click)="setBool('extras.riscoSangramento', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('extras.riscoSangramento', false)"
+              (click)="setBool('extras.riscoSangramento', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+
+        <div class="qa-row qa-row--column">
+          <span class="qa-label">Risco de Náuseas e Vômitos (PONV)</span>
+          <div class="chip-group">
+            <button
+              type="button"
+              *ngFor="let opt of nvpoOptions"
+              class="chip chip--outline"
+              [class.active]="isValue('extras.riscoNauseasVomitos', opt)"
+              (click)="setValue('extras.riscoNauseasVomitos', opt)"
+            >
+              {{ opt }}
+            </button>
+          </div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Protocolo de maltodextrina?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('extras.protocoloMaltodextrina', true)"
+              (click)="setBool('extras.protocoloMaltodextrina', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('extras.protocoloMaltodextrina', false)"
+              (click)="setBool('extras.protocoloMaltodextrina', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Orientações ao paciente entregues?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('extras.orientacoesPaciente', true)"
+              (click)="setBool('extras.orientacoesPaciente', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('extras.orientacoesPaciente', false)"
+              (click)="setBool('extras.orientacoesPaciente', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+
+        <div class="qa-row qa-row--column">
+          <span class="qa-label">Risco de Tromboembolismo Venoso (TEV)</span>
+          <div class="chip-group">
+            <button
+              type="button"
+              *ngFor="let opt of tevOptions"
+              class="chip chip--outline"
+              [class.active]="isValue('extras.riscoTEV', opt)"
+              (click)="setValue('extras.riscoTEV', opt)"
+            >
+              {{ opt }}
+            </button>
+          </div>
+        </div>
+
+        <div class="qa-row">
+          <span class="qa-label">Cirurgia oncológica?</span>
+          <div class="chips">
+            <button
+              type="button"
+              class="chip chip--sim"
+              [class.active]="isBool('extras.cirurgiaOncologica', true)"
+              (click)="setBool('extras.cirurgiaOncologica', true)"
+            >
+              SIM
+            </button>
+            <button
+              type="button"
+              class="chip chip--nao"
+              [class.active]="isBool('extras.cirurgiaOncologica', false)"
+              (click)="setBool('extras.cirurgiaOncologica', false)"
+            >
+              NÃO
+            </button>
+          </div>
+        </div>
+
+        <div class="qa-row qa-row--column">
+          <span class="qa-label">Porte da cirurgia</span>
+          <div class="chip-group">
+            <button
+              type="button"
+              *ngFor="let opt of porteOptions"
+              class="chip chip--outline"
+              [class.active]="isValue('extras.porteCirurgia', opt)"
+              (click)="setValue('extras.porteCirurgia', opt)"
+            >
+              {{ opt }}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <footer class="pre-footer">
+        <div class="pre-footer__meta">
+          <span *ngIf="lastSavedAt">
+            <ion-icon name="cloud-done-outline"></ion-icon>
+            Último rascunho: {{ lastSavedAt | date:'dd/MM HH:mm' }}
+          </span>
+        </div>
+        <div class="pre-footer__actions">
+          <!-- <ion-button fill="outline" (click)="goBack()">
+            <ion-icon slot="start" name="chevron-back-outline"></ion-icon>
+            Voltar
+          </ion-button> -->
+          <ion-button
+            class="btn-primary"
+            (click)="salvar()"
+            [disabled]="isSaving"
+          >
+            <ion-spinner
+              *ngIf="isSaving"
+              name="dots"
+              slot="start"
+            ></ion-spinner>
+            <ion-icon
+              *ngIf="!isSaving"
+              slot="start"
+              name="save-outline"
+            ></ion-icon>
+            Finalizar avaliação pré-anestésica
+          </ion-button>
+        </div>
+      </footer>
+    </main>
+  </div>
+</div>
