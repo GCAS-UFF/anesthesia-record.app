@@ -616,3 +616,60 @@
   font-size: 13px;
   letter-spacing: 0.02em;
 }
+
+/* Mallampati - cards com imagem */
+.mallampati-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+
+  @media (max-width: 720px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.mallampati-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px;
+  background: #fff;
+  border: 2px solid var(--pre-border, #e2e8f0);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+
+  img {
+    width: 100%;
+    max-width: 120px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  .mallampati-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--pre-text, #334155);
+    letter-spacing: 0.02em;
+  }
+
+  &:hover {
+    border-color: var(--pre-primary);
+    transform: translateY(-1px);
+  }
+
+  &.active {
+    border-color: var(--pre-primary);
+    background: color-mix(in oklab, var(--pre-primary) 8%, #fff);
+    box-shadow: 0 6px 16px -8px color-mix(in oklab, var(--pre-primary) 55%, transparent);
+
+    .mallampati-label {
+      color: var(--pre-primary);
+      font-weight: 700;
+    }
+  }
+}
