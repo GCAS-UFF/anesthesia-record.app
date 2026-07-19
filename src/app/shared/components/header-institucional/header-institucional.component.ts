@@ -4,9 +4,9 @@ import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { AlertController } from '@ionic/angular';
+import { AuthService } from 'src/app/core/services/auth.service';
 import {
   menuOutline,
-  wifiOutline,
   gridOutline,
   peopleOutline,
   settingsOutline,
@@ -15,13 +15,8 @@ import {
   closeOutline,
   chevronDownOutline,
   arrowBackOutline,
-  cloudUploadOutline
 } from 'ionicons/icons';
-import { AuthService } from 'src/app/core/services/auth.service';
-import { catchError, interval, of, startWith, Subscription, switchMap } from 'rxjs';
-import { HealthService } from 'src/app/core/services/health.service';
-import { SyncStatus } from 'src/app/core/enums/sync-statut.enum';
-import { AnesthesiaRecordService } from 'src/app/core/services/anesthesia-record.service';
+import { Subscription } from 'rxjs';
 
 interface NavItem {
   icon: string;
@@ -46,17 +41,8 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   @Input() doctorInitials: string = 'Dr(a)';
 
   private isLoggingOut = false;
-  serverConnected = false;
-  aghuConnected = false;
 
-  SyncStatus = SyncStatus;
-  syncStatus: SyncStatus = SyncStatus.Synced;
-  pendingDrafts = 0;
-  isSyncing = false;
-
-  private healthSubscription?: Subscription;
   private userSubscription: Subscription = new Subscription();
-  private draftSubscription?: Subscription;
 
   menuOpen = false;
   userMenuOpen = false;
@@ -72,13 +58,10 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
     private location: Location,
     private authService: AuthService,
     private alertController: AlertController,
-    private healthService: HealthService,
-    private anesthesiaRecordService: AnesthesiaRecordService
   ) {
     addIcons({
       arrowBackOutline,
       menuOutline,
-      wifiOutline,
       gridOutline,
       peopleOutline,
       settingsOutline,
@@ -86,28 +69,11 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
       logOutOutline,
       closeOutline,
       chevronDownOutline,
-      cloudUploadOutline
     });
   }
 
   ngOnInit() {
     this.loadUserData();
-
-    this.draftSubscription =
-      this.anesthesiaRecordService.pendingDraftsCount$
-        .subscribe(count => {
-
-          this.pendingDrafts = count;
-
-          if (this.syncStatus === SyncStatus.Syncing) {
-            return;
-          }
-
-          this.syncStatus =
-            count > 0
-              ? SyncStatus.Pending
-              : SyncStatus.Synced;
-        });
 
     this.userSubscription = this.authService.user$.subscribe(user => {
       if (!user) {
@@ -116,14 +82,10 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
       }
       this.updateUserData(user);
     });
-
-    this.startHealthCheck();
   }
 
   ngOnDestroy() {
     this.userSubscription.unsubscribe();
-    this.healthSubscription?.unsubscribe();
-    this.draftSubscription?.unsubscribe();
   }
 
   loadUserData() {
@@ -162,32 +124,6 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
 
   closeMenu() {
     this.menuOpen = false;
-  }
-
-  private startHealthCheck(): void {
-    this.healthSubscription = interval(60000)
-      .pipe(
-        startWith(0),
-        switchMap(() =>
-          this.healthService.checkHealth().pipe(
-            catchError(() => of(null))
-          )
-        )
-      )
-      .subscribe(response => {
-        if (!response?.data) {
-          this.serverConnected = false;
-          this.aghuConnected = false;
-          return;
-        }
-
-        this.serverConnected = response.data.database;
-        this.aghuConnected = response.data.aghu;
-
-        this.anesthesiaRecordService.setServerStatus(
-          response.data.database && response.data.aghu
-        );
-      });
   }
 
   closeUserMenu(event?: Event) {

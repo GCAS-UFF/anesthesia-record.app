@@ -16,49 +16,7 @@
     </button>
   </div>
 
-  <div class="header-right">
-    <div class="status-group">
-      <div
-        class="status-item"
-        [class.synced]="syncStatus === SyncStatus.Synced"
-        [class.pending]="syncStatus === SyncStatus.Pending"
-        [class.syncing]="syncStatus === SyncStatus.Syncing"
-        title="Sincronização das fichas"
-      >
-        <span class="badge" *ngIf="pendingDrafts > 0">
-          {{ pendingDrafts }}
-        </span>
-        <ion-icon
-          [name]="
-            syncStatus === SyncStatus.Syncing
-              ? 'sync-outline'
-              : 'cloud-upload-outline'
-          "
-        >
-        </ion-icon>
-        <span>FICHAS</span>
-      </div>
-
-      <div
-        class="status-item"
-        [class.connected]="serverConnected"
-        [class.disconnected]="!serverConnected"
-        title="Conexão com a rede"
-      >
-        <ion-icon name="wifi-outline"></ion-icon>
-        <span>REDE</span>
-      </div>
-
-      <div
-        class="status-item"
-        [class.connected]="aghuConnected"
-        [class.disconnected]="!aghuConnected"
-        title="Integração AGHU"
-      >
-        <ion-icon name="cloud-outline"></ion-icon>
-        <span>AGHU</span>
-      </div>
-
+  <div class="header-right">   
       <div class="doctor-chip-wrapper">
         <div
           class="doctor-chip"
@@ -88,8 +46,7 @@
           </button>
         </div>
       </div>
-    </div>
-  </div>
+    </div>  
 </header>
 
 <div class="user-menu" *ngIf="userMenuOpen" (click)="closeUserMenu($event)">
