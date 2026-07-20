@@ -216,7 +216,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     addIcons({ checkmarkCircle, chevronDownOutline, addOutline, trashOutline, returnDownForwardOutline, closeCircleOutline, timeOutline, alertCircleOutline, lockClosedOutline, shieldCheckmarkOutline, syncOutline, printOutline, fitnessOutline, createOutline, medicalSharp, shieldCheckmark, cloudDoneOutline, pencilOutline, saveOutline, arrowBackOutline, closeOutline });
     this.initForm();
 
-    // Chamar isso junto com o carregamento da ficha, pois SEMPRE vamos ter a pre anestésica preenchida
+    // Chamar isso junto com o carregamento da ficha quando estiver pronto, pois SEMPRE vamos ter a pre anestésica preenchida
     // this.preAnesthesiaData = response.preAnesthesia ?? null;
   }
 
@@ -687,14 +687,24 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
       const draft = this.anesthesiaService.getDraft(this.cirurgiaId!);
       this.anesthesiaService.getLatestByPatient(this.cirurgiaId!, patientId).subscribe(savedRecord => {
+        console.log('📋 Saved Record:', savedRecord);
+
         if (draft) {
           this.hydrateProcedimentos((draft as any)?.posProcedimento?.procedimentos);
           this.form.patchValue(draft);
           if (draft.antibioticsList) this.antibioticsList = draft.antibioticsList;
         } else if (savedRecord) {
-          this.hydrateProcedimentos((savedRecord as any)?.posProcedimento?.procedimentos);
-          this.form.patchValue(savedRecord);
-          if ((savedRecord as any).antibioticsList) this.antibioticsList = (savedRecord as any).antibioticsList;
+          const procedimentos = (savedRecord as any)?.posProcedimento?.procedimentos;
+          this.hydrateProcedimentos(procedimentos);
+
+          const formValue = { ...savedRecord };
+          delete formValue.posProcedimento?.procedimentos;
+
+          this.form.patchValue(formValue);
+
+          if ((savedRecord as any).antibioticsList) {
+            this.antibioticsList = (savedRecord as any).antibioticsList;
+          }
         } else {
           this.hydrateProcedimentos(this.buildProcedimentosFromSurgery());
           this.form.get('dadosVitais.peso')?.patchValue(patient.weightKg);
@@ -944,7 +954,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.location.back();
   }
 
-  async irParaCirurgia(): Promise<void> {    
+  async irParaCirurgia(): Promise<void> {
     if (!this.selectedSurgery?.id) {
       return;
     }
@@ -988,12 +998,21 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   private hydrateProcedimentos(items?: Array<{ procedimentoId?: string; hora?: string; principal?: boolean }> | null): void {
-    if (!items || !items.length) return;
+    if (!items || !items.length) {     
+      return;
+    }
+
     const arr = this.procedimentosArray;
     while (arr.length) arr.removeAt(0);
-    items.forEach(it => arr.push(this.createProcedimentoRow(it)));
+
+    items.forEach(it => {
+      arr.push(this.createProcedimentoRow(it));
+    });
+
     const hasPrincipal = arr.controls.some(c => !!c.get('principal')?.value);
-    if (!hasPrincipal) arr.at(0).get('principal')?.setValue(true);
+    if (!hasPrincipal && arr.length > 0) {
+      arr.at(0).get('principal')?.setValue(true);
+    }
   }
 
   private buildProcedimentosFromSurgery(): Array<{ procedimentoId: string; hora: string; principal: boolean }> {
@@ -1082,7 +1101,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('window:scroll', ['$event'])
+  @HostListener('window:scroll')
   @HostListener('window:resize')
   onWindowChange() {
     if (this.openDdl) {
