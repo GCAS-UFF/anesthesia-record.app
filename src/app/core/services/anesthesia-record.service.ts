@@ -328,6 +328,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   }
 
   private mapToAppFormat(api: any): any {
+    // Mapear antibióticos
     const antibioticsList = Array.isArray(api.antibioticsList) ? api.antibioticsList.map((a: any) => ({
       medicationId: a.medicationId ?? null,
       medicationName: a.medicationName ?? a.name ?? '',
@@ -346,6 +347,53 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       })) : []
     })) : [];
 
+    // Mapear procedimentos - importante: pegar do patient.surgeries
+    const procedures = Array.isArray(api.patient?.surgeries)
+      ? api.patient.surgeries.flatMap((s: any) =>
+        Array.isArray(s.procedures)
+          ? s.procedures.map((p: any) => ({
+            procedimentoId: p.id?.toString() ?? '',
+            hora: p.hora ?? '',  // ⚠️ Precisa ser adicionado no backend
+            principal: !!p.isPrimary
+          }))
+          : []
+      )
+      : [];
+
+    // Determinar posições - mapear o enum
+    const posicoes = [];
+    const posMap: Record<number, string> = {
+      1: 'SUPINA',
+      2: 'PRONA',
+      3: 'SENTADO',
+      4: 'LATERAL ESQUERDO',
+      5: 'LATERAL DIREITO',
+      6: 'TRENDELENBURG',
+      7: 'LITOTÔMICA'
+    };
+    if (api.surgicalPosition && posMap[api.surgicalPosition]) {
+      posicoes.push(posMap[api.surgicalPosition]);
+    }
+
+    // Mapear acesso venoso
+    const acessoVenoso = [];
+    if (api.venousAccessType === 1) acessoVenoso.push('Periferico');
+    if (api.venousAccessType === 2) acessoVenoso.push('Central');
+
+    // Mapear respiração
+    const respiracaoAssistida = [];
+    const respiracaoControlada = [];
+    if (api.respirationMode === 1) respiracaoAssistida.push('Assistida');
+    if (api.respirationMode === 2) respiracaoControlada.push('Controlada');
+
+    // Mapear via aérea
+    const airwayTypes: Record<number, string> = {
+      1: 'Simples',
+      2: 'Endobronquico',
+      3: 'Aramado',
+      4: 'Outras'
+    };
+
     return {
       id: api.id,
       pacienteId: api.id?.toString(),
@@ -353,11 +401,11 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         identificadoAvaliado: api.patientIdentifiedBeforeInduction ? 'sim' : 'nao',
         consentimentoAssinado: api.anestheticConsentSigned ? 'sim' : 'nao',
         equipamentosChecados: api.anesthesiaEquipmentChecked ? 'sim' : 'nao',
-        atencao: api.safetyObservations
+        atencao: api.safetyObservations || ''
       },
       preInducao: {
         recebeuMedPrevia: api.preAnestheticMedication ? 'sim' : 'nao',
-        farmacoId: api.preAnestheticMedicationId ?? null,
+        farmacoId: api.preAnestheticMedicationId?.toString() ?? null,
         farmaco: api.preAnestheticMedicationName ?? '',
         dose: api.preAnestheticMedicationDose ?? '',
         via: api.preAnestheticMedicationRoute ?? '',
@@ -369,72 +417,117 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       },
       antibioticsList,
       dadosVitais: {
-        pa: api.bloodPressure,
-        fr: api.respiratoryRate?.toString(),
-        temp: api.temperature?.toString(),
-        spo2: api.oxygenSaturation?.toString(),
-        peso: api.weightKg?.toString(),
-        asa: 'ASA ' + (api.asaClassification || 'I'),
-        entradaSala: api.roomEntryTime
+        pa: api.bloodPressure || '',
+        fr: api.respiratoryRate?.toString() || '',
+        temp: api.temperature?.toString() || '',
+        spo2: api.oxygenSaturation?.toString() || '',
+        peso: api.weightKg?.toString() || '',
+        asa: api.asaClassification ? `ASA ${api.asaClassification}` : 'ASA I',
+        entradaSala: api.roomEntryTime || ''
       },
       equipe: {
-        cirurgiao: api.surgeon,
+        cirurgiao: api.surgeonId?.toString() ?? '',
         cirurgiaoId: api.surgeonId ?? null,
-        assistente: api.assistant,
+        assistente: api.assistantId?.toString() ?? '',
         assistenteId: api.assistantId ?? null,
-        diagnosticoPre: api.preOperativeDiagnosis,
-        horaInicioAnestesia: api.anesthesiaStartTime
+        diagnosticoPre: api.preOperativeDiagnosis || '',
+        horaInicioAnestesia: api.anesthesiaStartTime || ''
       },
       posicao: {
+        posicoes: posicoes,
+        outrasPosicao: '',
         usoCoxim: api.usesCushions ? 'sim' : 'nao',
-        localAcesso: api.venousAccessLocation,
+        localCoxim: '',
+        acessoVenoso: acessoVenoso,
+        outroAcesso: '',
+        localAcesso: api.venousAccessLocation || '',
         dificuldadePuncao: api.difficultVenousPuncture ? 'sim' : 'nao'
       },
       tecnica: {
         anestesiaGeral: api.generalAnesthesia ? 'sim' : 'nao',
+        respiracaoAssistida: respiracaoAssistida,
+        respiracaoControlada: respiracaoControlada,
         circuitoAbsorvedor: api.co2AbsorberCircuit ? 'sim' : 'nao',
-        oral: api.oralTube,
-        nasal: api.nasalTube,
-        dificil: api.intubationDifficulty > 1,
-        tecLaringoscopia: api.laryngoscopy,
-        tecRetrograda: api.retrogradeTechnique,
-        tecVideolaringoscopia: api.videoLaryngoscopy,
-        tecBroncofibroscopia: api.bronchofibroscopy,
-        tecTraqueostomia: api.tracheostomy,
+        vaGuedel: api.airwayDeviceType === 1,
+        vaMascLaringea: api.airwayDeviceType === 2,
+        vaMascFacial: api.airwayDeviceType === 3,
+        vaTubo: api.airwayDeviceType === 4,
+        guedelNo: '',
+        mascLaringeaNo: '',
+        mascFacialNo: '',
+        tuboNo: api.airwayDeviceNumber || '',
+        cuff: false,
+        iot: false,
+        oral: api.oralTube || false,
+        nasal: api.nasalTube || false,
+        facil: api.intubationDifficulty === 1,
+        dificil: api.intubationDifficulty === 2,
+        tipoSimples: api.airwayType === 1,
+        tipoOutras: api.airwayType === 4,
+        tipoOutrasTexto: api.otherAirwayTypeDescription || '',
+        tipoEndobronquico: api.airwayType === 2,
+        tipoAramado: api.airwayType === 3,
+        tecLaringoscopia: api.laryngoscopy || false,
+        tecBroncofibroscopia: api.bronchofibroscopy || false,
+        tecRetrograda: api.retrogradeTechnique || false,
+        tecTraqueostomia: api.tracheostomy || false,
+        tecVideolaringoscopia: api.videoLaryngoscopy || false,
+        tecVAOutras: false,
+        tecVAOutrasTexto: api.otherAirwayTechnique || '',
         bloqueiosEspinhais: api.spinalBlockPerformed ? 'sim' : 'nao',
+        nivelPuncao: [],
+        posicaoPuncao: '',
+        cateter: '',
+        opioide: '',
+        numeroPuncoes: '',
         sedacao: api.sedationPerformed ? 'sim' : 'nao',
         suplementacaoO2: api.oxygenSupplementation ? 'sim' : 'nao',
-        bloqueioPlexo: api.plexusBlockPerformed ? 'sim' : 'nao'
+        tipoSuplementacaoO2: [],
+        suplementacaoO2TemOutros: false,
+        suplementacaoO2Outros: '',
+        bloqueioPlexo: api.plexusBlockPerformed ? 'sim' : 'nao',
+        neuroestimulador: '',
+        nervosEstimulados: [],
+        nervosEstimuladosOutros: ''
       },
       posProcedimento: {
-        cirurgiaRealizada: api.surgeryPerformed,
-        procedimentos: Array.isArray(api.cirurgias ?? api.surgeries)
-          ? (api.cirurgias ?? api.surgeries).map((c: any) => ({
-            id: c.id ?? null,
-            description: c.description ?? '',
-            cid: c.cid ?? null,
-            hora: c.hora ?? '',
-            isPrimary: !!c.isPrimary
-          }))
-          : [],
-        horaTerminoCirurgia: api.surgeryEndTime,
-        diagnosticoPos: api.postOperativeDiagnosis,
-        horaTerminoAnestesia: api.anesthesiaEndTime
+        procedimentos: procedures,
+        horaTerminoCirurgia: api.surgeryEndTime || '',
+        diagnosticoPos: api.postOperativeDiagnosis || '',
+        horaTerminoAnestesia: api.anesthesiaEndTime || ''
       },
       alderete: {
-        consciencia: api.consciousnessScore?.toString(),
-        atividade: api.activityScore?.toString(),
-        circulacao: api.circulationScore?.toString(),
-        respiracao: api.respirationScore?.toString(),
-        saturacao: api.oxygenSaturationScore?.toString(),
-        dor: api.hasPain ? 'sim' : 'nao'
+        consciencia: api.consciousnessScore?.toString() ?? '',
+        atividade: api.activityScore?.toString() ?? '',
+        circulacao: api.circulationScore?.toString() ?? '',
+        respiracao: api.respirationScore?.toString() ?? '',
+        saturacao: api.oxygenSaturationScore?.toString() ?? '',
+        horaAvaliacao: '',
+        condicoesClinicasAlta: [],
+        condicoesAltaOutras: '',
+        dor: api.hasPain ? 'sim' : 'nao',
+        dorUsouENV: api.dorUsouENV || false,  // ⚠️ Precisa ser adicionado no backend
+        dorENV: api.dorENV?.toString() || '',
+        dorUsouPAINAD: api.dorUsouPAINAD || false,
+        dorPAINAD: api.dorPAINAD?.toString() || '',
+        dorUsouBPS: api.dorUsouBPS || false,
+        dorBPS: api.dorBPS?.toString() || '',
+        conduta: api.conduta || ''
       },
       assinaturas: {
         primeiroAnestesista: api.firstAnesthesiologistName ?? '',
-        primeiroAnestesistaId: api.firstAnesthesiologistId ?? null,
-        segundoAnestesista: api.secondAnesthesiologistName ?? '',
-        segundoAnestesistaId: api.secondAnesthesiologistId ?? null
-      }
+        primeiroAnestesistaId: api.firstAnesthesiologistId?.toString() ?? null,
+        segundoAnestesista: api.secondAnesthesiologistId?.toString() ?? '',
+        segundoAnestesistaId: api.secondAnesthesiologistId ?? null,
+        dataAssinatura: new Date().toISOString().split('T')[0]
+      },
+      surgeryId: api.surgeryId,
+      externalPatientId: api.externalPatientId,
+      recordDate: api.recordDate,
+      surgeryDate: api.surgeryDate,
+      createdAt: api.createdAt,
+      lastUpdate: api.lastUpdate,
+      status: api.status
     };
   }
 }

@@ -26,7 +26,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@a
       display: flex;
       flex-direction: column;
       gap: 8px;
-      align-items: center;
+      align-items: stretch;
     }
     .group-label {
       font-size: 11px;
