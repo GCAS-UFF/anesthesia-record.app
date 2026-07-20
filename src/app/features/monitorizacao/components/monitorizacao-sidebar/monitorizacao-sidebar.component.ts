@@ -15,6 +15,7 @@ export class MonitorizacaoSidebarComponent {
   @Input() isSurgeryStarted = false;
   @Input() isSurgeryFinished = false;
   @Input() isAnesthesiaStarted = false;
+  @Input() isAnesthesiaFinished = false;
   @Input() startTimeAnesthesia: string | null = null;
   @Input() startTimeSurgery: string | null = null;
   @Input() timerValue: string = '00:00:00';

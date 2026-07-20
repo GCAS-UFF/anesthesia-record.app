@@ -51,7 +51,10 @@ export class AuthService {
     USER_SECTOR: 'userSector',
     USER_ROLE: 'userRole',
     LAST_SAVED_CRM: 'lastSavedCRM',
-    REMEMBER_ME: 'rememberMePreference'
+    REMEMBER_ME: 'rememberMePreference',
+    CACHE_PROFESSIONALS: 'cache_professionals',
+    CACHE_PROCEDURES: 'cache_procedures',
+    CACHE_medications: 'cache_medications'
   } as const;
 
   private loggedInUser: UserData | null = null;

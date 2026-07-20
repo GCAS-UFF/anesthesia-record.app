@@ -26,10 +26,10 @@ import {
   lockClosedOutline,
   shieldCheckmark,
   chevronDownOutline,
-  alertCircleOutline, 
+  alertCircleOutline,
   cloudDoneOutline,
   medicalSharp, fitnessOutline,
- } from 'ionicons/icons';
+} from 'ionicons/icons';
 
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
@@ -213,7 +213,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private masterData: MasterDataService
   ) {
-    addIcons({checkmarkCircle,chevronDownOutline,addOutline,trashOutline,returnDownForwardOutline,closeCircleOutline,timeOutline,alertCircleOutline,lockClosedOutline,shieldCheckmarkOutline,syncOutline,printOutline,fitnessOutline,createOutline,medicalSharp,shieldCheckmark,cloudDoneOutline,pencilOutline,saveOutline,arrowBackOutline,closeOutline});
+    addIcons({ checkmarkCircle, chevronDownOutline, addOutline, trashOutline, returnDownForwardOutline, closeCircleOutline, timeOutline, alertCircleOutline, lockClosedOutline, shieldCheckmarkOutline, syncOutline, printOutline, fitnessOutline, createOutline, medicalSharp, shieldCheckmark, cloudDoneOutline, pencilOutline, saveOutline, arrowBackOutline, closeOutline });
     this.initForm();
 
     // Chamar isso junto com o carregamento da ficha, pois SEMPRE vamos ter a pre anestésica preenchida
@@ -944,12 +944,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.location.back();
   }
 
-  async irParaCirurgia(): Promise<void> {
+  async irParaCirurgia(): Promise<void> {    
     if (!this.selectedSurgery?.id) {
       return;
     }
 
-    console.log('[finalizarCirurgia] TODO: implementar', this.selectedSurgery.id);
+    this.router.navigate(['/monitorizacao', this.selectedSurgery.id]);
   }
 
   get procedimentosArray(): FormArray {

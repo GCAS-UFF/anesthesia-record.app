@@ -148,7 +148,8 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   }
 
   async handleLogout(): Promise<void> {
-    if (this.isLoggingOut) return;
+    if (this.isLoggingOut) 
+      return;
 
     const alert = await this.alertController.create({
       header: 'Sair',

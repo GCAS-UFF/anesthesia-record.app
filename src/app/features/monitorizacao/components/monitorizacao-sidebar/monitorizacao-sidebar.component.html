@@ -116,6 +116,9 @@
         <ion-button *ngIf="!isSurgeryFinished" expand="block" color="danger" class="btn-finish" (click)="finalizarCirurgia()" [disabled]="!isSurgeryStarted">
             <ion-icon name="checkmark-done-circle-outline" slot="start"></ion-icon> FINALIZAR CIRURGIA
         </ion-button>
+           <ion-button *ngIf="!isAnesthesiaFinished" expand="block" color="danger" class="btn-finish" (click)="finalizarCirurgia()" [disabled]="!isSurgeryStarted">
+            <ion-icon name="checkmark-done-circle-outline" slot="start"></ion-icon> FINALIZAR ANESTESIA
+        </ion-button>
         <div *ngIf="isSurgeryFinished" class="finished-banner">
             <ion-icon name="checkmark-done-circle-outline" class="success-icon"></ion-icon>
             <div class="banner-text">
