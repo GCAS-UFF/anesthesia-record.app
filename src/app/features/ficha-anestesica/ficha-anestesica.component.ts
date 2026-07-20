@@ -665,7 +665,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       .subscribe(() => { if (!this.isSaving) this.persistDraft(); });
   }
 
-  private loadPatientData(id: string, patientId: string) {
+  private loadPatientData(id: string, patientId: string) {    
     this.isLoading = true;
     this.surgeryService.getPatientDate(Number(id), patientId).subscribe((res: any) => {
       const surgeryData = res?.data;
@@ -673,21 +673,19 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       const patient = surgeryData.patient;
       this.isCancelled = patient.status;
       this.canEdit = surgeryData.firstAnesthesiologistId === this.loggedUser?.id;
-
       this.patient = {
         ...patient,
         gender: patient.gender || 'M',
         weight: (patient.weightKg ?? '').toString(),
         birthDate: this.formatDate(patient.birthDate)
       };
-      this.selectedSurgery = patient.surgeries?.find((x: any) => x.id === surgeryData.surgeryId)
+      this.selectedSurgery = surgeryData.surgeries?.find((x: any) => String(x.id) === String(surgeryData.surgeryId))
+        ?? surgeryData.surgeries?.[0]
+        ?? patient.surgeries?.find((x: any) => String(x.id) === String(surgeryData.surgeryId))
         ?? patient.surgeries?.[0];
-      this.selectedProcedure = this.selectedSurgery?.procedures?.find((p: any) => p.isPrimary)
-        ?? this.selectedSurgery?.procedures?.[0];
 
       const draft = this.anesthesiaService.getDraft(this.cirurgiaId!);
-      this.anesthesiaService.getLatestByPatient(this.cirurgiaId!, patientId).subscribe(savedRecord => {
-        console.log('📋 Saved Record:', savedRecord);
+      this.anesthesiaService.getLatestByPatient(this.cirurgiaId!, patientId).subscribe(savedRecord => {       
 
         if (draft) {
           this.hydrateProcedimentos((draft as any)?.posProcedimento?.procedimentos);
@@ -708,6 +706,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         } else {
           this.hydrateProcedimentos(this.buildProcedimentosFromSurgery());
           this.form.get('dadosVitais.peso')?.patchValue(patient.weightKg);
+
+          // Garantia extra
+          if (this.procedimentosArray.length === 0 && this.selectedSurgery?.procedures?.length) {
+            this.hydrateProcedimentos(this.buildProcedimentosFromSurgery());
+          }
         }
         this.isLoading = false;
       });
@@ -997,8 +1000,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.procedimentosArray.updateValueAndValidity();
   }
 
-  private hydrateProcedimentos(items?: Array<{ procedimentoId?: string; hora?: string; principal?: boolean }> | null): void {
-    if (!items || !items.length) {     
+  private hydrateProcedimentos(items?: any[] | null): void {
+    if (!items || !items.length) {
+      // Se não veio nada do back, cria uma linha vazia
+      if (this.procedimentosArray.length === 0) {
+        this.procedimentosArray.push(this.createProcedimentoRow());
+      }
       return;
     }
 
@@ -1009,6 +1016,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       arr.push(this.createProcedimentoRow(it));
     });
 
+    // Garante que sempre tenha um principal
     const hasPrincipal = arr.controls.some(c => !!c.get('principal')?.value);
     if (!hasPrincipal && arr.length > 0) {
       arr.at(0).get('principal')?.setValue(true);
@@ -1017,12 +1025,19 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   private buildProcedimentosFromSurgery(): Array<{ procedimentoId: string; hora: string; principal: boolean }> {
     const procs = this.selectedSurgery?.procedures ?? [];
+    debugger
     if (!procs.length) return [];
+
     return procs.map((p: any) => ({
       procedimentoId: String(p.id ?? p.procedimentoId ?? ''),
-      hora: p.hora ?? '',
+      hora: this.formatTime(p.time ?? p.hora ?? ''),   // ← melhorado
       principal: !!p.isPrimary
     })).filter((p: any) => p.procedimentoId);
+  }
+
+  private formatTime(time: string | null | undefined): string {
+    if (!time) return '';
+    return time.substring(0, 5);
   }
 
   private asArray(value: any): any[] {
