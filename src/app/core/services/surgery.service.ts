@@ -28,9 +28,9 @@ export class SurgeryService {
     return this.http.get<PatientResponse>(url, { params });
   }
 
-  getPatientDate(id: number, patientId: string): Observable<PatientResponse> {
+  getPatientDate(id: number, patientId: string): Observable<any> {
     const url = `${this.baseUrl}/anesthesiarecord/${id}/${patientId}`;
-    return this.http.get<PatientResponse>(url);
+    return this.http.get<any>(url);
   }
 
   getMyPatients(doctorId: number, date?: string, searchQuery?: string, status?: SurgeryStatusEnum | null, page: number = 1, size: number = 10): Observable<PatientResponse> {

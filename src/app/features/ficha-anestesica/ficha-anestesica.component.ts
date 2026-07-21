@@ -6,7 +6,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, ValidationErrors, Validators } from '@angular/forms';
 
 import { Subscription } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
 import { addIcons } from 'ionicons';
 import {
   pencilOutline,
@@ -45,6 +44,7 @@ import { AnesthesiaRecordService } from 'src/app/core/services/anesthesia-record
 import { AnesthesiaRecordModel } from 'src/app/shared/models/anesthesia-record.model';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { MasterDataService } from 'src/app/core/services/master-data.service';
+import { SurgeryStatusEnum } from 'src/app/core/models/api-enums.model';
 
 
 @Component({
@@ -191,7 +191,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   signatureTypedName = '';
   signatureError = '';
 
-  private autoSaveSub?: Subscription;
   private conditionalSubs: Subscription[] = [];
 
   procedimentoLista: { id: string; name: string; codigo?: string }[] = [];
@@ -225,15 +224,16 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.cirurgiaId = this.route.snapshot.paramMap.get('id');
     this.patientId = this.route.snapshot.paramMap.get('patientId');
     this.loadDropdownLists();
+
     if (this.cirurgiaId && this.patientId) {
-      this.loadPatientData(this.cirurgiaId, this.patientId);
+      this.loadPatientData(this.cirurgiaId, this.patientId);   
+      this.tentarReenviarRascunho();
     }
+
     this.setupConditionalLogic();
-    this.startAutoSave();
   }
 
   ngOnDestroy() {
-    this.autoSaveSub?.unsubscribe();
     this.conditionalSubs.forEach(sub => sub.unsubscribe());
   }
 
@@ -576,7 +576,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       }
     ];
     this.addingAtb = false;
-    this.persistDraft();
   }
 
   toggleRepique(index: number, value: string) {
@@ -586,7 +585,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     } else if (value === 'nao') {
       this.antibioticsList[index].repiques = [];
     }
-    this.persistDraft();
   }
 
   async adicionarRepique(atbIndex: number) {
@@ -606,7 +604,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
                 dose: data.dose,
                 hora: data.hora || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
               });
-              this.persistDraft();
             }
           }
         }
@@ -616,13 +613,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   removerAntibiotico(index: number) {
-    this.antibioticsList.splice(index, 1);
-    this.persistDraft();
+    this.antibioticsList.splice(index, 1);    
   }
 
   removerRepique(atbIndex: number, repiqueIndex: number) {
-    this.antibioticsList[atbIndex].repiques.splice(repiqueIndex, 1);
-    this.persistDraft();
+    this.antibioticsList[atbIndex].repiques.splice(repiqueIndex, 1);    
   }
 
   get aldereteTotal(): number {
@@ -636,8 +631,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   get aldereteStatus(): { text: string, color: string } {
     const s = this.aldereteTotal;
-    if (s >= 8) return { text: 'Apto para Alta', color: '#10b981' };
-    if (s >= 5) return { text: 'Em Observação', color: '#f59e0b' };
+    if (s >= 8)
+      return { text: 'Apto para Alta', color: '#10b981' };
+
+    if (s >= 5)
+      return { text: 'Em Observação', color: '#f59e0b' };
+
     return { text: 'Monitoramento Intenso', color: '#ef4444' };
   }
 
@@ -650,42 +649,113 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     return !!(g && g.invalid && (g.touched || this.showValidationErrors));
   }
 
-  private persistDraft() {
-    if (!this.cirurgiaId) return;
-    this.anesthesiaService.saveDraft(this.cirurgiaId, {
+
+  private persistDraft(data?: any) {
+    if (!this.cirurgiaId) 
+      return;
+    
+    const draftData = data || {
       ...this.form.value,
-      antibioticsList: this.antibioticsList
-    });
+      antibioticsList: this.antibioticsList,
+      _isErrorDraft: true,
+      _createdAt: new Date().toISOString()
+    };
+    
+    const formattedData = {
+      ...draftData,
+      patientId: draftData.patientId ? String(draftData.patientId) : this.patientId ? String(this.patientId) : null,
+      cirurgiaId: draftData.cirurgiaId ? String(draftData.cirurgiaId) : this.cirurgiaId ? String(this.cirurgiaId) : null,
+      surgeryId: draftData.surgeryId ? String(draftData.surgeryId) : this.selectedSurgery?.id ? String(this.selectedSurgery.id) : null,
+      pacienteId: draftData.pacienteId ? String(draftData.pacienteId) : this.patientId ? String(this.patientId) : null,     
+      assinaturas: {
+        ...draftData.assinaturas,
+        primeiroAnestesistaId: this.loggedUser?.id ? String(this.loggedUser.id) : draftData.assinaturas?.primeiroAnestesistaId || null,
+        segundoAnestesistaId: draftData.assinaturas?.segundoAnestesistaId || null
+      },     
+      firstAnesthesiologistId: this.loggedUser?.id ? String(this.loggedUser.id) : draftData.firstAnesthesiologistId || null,
+      secondAnesthesiologistId: draftData.secondAnesthesiologistId || null
+    };
+
+    this.anesthesiaService.saveDraft(this.cirurgiaId, formattedData);
   }
 
-  private startAutoSave() {
-    this.autoSaveSub?.unsubscribe();
-    this.autoSaveSub = this.form.valueChanges
-      .pipe(debounceTime(1500))
-      .subscribe(() => { if (!this.isSaving) this.persistDraft(); });
+  private async tentarReenviarRascunho() {
+    if (!this.cirurgiaId)
+      return;
+
+    const draft = this.anesthesiaService.getDraft(this.cirurgiaId);
+
+    if (!draft || !draft._isErrorDraft)
+      return;
+
+    const { _isErrorDraft, _createdAt, _error, _timestamp, _lastRetry, _retryCount, ...cleanDraft } = draft;
+    const originalFormValue = this.form.value;
+    const originalAntibioticsList = [...this.antibioticsList];
+
+    try {      
+      this.form.patchValue(cleanDraft);
+      if (cleanDraft.antibioticsList) {
+        this.antibioticsList = cleanDraft.antibioticsList;
+      }
+      
+      const record = this.buildPayload();
+
+      this.form.patchValue(originalFormValue);
+      this.antibioticsList = originalAntibioticsList;
+
+      this.isSaving = true;
+      this.anesthesiaService.saveRecord(record).subscribe({
+        next: async () => {
+          this.anesthesiaService.clearDraft(this.cirurgiaId!);
+          this.isSaving = false;
+          this.toast('Rascunho reenviado com sucesso!', 'success');
+        },
+        error: async (error) => {
+          this.isSaving = false;
+          this.persistDraft({
+            ...draft,
+            _lastRetry: new Date().toISOString(),
+            _retryCount: (draft._retryCount || 0) + 1,
+            _lastError: error?.message || 'Erro no reenvio'
+          });                    
+        }
+      });
+    } catch (error) {      
+      this.form.patchValue(originalFormValue);
+      this.antibioticsList = originalAntibioticsList;
+      console.error('Erro ao preparar rascunho para reenvio:', error);
+    }
   }
 
-  private loadPatientData(id: string, patientId: string) {    
+  private loadPatientData(id: string, patientId: string) {
     this.isLoading = true;
     this.surgeryService.getPatientDate(Number(id), patientId).subscribe((res: any) => {
       const surgeryData = res?.data;
-      if (!surgeryData?.patient) { this.isLoading = false; return; }
+
+      if (!surgeryData?.patient) {
+        this.isLoading = false;
+        return;
+      }
+
       const patient = surgeryData.patient;
-      this.isCancelled = patient.status;
+      this.isCancelled = patient.status === SurgeryStatusEnum.Cancelada;
+
       this.canEdit = surgeryData.firstAnesthesiologistId === this.loggedUser?.id;
       this.patient = {
         ...patient,
+        surgeryPerformed: surgeryData.surgeryPerformed ?? surgeryData.surgeries?.[0]?.procedures?.find((p: { isPrimary: any; }) => p.isPrimary)?.description,
         gender: patient.gender || 'M',
         weight: (patient.weightKg ?? '').toString(),
         birthDate: this.formatDate(patient.birthDate)
       };
+
       this.selectedSurgery = surgeryData.surgeries?.find((x: any) => String(x.id) === String(surgeryData.surgeryId))
         ?? surgeryData.surgeries?.[0]
         ?? patient.surgeries?.find((x: any) => String(x.id) === String(surgeryData.surgeryId))
         ?? patient.surgeries?.[0];
 
       const draft = this.anesthesiaService.getDraft(this.cirurgiaId!);
-      this.anesthesiaService.getLatestByPatient(this.cirurgiaId!, patientId).subscribe(savedRecord => {       
+      this.anesthesiaService.getLatestByPatient(this.cirurgiaId!, patientId).subscribe(savedRecord => {
 
         if (draft) {
           this.hydrateProcedimentos((draft as any)?.posProcedimento?.procedimentos);
@@ -707,7 +777,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
           this.hydrateProcedimentos(this.buildProcedimentosFromSurgery());
           this.form.get('dadosVitais.peso')?.patchValue(patient.weightKg);
 
-          // Garantia extra
           if (this.procedimentosArray.length === 0 && this.selectedSurgery?.procedures?.length) {
             this.hydrateProcedimentos(this.buildProcedimentosFromSurgery());
           }
@@ -748,7 +817,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.initForm();
     this.antibioticsList = [];
     this.setupConditionalLogic();
-    this.startAutoSave();
 
     if (this.patient) {
       this.form.get('dadosVitais.peso')?.patchValue(this.patient.weight);
@@ -818,15 +886,37 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.isSaving = true;
     const record = this.buildPayload();
 
-    this.anesthesiaService.saveRecord(record).subscribe({
+    const formattedRecord = {
+      ...record,
+      patientId: record.pacienteId ? String(record.pacienteId) : this.patientId ? String(this.patientId) : null,
+      cirurgiaId: this.cirurgiaId ? String(this.cirurgiaId) : null,
+      surgeryId: this.selectedSurgery?.id ? String(this.selectedSurgery.id) : null,      
+      firstAnesthesiologistId: this.loggedUser?.id ? String(this.loggedUser.id) : record.assinaturas.primeiroAnestesista,
+      secondAnesthesiologistId: record.assinaturas.segundoAnestesista,
+      assinaturas: {
+        ...record.assinaturas,
+        primeiroAnestesistaId: this.loggedUser?.id ? String(this.loggedUser.id) : record.assinaturas?.primeiroAnestesista,
+        segundoAnestesistaId: record.assinaturas?.segundoAnestesista
+      }
+    };
+
+    this.anesthesiaService.saveRecord(formattedRecord).subscribe({
       next: async () => {
         this.anesthesiaService.clearDraft(this.cirurgiaId!);
         this.isSaving = false;
         this.toast('Ficha Anestésica assinada e salva com sucesso!', 'success');
       },
-      error: async () => {
+      error: async (error) => {
         this.isSaving = false;
-        this.toast('Erro ao salvar ficha. Tente novamente.', 'danger');
+        
+        this.persistDraft({
+          ...this.form.value,
+          antibioticsList: this.antibioticsList,
+          _error: error?.message || 'Erro ao salvar ficha',
+          _timestamp: new Date().toISOString()
+        });
+
+        this.toast('Erro ao salvar ficha. Um rascunho foi salvo para tentativa de reenvio.', 'danger');
       }
     });
   }
@@ -835,7 +925,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     const raw = this.form.value;
 
     const resolveProfessional = (id: any) => {
-      if (!id) return null;
+      if (!id)
+        return null;
+
       const found = this.asArray(this.masterData.getProfessionalsCache())
         .find((p: any) => String(p.id) === String(id));
       return found
@@ -863,9 +955,16 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     const primaryProc = procedimentos.find((p: any) => p.isPrimary) ?? procedimentos[0] ?? null;
     const segundoResolved = resolveProfessional(raw.assinaturas?.segundoAnestesista);
     const primeiroResolved = resolveProfessional(this.loggedUser?.id);
+    const firstAnesthesiologistId = primeiroResolved?.id
+      ? Number(primeiroResolved.id)
+      : this.loggedUser?.id
+        ? Number(this.loggedUser.id)
+        : 0;
 
     const resolveMedication = (id: any, fallbackName?: string) => {
-      if (!id && !fallbackName) return null;
+      if (!id && !fallbackName)
+        return null;
+
       const found = id
         ? this.asArray(this.masterData.getMedicationsCache())
           .find((m: any) => String(m.id) === String(id))
@@ -909,7 +1008,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       antibiotics: antibioticsPayload,
       cirurgias: procedimentos,
       surgeryPerformed: primaryProc?.description ?? '',
-      firstAnesthesiologistId: primeiroResolved?.id ?? this.loggedUser?.id ?? 0,
+      firstAnesthesiologistId: firstAnesthesiologistId,
       firstAnesthesiologistName: primeiroResolved?.name ?? raw.assinaturas?.primeiroAnestesista ?? '',
       secondAnesthesiologistId: segundoResolved?.id ?? null,
       secondAnesthesiologistName: segundoResolved?.name ?? null,
@@ -1001,8 +1100,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   private hydrateProcedimentos(items?: any[] | null): void {
-    if (!items || !items.length) {
-      // Se não veio nada do back, cria uma linha vazia
+    if (!items || !items.length) {      
       if (this.procedimentosArray.length === 0) {
         this.procedimentosArray.push(this.createProcedimentoRow());
       }
@@ -1016,7 +1114,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       arr.push(this.createProcedimentoRow(it));
     });
 
-    // Garante que sempre tenha um principal
     const hasPrincipal = arr.controls.some(c => !!c.get('principal')?.value);
     if (!hasPrincipal && arr.length > 0) {
       arr.at(0).get('principal')?.setValue(true);
@@ -1025,12 +1122,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   private buildProcedimentosFromSurgery(): Array<{ procedimentoId: string; hora: string; principal: boolean }> {
     const procs = this.selectedSurgery?.procedures ?? [];
-    debugger
     if (!procs.length) return [];
 
     return procs.map((p: any) => ({
       procedimentoId: String(p.id ?? p.procedimentoId ?? ''),
-      hora: this.formatTime(p.time ?? p.hora ?? ''),   // ← melhorado
+      hora: this.formatTime(p.time ?? p.hora ?? ''),
       principal: !!p.isPrimary
     })).filter((p: any) => p.procedimentoId);
   }

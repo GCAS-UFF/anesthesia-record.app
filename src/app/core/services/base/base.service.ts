@@ -21,7 +21,7 @@ export abstract class BaseService<T> {
     return this.api.post<T>(this.endpoint, data);
   }
 
-  update(id: number | string, data: T) {
+  update(id: number | string, data: T) {    
     return this.api.put<T>(`${this.endpoint}/${id}`, data);
   }
 }

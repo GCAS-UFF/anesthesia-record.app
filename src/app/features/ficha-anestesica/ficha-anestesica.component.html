@@ -38,10 +38,8 @@
       [gender]="patient?.gender || 'M'"
       [weight]="patient?.weight || '--'"
       [record]="patient?.medicalRecordNumber || ''"
-      [procedure]="selectedProcedure?.description || ''"
-      [surgicalCenter]="
-        selectedSurgery?.location?.surgicalCenter?.description || ''
-      "
+      [procedure]="patient?.surgeryPerformed || ''"
+      [surgicalCenter]="selectedSurgery?.location?.surgicalCenter?.description || '' "
       [room]="selectedSurgery?.location?.room || ''"
       [unit]="patient?.currentLocation?.unit?.description || ''"
       [floor]="patient?.currentLocation?.floor || ''"

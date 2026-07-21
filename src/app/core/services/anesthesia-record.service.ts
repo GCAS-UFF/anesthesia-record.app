@@ -77,8 +77,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   }
 
   saveRecord(record: any): Observable<any> {
-    console.log('Serviço: Salvando ficha via API...', record);
-    const surgeryId = Number(record.cirurgiaId ?? record.surgeryId ?? record.id);
+    const surgeryId = Number(record.cirurgiaId);
     const apiPayload = this.mapToApiFormat(record, surgeryId);
     return this.update(surgeryId, apiPayload).pipe(
       map(response => ({ response, surgeryId }))
@@ -86,7 +85,9 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   }
 
   syncPendingDrafts(): void {
-    if (this.syncing) return;
+    if (this.syncing)
+      return;
+
     this.syncing = true;
     this.startSync();
 
@@ -128,9 +129,14 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     this.autoSyncSubscription = interval(10000)
       .pipe(startWith(0))
       .subscribe(() => {
-        if (!navigator.onLine) return;
-        if (!this.serverOnline) return;
-        if (this.getPendingDraftsCount() === 0) return;
+        if (!navigator.onLine)
+          return;
+
+        if (!this.serverOnline)
+          return;
+
+        if (this.getPendingDraftsCount() === 0)
+          return;
         this.syncPendingDrafts();
       });
   }
@@ -167,9 +173,17 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     this.pendingDraftsCountSubject.next(count);
   }
 
-  refreshPendingDrafts(): void { this.updatePendingStatus(); }
-  startSync(): void { this.syncingSubject.next(true); }
-  finishSync(): void { this.syncingSubject.next(false); }
+  refreshPendingDrafts(): void {
+    this.updatePendingStatus();
+  }
+
+  startSync(): void {
+    this.syncingSubject.next(true);
+  }
+
+  finishSync(): void {
+    this.syncingSubject.next(false);
+  }
 
   getPendingDraftsCount(): number {
     return Object.keys(localStorage)
@@ -187,6 +201,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   }
 
   saveDraft(pacienteId: string, record: any): void {
+
     localStorage.setItem(`draft_anesthesia_${pacienteId}`, JSON.stringify({
       ...record,
       pacienteId,
@@ -231,24 +246,32 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
   private pick<T>(...values: T[]): T | undefined {
     for (const v of values) {
-      if (v !== undefined && v !== null) return v;
+      if (v !== undefined && v !== null)
+        return v;
     }
     return undefined;
   }
 
   private parseNumber(value: any): number {
-    if (value === null || value === undefined) return 0;
+    if (value === null || value === undefined)
+      return 0;
+
     const num = Number(value);
     return isNaN(num) ? 0 : num;
   }
 
   private parseBoolean(value: any): boolean {
-    if (value === null || value === undefined) return false;
-    if (typeof value === 'boolean') return value;
-    if (typeof value === 'string') return value.toLowerCase() === 'true' || value === '1';
+    if (value === null || value === undefined)
+      return false;
+
+    if (typeof value === 'boolean')
+      return value;
+
+    if (typeof value === 'string')
+      return value.toLowerCase() === 'true' || value === '1';
+
     return Boolean(value);
   }
-
 
   private mapToApiFormat(app: any, surgeryId: number): any {
     const todayDate = new Date().toISOString().split('T')[0];
@@ -312,10 +335,8 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     }
 
     const principal = surgeries.find((c: any) => c.isPrimary) || surgeries[0] || null;
+    const firstAnesthesiologistId = this.pick(app.firstAnesthesiologistId, app.assinaturas?.primeiroAnestesistaId, 0);
 
-    const firstAnesthesiologistId = this.pick(
-      app.firstAnesthesiologistId,
-      app.assinaturas?.primeiroAnestesistaId, 0);
     const firstAnesthesiologistName = this.pick(
       app.firstAnesthesiologistName,
       app.assinaturas?.primeiroAnestesista, '');
@@ -365,31 +386,29 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
     const respAssistida = Array.isArray(app.tecnica?.respiracaoAssistida) ? app.tecnica.respiracaoAssistida : [];
     const respControlada = Array.isArray(app.tecnica?.respiracaoControlada) ? app.tecnica.respiracaoControlada : [];
-    
+
     let respirationMode = 1;
-    
+
     if (respControlada.length > 0)
       respirationMode = 2;
-    else if (respAssistida.length > 0) 
-    respirationMode = 1;
+    else if (respAssistida.length > 0)
+      respirationMode = 1;
 
     let airwayType = 1;
     if (app.tecnica?.tipoOutras) airwayType = 4;
     else if (app.tecnica?.tipoEndobronquico) airwayType = 2;
     else if (app.tecnica?.tipoAramado) airwayType = 3;
 
-    
+
     const condicoesAltaArray = Array.isArray(app.alderete?.condicoesClinicasAlta) ? app.alderete.condicoesClinicasAlta : [];
     let clinicalDischargeCondition = 1;
     if (condicoesAltaArray.length > 0) {
       clinicalDischargeCondition = this.CLINICAL_CONDITION_REVERSE_MAP[condicoesAltaArray[0]] || 1;
     }
 
-   
     let surgeonId = null;
     let assistantId = null;
 
-  
     const cirurgiaoValue = app.equipe?.cirurgiao;
     if (cirurgiaoValue) {
       if (typeof cirurgiaoValue === 'string') {
@@ -402,7 +421,6 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       surgeonId = typeof app.surgeonId === 'string' ? parseInt(app.surgeonId, 10) : app.surgeonId;
     }
 
-    
     const assistenteValue = app.equipe?.assistente;
     if (assistenteValue) {
       if (typeof assistenteValue === 'string') {
@@ -414,7 +432,6 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     if (!assistantId && app.assistantId) {
       assistantId = typeof app.assistantId === 'string' ? parseInt(app.assistantId, 10) : app.assistantId;
     }
-
 
     let secondAnesthesiologistIdValue = null;
     const segundoValue = app.assinaturas?.segundoAnestesista;
@@ -434,7 +451,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     return {
       id: surgeryId,
       surgeryId: surgeryId,
-      patientId: app.patientId || 1,
+      patientId: app.patientId || null,
       recordDate: app.recordDate || todayDate,
       surgeryDate: app.surgeryDate || todayDate,
       surgeries: surgeries,
@@ -451,7 +468,6 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       preAnestheticMedicationTime,
       prophylacticAntibioticUsed: app.antibiotico?.temAntibiotico === 'sim',
       antibioticsList,
-      
       bloodPressure: app.dadosVitais?.pa || '',
       respiratoryRate: this.parseNumber(app.dadosVitais?.fr),
       temperature: this.parseNumber(app.dadosVitais?.temp),
@@ -459,19 +475,16 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       weightKg: this.parseNumber(app.dadosVitais?.peso),
       asaClassification: parsedAsa,
       roomEntryTime: this.formatTimeForApi(app.dadosVitais?.entradaSala),
-
       anesthesiaStartTime: this.formatTimeForApi(app.equipe?.horaInicioAnestesia),
       surgeonId: surgeonId,
       assistantId: assistantId,
       preOperativeDiagnosis: app.equipe?.diagnosticoPre || '',
-
       surgicalPosition: surgicalPosition,
       usesCushions: app.posicao?.usoCoxim === 'sim',
       cushionsAccessLocation: app.posicao?.localCoxim || '',
       venousAccessType: venousAccessType,
       venousAccessLocation: app.posicao?.localAcesso || '',
       difficultVenousPuncture: app.posicao?.dificuldadePuncao === 'sim',
-
       generalAnesthesia: app.tecnica?.anestesiaGeral === 'sim',
       respirationMode: respirationMode,
       controlledVentilationMode: respirationMode === 2 ? 1 : 1,
@@ -493,7 +506,6 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       sedationPerformed: app.tecnica?.sedacao === 'sim',
       oxygenSupplementation: app.tecnica?.suplementacaoO2 === 'sim',
       plexusBlockPerformed: app.tecnica?.bloqueioPlexo === 'sim',
-
       surgeryPerformed: this.pick(
         app.surgeryPerformed,
         principal?.description,
@@ -503,7 +515,6 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       surgeryEndTime: this.formatTimeForApi(app.posProcedimento?.horaTerminoCirurgia),
       postOperativeDiagnosis: app.posProcedimento?.diagnosticoPos || '',
       anesthesiaEndTime: this.formatTimeForApi(app.posProcedimento?.horaTerminoAnestesia),
-
       consciousnessScore: this.parseNumber(app.alderete?.consciencia),
       activityScore: this.parseNumber(app.alderete?.atividade),
       circulationScore: this.parseNumber(app.alderete?.circulacao),
@@ -517,7 +528,6 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       clinicalDischargeCondition: clinicalDischargeCondition,
       destination: 1,
       hasPain: app.alderete?.dor === 'sim',
-
       dorUsouENV: this.parseBoolean(app.alderete?.dorUsouENV),
       dorENV: this.parseNumber(app.alderete?.dorENV),
       dorUsouPAINAD: this.parseBoolean(app.alderete?.dorUsouPAINAD),
@@ -632,7 +642,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         asaValue = num.toString();
       }
     }
-    
+
     const consciousnessScore = api.consciousnessScore !== null && api.consciousnessScore !== undefined
       ? Number(api.consciousnessScore)
       : '';
