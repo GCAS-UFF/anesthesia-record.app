@@ -7,7 +7,17 @@
   >
   </app-header-institucional>
 
-  <div class="main-content">
+  <ion-content class="main-content">
+    <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+      <ion-refresher-content
+        pullingIcon="chevron-down-circle-outline"
+        pullingText="Puxe para recarregar"
+        refreshingSpinner="circles"
+        refreshingText="Recarregando..."
+      >
+      </ion-refresher-content>
+    </ion-refresher>
+
     <div class="navigation-header">
       <div class="title-block">
         <span class="eyebrow">Registro perioperatório</span>
@@ -39,7 +49,9 @@
       [weight]="patient?.weight || '--'"
       [record]="patient?.medicalRecordNumber || ''"
       [procedure]="patient?.surgeryPerformed || ''"
-      [surgicalCenter]="selectedSurgery?.location?.surgicalCenter?.description || '' "
+      [surgicalCenter]="
+        selectedSurgery?.location?.surgicalCenter?.description || ''
+      "
       [room]="selectedSurgery?.location?.room || ''"
       [unit]="patient?.currentLocation?.unit?.description || ''"
       [floor]="patient?.currentLocation?.floor || ''"
@@ -692,7 +704,7 @@
         [class.shake-error]="
           showValidationErrors && isSectionInvalid('posProcedimento')
         "
-      >        
+      >
         <div class="procedimentos-list" formArrayName="procedimentos">
           <div
             class="procedimento-row"
@@ -1282,7 +1294,7 @@
         </div>
       </div> -->
     </form>
-  </div>
+  </ion-content>
 
   <ion-modal
     [isOpen]="isSignModalOpen"

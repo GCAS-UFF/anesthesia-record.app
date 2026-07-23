@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { AlertController, ToastController } from '@ionic/angular/standalone';
+import { AlertController, ToastController, IonContent, IonRefresherContent, IonRefresher } from '@ionic/angular/standalone';
 import { IonButton, IonIcon, IonCheckbox, IonSpinner, IonModal } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, ValidationErrors, Validators } from '@angular/forms';
@@ -50,7 +50,7 @@ import { SurgeryStatusEnum } from 'src/app/core/models/api-enums.model';
 @Component({
   selector: 'app-ficha-anestesica',
   standalone: true,
-  imports: [
+  imports: [IonRefresher, IonRefresherContent, IonContent,
     CommonModule,
     IonButton,
     IonIcon,
@@ -66,7 +66,9 @@ import { SurgeryStatusEnum } from 'src/app/core/models/api-enums.model';
     RadioGroupComponent,
     CheckboxGroupComponent,
     TecnicaAnestesicaSectionComponent,
-    DadosVitaisSectionComponent
+    DadosVitaisSectionComponent,
+    IonContent,
+    IonRefresherContent,
   ],
   templateUrl: './ficha-anestesica.component.html',
   styleUrls: ['./ficha-anestesica.component.scss']
@@ -725,68 +727,71 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }
   }
 
-  private loadPatientData(id: string, patientId: string) {
-    this.isLoading = true;
-    this.surgeryService.getPatientDate(Number(id), patientId).subscribe((res: any) => {
-      const surgeryData = res?.data;
+  private loadPatientData(id: string, patientId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.isLoading = true;
+      this.surgeryService.getPatientDate(Number(id), patientId).subscribe({
+        next: (res: any) => {
+          const surgeryData = res?.data;
+          if (!surgeryData?.patient) {
+            this.isLoading = false;
+            resolve();
+            return;
+          }
 
-      if (!surgeryData?.patient) {
-        this.isLoading = false;
-        return;
-      }
+          // Atualiza as variáveis locais (patient, selectedSurgery, etc.)
+          this.patient = {
+            ...surgeryData.patient,
+            surgeryPerformed: surgeryData.surgeryPerformed ?? surgeryData.surgeries?.[0]?.procedures?.find((p: any) => p.isPrimary)?.description,
+            gender: surgeryData.patient.gender || 'M',
+            weight: (surgeryData.patient.weightKg ?? '').toString(),
+            birthDate: this.formatDate(surgeryData.patient.birthDate)
+          };
+          this.selectedSurgery = surgeryData.surgeries?.find((x: any) => String(x.id) === String(surgeryData.surgeryId))
+            ?? surgeryData.surgeries?.[0]
+            ?? surgeryData.patient.surgeries?.find((x: any) => String(x.id) === String(surgeryData.surgeryId))
+            ?? surgeryData.patient.surgeries?.[0];
+          this.isCancelled = surgeryData.patient.status === SurgeryStatusEnum.Cancelada;
+          this.canEdit = surgeryData.firstAnesthesiologistId === this.loggedUser?.id;
 
-      const patient = surgeryData.patient;
-      this.isCancelled = patient.status === SurgeryStatusEnum.Cancelada;
-
-      this.canEdit = surgeryData.firstAnesthesiologistId === this.loggedUser?.id;
-      this.patient = {
-        ...patient,
-        surgeryPerformed: surgeryData.surgeryPerformed ?? surgeryData.surgeries?.[0]?.procedures?.find((p: { isPrimary: any; }) => p.isPrimary)?.description,
-        gender: patient.gender || 'M',
-        weight: (patient.weightKg ?? '').toString(),
-        birthDate: this.formatDate(patient.birthDate)
-      };
-
-      this.selectedSurgery = surgeryData.surgeries?.find((x: any) => String(x.id) === String(surgeryData.surgeryId))
-        ?? surgeryData.surgeries?.[0]
-        ?? patient.surgeries?.find((x: any) => String(x.id) === String(surgeryData.surgeryId))
-        ?? patient.surgeries?.[0];
-
-      const draft = this.anesthesiaService.getDraft(this.cirurgiaId!);
-      this.anesthesiaService.getLatestByPatient(this.cirurgiaId!, patientId).subscribe(savedRecord => {
-
-        if (draft) {
-          this.hydrateProcedimentos((draft as any)?.posProcedimento?.procedimentos);
-          this.form.patchValue(draft);
-          if (draft.antibioticsList) this.antibioticsList = draft.antibioticsList;
-        } else if (savedRecord) {
-          const procedimentos = (savedRecord as any)?.posProcedimento?.procedimentos;
-          this.hydrateProcedimentos(procedimentos);
-
-          const formValue = { ...savedRecord };
-          delete formValue.posProcedimento?.procedimentos;
-
-          this.form.patchValue(formValue);
-
-          setTimeout(() => {
-            const tecnicaSection = document.querySelector('app-tecnica-anestesica-section') as any;
-            if (tecnicaSection && tecnicaSection.refresh) {
-              tecnicaSection.refresh();
+          // Busca o rascunho ou registro salvo
+          const draft = this.anesthesiaService.getDraft(this.cirurgiaId!);
+          this.anesthesiaService.getLatestByPatient(this.cirurgiaId!, patientId).subscribe({
+            next: (savedRecord) => {
+              if (draft) {
+                this.hydrateProcedimentos((draft as any)?.posProcedimento?.procedimentos);
+                this.form.patchValue(draft);
+                if (draft.antibioticsList) this.antibioticsList = draft.antibioticsList;
+              } else if (savedRecord) {
+                const procedimentos = (savedRecord as any)?.posProcedimento?.procedimentos;
+                this.hydrateProcedimentos(procedimentos);
+                const formValue = { ...savedRecord };
+                delete formValue.posProcedimento?.procedimentos;
+                this.form.patchValue(formValue);
+                setTimeout(() => {
+                  const tecnicaSection = document.querySelector('app-tecnica-anestesica-section') as any;
+                  if (tecnicaSection && tecnicaSection.refresh) tecnicaSection.refresh();
+                }, 50);
+                if ((savedRecord as any).antibioticsList) {
+                  this.antibioticsList = (savedRecord as any).antibioticsList;
+                }
+              } else {
+                this.hydrateProcedimentos(this.buildProcedimentosFromSurgery());
+                this.form.get('dadosVitais.peso')?.patchValue(this.patient.weightKg);
+              }
+              this.isLoading = false;
+              resolve(); // <--- resolve a Promise quando tudo terminar
+            },
+            error: (err) => {
+              this.isLoading = false;
+              reject(err);
             }
-          }, 50);
-
-          if ((savedRecord as any).antibioticsList) {
-            this.antibioticsList = (savedRecord as any).antibioticsList;
-          }
-        } else {
-          this.hydrateProcedimentos(this.buildProcedimentosFromSurgery());
-          this.form.get('dadosVitais.peso')?.patchValue(patient.weightKg);
-
-          if (this.procedimentosArray.length === 0 && this.selectedSurgery?.procedures?.length) {
-            this.hydrateProcedimentos(this.buildProcedimentosFromSurgery());
-          }
+          });
+        },
+        error: (err) => {
+          this.isLoading = false;
+          reject(err);
         }
-        this.isLoading = false;
       });
     });
   }
@@ -1426,9 +1431,39 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }, 80);
   }
 
+  /**
+  * Manipula o evento de pull-to-refresh
+  */
+  async handleRefresh(event: any) {
+    try {
+      await this.refreshData();
+      this.toast('Dados recarregados com sucesso!', 'success');
+    } catch (error) {
+      console.error('Erro ao recarregar:', error);
+      this.toast('Falha ao recarregar os dados', 'danger');
+    } finally {
+      event.target.complete(); // finaliza o refresher
+    }
+  }
 
+  /**
+   * Recarrega todos os dados da ficha do zero
+   */
+  private async refreshData(): Promise<void> {
+    if (!this.cirurgiaId || !this.patientId) return;
 
+    this.showValidationErrors = false;
+    this.isLoading = true;
 
+    // (Opcional) Recarregar listas mestras – se quiser, pode chamar, mas evite duplicar chamadas
+    try {
+      await this.masterData.downloadMasterData().toPromise(); // ou firstValueFrom
+      this.loadDropdownLists();
+    } catch (err) {
+      console.warn('Falha ao recarregar dados mestres', err);
+    }
+
+    // Agora carrega os dados do paciente (uma única chamada)
+    await this.loadPatientData(this.cirurgiaId, this.patientId);
+  }
 }
-
-
