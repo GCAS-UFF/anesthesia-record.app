@@ -909,7 +909,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     const nervosEstimulados = Array.isArray(api.stimulatedNerves)
       ? api.stimulatedNerves
         .map((item: any) => {
-          const id = typeof item === 'object' ? (item.nerve ?? item.id) : item;          
+          const id = typeof item === 'object' ? (item.nerve ?? item.id) : item;
           let nerve = this.NERVES_BACKEND_TO_FRONTEND[id];
           if (nerve === undefined) {
             nerve = this.NERVES_MAP[id];
@@ -1018,8 +1018,8 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
       tecnica: {
         anestesiaGeral: api.generalAnesthesia ? 'sim' : 'nao',
-        respiracaoAssistida: respiracaoAssistida, 
-        respiracaoControlada: respiracaoControlada, 
+        respiracaoAssistida: respiracaoAssistida,
+        respiracaoControlada: respiracaoControlada,
         circuitoAbsorvedor: api.co2AbsorberCircuit ? 'sim' : 'nao',
 
         vaGuedel: vaGuedel,
@@ -1030,7 +1030,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         mascLaringeaNo: deviceNumbers.mascLaringea || '',
         mascFacialNo: deviceNumbers.mascFacial || '',
         tuboNo: deviceNumbers.tubo || api.airwayDeviceNumber || '',
-        
+
         cuff: api.cuff || false,
         iot: api.iot || false,
         oral: api.oralTube || false,
@@ -1102,7 +1102,8 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         primeiroAnestesistaId: api.firstAnesthesiologistId?.toString() ?? null,
         segundoAnestesista: secondAnesthesiologistId,
         segundoAnestesistaId: api.secondAnesthesiologistId ?? null,
-        dataAssinatura: api.signatureDate || new Date().toISOString().split('T')[0]
+        // ✅ CORREÇÃO AQUI
+        dataAssinatura: this.formatDateForInput(api.signatureDate)
       },
 
       surgeryId: api.surgeryId,
@@ -1116,5 +1117,26 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       preAnesthesia: api.preAnesthesia ?? api.preAnestheticRecord ?? null,
       _raw: api
     };
+  }
+
+  private formatDateForInput(dateValue: any): string {
+    if (!dateValue) {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+      return dateValue;
+    }
+
+    try {
+      const date = new Date(dateValue);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
+      }
+    } catch (e) {
+      console.warn('Data inválida para signatureDate:', dateValue);
+    }
+
+    return new Date().toISOString().split('T')[0];
   }
 }
