@@ -1714,3 +1714,112 @@
     }
   }
 }
+
+:host {
+  input.ng-invalid.ng-touched,
+  textarea.ng-invalid.ng-touched,
+  ion-select.ng-invalid.ng-touched,
+  .text-input.ng-invalid.ng-touched,
+  .ddl.ng-invalid.ng-touched .ddl-trigger,
+  .ng-invalid.ng-touched > .ddl-trigger {
+    border-color: #ef4444 !important;
+    background: #fef2f2 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12) !important;
+  }
+
+  .ng-invalid.ng-touched .ddl-value.placeholder {
+    color: #b91c1c !important;
+  }
+
+  app-radio-group.ng-invalid.ng-touched .radio-option,
+  app-radio-group.ng-invalid.ng-touched label {
+    border-color: #fca5a5 !important;
+  }
+
+  ion-checkbox.ng-invalid.ng-touched {
+    --border-color: #ef4444;
+    --border-color-checked: #ef4444;
+  }
+
+  .field-label:has(+ .ng-invalid.ng-touched)::after,
+  .field-label:has(+ * .ng-invalid.ng-touched)::after {
+    content: " • obrigatório";
+    color: #ef4444;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    margin-left: 6px;
+  }
+
+  .shake-error {
+    animation: shake-fa 0.4s ease-in-out;
+    border: 2px solid #ef4444 !important;
+    border-radius: 20px;
+    background: linear-gradient(
+      180deg,
+      rgba(239, 68, 68, 0.04) 0%,
+      rgba(239, 68, 68, 0) 60%
+    );
+    position: relative;
+  }
+
+  .shake-error::before {
+    content: "⚠ Campos obrigatórios pendentes nesta seção";
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.35);
+    z-index: 2;
+  }
+}
+
+@keyframes shake-fa {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  50% {
+    transform: translateX(6px);
+  }
+  75% {
+    transform: translateX(-3px);
+  }
+}
+
+::ng-deep .validation-alert {
+  --min-width: 340px;
+  --max-width: 520px;
+
+  .alert-head {
+    background: #fef2f2;
+    border-bottom: 1px solid #fecaca;
+  }
+  .alert-title {
+    color: #b91c1c !important;
+    font-weight: 800 !important;
+  }
+  .alert-sub-title {
+    color: #ef4444 !important;
+    font-weight: 600 !important;
+  }
+  .alert-message {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-top: 14px;
+  }
+  .alert-button {
+    color: #2563eb !important;
+    font-weight: 700 !important;
+  }
+}

@@ -35,6 +35,30 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     7: 'LITOTÔMICA'
   };
 
+  private readonly NERVES_FRONTEND_TO_BACKEND: Record<string, number> = {
+    'Plexo Braquial': 1,
+    'PlexoLombar': 2,
+    'PlexoSacral': 3,
+    'Femoral': 4,
+    'Ciatico': 5,
+    'Axilar': 6,
+    'Iliohipogastrico': 7,
+    'Ilioinguinal': 7,
+    'Retrobulbar': 7,
+    'Peribulbar': 7,
+    'Outros': 7
+  };
+
+  private readonly NERVES_BACKEND_TO_FRONTEND: Record<number, string> = {
+    1: 'Plexo Braquial',
+    2: 'Plexo Lombar',
+    3: 'Plexo Sacral',
+    4: 'Femoral',
+    5: 'Ciatico',
+    6: 'Axilar',
+    7: 'Outros'
+  };
+
   private readonly POSITION_REVERSE_MAP: Record<string, number> = {
     'SUPINA': 1,
     'PRONA': 2,
@@ -69,6 +93,60 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
   private readonly ROMAN_TO_NUMBER: Record<string, number> = {
     'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6
+  };
+
+  private readonly NERVES_MAP: Record<number, string> = {
+    1: 'Plexo Braquial',
+    2: 'Plexo Lombar',
+    3: 'Plexo Sacral',
+    4: 'Nervo Femoral',
+    5: 'Nervo Ciático',
+    6: 'Nervo Axilar',
+    7: 'Outros'
+  };
+
+  private readonly NERVES_REVERSE_MAP: Record<string, number> = {
+    'Plexo Braquial': 1,
+    'Plexo Lombar': 2,
+    'Plexo Sacral': 3,
+    'Nervo Femoral': 4,
+    'Nervo Ciático': 5,
+    'Nervo Axilar': 6,
+    'Outros': 7
+  };
+
+  private readonly PUNCTURE_LEVEL_MAP: Record<number, string> = {
+    1: 'L1-L2',
+    2: 'L2-L3',
+    3: 'L3-L4',
+    4: 'L4-L5',
+    5: 'L5-S1',
+    6: 'Outro'
+  };
+
+  private readonly PUNCTURE_LEVEL_REVERSE_MAP: Record<string, number> = {
+    'L1-L2': 1,
+    'L2-L3': 2,
+    'L3-L4': 3,
+    'L4-L5': 4,
+    'L5-S1': 5,
+    'Outro': 6
+  };
+
+  private readonly O2_SUPPLEMENTATION_MAP: Record<number, string> = {
+    1: 'Cateter Nasal',
+    2: 'Máscara Simples',
+    3: 'Máscara com Reservatório',
+    4: 'Venturi',
+    5: 'Outros'
+  };
+
+  private readonly O2_SUPPLEMENTATION_REVERSE_MAP: Record<string, number> = {
+    'Cateter Nasal': 1,
+    'Máscara Simples': 2,
+    'Máscara com Reservatório': 3,
+    'Venturi': 4,
+    'Outros': 5
   };
 
   constructor(api: ApiService) {
@@ -109,7 +187,9 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         })
       )
       .subscribe(result => {
-        if (!result) return;
+        if (!result)
+          return;
+
         this.clearDraft(result.surgeryId.toString());
       });
   }
@@ -387,23 +467,87 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     const respAssistida = Array.isArray(app.tecnica?.respiracaoAssistida) ? app.tecnica.respiracaoAssistida : [];
     const respControlada = Array.isArray(app.tecnica?.respiracaoControlada) ? app.tecnica.respiracaoControlada : [];
 
-    let respirationMode = 1;
+    let respirationMode = 0;
+    let controlledVentilationMode: number | null = null;
 
-    if (respControlada.length > 0)
-      respirationMode = 2;
-    else if (respAssistida.length > 0)
+    if (respControlada.includes('Volume')) {
+      respirationMode = 3;
+      controlledVentilationMode = 1;
+    } else if (respControlada.includes('Pressao')) {
+      respirationMode = 4;
+      controlledVentilationMode = 2;
+    } else if (respAssistida.includes('Espontanea')) {
       respirationMode = 1;
+    } else if (respAssistida.includes('Manual')) {
+      respirationMode = 2;
+    }
 
-    let airwayType = 1;
-    if (app.tecnica?.tipoOutras) airwayType = 4;
+    let airwayType: number | null = null;
+    if (app.tecnica?.tipoSimples) airwayType = 1;
     else if (app.tecnica?.tipoEndobronquico) airwayType = 2;
     else if (app.tecnica?.tipoAramado) airwayType = 3;
+    else if (app.tecnica?.tipoOutras) airwayType = 4;
 
+    const airwayDevices: number[] = [];
+    if (app.tecnica?.vaGuedel) airwayDevices.push(1);
+    if (app.tecnica?.vaMascLaringea) airwayDevices.push(2);
+    if (app.tecnica?.vaMascFacial) airwayDevices.push(3);
+    if (app.tecnica?.vaTubo) airwayDevices.push(4);
+
+    const deviceNumbers = {
+      guedel: app.tecnica?.guedelNo || '',
+      mascLaringea: app.tecnica?.mascLaringeaNo || '',
+      mascFacial: app.tecnica?.mascFacialNo || '',
+      tubo: app.tecnica?.tuboNo || ''
+    };
+
+    const punctureLevels: number[] = [];
+    if (Array.isArray(app.tecnica?.nivelPuncao)) {
+      for (const levelStr of app.tecnica.nivelPuncao) {
+        const mapped = this.PUNCTURE_LEVEL_REVERSE_MAP[levelStr];
+        if (mapped !== undefined) {
+          punctureLevels.push(mapped);
+        }
+      }
+    }
+
+    const posicaoPuncaoMap: Record<string, number> = {
+      'Sentada': 1,
+      'Decubito': 2
+    };
+    const posicaoPuncao = app.tecnica?.posicaoPuncao
+      ? posicaoPuncaoMap[app.tecnica.posicaoPuncao] || 1
+      : 1;
+
+    const stimulatedNerves: number[] = [];
+    if (Array.isArray(app.tecnica?.nervosEstimulados)) {
+      for (const nerveStr of app.tecnica.nervosEstimulados) {
+        let mapped = this.NERVES_FRONTEND_TO_BACKEND[nerveStr];
+        if (mapped === undefined) {
+          mapped = this.NERVES_REVERSE_MAP[nerveStr];
+        }
+        if (mapped !== undefined) {
+          stimulatedNerves.push(mapped);
+        }
+      }
+    }
+
+    const o2SupplementationTypes = Array.isArray(app.tecnica?.tipoSuplementacaoO2)
+      ? app.tecnica.tipoSuplementacaoO2
+        .map((type: string) => this.O2_SUPPLEMENTATION_REVERSE_MAP[type])
+        .filter((id: number | undefined) => id !== undefined)
+      : [];
 
     const condicoesAltaArray = Array.isArray(app.alderete?.condicoesClinicasAlta) ? app.alderete.condicoesClinicasAlta : [];
     let clinicalDischargeCondition = 1;
+    let dischargeConditionOther = '';
     if (condicoesAltaArray.length > 0) {
-      clinicalDischargeCondition = this.CLINICAL_CONDITION_REVERSE_MAP[condicoesAltaArray[0]] || 1;
+      if (condicoesAltaArray[0] === 'Outras') {
+        clinicalDischargeCondition = 4;
+        dischargeConditionOther = app.alderete?.condicoesAltaOutras || '';
+      } else {
+        clinicalDischargeCondition = this.CLINICAL_CONDITION_REVERSE_MAP[condicoesAltaArray[0]] || 1;
+      }
     }
 
     let surgeonId = null;
@@ -455,10 +599,14 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       recordDate: app.recordDate || todayDate,
       surgeryDate: app.surgeryDate || todayDate,
       surgeries: surgeries,
+
+      // Segurança
       patientIdentifiedBeforeInduction: app.seguranca?.identificadoAvaliado === 'sim',
       anestheticConsentSigned: app.seguranca?.consentimentoAssinado === 'sim',
       anesthesiaEquipmentChecked: app.seguranca?.equipamentosChecados === 'sim',
       safetyObservations: app.seguranca?.atencao || '',
+
+      // Pré-Indução
       preAnestheticMedication: app.preInducao?.recebeuMedPrevia === 'sim',
       preAnestheticMedicationId,
       preAnestheticMedicationName,
@@ -466,8 +614,12 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       preAnestheticMedicationRoute,
       preAnestheticMedicationOtherRoute,
       preAnestheticMedicationTime,
+
+      // Antibiótico
       prophylacticAntibioticUsed: app.antibiotico?.temAntibiotico === 'sim',
       antibioticsList,
+
+      // Dados Vitais
       bloodPressure: app.dadosVitais?.pa || '',
       respiratoryRate: this.parseNumber(app.dadosVitais?.fr),
       temperature: this.parseNumber(app.dadosVitais?.temp),
@@ -475,37 +627,74 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       weightKg: this.parseNumber(app.dadosVitais?.peso),
       asaClassification: parsedAsa,
       roomEntryTime: this.formatTimeForApi(app.dadosVitais?.entradaSala),
+
+      // Equipe
       anesthesiaStartTime: this.formatTimeForApi(app.equipe?.horaInicioAnestesia),
       surgeonId: surgeonId,
       assistantId: assistantId,
       preOperativeDiagnosis: app.equipe?.diagnosticoPre || '',
+
+      // Posição
       surgicalPosition: surgicalPosition,
       usesCushions: app.posicao?.usoCoxim === 'sim',
       cushionsAccessLocation: app.posicao?.localCoxim || '',
+      otherSurgicalPosition: app.posicao?.outrasPosicao || '',
       venousAccessType: venousAccessType,
+      otherVenousAccess: app.posicao?.outroAcesso || '',
       venousAccessLocation: app.posicao?.localAcesso || '',
       difficultVenousPuncture: app.posicao?.dificuldadePuncao === 'sim',
+
+      // Técnica Anestésica - Geral
       generalAnesthesia: app.tecnica?.anestesiaGeral === 'sim',
       respirationMode: respirationMode,
-      controlledVentilationMode: respirationMode === 2 ? 1 : 1,
+      controlledVentilationMode: controlledVentilationMode,
       co2AbsorberCircuit: app.tecnica?.circuitoAbsorvedor === 'sim',
-      airwayDeviceType: app.tecnica?.vaTubo ? 4 : app.tecnica?.vaMascLaringea ? 2 : app.tecnica?.vaMascFacial ? 3 : 1,
+
+      // Via Aérea - Dispositivos (strings, ex. "Guedel", "Tubo")
+      airwayDevices: airwayDevices,
+      airwayDeviceType: airwayDevices, // compat legado
+      airwayDeviceNumbers: JSON.stringify(deviceNumbers),
       airwayDeviceNumber: app.tecnica?.tuboNo || "7.5",
+      cuff: app.tecnica?.cuff || false,
+      iot: app.tecnica?.iot || false,
       oralTube: app.tecnica?.oral || false,
       nasalTube: app.tecnica?.nasal || false,
-      intubationDifficulty: app.tecnica?.dificil ? 2 : 1,
+      intubationDifficulty: app.tecnica?.dificil ? 2 : (app.tecnica?.facil ? 1 : 1),
+
+      // Via Aérea - Tipo
       airwayType: airwayType,
       otherAirwayTypeDescription: app.tecnica?.tipoOutrasTexto || null,
+
+      // Via Aérea - Técnicas
       laryngoscopy: app.tecnica?.tecLaringoscopia || false,
       retrogradeTechnique: app.tecnica?.tecRetrograda || false,
       videoLaryngoscopy: app.tecnica?.tecVideolaringoscopia || false,
       bronchofibroscopy: app.tecnica?.tecBroncofibroscopia || false,
       tracheostomy: app.tecnica?.tecTraqueostomia || false,
       otherAirwayTechnique: app.tecnica?.tecVAOutrasTexto || null,
+      hasOtherAirwayTechnique: app.tecnica?.tecVAOutras || false,
+
+      // Bloqueios Espinhais
       spinalBlockPerformed: app.tecnica?.bloqueiosEspinhais === 'sim',
+      punctureLevels: punctureLevels,
+      puncturePosition: posicaoPuncao,
+      spinalCatheter: app.tecnica?.cateter === 'sim',
+      spinalOpioid: app.tecnica?.opioide === 'sim',
+      punctureCount: this.parseNumber(app.tecnica?.numeroPuncoes),
+
+      // Sedação e Oxigênio
       sedationPerformed: app.tecnica?.sedacao === 'sim',
       oxygenSupplementation: app.tecnica?.suplementacaoO2 === 'sim',
+      oxygenSupplementationTypes: o2SupplementationTypes,
+      oxygenSupplementationOther: app.tecnica?.suplementacaoO2Outros || '',
+      hasOxygenSupplementationOther: app.tecnica?.suplementacaoO2TemOutros || false,
+
+      // Bloqueio Plexo
       plexusBlockPerformed: app.tecnica?.bloqueioPlexo === 'sim',
+      neurostimulatorUsed: app.tecnica?.neuroestimulador === 'sim',
+      stimulatedNerves: stimulatedNerves,
+
+      // Pós-Procedimento
       surgeryPerformed: this.pick(
         app.surgeryPerformed,
         principal?.description,
@@ -515,6 +704,8 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       surgeryEndTime: this.formatTimeForApi(app.posProcedimento?.horaTerminoCirurgia),
       postOperativeDiagnosis: app.posProcedimento?.diagnosticoPos || '',
       anesthesiaEndTime: this.formatTimeForApi(app.posProcedimento?.horaTerminoAnestesia),
+
+      // Alderete
       consciousnessScore: this.parseNumber(app.alderete?.consciencia),
       activityScore: this.parseNumber(app.alderete?.atividade),
       circulationScore: this.parseNumber(app.alderete?.circulacao),
@@ -525,8 +716,12 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         this.parseNumber(app.alderete?.circulacao) +
         this.parseNumber(app.alderete?.respiracao) +
         this.parseNumber(app.alderete?.saturacao),
+      aldreteEvaluationTime: this.formatTimeForApi(app.alderete?.horaAvaliacao),
       clinicalDischargeCondition: clinicalDischargeCondition,
+      dischargeConditionOther: dischargeConditionOther,
       destination: 1,
+
+      // Dor
       hasPain: app.alderete?.dor === 'sim',
       dorUsouENV: this.parseBoolean(app.alderete?.dorUsouENV),
       dorENV: this.parseNumber(app.alderete?.dorENV),
@@ -536,13 +731,14 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       dorBPS: this.parseNumber(app.alderete?.dorBPS),
       conduta: app.alderete?.conduta || '',
 
+      // Assinaturas
       firstAnesthesiologistId: firstAnesthesiologistId ?? 0,
       firstAnesthesiologistName: firstAnesthesiologistName ?? '',
       secondAnesthesiologistId: secondAnesthesiologistIdValue,
-      secondAnesthesiologistName: secondAnesthesiologistName ?? null
+      secondAnesthesiologistName: secondAnesthesiologistName ?? null,
+      signatureDate: app.assinaturas?.dataAssinatura || todayDate
     };
   }
-
 
   private mapToAppFormat(api: any): any {
     const antibioticsList = Array.isArray(api.antibioticsList) ? api.antibioticsList.map((a: any) => ({
@@ -605,35 +801,129 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       }
     }
 
+    if (procedures.length > 0 && !procedures.some(p => p.principal)) {
+      procedures[0].principal = true;
+    }
+
     const posicoes = [];
     if (api.surgicalPosition && this.POSITION_MAP[api.surgicalPosition]) {
       posicoes.push(this.POSITION_MAP[api.surgicalPosition]);
+    }
+    if (api.otherSurgicalPosition) {
+      posicoes.push('Outra');
     }
 
     const acessoVenoso = [];
     if (api.venousAccessType && this.VENOUS_ACCESS_MAP[api.venousAccessType]) {
       acessoVenoso.push(this.VENOUS_ACCESS_MAP[api.venousAccessType]);
     }
-
-    const condicoesClinicasAlta = [];
-    if (api.clinicalDischargeCondition && this.CLINICAL_CONDITION_MAP[api.clinicalDischargeCondition]) {
-      condicoesClinicasAlta.push(this.CLINICAL_CONDITION_MAP[api.clinicalDischargeCondition]);
+    if (api.otherVenousAccess) {
+      acessoVenoso.push('Outro');
     }
 
-    const respiracaoAssistida = [];
-    const respiracaoControlada = [];
-    if (api.respirationMode === 1) respiracaoAssistida.push('Assistida');
-    else if (api.respirationMode === 2) respiracaoControlada.push('Controlada');
+    const condicoesClinicasAlta = [];
+    if (api.clinicalDischargeCondition) {
+      if (api.clinicalDischargeCondition === 4) {
+        condicoesClinicasAlta.push('Outras');
+      } else if (this.CLINICAL_CONDITION_MAP[api.clinicalDischargeCondition]) {
+        condicoesClinicasAlta.push(this.CLINICAL_CONDITION_MAP[api.clinicalDischargeCondition]);
+      }
+    }
 
-    const vaGuedel = api.airwayDeviceType === 1;
-    const vaMascLaringea = api.airwayDeviceType === 2;
-    const vaMascFacial = api.airwayDeviceType === 3;
-    const vaTubo = api.airwayDeviceType === 4;
+    const respiracaoAssistida: string[] = [];
+    const respiracaoControlada: string[] = [];
+    const rMode = Number(api.respirationMode);
+    const cvMode = api.controlledVentilationMode != null ? Number(api.controlledVentilationMode) : null;
+
+    if (rMode === 1) respiracaoAssistida.push('Espontanea');
+    else if (rMode === 2) respiracaoAssistida.push('Manual');
+    else if (rMode === 3) respiracaoControlada.push('Volume');
+    else if (rMode === 4) respiracaoControlada.push('Pressao');
+    else if (cvMode === 1) respiracaoControlada.push('Volume');
+    else if (cvMode === 2) respiracaoControlada.push('Pressao');
+    // ============================================================
+
+    let airwayDevicesRaw: any[] = [];
+    if (Array.isArray(api.airwayDevices) && api.airwayDevices.length > 0) {
+      airwayDevicesRaw = api.airwayDevices.map((d: any) => {
+        return typeof d === 'object' ? d.deviceType ?? d.id : d;
+      });
+    } else if (Array.isArray(api.airwayDeviceType) && api.airwayDeviceType.length > 0) {
+      airwayDevicesRaw = api.airwayDeviceType;
+    } else if (api.airwayDeviceType) {
+      airwayDevicesRaw = [api.airwayDeviceType];
+    }
+
+    const norm = (v: any) => String(v ?? '').toLowerCase();
+    const hasDev = (str: string, num: number) =>
+      airwayDevicesRaw.some(x => norm(x) === str || Number(x) === num);
+
+    let vaGuedel = hasDev('guedel', 1);
+    let vaMascLaringea = hasDev('mascaralaringea', 2) || airwayDevicesRaw.some(x => norm(x) === 'máscara laríngea');
+    let vaMascFacial = hasDev('mascarafacial', 3) || airwayDevicesRaw.some(x => norm(x) === 'máscara facial');
+    let vaTubo = hasDev('tubo', 4);
+
+    if (!vaGuedel && !vaMascLaringea && !vaMascFacial && !vaTubo && api.airwayDeviceNumbers) {
+      try {
+        const numbers = typeof api.airwayDeviceNumbers === 'string'
+          ? JSON.parse(api.airwayDeviceNumbers)
+          : api.airwayDeviceNumbers;
+        if (numbers?.tubo) vaTubo = true;
+        if (numbers?.guedel) vaGuedel = true;
+        if (numbers?.mascFacial) vaMascFacial = true;
+        if (numbers?.mascLaringea) vaMascLaringea = true;
+      } catch { /* ignore */ }
+    }
+
+    let deviceNumbers = { guedel: '', mascLaringea: '', mascFacial: '', tubo: '' };
+    try {
+      if (api.airwayDeviceNumbers) {
+        deviceNumbers = typeof api.airwayDeviceNumbers === 'string'
+          ? JSON.parse(api.airwayDeviceNumbers)
+          : api.airwayDeviceNumbers;
+      }
+    } catch (e) {
+      // fallback
+    }
 
     const tipoSimples = api.airwayType === 1;
     const tipoEndobronquico = api.airwayType === 2;
     const tipoAramado = api.airwayType === 3;
     const tipoOutras = api.airwayType === 4;
+
+    const nivelPuncao = Array.isArray(api.punctureLevels)
+      ? api.punctureLevels
+        .map((item: any) => {
+          const id = typeof item === 'object' ? (item.level ?? item.id) : item;
+          return this.PUNCTURE_LEVEL_MAP[id];
+        })
+        .filter((level: string | undefined) => level !== undefined)
+      : [];
+
+    const posicaoPuncaoMap: Record<number, string> = {
+      1: 'Sentada',
+      2: 'Decubito'
+    };
+    const posicaoPuncao = api.puncturePosition ? posicaoPuncaoMap[api.puncturePosition] || '' : '';
+
+    const nervosEstimulados = Array.isArray(api.stimulatedNerves)
+      ? api.stimulatedNerves
+        .map((item: any) => {
+          const id = typeof item === 'object' ? (item.nerve ?? item.id) : item;          
+          let nerve = this.NERVES_BACKEND_TO_FRONTEND[id];
+          if (nerve === undefined) {
+            nerve = this.NERVES_MAP[id];
+          }
+          return nerve;
+        })
+        .filter((nerve: string | undefined) => nerve !== undefined)
+      : [];
+
+    const tipoSuplementacaoO2 = Array.isArray(api.oxygenSupplementationTypes)
+      ? api.oxygenSupplementationTypes
+        .map((id: number) => this.O2_SUPPLEMENTATION_MAP[id])
+        .filter((type: string | undefined) => type !== undefined)
+      : [];
 
     let asaValue = '1';
     if (api.asaClassification) {
@@ -717,60 +1007,67 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
       posicao: {
         posicoes: posicoes,
-        outrasPosicao: '',
+        outrasPosicao: api.otherSurgicalPosition || '',
         usoCoxim: api.usesCushions ? 'sim' : 'nao',
         localCoxim: api.cushionsAccessLocation || '',
         acessoVenoso: acessoVenoso,
-        outroAcesso: '',
+        outroAcesso: api.otherVenousAccess || '',
         localAcesso: api.venousAccessLocation || '',
         dificuldadePuncao: api.difficultVenousPuncture ? 'sim' : 'nao'
       },
 
       tecnica: {
         anestesiaGeral: api.generalAnesthesia ? 'sim' : 'nao',
-        respiracaoAssistida: respiracaoAssistida,
-        respiracaoControlada: respiracaoControlada,
+        respiracaoAssistida: respiracaoAssistida, 
+        respiracaoControlada: respiracaoControlada, 
         circuitoAbsorvedor: api.co2AbsorberCircuit ? 'sim' : 'nao',
+
         vaGuedel: vaGuedel,
         vaMascLaringea: vaMascLaringea,
         vaMascFacial: vaMascFacial,
         vaTubo: vaTubo,
-        guedelNo: '',
-        mascLaringeaNo: '',
-        mascFacialNo: '',
-        tuboNo: api.airwayDeviceNumber || '',
-        cuff: false,
-        iot: false,
+        guedelNo: deviceNumbers.guedel || '',
+        mascLaringeaNo: deviceNumbers.mascLaringea || '',
+        mascFacialNo: deviceNumbers.mascFacial || '',
+        tuboNo: deviceNumbers.tubo || api.airwayDeviceNumber || '',
+        
+        cuff: api.cuff || false,
+        iot: api.iot || false,
         oral: api.oralTube || false,
         nasal: api.nasalTube || false,
         facil: api.intubationDifficulty === 1,
         dificil: api.intubationDifficulty === 2,
+
         tipoSimples: tipoSimples,
         tipoOutras: tipoOutras,
         tipoOutrasTexto: api.otherAirwayTypeDescription || '',
         tipoEndobronquico: tipoEndobronquico,
         tipoAramado: tipoAramado,
+
         tecLaringoscopia: api.laryngoscopy || false,
         tecBroncofibroscopia: api.bronchofibroscopy || false,
         tecRetrograda: api.retrogradeTechnique || false,
         tecTraqueostomia: api.tracheostomy || false,
         tecVideolaringoscopia: api.videoLaryngoscopy || false,
-        tecVAOutras: false,
+        tecVAOutras: api.hasOtherAirwayTechnique || false,
         tecVAOutrasTexto: api.otherAirwayTechnique || '',
+
         bloqueiosEspinhais: api.spinalBlockPerformed ? 'sim' : 'nao',
-        nivelPuncao: [],
-        posicaoPuncao: '',
-        cateter: '',
-        opioide: '',
-        numeroPuncoes: '',
+        nivelPuncao: nivelPuncao,
+        posicaoPuncao: posicaoPuncao,
+        cateter: api.spinalCatheter ? 'sim' : 'nao',
+        opioide: api.spinalOpioid ? 'sim' : 'nao',
+        numeroPuncoes: api.punctureCount?.toString() || '',
+
         sedacao: api.sedationPerformed ? 'sim' : 'nao',
         suplementacaoO2: api.oxygenSupplementation ? 'sim' : 'nao',
-        tipoSuplementacaoO2: [],
-        suplementacaoO2TemOutros: false,
-        suplementacaoO2Outros: '',
+        tipoSuplementacaoO2: tipoSuplementacaoO2,
+        suplementacaoO2TemOutros: api.hasOxygenSupplementationOther || false,
+        suplementacaoO2Outros: api.oxygenSupplementationOther || '',
+
         bloqueioPlexo: api.plexusBlockPerformed ? 'sim' : 'nao',
-        neuroestimulador: '',
-        nervosEstimulados: [],
+        neuroestimulador: api.neurostimulatorUsed ? 'sim' : 'nao',
+        nervosEstimulados: nervosEstimulados,
         nervosEstimuladosOutros: ''
       },
 
@@ -787,9 +1084,9 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         circulacao: circulationScore,
         respiracao: respirationScore,
         saturacao: oxygenSaturationScore,
-        horaAvaliacao: '',
+        horaAvaliacao: this.formatTimeForApp(api.aldreteEvaluationTime),
         condicoesClinicasAlta: condicoesClinicasAlta,
-        condicoesAltaOutras: '',
+        condicoesAltaOutras: api.dischargeConditionOther || '',
         dor: api.hasPain ? 'sim' : 'nao',
         dorUsouENV: this.parseBoolean(api.dorUsouENV),
         dorENV: api.dorENV?.toString() ?? '',
@@ -805,7 +1102,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         primeiroAnestesistaId: api.firstAnesthesiologistId?.toString() ?? null,
         segundoAnestesista: secondAnesthesiologistId,
         segundoAnestesistaId: api.secondAnesthesiologistId ?? null,
-        dataAssinatura: new Date().toISOString().split('T')[0]
+        dataAssinatura: api.signatureDate || new Date().toISOString().split('T')[0]
       },
 
       surgeryId: api.surgeryId,
@@ -814,7 +1111,10 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       surgeryDate: api.surgeryDate,
       createdAt: api.createdAt,
       lastUpdate: api.lastUpdate,
-      status: api.status
+      status: api.status,
+
+      preAnesthesia: api.preAnesthesia ?? api.preAnestheticRecord ?? null,
+      _raw: api
     };
   }
 }

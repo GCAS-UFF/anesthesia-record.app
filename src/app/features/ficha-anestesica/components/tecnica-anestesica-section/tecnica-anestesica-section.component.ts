@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, OnInit, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { IonCheckbox } from '@ionic/angular/standalone';
@@ -19,9 +19,9 @@ import { CheckboxGroupComponent } from '../../../../shared/components/checkbox-g
   ],
   templateUrl: './tecnica-anestesica-section.component.html',
   styleUrls: ['./tecnica-anestesica-section.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.Default // MUDANÇA: Usar Default
 })
-export class TecnicaAnestesicaSectionComponent implements OnInit {
+export class TecnicaAnestesicaSectionComponent implements OnInit, AfterViewInit {
   @Input() formGroup!: FormGroup;
 
   yesNoOptions = [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'nao' }];
@@ -60,7 +60,15 @@ export class TecnicaAnestesicaSectionComponent implements OnInit {
     { label: 'Nasofaringe', value: 'Nasofaringe' }
   ];
 
-  ngOnInit() { }
+  constructor(private cdr: ChangeDetectorRef) {}
+
+  ngOnInit() {}
+
+  ngAfterViewInit() {
+    setTimeout(() => {
+      this.cdr.detectChanges();
+    }, 100);
+  }
 
   toggleO2(checked: boolean, value: string) {
     const ctrl = this.formGroup.get('tipoSuplementacaoO2');
@@ -73,5 +81,11 @@ export class TecnicaAnestesicaSectionComponent implements OnInit {
     }
     ctrl?.setValue(next);
     ctrl?.markAsDirty();
+    this.cdr.detectChanges();
+  }
+
+  // Método para forçar atualização manual
+  refresh() {
+    this.cdr.detectChanges();
   }
 }

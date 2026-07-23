@@ -226,7 +226,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.loadDropdownLists();
 
     if (this.cirurgiaId && this.patientId) {
-      this.loadPatientData(this.cirurgiaId, this.patientId);   
+      this.loadPatientData(this.cirurgiaId, this.patientId);
       this.tentarReenviarRascunho();
     }
 
@@ -539,7 +539,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   cancelAddAtb() { this.addingAtb = false; }
 
-  /** Seleciona o fármaco (medicamento) do ATB a partir da lista mestre. */
   selectAtbMedication(id: string): void {
     const found = this.medicationsLista.find(m => String(m.id) === String(id));
     this.newAtb.medicationId = id;
@@ -548,7 +547,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.openDdl = null;
   }
 
-  /** Seleciona o fármaco da medicação pré-anestésica a partir da lista mestre. */
   selectPreFarmaco(id: string): void {
     const found = this.medicationsLista.find(m => String(m.id) === String(id));
     this.form.get('preInducao.farmacoId')?.setValue(id);
@@ -613,11 +611,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   removerAntibiotico(index: number) {
-    this.antibioticsList.splice(index, 1);    
+    this.antibioticsList.splice(index, 1);
   }
 
   removerRepique(atbIndex: number, repiqueIndex: number) {
-    this.antibioticsList[atbIndex].repiques.splice(repiqueIndex, 1);    
+    this.antibioticsList[atbIndex].repiques.splice(repiqueIndex, 1);
   }
 
   get aldereteTotal(): number {
@@ -651,27 +649,27 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
 
   private persistDraft(data?: any) {
-    if (!this.cirurgiaId) 
+    if (!this.cirurgiaId)
       return;
-    
+
     const draftData = data || {
       ...this.form.value,
       antibioticsList: this.antibioticsList,
       _isErrorDraft: true,
       _createdAt: new Date().toISOString()
     };
-    
+
     const formattedData = {
       ...draftData,
       patientId: draftData.patientId ? String(draftData.patientId) : this.patientId ? String(this.patientId) : null,
       cirurgiaId: draftData.cirurgiaId ? String(draftData.cirurgiaId) : this.cirurgiaId ? String(this.cirurgiaId) : null,
       surgeryId: draftData.surgeryId ? String(draftData.surgeryId) : this.selectedSurgery?.id ? String(this.selectedSurgery.id) : null,
-      pacienteId: draftData.pacienteId ? String(draftData.pacienteId) : this.patientId ? String(this.patientId) : null,     
+      pacienteId: draftData.pacienteId ? String(draftData.pacienteId) : this.patientId ? String(this.patientId) : null,
       assinaturas: {
         ...draftData.assinaturas,
         primeiroAnestesistaId: this.loggedUser?.id ? String(this.loggedUser.id) : draftData.assinaturas?.primeiroAnestesistaId || null,
         segundoAnestesistaId: draftData.assinaturas?.segundoAnestesistaId || null
-      },     
+      },
       firstAnesthesiologistId: this.loggedUser?.id ? String(this.loggedUser.id) : draftData.firstAnesthesiologistId || null,
       secondAnesthesiologistId: draftData.secondAnesthesiologistId || null
     };
@@ -692,12 +690,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     const originalFormValue = this.form.value;
     const originalAntibioticsList = [...this.antibioticsList];
 
-    try {      
+    try {
       this.form.patchValue(cleanDraft);
       if (cleanDraft.antibioticsList) {
         this.antibioticsList = cleanDraft.antibioticsList;
       }
-      
+
       const record = this.buildPayload();
 
       this.form.patchValue(originalFormValue);
@@ -717,10 +715,10 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
             _lastRetry: new Date().toISOString(),
             _retryCount: (draft._retryCount || 0) + 1,
             _lastError: error?.message || 'Erro no reenvio'
-          });                    
+          });
         }
       });
-    } catch (error) {      
+    } catch (error) {
       this.form.patchValue(originalFormValue);
       this.antibioticsList = originalAntibioticsList;
       console.error('Erro ao preparar rascunho para reenvio:', error);
@@ -769,6 +767,13 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
           delete formValue.posProcedimento?.procedimentos;
 
           this.form.patchValue(formValue);
+
+          setTimeout(() => {
+            const tecnicaSection = document.querySelector('app-tecnica-anestesica-section') as any;
+            if (tecnicaSection && tecnicaSection.refresh) {
+              tecnicaSection.refresh();
+            }
+          }, 50);
 
           if ((savedRecord as any).antibioticsList) {
             this.antibioticsList = (savedRecord as any).antibioticsList;
@@ -836,14 +841,43 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }, 100);
   }
 
-  openSignModal() {
+  async openSignModal() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.showValidationErrors = true;
-      setTimeout(() => (this.showValidationErrors = false), 1000);
-      this.toast('Preencha todos os campos obrigatórios (*) antes de assinar.', 'warning');
+
+      const missing = this.getMissingFields();
+
+      const bySection: Record<string, string[]> = {};
+      missing.forEach(m => {
+        (bySection[m.section] ||= []).push(m.label);
+      });
+
+      const html = Object.entries(bySection)
+        .map(
+          ([sec, items]) => `
+          <div style="margin-bottom:10px">
+            <div style="font-weight:700;color:#1d4ed8;margin-bottom:4px">${sec}</div>
+            <ul style="margin:0;padding-left:18px;color:#0f172a">
+              ${items.map(i => `<li>${i}</li>`).join('')}
+            </ul>
+          </div>`
+        )
+        .join('');
+
+      const alert = await this.alertController.create({
+        header: 'Campos obrigatórios não preenchidos',
+        subHeader: `${missing.length} pendência(s) encontrada(s)`,
+        message: html || 'Verifique os campos destacados em vermelho.',
+        cssClass: 'validation-alert',
+        buttons: [{ text: 'Entendi', role: 'cancel' }],
+      });
+      await alert.present();
+
+      this.scrollToFirstInvalid();
       return;
     }
+
     this.signatureAgreed = false;
     this.signatureTypedName = '';
     this.signatureError = '';
@@ -890,7 +924,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       ...record,
       patientId: record.pacienteId ? String(record.pacienteId) : this.patientId ? String(this.patientId) : null,
       cirurgiaId: this.cirurgiaId ? String(this.cirurgiaId) : null,
-      surgeryId: this.selectedSurgery?.id ? String(this.selectedSurgery.id) : null,      
+      surgeryId: this.selectedSurgery?.id ? String(this.selectedSurgery.id) : null,
       firstAnesthesiologistId: this.loggedUser?.id ? String(this.loggedUser.id) : record.assinaturas.primeiroAnestesista,
       secondAnesthesiologistId: record.assinaturas.segundoAnestesista,
       assinaturas: {
@@ -908,7 +942,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       },
       error: async (error) => {
         this.isSaving = false;
-        
+
         this.persistDraft({
           ...this.form.value,
           antibioticsList: this.antibioticsList,
@@ -916,7 +950,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
           _timestamp: new Date().toISOString()
         });
 
-        this.toast('Erro ao salvar ficha. Um rascunho foi salvo para tentativa de reenvio.', 'danger');
+        this.toast('Não foi possível enviar a ficha para o servidor nesse momento. Um rascunho foi salvo para tentativa de reenvio.', 'warning');
       }
     });
   }
@@ -1100,7 +1134,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   private hydrateProcedimentos(items?: any[] | null): void {
-    if (!items || !items.length) {      
+    if (!items || !items.length) {
       if (this.procedimentosArray.length === 0) {
         this.procedimentosArray.push(this.createProcedimentoRow());
       }
@@ -1268,7 +1302,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   openPreAnestesica() {
     if (!this.preAnesthesiaData) {
-      // opcional: toast avisando "Ficha pré-anestésica não disponível"
+      // opcional: chamar toast avisando "Ficha pré-anestésica não disponível"
     }
     this.isPreViewerOpen = true;
   }
@@ -1276,4 +1310,125 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   closePreAnestesica() {
     this.isPreViewerOpen = false;
   }
+
+
+  private fieldLabels: Record<string, string> = {
+    'seguranca.identificadoAvaliado': 'Paciente identificado e avaliado',
+    'seguranca.consentimentoAssinado': 'Termo de consentimento assinado',
+    'seguranca.equipamentosChecados': 'Equipamentos checados',
+    'preInducao.recebeuMedPrevia': 'Recebeu medicação pré-anestésica',
+    'antibiotico.temAntibiotico': 'Uso de antibiótico profilático',
+    'dadosVitais.pa': 'PA',
+    'dadosVitais.fr': 'FR',
+    'dadosVitais.temp': 'Temperatura',
+    'dadosVitais.spo2': 'SpO₂',
+    'dadosVitais.peso': 'Peso',
+    'dadosVitais.asa': 'ASA',
+    'dadosVitais.entradaSala': 'Entrada na Sala',
+    'equipe.cirurgiao': 'Cirurgião',
+    'equipe.assistente': 'Assistente',
+    'equipe.diagnosticoPre': 'Diagnóstico Pré',
+    'equipe.horaInicioAnestesia': 'Hora de início da anestesia',
+    'posicao.usoCoxim': 'Uso de coxim',
+    'posicao.dificuldadePuncao': 'Dificuldade de punção',
+    'tecnica.anestesiaGeral': 'Anestesia geral (Sim/Não)',
+    'tecnica.circuitoAbsorvedor': 'Circuito absorvedor de CO₂',
+    'tecnica.bloqueiosEspinhais': 'Bloqueios espinhais (Sim/Não)',
+    'tecnica.cateter': 'Cateter (bloqueio espinhal)',
+    'tecnica.opioide': 'Opioide (bloqueio espinhal)',
+    'tecnica.sedacao': 'Sedação (Sim/Não)',
+    'tecnica.suplementacaoO2': 'Suplementação de O₂',
+    'tecnica.bloqueioPlexo': 'Bloqueio de plexo (Sim/Não)',
+    'tecnica.neuroestimulador': 'Neuroestimulador',
+    'posProcedimento.horaTerminoCirurgia': 'Hora de término da cirurgia',
+    'posProcedimento.diagnosticoPos': 'Diagnóstico pós',
+    'posProcedimento.horaTerminoAnestesia': 'Hora de término da anestesia',
+    'alderete.dor': 'Presença de dor (Sim/Não)',
+    'alderete.dorENV': 'Escala ENV (0–10)',
+    'alderete.dorPAINAD': 'Escala PAINAD (0–10)',
+    'alderete.dorBPS': 'Escala BPS (3–12)',
+    'assinaturas.dataAssinatura': 'Data da assinatura',
+  };
+
+  private sectionLabels: Record<string, string> = {
+    seguranca: 'Segurança do Paciente',
+    preInducao: 'Pré-Indução',
+    antibiotico: 'Antibiótico Profilático',
+    dadosVitais: 'Dados Vitais',
+    equipe: 'Equipe Cirúrgica',
+    posicao: 'Posição e Acesso',
+    tecnica: 'Técnica Anestésica',
+    posProcedimento: 'Pós-Procedimento',
+    alderete: 'Aldrete e Dor',
+    assinaturas: 'Assinaturas',
+  };
+
+  private getMissingFields(): Array<{ section: string; label: string; path: string }> {
+    const missing: Array<{ section: string; label: string; path: string }> = [];
+
+    const walk = (control: AbstractControl, path: string) => {
+      if (control instanceof FormGroup) {
+        Object.keys(control.controls).forEach(k =>
+          walk(control.controls[k], path ? `${path}.${k}` : k)
+        );
+      } else if (control instanceof FormArray) {
+        control.controls.forEach((c, i) => walk(c, `${path}[${i}]`));
+      } else {
+        if (control.invalid) {
+          const section = path.split('.')[0];
+          missing.push({
+            section: this.sectionLabels[section] || section,
+            label: this.fieldLabels[path] || path,
+            path,
+          });
+        }
+      }
+    };
+
+    walk(this.form, '');
+
+    const ald = this.form.get('alderete') as FormGroup;
+    if (ald?.errors?.['dorScaleRequired']) {
+      missing.push({
+        section: 'Aldrete e Dor',
+        label: 'Selecione ao menos uma escala de dor (ENV / PAINAD / BPS)',
+        path: 'alderete.escala',
+      });
+    }
+    if (ald?.errors?.['dorScaleInvalid']) {
+      missing.push({
+        section: 'Aldrete e Dor',
+        label: 'Valor da escala de dor fora do intervalo permitido',
+        path: 'alderete.escala',
+      });
+    }
+
+    const procs = this.procedimentosArray;
+    if (procs.length === 0 || procs.controls.every(c => !c.get('procedimentoId')?.value)) {
+      missing.push({
+        section: 'Pós-Procedimento',
+        label: 'Informe ao menos um procedimento realizado',
+        path: 'posProcedimento.procedimentos',
+      });
+    }
+
+    return missing;
+  }
+
+  private scrollToFirstInvalid(): void {
+    setTimeout(() => {
+      const el =
+        document.querySelector('.shake-error') ||
+        document.querySelector('.ng-invalid.ng-touched');
+      if (el && (el as HTMLElement).scrollIntoView) {
+        (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 80);
+  }
+
+
+
+
 }
+
+

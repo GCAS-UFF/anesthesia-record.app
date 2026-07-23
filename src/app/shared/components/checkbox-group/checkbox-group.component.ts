@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef } from '@angular/core';
+import { Component, Input, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonIcon } from '@ionic/angular/standalone';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
@@ -117,7 +117,8 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@a
       useExisting: forwardRef(() => CheckboxGroupComponent),
       multi: true
     }
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.Default // MUDANÇA: Usar Default em vez de OnPush
 })
 export class CheckboxGroupComponent implements ControlValueAccessor {
   @Input() label: string = '';
@@ -126,8 +127,10 @@ export class CheckboxGroupComponent implements ControlValueAccessor {
   @Input() required: boolean = false;
 
   value: any[] = [];
-  onChange: any = () => {};
-  onTouched: any = () => {};
+  onChange: any = () => { };
+  onTouched: any = () => { };
+
+  constructor(private cdr: ChangeDetectorRef) { }
 
   isSelected(val: any): boolean {
     return this.value && this.value.includes(val);
@@ -135,20 +138,22 @@ export class CheckboxGroupComponent implements ControlValueAccessor {
 
   toggle(val: any) {
     if (!this.value) this.value = [];
-    
+
     const index = this.value.indexOf(val);
     if (index > -1) {
       this.value.splice(index, 1);
     } else {
       this.value.push(val);
     }
-    
+
     this.onChange([...this.value]);
     this.onTouched();
+    this.cdr.detectChanges();
   }
 
   writeValue(val: any): void {
     this.value = val || [];
+    this.cdr.detectChanges();
   }
   registerOnChange(fn: any): void {
     this.onChange = fn;
