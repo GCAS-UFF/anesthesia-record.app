@@ -7,131 +7,162 @@
   >
   </app-header-institucional>
 
-  <div class="main-content">
-    <!-- COLUNA ESQUERDA: Monitoramento -->
-    <div class="left-column">
-      <!-- Card do Paciente: Sempre Visível no Topo da Coluna -->
-      <div class="sticky-patient-area">
-        <app-patient-info-card
-          *ngIf="!isLoading"
-          [patientName]="patient?.fullName || ''"
-          [birthDate]="patient?.birthDate || ''"
-          [age]="patient?.age?.toString() || ''"
-          [gender]="patient?.gender || 'M'"
-          [weight]="patient?.weightKg || '--'"
-          [record]="patient?.medicalRecordNumber || ''"
-          [procedure]="selectedProcedure?.description || ''"
-          [surgicalCenter]="
-            selectedSurgery?.location?.surgicalCenter?.description || ''
-          "
-          [room]="selectedSurgery?.location?.room || ''"
-          [unit]="patient?.currentLocation?.unit?.description || ''"
-          [floor]="patient?.currentLocation?.floor || ''"
-          [bed]="patient?.currentLocation?.bed || '--'"
-          [allergies]="patient?.allergies || []"
-          [compact]="true"
-          status="ASA II"
-        >
-        </app-patient-info-card>
+  <!-- PATIENT STRIP -->
+  <div class="patient-strip" *ngIf="!isLoading">
+    <app-patient-info-card
+      [patientName]="patient?.fullName || ''"
+      [birthDate]="patient?.birthDate || ''"
+      [age]="patientAge"
+      [gender]="patient?.gender || 'M'"
+      weight="90"
+      [record]="patient?.medicalRecordNumber || ''"
+      [procedure]="selectedProcedure?.description || ''"
+      [surgicalCenter]="
+        selectedSurgery?.location?.surgicalCenter?.description || ''
+      "
+      [room]="selectedSurgery?.location?.room || ''"
+      [unit]="patient?.currentLocation?.unit?.description || ''"
+      [floor]="patient?.currentLocation?.floor || ''"
+      [bed]="patient?.currentLocation?.bed || '--'"
+      [allergies]="patient?.allergies || []"
+      [compact]="true"
+      [status]="patientAsa"
+    >
+    </app-patient-info-card>
+  </div>
 
-        <!-- Linha de Posição -->
-        <div
-          class="position-row"
-          [class.disabled-row]="!isSurgeryStarted || isSurgeryFinished"
-        >
-          <span class="position-label">🛌 Posição:</span>
-          <div class="position-options">
-            <span
-              class="pos-opt"
-              *ngFor="let pos of posicoesPossiveis"
-              [class.active]="pos === posicaoAtual"
-              (click)="!isSurgeryFinished && mudarPosicao(pos)"
-            >
-              {{ pos }}
-            </span>
-          </div>
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+    <div class="channels-column" [style.gridTemplateRows]="channelsGridRows">
+      <app-vital-signs-chart
+        [vitalRecords]="vitalRecords"
+        [anesthesiaStartTime]="anesthesiaStartTime"
+        [surgeryStartTime]="surgeryStartTime"
+        [surgeryEndTime]="surgeryEndTime"
+        [positionHistory]="positionHistory"
+        [clinicalEvents]="clinicalEvents"
+        [agents]="agents"
+        [hoverTime]="hoverTime"
+        [readonly]="isSurgeryFinished"
+        (hoverTimeChange)="hoverTime = $event"
+        (addVitalRecord)="openVitalModal()"
+        (openHistory)="openDrawer('vitals')"
+        (addCustomField)="openCustomFieldModal()"
+      >
+      </app-vital-signs-chart>
 
-          <ion-button
-            *ngIf="isSurgeryStarted && !isSurgeryFinished"
-            fill="outline"
-            size="small"
-            color="medium"
-            style="margin-left: 10px; --border-radius: 4px"
-            (click)="reconfigurarFrequencia()"
-          >
-            <ion-icon name="time-outline" slot="start"></ion-icon>
-            {{
-              autoMonitoringIntervalMinutes
-                ? autoMonitoringIntervalMinutes + " min"
-                : "Auto"
-            }}
-          </ion-button>
-        </div>
-      </div>
+      <app-agents-chart
+        class="channel channel-strip"
+        [class.is-collapsed]="expandedPanel !== 'agents'"
+        [class.is-expanded]="expandedPanel === 'agents'"
+        [collapsed]="expandedPanel !== 'agents'"
+        [agents]="agents"
+        [anesthesiaStartTime]="anesthesiaStartTime"
+        [surgeryEndTime]="surgeryEndTime"
+        [hoverTime]="sharedHoverTime"
+        (hoverTimeChange)="onSharedHover($event)"
+        (toggle)="togglePanel('agents')"
+        [readonly]="isSurgeryFinished"
+        (addAgent)="openAgentModal()"
+        (openHistory)="openHistoryDrawer('agents')"
+      >
+      </app-agents-chart>
 
-      <!-- ÁREA SCROLLÁVEL: Gráficos e Tabela -->
-      <div class="scrollable-content-area">
-        <!-- SEÇÃO DO GRÁFICO -->
-        <app-monitorizacao-grafico
-          [vitalRecords]="vitalRecords"
-          [agents]="agents"
-          [events]="events"
-          [balanceItems]="balanceItems"
-          [startTimeAnesthesia]="startTimeAnesthesia"
-          [startTimeSurgery]="startTimeSurgery"
-        >
-        </app-monitorizacao-grafico>
+      <app-events-chart
+        class="channel channel-strip"
+        [class.is-collapsed]="expandedPanel !== 'events'"
+        [class.is-expanded]="expandedPanel === 'events'"
+        [collapsed]="expandedPanel !== 'events'"
+        [events]="clinicalEvents"
+        [positionHistory]="positionHistory"
+        [anesthesiaStartTime]="anesthesiaStartTime"
+        [surgeryEndTime]="surgeryEndTime"
+        [hoverTime]="sharedHoverTime"
+        (hoverTimeChange)="onSharedHover($event)"
+        (toggle)="togglePanel('events')"
+        [readonly]="isSurgeryFinished"
+        (addEvent)="openEventModal()"
+        (openHistory)="openHistoryDrawer('events')"
+      >
+      </app-events-chart>
 
-        <!-- ENTRADA RÁPIDA (Aparece quando selecionado) -->
-        <app-quick-vital-input
-          #topEditor
-          *ngIf="selectedRecord && !isSurgeryFinished"
-          [vitalData]="selectedRecord"
-          [customFields]="customFields"
-          (onSave)="updateActiveRecord()"
-          (onCancel)="cancelEdit()"
-        >
-        </app-quick-vital-input>
-
-        <!-- TABELA DE REGISTROS -->
-        <app-monitorizacao-tabela
-          [vitalRecords]="vitalRecords"
-          [customFields]="customFields"
-          [selectedRecord]="selectedRecord"
-          [isSurgeryFinished]="isSurgeryFinished"
-          (onAddCustomField)="addCustomField()"
-          (onAddTimePoint)="addTimePoint()"
-          (onEditCustomFieldMenu)="editCustomFieldMenu($event)"
-          (onSelectRecord)="selectRecord($event)"
-          (onDeleteRecord)="deleteRecord($event)"
-        >
-        </app-monitorizacao-tabela>
-      </div>
+      <app-fluid-balance-chart
+        class="channel channel-strip"
+        [class.is-collapsed]="expandedPanel !== 'balance'"
+        [class.is-expanded]="expandedPanel === 'balance'"
+        [collapsed]="expandedPanel !== 'balance'"
+        [balance]="fluidBalance"
+        [anesthesiaStartTime]="anesthesiaStartTime"
+        [surgeryEndTime]="surgeryEndTime"
+        [hoverTime]="sharedHoverTime"
+        (hoverTimeChange)="onSharedHover($event)"
+        (toggle)="togglePanel('balance')"
+        [readonly]="isSurgeryFinished"
+        (addBalance)="openBalanceModal()"
+        (openHistory)="openHistoryDrawer('balance')"
+      >
+      </app-fluid-balance-chart>
     </div>
 
-    <!-- COLUNA DIREITA: Controles Fixos -->
-    <app-monitorizacao-sidebar
+    <app-quick-action-sidebar
+      class="sidebar-right"
+      [isAnesthesiaStarted]="isAnesthesiaStarted"
       [isSurgeryStarted]="isSurgeryStarted"
       [isSurgeryFinished]="isSurgeryFinished"
-      [isAnesthesiaStarted]="isAnesthesiaStarted"
       [startTimeAnesthesia]="startTimeAnesthesia"
       [startTimeSurgery]="startTimeSurgery"
-      [timerValue]="timerValue"
-      [agents]="agents"
-      [events]="events"
-      [balanceItems]="balanceItems"
-      [expandedSections]="expandedSections"
-      (onIniciarAnestesia)="iniciarAnestesia()"
-      (onIniciarCirurgia)="iniciarCirurgia()"
-      (onFinalizarCirurgia)="finalizarCirurgia()"
-      (onToggleSection)="toggleSection($event)"
-      (onOpenAgentModal)="openAgentModal($event)"
-      (onDeleteAgent)="deleteAgent($event)"
-      (onOpenEventModal)="openEventModal($event.type, $event.item)"
-      (onDeleteEvent)="deleteEvent($event)"
-      (onOpenBalanceModal)="openBalanceModal($event)"
-      (onDeleteBalance)="deleteBalance($event)"
+      [anesthesiaTimer]="anesthesiaTimer"
+      [surgeryTimer]="surgeryTimer"
+      [posicaoAtual]="posicaoAtual"
+      [posicoesPossiveis]="posicoesPossiveis"
+      [positionHistory]="positionHistory"
+      [recentActivity]="recentActivity"
+      [autoMonitoringIntervalMinutes]="autoMonitoringIntervalMinutes"
+      (iniciarAnestesia)="iniciarAnestesia()"
+      (iniciarCirurgia)="iniciarCirurgia()"
+      (mudarPosicao)="mudarPosicao($event)"
+      (reconfigurarFrequencia)="reconfigurarFrequencia()"
+      (addVital)="addTimePoint()"
+      (addAgent)="openAgentModal()"
+      (addEvent)="openEventModal()"
+      (addBalance)="openBalanceModal()"
+      (openHistoryFull)="openHistoryDrawer('vitals')"
     >
-    </app-monitorizacao-sidebar>
+    </app-quick-action-sidebar>
   </div>
+
+  <app-finalize-anesthesia-bar
+    [draftSavedAt]="lastDraftSavedAt"
+    [pendingSyncCount]="pendingSyncCount"
+    [isAnesthesiaStarted]="isAnesthesiaStarted"
+    [isSurgeryFinished]="isSurgeryFinished"
+    [isSyncing]="isSyncing"
+    (syncNow)="syncPendingNow()"
+    (openHistory)="openHistoryDrawer('vitals')"
+    (finalize)="encerrarAnestesia()"
+  >
+  </app-finalize-anesthesia-bar>
+
+  <app-history-drawer
+    *ngIf="historyDrawerOpen"
+    [initialTab]="historyDrawerTab"
+    [vitalRecords]="vitalRecords"
+    [customFields]="customFields"
+    [agents]="agents"
+    [events]="clinicalEvents"
+    [balance]="fluidBalance"
+    [isSurgeryFinished]="isSurgeryFinished"
+    (close)="historyDrawerOpen = false"
+    (editRecord)="onEditVital($event)"
+    (deleteRecord)="onDeleteVital($event)"
+    (editAgent)="onEditAgent($event)"
+    (deleteAgent)="onDeleteAgent($event)"
+    (editEvent)="onEditEvent($event)"
+    (deleteEvent)="onDeleteEvent($event)"
+    (editBalance)="onEditBalance($event)"
+    (deleteBalance)="onDeleteBalance($event)"
+    (addCustomField)="addCustomField()"
+    (addTimePoint)="addTimePoint()"
+  >
+  </app-history-drawer>
 </div>

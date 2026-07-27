@@ -1,84 +1,170 @@
-ion-toolbar {
-  --background: white;
-  ion-title {
-    font-weight: 800;
-    color: #1e293b;
-    font-size: 16px;
+:host {
+  --field-border: #d7dee8;
+  --field-border-focus: #3b82f6;
+  --field-bg: #ffffff;
+  --field-text: #0f172a;
+  --field-muted: #64748b;
+  --dropdown-bg: #ffffff;
+  --dropdown-hover: #eff6ff;
+  --dropdown-active: #dbeafe;
+  --shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+}
+
+.field {
+  margin: 4px 0 16px;
+
+  .field-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--field-muted);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin: 0 4px 6px;
   }
 }
 
-.modal-body {
-  background: white;
-  max-height: 60vh;
-  overflow-y: auto;
-}
+/* ═══════════════════ MEDICATION SEARCH ═══════════════════ */
+.med-search {
+  position: relative;
 
-.form-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 10px 0;
-  background: white;
-
-  .input-group {
+  .med-input-wrap {
+    position: relative;
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    align-items: center;
+    background: var(--field-bg);
+    border: 1.5px solid var(--field-border);
+    border-radius: 12px;
+    padding: 0 10px;
+    height: 46px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
-    label {
-      font-size: 12px;
-      font-weight: 800;
-      color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    input, .custom-select {
-      width: 100%;
-      height: 48px;
-      background: #f8fafc;
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 0 16px;
-      font-size: 15px;
-      font-weight: 600;
-      color: #1e293b;
-      transition: all 0.2s ease;
-
-      &:focus {
-        outline: none;
-        background: #ffffff;
-        border-color: #6366f1;
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-      }
-    }
-
-    .custom-select {
-      appearance: none;
-      background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-      background-repeat: no-repeat;
-      background-position: right 16px top 50%;
-      background-size: 12px auto;
-      padding-right: 40px;
+    &:focus-within {
+      border-color: var(--field-border-focus);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.14);
     }
   }
-}
 
-ion-footer {
-  background: white;
-  padding: 16px;
-  
-  .footer-buttons {
+  .med-icon {
+    font-size: 20px;
+    color: var(--field-muted);
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+
+  .med-input {
+    flex: 1;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font-size: 15px;
+    color: var(--field-text);
+    height: 100%;
+    padding: 0;
+
+    &::placeholder { color: #94a3b8; }
+  }
+
+  .med-clear {
+    background: transparent;
+    border: 0;
+    padding: 4px;
+    cursor: pointer;
     display: flex;
-    gap: 12px;
+    align-items: center;
+    color: var(--field-muted);
+
+    ion-icon { font-size: 20px; }
+    &:hover { color: #ef4444; }
+  }
+
+  .med-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: var(--dropdown-bg);
+    border: 1px solid var(--field-border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    max-height: 280px;
+    overflow-y: auto;
+    z-index: 9999;
+    padding: 4px;
+  }
+
+  .med-option {
     width: 100%;
-    
-    ion-button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--field-text);
+    cursor: pointer;
+    transition: background 0.1s ease;
+
+    &:hover  { background: var(--dropdown-hover); }
+    &.active { background: var(--dropdown-active); font-weight: 600; }
+
+    .med-name {
       flex: 1;
-      margin: 0;
-      --border-radius: 14px;
-      font-weight: 800;
-      height: 50px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .med-check {
+      color: #16a34a;
+      font-size: 18px;
+      flex-shrink: 0;
     }
   }
+
+  .med-empty {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: var(--dropdown-bg);
+    border: 1px solid var(--field-border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 14px;
+    text-align: center;
+    color: var(--field-muted);
+    font-size: 13px;
+    z-index: 9999;
+  }
+}
+
+/* ═══════════════════ GENERAL ═══════════════════ */
+.seg-row {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+
+  ion-button {
+    flex: 1;
+    --border-radius: 10px;
+    height: 40px;
+    margin: 0;
+  }
+}
+
+ion-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --background: transparent;
+  margin-bottom: 4px;
+}
+
+ion-footer ion-toolbar {
+  --border-width: 0;
+  --background: #ffffff;
+  padding: 6px 8px;
 }

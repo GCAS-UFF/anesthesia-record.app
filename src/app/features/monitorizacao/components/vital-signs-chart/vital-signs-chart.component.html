@@ -1,0 +1,60 @@
+<div class="channel-inner">
+  <header class="channel-header">
+    <div class="ch-title">
+      <span class="dot dot-fc"></span>
+      <ion-icon name="pulse-outline"></ion-icon>
+      <span>SINAIS VITAIS</span>
+      <span class="snap-time" *ngIf="currentSnapshot as s">· {{ s.time }}</span>
+    </div>
+
+    <div class="snapshot" *ngIf="currentSnapshot as s">
+      <div class="chip fc"    title="Frequência Cardíaca">FC <b>{{ s.fc ?? '--' }}</b></div>
+      <div class="chip pa"    title="PA Sistólica/Diastólica (PAM)">PA <b>{{ s.pas ?? '--' }}/{{ s.pad ?? '--' }}</b>
+        <span class="pam">({{ s.pam ?? '--' }})</span>
+      </div>
+      <div class="chip spo2"  title="Saturação">SpO₂ <b>{{ s.spo2 ?? '--' }}</b></div>
+      <div class="chip etco2" title="EtCO₂" *ngIf="s.etco2 != null">EtCO₂ <b>{{ s.etco2 }}</b></div>
+      <div class="chip temp"  title="Temperatura" *ngIf="($any(s).temperatura ?? $any(s).temp) != null">T° <b>{{ $any(s).temperatura ?? $any(s).temp }}</b></div>
+      <div class="chip bis"   title="BIS" *ngIf="s.bis != null">BIS <b>{{ s.bis }}</b></div>
+
+      <ng-container *ngFor="let f of customFields">
+        <div class="chip custom" *ngIf="$any(s)[f.key] != null && $any(s)[f.key] !== ''" [title]="f.label">
+          {{ f.label }} <b>{{ $any(s)[f.key] }}</b>
+          <span class="pam" *ngIf="f.unit">{{ f.unit }}</span>
+        </div>
+      </ng-container>
+    </div>
+
+    <div class="ch-actions">
+      <ion-button size="small" fill="clear" [disabled]="readonly" (click)="onAddFieldClick()" title="Adicionar campo personalizado">
+        <ion-icon name="settings-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button size="small" fill="clear" (click)="onHistoryClick()" title="Histórico detalhado">
+        <ion-icon name="list-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button size="small" fill="solid" color="primary" [disabled]="readonly" (click)="onAddClick()">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Registro
+      </ion-button>
+    </div>
+  </header>
+
+  <div class="clinical-legend">
+    <span class="lg-group"><span class="sym sym-fc"></span><span class="lbl">FC</span></span>
+    <span class="lg-group"><span class="sym sym-pas">▲</span><span class="lbl">PAS</span></span>
+    <span class="lg-group"><span class="sym sym-pad">▼</span><span class="lbl">PAD</span></span>
+    <span class="lg-group"><span class="sym sym-pam">■</span><span class="lbl">PAM</span></span>
+    <span class="lg-sep"></span>
+    <span class="lg-group"><span class="sym sym-spo2">●</span><span class="lbl">SpO₂</span></span>
+    <span class="lg-group"><span class="sym sym-temp"></span><span class="lbl">T°C</span></span>
+    <span class="lg-group"><span class="sym sym-bis"></span><span class="lbl">BIS</span></span>
+    <span class="lg-sep"></span>
+    <span class="lg-group"><span class="sym" style="color:#0f172a;font-weight:900">✕</span><span class="lbl">Início anestesia</span></span>
+    <span class="lg-group"><span class="sym" style="color:#0f172a">◯</span><span class="lbl">Início cirurgia</span></span>
+    <span class="lg-group"><span class="sym" style="color:#0f172a">◉</span><span class="lbl">Fim cirurgia</span></span>
+  </div>
+
+  <div class="chart-area">
+    <canvas #chartCanvas></canvas>
+  </div>
+</div>

@@ -1,0 +1,60 @@
+<div class="channel-inner" [class.is-collapsed]="collapsed">
+  <header class="channel-header" (click)="onHeaderClick($event)">
+    <div class="ch-title">
+      <span class="dot"></span>
+      <ion-icon name="warning-outline"></ion-icon>
+      <span class="ch-name">EVENTOS</span>
+      <span class="count" *ngIf="totalCount">{{ totalCount }}</span>
+    </div>
+
+    <div class="ch-actions" (click)="$event.stopPropagation()">
+      <ion-button size="small" fill="clear" (click)="openHistoryClick($event)" title="Histórico">
+        <ion-icon name="list-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+
+      <ion-button size="small" fill="solid" (click)="addEventClick($event)" [disabled]="readonly">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Evento
+      </ion-button>
+
+      <ion-button
+        size="small"
+        fill="clear"
+        (click)="toggle($event)"
+        [attr.aria-label]="collapsed ? 'Expandir eventos' : 'Recolher eventos'"
+      >
+        <ion-icon [name]="collapsed ? 'chevron-down-outline' : 'chevron-up-outline'" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+  </header>
+
+  <div class="lanes-area" *ngIf="!collapsed">
+    <div class="lane" *ngFor="let lane of lanes">
+      <div class="lane-label" [style.color]="lane.color" [style.borderLeftColor]="lane.color">
+        <span class="lane-icon">{{ lane.icon }}</span>
+        <span class="lane-name">{{ lane.label }}</span>
+        <span class="lane-count">{{ itemsForLane(lane.key).length }}</span>
+      </div>
+
+      <div class="lane-track">
+        <div class="lane-baseline"></div>
+
+        <ng-container *ngFor="let item of itemsForLane(lane.key)">
+          <div
+            class="marker-wrap"
+            [style.left.%]="posX(item)"
+            (mouseenter)="onMarkerEnter(item)"
+            (mouseleave)="onMarkerLeave()"
+          >
+            <span
+              class="marker"
+              [style.background]="lane.color"
+              [title]="itemHM(item) + ' · ' + desc(item)"
+            ></span>
+            <span class="marker-time">{{ itemHM(item) }}</span>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>

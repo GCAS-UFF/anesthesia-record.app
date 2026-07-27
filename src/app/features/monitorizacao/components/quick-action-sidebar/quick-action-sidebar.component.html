@@ -1,0 +1,150 @@
+<aside class="sidebar">
+  <section class="timers">
+    <div class="timer-row">
+      <span class="lbl">ANESTESIA</span>
+      <span class="val" [class.on]="isAnesthesiaStarted">{{
+        anesthesiaTimer
+      }}</span>
+    </div>
+    <div class="timer-row">
+      <span class="lbl">CIRURGIA</span>
+      <span class="val" [class.on]="isSurgeryStarted">{{ surgeryTimer }}</span>
+    </div>
+
+    <div class="timer-actions">
+      <ion-button
+        expand="block"
+        size="small"
+        [color]="isAnesthesiaStarted ? 'success' : 'tertiary'"
+        (click)="iniciarAnestesia.emit()"
+        [disabled]="isSurgeryFinished"
+      >
+        <ion-icon
+          [name]="
+            isAnesthesiaStarted ? 'checkmark-done-outline' : 'medkit-outline'
+          "
+          slot="start"
+        ></ion-icon>
+        {{
+          isAnesthesiaStarted
+            ? "Início " + (startTimeAnesthesia | date: "HH:mm")
+            : "Iniciar Anestesia"
+        }}
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        size="small"
+        [color]="isSurgeryStarted ? 'success' : 'warning'"
+        (click)="iniciarCirurgia.emit()"
+        [disabled]="!isAnesthesiaStarted || isSurgeryFinished"
+      >
+        <ion-icon
+          [name]="isSurgeryStarted ? 'checkmark-done-outline' : 'cut-outline'"
+          slot="start"
+        ></ion-icon>
+        {{
+          isSurgeryStarted
+            ? "Início " + (startTimeSurgery | date: "HH:mm")
+            : "Iniciar Cirurgia"
+        }}
+      </ion-button>
+    </div>
+  </section>
+
+  <section class="quick-actions">
+    <button
+      class="qa qa-vital"
+      (click)="addVital.emit()"
+      [disabled]="!isAnesthesiaStarted || isSurgeryFinished"
+    >
+      <ion-icon name="pulse-outline"></ion-icon>
+      <span>Sinal Vital</span>
+    </button>
+    <button
+      class="qa qa-agent"
+      (click)="addAgent.emit()"
+      [disabled]="!isAnesthesiaStarted || isSurgeryFinished"
+    >
+      <ion-icon name="medkit-outline"></ion-icon>
+      <span>Agente</span>
+    </button>
+    <button
+      class="qa qa-event"
+      (click)="addEvent.emit()"
+      [disabled]="!isAnesthesiaStarted || isSurgeryFinished"
+    >
+      <ion-icon name="warning-outline"></ion-icon>
+      <span>Evento</span>
+    </button>
+    <button
+      class="qa qa-fluid"
+      (click)="addBalance.emit()"
+      [disabled]="!isAnesthesiaStarted || isSurgeryFinished"
+    >
+      <ion-icon name="water-outline"></ion-icon>
+      <span>Balanço</span>
+    </button>
+  </section>
+
+  <section class="position-block">
+    <div class="pos-head">
+      <span class="lbl">🛌 Posição</span>
+      <button
+        class="btn-change"
+        (click)="togglePos()"
+        [disabled]="!isSurgeryStarted || isSurgeryFinished"
+      >
+        Mudar
+      </button>
+    </div>
+    <div class="pos-current">{{ posicaoAtual || "—" }}</div>
+
+    <div class="pos-picker" *ngIf="showPositionPicker">
+      <button
+        *ngFor="let p of posicoesPossiveis"
+        class="pos-opt"
+        [class.active]="p === posicaoAtual"
+        (click)="choosePos(p)"
+      >
+        {{ p }}
+      </button>
+    </div>
+
+    <div class="pos-history" *ngIf="positionHistory?.length">
+      <div class="ph-title">Histórico</div>
+      <div
+        class="ph-item"
+        *ngFor="let h of positionHistory.slice(-3).reverse()"
+      >
+        <span class="ph-time">{{ h.time }}</span>
+        <span class="ph-pos">{{ h.position }}</span>
+      </div>
+    </div>
+
+    <button
+      class="btn-freq"
+      *ngIf="isSurgeryStarted && !isSurgeryFinished"
+      (click)="reconfigurarFrequencia.emit()"
+    >
+      <ion-icon name="time-outline"></ion-icon>
+      {{
+        autoMonitoringIntervalMinutes
+          ? autoMonitoringIntervalMinutes + " min"
+          : "Freq. auto"
+      }}
+    </button>
+  </section>
+
+  <section class="recent" *ngIf="recentActivity?.length">
+    <div class="rec-head">
+      <span>Atividade recente</span>
+      <button class="lnk" (click)="openHistoryFull.emit()">Ver tudo</button>
+    </div>
+    <div class="rec-item" *ngFor="let r of recentActivity.slice(0, 3)">
+      <span class="rec-time">{{ r.time }}</span>
+      <span class="rec-ico" [style.color]="r.color">{{ r.icon }}</span>
+      <span class="rec-lbl">{{ r.label }}</span>
+    </div>
+  </section>
+</aside>

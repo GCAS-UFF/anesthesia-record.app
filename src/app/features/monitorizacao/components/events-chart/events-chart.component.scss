@@ -1,0 +1,241 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.channel-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+
+  &.is-collapsed {
+    height: auto;
+
+    .channel-header {
+      border-bottom-color: transparent;
+    }
+  }
+}
+
+.channel-header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #eef2f7;
+  background: linear-gradient(180deg, #fafbfd 0%, #f4f6fa 100%);
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    background: #f1f5f9;
+  }
+}
+
+.ch-title {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  }
+
+  ion-icon {
+    flex: none;
+    font-size: 17px;
+    color: #ef4444;
+  }
+
+  .ch-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .count {
+    flex: none;
+    min-width: 22px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.4;
+    text-align: center;
+  }
+}
+
+.ch-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  ion-button {
+    height: 32px;
+    min-width: 32px;
+    margin: 0;
+    --padding-start: 8px;
+    --padding-end: 8px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+}
+
+.lanes-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 8px 12px 14px;
+  overflow: auto;
+}
+
+.lane {
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+}
+
+.lane-label {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 7px;
+  padding: 6px 9px;
+  border-left: 3px solid currentColor;
+  border-radius: 6px;
+  background: #f8fafc;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+
+  .lane-icon {
+    flex: none;
+    width: 16px;
+    font-size: 14px;
+    line-height: 1;
+    text-align: center;
+  }
+
+  .lane-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    color: #334155;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .lane-count {
+    flex: none;
+    min-width: 20px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.06);
+    color: #475569;
+    font-size: 10px;
+    text-align: center;
+  }
+}
+
+.lane-track {
+  position: relative;
+  height: 34px;
+  min-width: 0;
+  border-radius: 7px;
+  overflow: visible;
+  background: repeating-linear-gradient(
+    to right,
+    transparent 0 calc(10% - 1px),
+    rgba(148, 163, 184, 0.16) calc(10% - 1px) 10%
+  );
+}
+
+.lane-baseline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  transform: translateY(-50%);
+}
+
+.marker-wrap {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transform: translate(-50%, -50%);
+}
+
+.marker {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+
+  &:hover {
+    transform: scale(1.28);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.28);
+  }
+}
+
+.marker-time {
+  max-width: 44px;
+  padding: 0 3px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #475569;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: nowrap;
+  transform: translateY(8px);
+}
+
+@media (max-width: 1180px) {
+  .lane {
+    grid-template-columns: 112px minmax(0, 1fr);
+  }
+
+  .lane-label {
+    padding-inline: 7px;
+    font-size: 10px;
+  }
+}

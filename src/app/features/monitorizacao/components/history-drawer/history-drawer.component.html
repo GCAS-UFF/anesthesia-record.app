@@ -1,0 +1,142 @@
+<div class="backdrop" (click)="onBackdropClick($event)">
+  <div class="drawer" role="dialog" aria-label="Histórico detalhado">
+
+    <header class="drawer-head">
+      <h3>Histórico detalhado</h3>
+      <button class="btn-close" (click)="close.emit()" aria-label="Fechar">
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+    </header>
+
+    <nav class="tabs">
+      <button [class.active]="activeTab === 'vitals'" (click)="activeTab = 'vitals'">
+        <ion-icon name="pulse-outline"></ion-icon> Sinais
+        <span class="badge">{{ vitalRecords.length }}</span>
+      </button>
+      <button [class.active]="activeTab === 'agents'" (click)="activeTab = 'agents'">
+        <ion-icon name="medkit-outline"></ion-icon> Agentes
+        <span class="badge">{{ agents.length }}</span>
+      </button>
+      <button [class.active]="activeTab === 'events'" (click)="activeTab = 'events'">
+        <ion-icon name="warning-outline"></ion-icon> Eventos
+        <span class="badge">{{ events.length }}</span>
+      </button>
+      <button [class.active]="activeTab === 'balance'" (click)="activeTab = 'balance'">
+        <ion-icon name="water-outline"></ion-icon> Balanço
+        <span class="badge">{{ balance.length }}</span>
+      </button>
+    </nav>
+
+    <!-- SINAIS VITAIS -->
+    <div class="tab-panel" *ngIf="activeTab === 'vitals'">
+      <div class="tab-actions">
+        <ion-button size="small" fill="outline" (click)="addCustomField.emit()" [disabled]="isSurgeryFinished">
+          <ion-icon name="settings-outline" slot="start"></ion-icon> Campo personalizado
+        </ion-button>
+        <ion-button size="small" fill="solid" color="primary" (click)="addTimePoint.emit()" [disabled]="isSurgeryFinished">
+          <ion-icon name="add-outline" slot="start"></ion-icon> Novo registro
+        </ion-button>
+      </div>
+
+      <div class="table-scroll">
+        <table class="vital-table">
+          <thead>
+            <tr>
+              <th class="col-hora">Hora</th>
+              <th>PAS</th><th>PAD</th><th>PAM</th><th>FC</th>
+              <th>SpO₂</th><th>EtCO₂</th><th>BIS</th>
+              <th>PVC</th><th>PCAP</th><th>T°C</th>
+              <th *ngFor="let f of customFields">{{ f.label }}</th>
+              <th class="col-actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of vitalRecords; trackBy: trackTime">
+              <td class="col-hora">{{ r.time }} <span *ngIf="r.isAuto" class="auto-tag">auto</span></td>
+              <td>{{ r.pas ?? '—' }}</td>
+              <td>{{ r.pad ?? '—' }}</td>
+              <td>{{ r.pam ?? '—' }}</td>
+              <td>{{ r.fc ?? '—' }}</td>
+              <td>{{ r.spo2 ?? '—' }}</td>
+              <td>{{ r.etco2 ?? '—' }}</td>
+              <td>{{ r.bis ?? '—' }}</td>
+              <td>{{ r.pvc ?? '—' }}</td>
+              <td>{{ r.pcap ?? '—' }}</td>
+              <td>{{ temp(r) }}</td>
+              <td *ngFor="let f of customFields">{{ custom(r, f.key) }}</td>
+              <td class="col-actions">
+                <ion-icon name="create-outline" *ngIf="!isSurgeryFinished"
+                          (click)="editRecord.emit(r)"></ion-icon>
+                <ion-icon name="trash-outline" *ngIf="!isSurgeryFinished"
+                          (click)="deleteRecord.emit(r)"></ion-icon>
+              </td>
+            </tr>
+            <tr *ngIf="!vitalRecords.length"><td [attr.colspan]="12 + customFields.length" class="empty">Sem registros</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- AGENTES -->
+    <div class="tab-panel" *ngIf="activeTab === 'agents'">
+      <table class="vital-table">
+        <thead><tr><th>Hora</th><th>Nome</th><th>Dose</th><th>Via</th><th>Apresentação</th><th class="col-actions"></th></tr></thead>
+        <tbody>
+          <tr *ngFor="let a of agents; trackBy: trackTime">
+            <td class="col-hora">{{ a.time }}</td>
+            <td>💊 {{ a.name }}</td>
+            <td>{{ a.dose }}</td>
+            <td>{{ a.route }}</td>
+            <td>{{ a.presentation }}</td>
+            <td class="col-actions">
+              <ion-icon name="create-outline" *ngIf="!isSurgeryFinished" (click)="editAgent.emit(a)"></ion-icon>
+              <ion-icon name="trash-outline" *ngIf="!isSurgeryFinished" (click)="deleteAgent.emit(a)"></ion-icon>
+            </td>
+          </tr>
+          <tr *ngIf="!agents.length"><td colspan="6" class="empty">Sem agentes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- EVENTOS -->
+    <div class="tab-panel" *ngIf="activeTab === 'events'">
+      <table class="vital-table">
+        <thead><tr><th>Hora</th><th>Tipo</th><th>Descrição</th><th class="col-actions"></th></tr></thead>
+        <tbody>
+          <tr *ngFor="let e of events; trackBy: trackTime">
+            <td class="col-hora">{{ e.time }}</td>
+            <td>{{ eventLabel(e) }}</td>
+            <td>{{ desc(e) }}</td>
+            <td class="col-actions">
+              <ion-icon name="create-outline" *ngIf="!isSurgeryFinished" (click)="editEvent.emit(e)"></ion-icon>
+              <ion-icon name="trash-outline" *ngIf="!isSurgeryFinished" (click)="deleteEvent.emit(e)"></ion-icon>
+            </td>
+          </tr>
+          <tr *ngIf="!events.length"><td colspan="4" class="empty">Sem eventos</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- BALANÇO -->
+    <div class="tab-panel" *ngIf="activeTab === 'balance'">
+      <table class="vital-table">
+        <thead><tr><th>Hora</th><th>Tipo</th><th>Item</th><th>Volume (ml)</th><th class="col-actions"></th></tr></thead>
+        <tbody>
+          <tr *ngFor="let b of balance; trackBy: trackTime">
+            <td class="col-hora">{{ b.time }}</td>
+            <td [class.gain-cell]="b.type === 'gain'" [class.loss-cell]="b.type === 'loss'">
+              {{ b.type === 'gain' ? 'Ganho' : 'Perda' }}
+            </td>
+            <td>{{ itemName(b) }}</td>
+            <td>{{ vol(b) }}</td>
+            <td class="col-actions">
+              <ion-icon name="create-outline" *ngIf="!isSurgeryFinished" (click)="editBalance.emit(b)"></ion-icon>
+              <ion-icon name="trash-outline" *ngIf="!isSurgeryFinished" (click)="deleteBalance.emit(b)"></ion-icon>
+            </td>
+          </tr>
+          <tr *ngIf="!balance.length"><td colspan="5" class="empty">Sem lançamentos</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

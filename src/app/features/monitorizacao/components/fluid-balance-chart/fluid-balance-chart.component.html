@@ -1,0 +1,68 @@
+<div class="channel-inner">
+  <header class="channel-header" (click)="onHeaderClick($event)">
+    <div class="ch-title">
+      <span class="dot"></span>
+      <ion-icon name="water-outline"></ion-icon>
+      <span>GANHOS E PERDAS</span>
+    </div>
+
+    <div class="totals">
+      <span class="tot gain">+{{ totalGain }} ml</span>
+      <span class="tot loss">−{{ totalLoss }} ml</span>
+      <span class="tot net" [class.pos]="net >= 0" [class.neg]="net < 0">
+        Balanço {{ net >= 0 ? '+' : '' }}{{ net }} ml
+      </span>
+    </div>
+
+    <div class="ch-actions" (click)="$event.stopPropagation()">
+      <ion-button size="small" fill="clear" (click)="openHistory.emit()">
+        <ion-icon name="list-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button size="small" fill="solid" (click)="addBalance.emit()" [disabled]="readonly">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Balanço
+      </ion-button>
+      <ion-button size="small" fill="clear" (click)="toggle.emit()"
+                  [title]="collapsed ? 'Expandir' : 'Recolher'">
+        <ion-icon [name]="collapsed ? 'chevron-down-outline' : 'chevron-up-outline'" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+  </header>
+
+  <div class="bars-area" *ngIf="!collapsed">
+    <!-- lanes: gain (top half) / loss (bottom half) separadas por eixo central -->
+    <div class="lane lane-gain">
+      <div class="lane-label">GANHOS</div>
+      <div class="lane-track">
+        <ng-container *ngFor="let b of gains">
+          <div class="bar gain"
+               [style.left.%]="posX(b)"
+               [style.height.px]="barPx(b)"
+               [title]="itemHM(b) + ' · ' + itemName(b) + ' +' + vol(b) + 'ml'">
+            <span class="bar-value">+{{ vol(b) }}</span>
+          </div>
+          <span class="bar-time" [style.left.%]="posX(b)">{{ itemHM(b) }}</span>
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="axis-mid"><span>0 ml</span></div>
+
+    <div class="lane lane-loss">
+      <div class="lane-label">PERDAS</div>
+      <div class="lane-track">
+        <ng-container *ngFor="let b of losses">
+          <div class="bar loss"
+               [style.left.%]="posX(b)"
+               [style.height.px]="barPx(b)"
+               [title]="itemHM(b) + ' · ' + itemName(b) + ' −' + vol(b) + 'ml'">
+            <span class="bar-value">−{{ vol(b) }}</span>
+          </div>
+          <span class="bar-time bottom" [style.left.%]="posX(b)">{{ itemHM(b) }}</span>
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="empty" *ngIf="!balance?.length">Nenhum balanço lançado</div>
+  </div>
+</div>

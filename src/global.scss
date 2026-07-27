@@ -40,9 +40,23 @@
    GLOBAL PREMIUM UI STYLES (FA-043 Refinements)
    ========================================================================== */
 
+.finalize-alert .alert-btn-danger {
+  color: white !important;
+  background: #991b1b !important;
+  font-weight: 800 !important;
+}
+
 /* Inputs, Selects, Textareas (Nativos e Ionic) */
-ion-input, ion-select, ion-textarea,
-input[type="text"], input[type="number"], input[type="date"], input[type="time"], input[type="email"], select, textarea {
+ion-input,
+ion-select,
+ion-textarea,
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+input[type="email"],
+select,
+textarea {
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
@@ -55,9 +69,10 @@ input[type="text"], input[type="number"], input[type="date"], input[type="time"]
   transition: all 0.2s ease;
   box-sizing: border-box;
   appearance: none;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 
-  &:focus, &.has-focus {
+  &:focus,
+  &.has-focus {
     border-color: #cbd5e1;
     background: white;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -69,14 +84,14 @@ input[type="text"], input[type="number"], input[type="date"], input[type="time"]
 }
 
 /* Fix específico para inputs de tempo/data */
-input[type="time"], input[type="date"] {
+input[type="time"],
+input[type="date"] {
   width: auto;
   text-align: center;
   color: #1e293b;
   font-weight: 700;
 }
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -114,15 +129,15 @@ ion-radio {
 }
 
 .grid-checkbox-2col {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
 }
 
 /* Utilitário para inputs compactos */
 .compact-field {
-    width: fit-content !important;
-    min-width: 120px;
+  width: fit-content !important;
+  min-width: 120px;
 }
 
 /* Modal Customizado */
@@ -134,7 +149,7 @@ ion-radio {
   --max-width: 450px;
   align-items: center;
   justify-content: center;
-  
+
   &::part(content) {
     border-radius: 24px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -146,9 +161,9 @@ ion-radio {
    ESTILOS DE IMPRESSÃO GLOBAIS (FA-075)
    ========================================================================== */
 @media print {
-  app-status-bar, 
-  app-header-institucional, 
-  .navigation-header, 
+  app-status-bar,
+  app-header-institucional,
+  .navigation-header,
   .form-actions,
   .form-actions-centered,
   .form-intelligence-header,
@@ -160,7 +175,14 @@ ion-radio {
     display: none !important;
   }
 
-  html, body, ion-app, ion-router-outlet, ion-content, .app-container, .main-content, form {
+  html,
+  body,
+  ion-app,
+  ion-router-outlet,
+  ion-content,
+  .app-container,
+  .main-content,
+  form {
     height: auto !important;
     min-height: initial !important;
     max-height: initial !important;
@@ -168,8 +190,9 @@ ion-radio {
     position: static !important;
     display: block !important;
   }
-  
-  ion-content::part(scroll), ion-content::part(background) {
+
+  ion-content::part(scroll),
+  ion-content::part(background) {
     height: auto !important;
     overflow: visible !important;
     position: static !important;
@@ -198,7 +221,9 @@ ion-radio {
     print-color-adjust: exact !important;
   }
 
-  input, select, textarea {
+  input,
+  select,
+  textarea {
     border: none !important;
     border-bottom: 1px dotted #cbd5e1 !important;
     background: transparent !important;
@@ -218,7 +243,8 @@ ion-radio {
     gap: 15px !important;
   }
 
-  ion-checkbox, ion-radio {
+  ion-checkbox,
+  ion-radio {
     --opacity: 1 !important;
     opacity: 1 !important;
   }

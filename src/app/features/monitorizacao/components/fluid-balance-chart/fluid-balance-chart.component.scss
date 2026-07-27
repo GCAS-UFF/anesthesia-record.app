@@ -1,0 +1,198 @@
+:host {
+  display: block;
+  height: 100%;
+  overflow: hidden;
+}
+.channel-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.channel-header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  min-height: 44px;
+  border-bottom: 1px solid #e2e8f0;
+  cursor: pointer;
+  user-select: none;
+  background: #f8fafc;
+
+  .ch-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #0f172a;
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    ion-icon {
+      font-size: 18px;
+    }
+  }
+  .totals {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+    margin-right: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    .tot {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #f1f5f9;
+    }
+    .tot.gain {
+      color: #16a34a;
+      background: #dcfce7;
+    }
+    .tot.loss {
+      color: #dc2626;
+      background: #fee2e2;
+    }
+    .tot.net.pos {
+      color: #16a34a;
+    }
+    .tot.net.neg {
+      color: #dc2626;
+    }
+  }
+  .ch-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    ion-button {
+      --padding-start: 8px;
+      --padding-end: 8px;
+      height: 32px;
+      margin: 0;
+    }
+  }
+  &:hover {
+    background: #f1f5f9;
+  }
+}
+
+.bars-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 8px 12px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.lane {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 90px;
+  .lane-label {
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #64748b;
+  }
+  .lane-track {
+    position: relative;
+    height: 100%;
+  }
+}
+.lane-gain .lane-track {
+  display: flex;
+  align-items: flex-end;
+}
+.lane-loss .lane-track {
+  display: flex;
+  align-items: flex-start;
+}
+
+.axis-mid {
+  position: relative;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  border-top: 1px dashed #cbd5e1;
+  border-bottom: 1px dashed #cbd5e1;
+  span {
+    font-size: 10px;
+    color: #64748b;
+    padding-left: 4px;
+    font-weight: 600;
+  }
+}
+
+.bar {
+  position: absolute;
+  width: 14px;
+  margin-left: -7px;
+  border-radius: 4px 4px 0 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  &.gain {
+    bottom: 0;
+    background: #22c55e;
+  }
+  &.loss {
+    top: 0;
+    background: #dc2626;
+    border-radius: 0 0 4px 4px;
+    align-items: flex-end;
+  }
+  .bar-value {
+    position: absolute;
+    font-size: 10px;
+    font-weight: 700;
+    color: #0f172a;
+    background: #fff;
+    padding: 1px 4px;
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+  }
+  &.gain .bar-value {
+    top: -18px;
+  }
+  &.loss .bar-value {
+    bottom: -18px;
+  }
+}
+
+.bar-time {
+  position: absolute;
+  font-size: 9px;
+  font-weight: 600;
+  color: #64748b;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  &:not(.bottom) {
+    bottom: -14px;
+  }
+  &.bottom {
+    top: -14px;
+  }
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #94a3b8;
+  font-size: 13px;
+}

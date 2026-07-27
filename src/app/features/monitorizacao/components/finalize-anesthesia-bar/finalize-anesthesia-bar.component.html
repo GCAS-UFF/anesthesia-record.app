@@ -1,0 +1,39 @@
+<footer class="finalize-bar" [class.disabled]="!isAnesthesiaStarted || isSurgeryFinished">
+
+  <div class="status-cluster">
+    <div class="status-item">
+      <ion-icon name="save-outline"></ion-icon>
+      <span>{{ savedLabel }}</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="status-item" [class.warn]="pendingSyncCount > 0">
+      <ion-icon [name]="pendingSyncCount > 0 ? 'cloud-offline-outline' : 'cloud-done-outline'"></ion-icon>
+      <span *ngIf="pendingSyncCount === 0">Tudo sincronizado</span>
+      <span *ngIf="pendingSyncCount > 0">{{ pendingSyncCount }} pendente{{ pendingSyncCount > 1 ? 's' : '' }}</span>
+    </div>
+
+    <button class="btn-sync"
+            *ngIf="pendingSyncCount > 0"
+            [disabled]="isSyncing"
+            (click)="syncNow.emit()">
+      <ion-icon [name]="isSyncing ? 'refresh-outline' : 'cloud-upload-outline'"
+                [class.spin]="isSyncing"></ion-icon>
+      {{ isSyncing ? 'Sincronizando…' : 'Sincronizar agora' }}
+    </button>
+
+    <button class="btn-history" (click)="openHistory.emit()">
+      <ion-icon name="list-outline"></ion-icon>
+      Histórico
+    </button>
+  </div>
+
+  <button class="btn-finalize"
+          [disabled]="!isAnesthesiaStarted || isSurgeryFinished"
+          (click)="finalize.emit()">
+    <ion-icon name="power-outline"></ion-icon>
+    <span>FINALIZAR ANESTESIA</span>
+  </button>
+
+</footer>

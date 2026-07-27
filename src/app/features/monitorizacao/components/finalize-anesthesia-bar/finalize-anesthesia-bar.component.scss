@@ -1,0 +1,79 @@
+@import '../styles/monitoring-tokens.scss';
+
+:host { display: block; }
+
+.finalize-bar {
+  height: 56px;
+  background: $surface-1;
+  border-top: 1px solid $border;
+  padding: 8px 16px;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 16px;
+  box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.04);
+}
+
+.status-cluster {
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap; min-width: 0;
+
+  .status-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 700; color: $text-2;
+    ion-icon { font-size: 16px; color: $text-3; }
+    &.warn {
+      color: #b45309;
+      ion-icon { color: #d97706; }
+    }
+  }
+
+  .divider {
+    width: 1px; height: 20px; background: $border;
+  }
+
+  .btn-sync, .btn-history {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid $border-strong;
+    background: white;
+    border-radius: 8px;
+    font-size: 11px; font-weight: 700; color: $text-2;
+    cursor: pointer;
+    transition: all 0.15s;
+    ion-icon { font-size: 14px; }
+    &:hover:not(:disabled) { background: $surface-2; border-color: $c-primary; color: $c-primary; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  .spin { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+}
+
+.btn-finalize {
+  height: 44px;
+  padding: 0 22px;
+  min-width: 220px;
+  background: linear-gradient(135deg, $c-danger-solid, $c-danger-hover);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 13.5px; font-weight: 900;
+  letter-spacing: 0.5px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(153, 27, 27, 0.35);
+  transition: all 0.2s;
+
+  ion-icon { font-size: 20px; }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(153, 27, 27, 0.45);
+  }
+  &:active:not(:disabled) { transform: translateY(0); }
+  &:disabled {
+    background: #cbd5e1;
+    color: #64748b;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+}

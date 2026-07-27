@@ -1,0 +1,52 @@
+
+$c-fc:     #ef4444;   // Frequência cardíaca
+$c-pa:     #3b82f6;   // Pressão arterial (PAS/PAD/PAM)
+$c-spo2:   #10b981;   // Saturação
+$c-temp:   #f59e0b;   // Temperatura
+$c-etco2:  #a855f7;   // EtCO₂
+$c-bis:    #14b8a6;   // BIS
+
+$c-agent:  #8b5cf6;   // Agentes
+$c-event:  #f97316;   // Eventos
+$c-fluid:  #06b6d4;   // Balanço
+$c-gain:   #22c55e;   // Ganho
+$c-loss:   #dc2626;   // Perda
+$c-pos:    #16a34a;   // Posição
+
+// ---- Ação crítica ----
+$c-danger-solid: #991b1b;
+$c-danger-hover: #7f1d1d;
+$c-primary:      #6366f1;
+$c-primary-soft: #eef2ff;
+
+// ---- Superfícies ----
+$surface-0: #f1f5f9;  
+$surface-1: #ffffff;  
+$surface-2: #f8fafc;  
+$surface-3: #f1f5f9;
+$border:    #e2e8f0;
+$border-strong: #cbd5e1;
+
+$text-0: #0f172a;
+$text-1: #1e293b;
+$text-2: #475569;
+$text-3: #94a3b8;
+
+// ---- Sombras ----
+$shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+$shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+$shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.08);
+
+// ---- Tipografia ----
+$font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
+$font-ui:   'Inter', system-ui, -apple-system, sans-serif;
+
+// ---- Toque (tablet + luva cirúrgica) ----
+$touch-min: 48px;
+$touch-comfort: 56px;
+
+// ---- Raios ----
+$r-sm: 8px;
+$r-md: 12px;
+$r-lg: 16px;
+$r-xl: 20px;

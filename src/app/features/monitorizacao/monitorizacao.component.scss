@@ -1,118 +1,75 @@
+// Tokens inline
+$c-fc: #ef4444; $c-pa: #3b82f6; $c-spo2: #10b981; $c-temp: #f59e0b;
+$c-etco2: #a855f7; $c-bis: #14b8a6;
+$c-agent: #8b5cf6; $c-event: #f97316; $c-fluid: #06b6d4;
+$c-gain: #22c55e; $c-loss: #dc2626; $c-pos: #16a34a;
+$surface-0: #f1f5f9; $surface-1: #ffffff; $border: #e2e8f0;
+$shadow-sm: 0 1px 2px rgba(15,23,42,.04);
+$r-lg: 16px;
+
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+}
+
 .app-container {
-    width: 100%;
-    height: 100vh;
-    background: #f1f5f9;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+  width: 100%;
+  height: 100vh;
+  background: $surface-0;
+  display: grid;
+  grid-template-rows: auto auto auto 1fr auto;
+  overflow: hidden;
 }
 
-/* Navegação Fixa no Topo */
-.nav-bar {
-    background: white;
-    padding: 10px 24px;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    align-items: center;
-    height: 60px;
-    flex: none;
-
-    .back-button {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: #6366f1;
-        font-weight: 700;
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        font-size: 14px;
-    }
-
-    .page-title {
-        font-size: 18px;
-        font-weight: 800;
-        color: #0f172a;
-        flex: 1;
-        text-align: center;
-    }
-
-    .btn-ficha-header {
-        --border-radius: 12px;
-        font-weight: 800;
-        height: 36px;
-        font-size: 11px;
-    }
+.patient-strip {
+  flex: none;
+  padding: 8px 16px;
+  background: $surface-1;
+  border-bottom: 1px solid $border;
+  app-patient-info-card { display: block; }
 }
 
-.main-content {
-    flex: 1;
-    display: flex;
-    overflow: hidden;
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 12px;
+  padding: 12px;
+  overflow: hidden;
+  min-height: 0;
 }
 
-/* COLUNA ESQUERDA: A Inteligência do Layout */
-.left-column {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden; // Crucial: O scroll não é aqui
-    background: #f8fafc;
-    border-right: 1px solid #e2e8f0;
-
-    /* Área que nunca sai da tela */
-    .sticky-patient-area {
-        flex: none;
-        padding: 16px;
-        background: white;
-        border-bottom: 1px solid #e2e8f0;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        z-index: 20;
-
-        app-patient-info-card {
-            display: block;
-            margin-bottom: 12px;
-        }
-
-        .position-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            
-            &.disabled-row {
-                opacity: 0.5;
-                pointer-events: none;
-            }
-            
-            .position-label { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; }
-            .position-options {
-                display: flex;
-                gap: 6px;
-                .pos-opt {
-                    padding: 4px 10px;
-                    background: #f1f5f9;
-                    border-radius: 8px;
-                    font-size: 11px;
-                    font-weight: 600;
-                    color: #475569;
-                    &.active { background: #6366f1; color: white; }
-                }
-            }
-        }
-    }
-
-    /* Área que rola os dados (Gráfico e Tabela) */
-    .scrollable-content-area {
-        flex: 1;
-        overflow-y: auto;
-        padding: 0 16px 16px 16px; // Removido padding-top para o cabeçalho encostar no topo
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        position: relative;
-
-        /* Suaviza o scroll no tablet */
-        -webkit-overflow-scrolling: touch;
-    }
+// grid-template-rows agora vem via [style.gridTemplateRows] do TS,
+// para acomodar o accordion (só um painel expandido por vez).
+.channels-column {
+  display: grid;
+  gap: 10px;
+  min-height: 0;
+  overflow: hidden;
 }
 
+.channel {
+  display: block;
+  min-height: 0;
+  overflow: hidden;
+  background: $surface-1;
+  border: 1px solid $border;
+  border-radius: $r-lg;
+  box-shadow: $shadow-sm;
+  transition: box-shadow .2s ease;
+
+ 
+  &.is-expanded {
+    box-shadow: 0 4px 12px rgba(15,23,42,.08);
+  }
+}
+
+.sidebar-right {
+  display: block;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 1200px) {
+  .main-grid { grid-template-columns: 1fr 220px; gap: 10px; padding: 10px; }
+}
