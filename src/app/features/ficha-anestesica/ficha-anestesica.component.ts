@@ -739,10 +739,10 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
             return;
           }
 
-          // Atualiza as variáveis locais (patient, selectedSurgery, etc.)
           this.patient = {
             ...surgeryData.patient,
-            surgeryPerformed: surgeryData.surgeryPerformed ?? surgeryData.surgeries?.[0]?.procedures?.find((p: any) => p.isPrimary)?.description,
+            surgeryPerformed: surgeryData.surgeryPerformed ??
+              surgeryData.surgeries?.[0]?.procedures?.find((p: any) => p.isPrimary)?.description,
             gender: surgeryData.patient.gender || 'M',
             weight: (surgeryData.patient.weightKg ?? '').toString(),
             birthDate: this.formatDate(surgeryData.patient.birthDate)
@@ -751,6 +751,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
             ?? surgeryData.surgeries?.[0]
             ?? surgeryData.patient.surgeries?.find((x: any) => String(x.id) === String(surgeryData.surgeryId))
             ?? surgeryData.patient.surgeries?.[0];
+
           this.isCancelled = surgeryData.patient.status === SurgeryStatusEnum.Cancelada;
           this.canEdit = surgeryData.firstAnesthesiologistId === this.loggedUser?.id;
 
@@ -759,10 +760,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
           this.anesthesiaService.getLatestByPatient(this.cirurgiaId!, patientId).subscribe({
             next: (savedRecord) => {
               if (draft) {
+
                 this.hydrateProcedimentos((draft as any)?.posProcedimento?.procedimentos);
                 this.form.patchValue(draft);
                 if (draft.antibioticsList) this.antibioticsList = draft.antibioticsList;
               } else if (savedRecord) {
+
                 const procedimentos = (savedRecord as any)?.posProcedimento?.procedimentos;
                 this.hydrateProcedimentos(procedimentos);
                 const formValue = { ...savedRecord };
@@ -776,11 +779,14 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
                   this.antibioticsList = (savedRecord as any).antibioticsList;
                 }
               } else {
-                this.hydrateProcedimentos(this.buildProcedimentosFromSurgery());
+
+                const procedimentosFromSurgery = this.buildProcedimentosFromSurgery();
+                console.log('Procedimentos construídos:', procedimentosFromSurgery);
+                this.hydrateProcedimentos(procedimentosFromSurgery);
                 this.form.get('dadosVitais.peso')?.patchValue(this.patient.weightKg);
               }
               this.isLoading = false;
-              resolve(); // <--- resolve a Promise quando tudo terminar
+              resolve();
             },
             error: (err) => {
               this.isLoading = false;
@@ -1150,7 +1156,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     while (arr.length) arr.removeAt(0);
 
     items.forEach(it => {
-      arr.push(this.createProcedimentoRow(it));
+      const processedItem = {
+        ...it,
+        procedimentoId: String(it.procedimentoId ?? it.id ?? ''),
+        principal: !!it.principal
+      };
+      arr.push(this.createProcedimentoRow(processedItem));
     });
 
     const hasPrincipal = arr.controls.some(c => !!c.get('principal')?.value);
@@ -1159,15 +1170,38 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }
   }
 
-  private buildProcedimentosFromSurgery(): Array<{ procedimentoId: string; hora: string; principal: boolean }> {
-    const procs = this.selectedSurgery?.procedures ?? [];
-    if (!procs.length) return [];
+  private buildProcedimentosFromSurgery(): Array<{ procedimentoId: string; hora: string; principal: boolean }> {    
+    if (!this.selectedSurgery) {
+      console.warn('Nenhuma cirurgia selecionada');
+      return [];
+    }
 
-    return procs.map((p: any) => ({
-      procedimentoId: String(p.id ?? p.procedimentoId ?? ''),
-      hora: this.formatTime(p.time ?? p.hora ?? ''),
-      principal: !!p.isPrimary
-    })).filter((p: any) => p.procedimentoId);
+    const procs = this.selectedSurgery?.procedures ?? [];   
+
+    if (!procs.length) {
+      console.warn('Nenhum procedimento encontrado na cirurgia');
+      return [];
+    }
+    
+    const mappedProcedimentos = procs.map((p: any) => {
+      const procedimentoId = String(p.id ?? p.procedimentoId ?? '');
+      const hora = this.formatTime(p.time ?? p.hora ?? '');
+      const principal = !!p.isPrimary;
+
+      return {
+        procedimentoId,
+        hora,
+        principal
+      };
+    }).filter((p: any) => p.procedimentoId);
+
+    const hasPrincipal = mappedProcedimentos.some((p: { principal: any; }) => p.principal);
+    if (!hasPrincipal && mappedProcedimentos.length > 0) {
+      mappedProcedimentos[0].principal = true;
+      console.log('Nenhum procedimento principal encontrado, marcando o primeiro como principal');
+    }
+
+    return mappedProcedimentos;
   }
 
   private formatTime(time: string | null | undefined): string {
@@ -1286,6 +1320,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   selectDdlOption(control: AbstractControl | null, key: string, id: string): void {
+    console.log(`Selecionando procedimento: ID=${id}, Key=${key}`);
     control?.setValue(id);
     control?.markAsDirty();
     control?.markAsTouched();
@@ -1431,9 +1466,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }, 80);
   }
 
-  /**
-  * Manipula o evento de pull-to-refresh
-  */
+ 
   async handleRefresh(event: any) {
     try {
       await this.refreshData();
@@ -1446,16 +1479,13 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Recarrega todos os dados da ficha do zero
-   */
   private async refreshData(): Promise<void> {
     if (!this.cirurgiaId || !this.patientId) return;
 
     this.showValidationErrors = false;
     this.isLoading = true;
 
-    // (Opcional) Recarregar listas mestras – se quiser, pode chamar, mas evite duplicar chamadas
+   
     try {
       await this.masterData.downloadMasterData().toPromise(); // ou firstValueFrom
       this.loadDropdownLists();
@@ -1463,7 +1493,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       console.warn('Falha ao recarregar dados mestres', err);
     }
 
-    // Agora carrega os dados do paciente (uma única chamada)
+   
     await this.loadPatientData(this.cirurgiaId, this.patientId);
   }
 }

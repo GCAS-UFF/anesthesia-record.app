@@ -66,7 +66,9 @@
       </div>
 
       <h2 class="patient-name">{{ patientName }}</h2>
-      <p class="patient-sub">{{ birthDate }} ({{ age }} anos)</p>
+      <p class="patient-sub">
+        {{ birthDate | date: "dd/MM/yyyy" }} ({{ age }} anos)
+      </p>
 
       <div class="procedure-line" [class.no-procedure]="!hasProcedure">
         <ion-icon name="medical-outline" aria-hidden="true"></ion-icon>

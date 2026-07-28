@@ -45,7 +45,7 @@ interface ClinicalEvent {
   clientId?: string; timestamp: string; time: string;
   type: string;
   description?: string;
-  category?: string | null;   
+  category?: string | null;
   itemId?: number | null;
   detail?: string | null;
 }
@@ -70,7 +70,6 @@ const MONITORING_DRAFT_KEY = (surgeryId: string) => `draft_monitoring_${surgeryI
   imports: [
     CommonModule, FormsModule,
     StatusBarComponent, HeaderInstitucionalComponent, PatientInfoCardComponent,
-    QuickVitalInputComponent,
     VitalSignsChartComponent, AgentsChartComponent, EventsChartComponent,
     FluidBalanceChartComponent, QuickActionSidebarComponent,
     FinalizeAnesthesiaBarComponent, HistoryDrawerComponent,
@@ -94,7 +93,6 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   patientAge = '';
   patientWeight: string | number = '--';
   patientAsa = '';
-
   
   expandedPanel: 'agents' | 'events' | 'balance' | null = null;
 
@@ -569,7 +567,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.rebuildRecentActivity();
   }
 
- 
+
   async openAgentModal() {
     if (this.isAgentModalOpen) return;
     this.isAgentModalOpen = true;
@@ -626,7 +624,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       this.clinicalEvents = [...this.clinicalEvents, entry].sort(this.byTs);
       this.offlineQueue?.enqueue?.('event', entry);
 
-      
+
       if ((entry.category || '').toLowerCase() === 'position' && entry.description) {
         const pos = entry.description.replace(/^Posição:\s*/i, '').trim();
         if (pos) {
