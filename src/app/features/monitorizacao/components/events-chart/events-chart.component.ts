@@ -52,10 +52,10 @@ export class EventsChartComponent {
   @Output() collapsedChange = new EventEmitter<boolean>();
 
   readonly lanes: EventLane[] = [
-    { key: 'surgical', label: 'Cirúrgico', color: '#f97316', icon: '✚' },
-    { key: 'airway', label: 'Via aérea', color: '#8b5cf6', icon: '◈' },
-    { key: 'clinical', label: 'Clínico', color: '#ef4444', icon: '⚠' },
-    { key: 'position', label: 'Posição', color: '#22c55e', icon: '↺' },
+    { key: 'surgical', label: 'CR', color: '#f97316', icon: '✚' },
+    { key: 'airway', label: 'VA', color: '#8b5cf6', icon: '◈' },
+    { key: 'clinical', label: 'CL', color: '#ef4444', icon: '⚠' },
+    { key: 'position', label: 'PS', color: '#22c55e', icon: '↺' },
   ];
 
   constructor() {
