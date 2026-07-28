@@ -69,7 +69,7 @@ const MONITORING_DRAFT_KEY = (surgeryId: string) => `draft_monitoring_${surgeryI
   styleUrls: ['./monitorizacao.component.scss'],
   imports: [
     CommonModule, FormsModule,
-    StatusBarComponent, HeaderInstitucionalComponent, PatientInfoCardComponent,
+    StatusBarComponent, HeaderInstitucionalComponent,
     VitalSignsChartComponent, AgentsChartComponent, EventsChartComponent,
     FluidBalanceChartComponent, QuickActionSidebarComponent,
     FinalizeAnesthesiaBarComponent, HistoryDrawerComponent,
