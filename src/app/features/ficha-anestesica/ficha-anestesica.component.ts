@@ -5,7 +5,7 @@ import { IonButton, IonIcon, IonCheckbox, IonSpinner, IonModal } from '@ionic/an
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, ValidationErrors, Validators } from '@angular/forms';
 
-import { Subscription } from 'rxjs';
+import { debounceTime, Subscription } from 'rxjs';
 import { addIcons } from 'ionicons';
 import {
   pencilOutline,
@@ -193,7 +193,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   signatureTypedName = '';
   signatureError = '';
 
+  private autoSaveSub?: Subscription;
   private conditionalSubs: Subscription[] = [];
+
 
   procedimentoLista: { id: string; name: string; codigo?: string }[] = [];
   equipeLista: { id: string; name: string; codigo?: string }[] = [];
@@ -233,10 +235,21 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }
 
     this.setupConditionalLogic();
+    this.startAutoSave();
   }
 
   ngOnDestroy() {
     this.conditionalSubs.forEach(sub => sub.unsubscribe());
+  }
+
+  private startAutoSave() {
+    this.autoSaveSub?.unsubscribe();
+    this.autoSaveSub = this.form.valueChanges
+      .pipe(debounceTime(1500))
+      .subscribe(() => {
+        if (!this.isSaving)
+          this.persistDraft();
+      });
   }
 
   private initForm() {

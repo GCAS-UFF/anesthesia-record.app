@@ -546,7 +546,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       app.assinaturas?.segundoAnestesista, null);
 
     const preMed = app.preInducao || {};
-    const preAnestheticMedicationId = this.pick(preMed.medication?.id, preMed.farmacoId, null);
+    const preAnestheticMedicationId = this.pick(preMed.medication?.id, preMed.farmacoId, null) ?? null;
     const preAnestheticMedicationName = this.pick(preMed.medication?.name, preMed.farmaco, '') || '';
     const preAnestheticMedicationDose = preMed.dose ?? preMed.dosagem ?? '';
     const preAnestheticMedicationRoute = preMed.via ?? '';
@@ -982,7 +982,6 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     else if (rMode === 4) respiracaoControlada.push('Pressao');
     else if (cvMode === 1) respiracaoControlada.push('Volume');
     else if (cvMode === 2) respiracaoControlada.push('Pressao');
-    // ============================================================
 
     let airwayDevicesRaw: any[] = [];
     if (Array.isArray(api.airwayDevices) && api.airwayDevices.length > 0) {
