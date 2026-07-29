@@ -864,28 +864,25 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         (bySection[m.section] ||= []).push(m.label);
       });
 
-      const html = Object.entries(bySection)
-        .map(
-          ([sec, items]) => `
-          <div style="margin-bottom:10px">
-            <div style="font-weight:700;color:#1d4ed8;margin-bottom:4px">${sec}</div>
-            <ul style="margin:0;padding-left:18px;color:#0f172a">
-              ${items.map(i => `<li>${i}</li>`).join('')}
-            </ul>
-          </div>`
-        )
-        .join('');
-
       const alert = await this.alertController.create({
         header: 'Campos obrigatórios não preenchidos',
         subHeader: `${missing.length} pendência(s) encontrada(s)`,
-        message: html || 'Verifique os campos destacados em vermelho.',
+        message: 'Verifique os campos destacados em vermelho.',
         cssClass: 'validation-alert',
-        buttons: [{ text: 'Entendi', role: 'cancel' }],
+        buttons: [{
+          text: 'Entendi',
+          role: 'cancel',
+          handler: () => {
+            setTimeout(() => {
+              this.scrollToFirstInvalid();
+            }, 300);
+          }
+        }],
       });
       await alert.present();
 
-      this.scrollToFirstInvalid();
+      // Remove o scroll imediato daqui
+      // this.scrollToFirstInvalid();
       return;
     }
 
@@ -1170,19 +1167,19 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }
   }
 
-  private buildProcedimentosFromSurgery(): Array<{ procedimentoId: string; hora: string; principal: boolean }> {    
+  private buildProcedimentosFromSurgery(): Array<{ procedimentoId: string; hora: string; principal: boolean }> {
     if (!this.selectedSurgery) {
       console.warn('Nenhuma cirurgia selecionada');
       return [];
     }
 
-    const procs = this.selectedSurgery?.procedures ?? [];   
+    const procs = this.selectedSurgery?.procedures ?? [];
 
     if (!procs.length) {
       console.warn('Nenhum procedimento encontrado na cirurgia');
       return [];
     }
-    
+
     const mappedProcedimentos = procs.map((p: any) => {
       const procedimentoId = String(p.id ?? p.procedimentoId ?? '');
       const hora = this.formatTime(p.time ?? p.hora ?? '');
@@ -1456,17 +1453,17 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   private scrollToFirstInvalid(): void {
-    setTimeout(() => {
-      const el =
-        document.querySelector('.shake-error') ||
-        document.querySelector('.ng-invalid.ng-touched');
-      if (el && (el as HTMLElement).scrollIntoView) {
-        (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 80);
+
+    const el =
+      document.querySelector('.shake-error') ||
+      document.querySelector('.ng-invalid.ng-touched');
+    if (el && (el as HTMLElement).scrollIntoView) {
+      (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
   }
 
- 
+
   async handleRefresh(event: any) {
     try {
       await this.refreshData();
@@ -1485,7 +1482,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.showValidationErrors = false;
     this.isLoading = true;
 
-   
+
     try {
       await this.masterData.downloadMasterData().toPromise(); // ou firstValueFrom
       this.loadDropdownLists();
@@ -1493,7 +1490,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       console.warn('Falha ao recarregar dados mestres', err);
     }
 
-   
+
     await this.loadPatientData(this.cirurgiaId, this.patientId);
   }
 }
