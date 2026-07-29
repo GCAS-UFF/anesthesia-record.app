@@ -95,7 +95,10 @@
           *ngFor="let p of viewList"
           [patientName]="p.patientName"
           [room]="p.room"
+          [isOpen]="openCardId === p.id"  
+          (openChange)="onOpenChange($event)"
           [surgicalCenter]="p.surgicalCenter"
+          [canAbandon]="p.anesthesiologist !== null && p.anesthesiologist.id === currentUserId"
           [bed]="p.bed"
           [floor]="p.floor"
           [unit]="p.unit"
@@ -113,6 +116,7 @@
           (assume)="onAssume(p.id, p.patientId, $event)"
           (openFicha)="onOpenFicha(p.id, p.patientId)"
           (viewRegistro)="onViewRegistro(p.id)"
+          (abandonSurgery)="abandonPatient(p.id, p.patientId)"
         ></app-procedure-card>
 
         <app-empty-state

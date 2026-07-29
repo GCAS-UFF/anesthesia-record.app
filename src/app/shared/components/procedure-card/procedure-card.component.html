@@ -1,133 +1,158 @@
-<article
-  class="procedure-card"
-  [class.is-completed]="isCompleted"
-  [class.is-in-progress]="isInProgress"
->
-  <!-- Left: room + time badge -->
-  <aside class="card-side">
-    <div class="side-inner">
-      <span class="side-label">Sala de Cirurgia</span>
-      <span class="side-room">{{ room }}</span>
-    </div>
-
-    <div
-      class="time-badge"
-      [class.badge-waiting]="SurgeryStatusEnum.Agendado === status"
-      [class.badge-in-progress]="SurgeryStatusEnum.EmProgresso === status"
-      [class.badge-completed]="SurgeryStatusEnum.Concluido === status"
-      [class.badge-cancelled]="SurgeryStatusEnum.Cancelada === status"
-      [class.badge-preparation]="SurgeryStatusEnum.EmPreparacao === status"
+<div class="card-wrapper">
+  <div class="slide-actions">
+    <button
+      [class.btn-disabled]="!canAssumeThisPatient || !canAbandon"
+      [disabled]="!canAssumeThisPatient || !canAbandon"
+      class="slide-btn slide-btn-delete"
+      (click)="onAbandon()"
+      *ngIf="showDeleteAction"
     >
-      <span class="dot"></span>
-
-      <span class="label">
-        <ng-container *ngIf="SurgeryStatusEnum.Concluido === status">
-          Realizado: {{ completedAt || "—" }}
-        </ng-container>
-
-        <ng-container *ngIf="SurgeryStatusEnum.EmProgresso === status">
-          Em andamento • {{ time }}
-        </ng-container>
-
-        <ng-container *ngIf="SurgeryStatusEnum.Agendado === status">
-          Previsto: {{ time }}
-        </ng-container>
-
-        <ng-container *ngIf="SurgeryStatusEnum.Cancelada === status">
-          Cancelado: {{ completedAt || "—" }}
-        </ng-container>
-
-        <ng-container *ngIf="SurgeryStatusEnum.EmPreparacao === status">
-          Em Preparação
-        </ng-container>
-      </span>
-    </div>
-
-    <div class="anesthesist" *ngIf="anesthesiologist">
-      <ion-icon name="fitness-outline"></ion-icon>
-      <span>{{ anesthesiologist }}</span>
-    </div>
-  </aside>
-
-  <div class="card-body">
-    <div class="body-details">
-      <div class="meta-row">
-        <span
-          class="type-tag"
-          [class.type-eletiva]="type === 'Eletiva'"
-          [class.type-urgencia]="type === 'Urgência'"
-          [class.type-emergencia]="type === 'Emergência'"
-        >
-          {{ type }}
-        </span>
-        <span class="meta-text">
-          Prontuário: <span class="mono">{{ record }}</span> • ID: {{ id }}
-        </span>
-      </div>
-
-      <h2 class="patient-name">{{ patientName }}</h2>
-      <p class="patient-sub">
-        {{ birthDate | date: "dd/MM/yyyy" }} ({{ age }} anos)
-      </p>
-
-      <div class="procedure-line" [class.no-procedure]="!hasProcedure">
-        <ion-icon name="medical-outline" aria-hidden="true"></ion-icon>
-        <span>{{
-          hasProcedure ? procedure : "Procedimento não informado"
-        }}</span>
-      </div>
-    </div>
-
-    <div class="body-actions">
-      <ng-container
-        *ngIf="
-          SurgeryStatusEnum.Concluido === status ||
-            SurgeryStatusEnum.Cancelada === status;
-          else waitingActions
-        "
-      >
-        <button
-          class="btn btn-primary ion-activatable ripple-parent"
-          (click)="onOpenFicha()"
-        >
-          <ion-icon name="document-text-outline"></ion-icon>
-          Ver Registro
-          <ion-ripple-effect></ion-ripple-effect>
-        </button>
-      </ng-container>
-
-      <ng-template #waitingActions>
-        <button
-          class="btn"
-          [class.btn-primary]="!anesthesiologist || isCurrentAnesthesiologist"
-          [class.btn-disabled]="!canAssumeThisPatient"
-          [disabled]="!canAssumeThisPatient"
-          (click)="onAssume()"
-        >
-          <ion-icon
-            [name]="
-              isCurrentAnesthesiologist ? 'checkmark-circle' : 'person-outline'
-            "
-          >
-          </ion-icon>
-
-          {{
-            isCurrentAnesthesiologist
-              ? "Ir para Cirurgia"
-              : anesthesiologist
-                ? "Paciente com responsável"
-                : "Assumir Paciente"
-          }}
-        </button>
-        <button
-          class="btn btn-outline ion-activatable ripple-parent"
-          (click)="onOpenFicha()"
-        >
-          <ion-icon name="reader-outline"></ion-icon>
-          Abrir Ficha Anestésica
-          <ion-ripple-effect></ion-ripple-effect>
-        </button>
-      </ng-template>
-    </div>
+      <ion-icon name="exit-outline"></ion-icon>
+      <span>Abandonar Cirurgia</span>
+    </button>
   </div>
-</article>
+
+  <article
+    class="procedure-card"
+    [class.is-completed]="isCompleted"
+    [class.is-in-progress]="isInProgress"
+    [class.swiped-left]="isSwipedLeft"
+    [style.transform]="slideTransform"
+    [style.transition]="
+      isAnimating ? 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)' : 'none'
+    "
+    (touchstart)="onTouchStart($event)"
+    (touchmove)="onTouchMove($event)"
+    (touchend)="onTouchEnd($event)"
+    (mousedown)="onMouseDown($event)"
+    (mouseup)="onMouseUp($event)"
+    (mouseleave)="onMouseLeave($event)"
+  >
+    <aside class="card-side">
+      <div class="side-inner">
+        <span class="side-label">Sala de Cirurgia</span>
+        <span class="side-room">{{ room }}</span>
+      </div>
+
+      <div
+        class="time-badge"
+        [class.badge-waiting]="SurgeryStatusEnum.Agendado === status"
+        [class.badge-in-progress]="SurgeryStatusEnum.EmProgresso === status"
+        [class.badge-completed]="SurgeryStatusEnum.Concluido === status"
+        [class.badge-cancelled]="SurgeryStatusEnum.Cancelada === status"
+        [class.badge-preparation]="SurgeryStatusEnum.EmPreparacao === status"
+      >
+        <span class="dot"></span>
+
+        <span class="label">
+          <ng-container *ngIf="SurgeryStatusEnum.Concluido === status">
+            Realizado: {{ completedAt || "—" }}
+          </ng-container>
+
+          <ng-container *ngIf="SurgeryStatusEnum.EmProgresso === status">
+            Em andamento • {{ time }}
+          </ng-container>
+
+          <ng-container *ngIf="SurgeryStatusEnum.Agendado === status">
+            Previsto: {{ time }}
+          </ng-container>
+
+          <ng-container *ngIf="SurgeryStatusEnum.Cancelada === status">
+            Cancelado: {{ completedAt || "—" }}
+          </ng-container>
+
+          <ng-container *ngIf="SurgeryStatusEnum.EmPreparacao === status">
+            Em Preparação
+          </ng-container>
+        </span>
+      </div>
+
+      <div class="anesthesist" *ngIf="anesthesiologist">
+        <ion-icon name="fitness-outline"></ion-icon>
+        <span>{{ anesthesiologist }}</span>
+      </div>
+    </aside>
+
+    <div class="card-body">
+      <div class="body-details">
+        <div class="meta-row">
+          <span
+            class="type-tag"
+            [class.type-eletiva]="type === 'Eletiva'"
+            [class.type-urgencia]="type === 'Urgência'"
+            [class.type-emergencia]="type === 'Emergência'"
+          >
+            {{ type }}
+          </span>
+          <span class="meta-text">
+            Prontuário: <span class="mono">{{ record }}</span> • ID: {{ id }}
+          </span>
+        </div>
+
+        <h2 class="patient-name">{{ patientName }}</h2>
+        <p class="patient-sub">
+          {{ birthDate | date: "dd/MM/yyyy" }} ({{ age }} anos)
+        </p>
+
+        <div class="procedure-line" [class.no-procedure]="!hasProcedure">
+          <ion-icon name="medical-outline" aria-hidden="true"></ion-icon>
+          <span>{{
+            hasProcedure ? procedure : "Procedimento não informado"
+          }}</span>
+        </div>
+      </div>
+
+      <div class="body-actions">
+        <ng-container
+          *ngIf="
+            SurgeryStatusEnum.Concluido === status ||
+              SurgeryStatusEnum.Cancelada === status;
+            else waitingActions
+          "
+        >
+          <button
+            class="btn btn-primary ion-activatable ripple-parent"
+            (click)="onOpenFicha()"
+          >
+            <ion-icon name="document-text-outline"></ion-icon>
+            Ver Registro
+            <ion-ripple-effect></ion-ripple-effect>
+          </button>
+        </ng-container>
+
+        <ng-template #waitingActions>
+          <button
+            class="btn"
+            [class.btn-primary]="!anesthesiologist || isCurrentAnesthesiologist"
+            [class.btn-disabled]="!canAssumeThisPatient"
+            [disabled]="!canAssumeThisPatient"
+            (click)="onAssume()"
+          >
+            <ion-icon
+              [name]="
+                isCurrentAnesthesiologist ? 'medical-outline' : 'person-outline'
+              "
+            >
+            </ion-icon>
+
+            {{
+              isCurrentAnesthesiologist
+                ? "Ir para Cirurgia"
+                : anesthesiologist
+                  ? "Paciente com responsável"
+                  : "Assumir Paciente"
+            }}
+          </button>
+          <button
+            class="btn btn-outline ion-activatable ripple-parent"
+            (click)="onOpenFicha()"
+          >
+            <ion-icon name="reader-outline"></ion-icon>
+            Abrir Ficha Anestésica
+            <ion-ripple-effect></ion-ripple-effect>
+          </button>
+        </ng-template>
+      </div>
+    </div>
+  </article>
+</div>

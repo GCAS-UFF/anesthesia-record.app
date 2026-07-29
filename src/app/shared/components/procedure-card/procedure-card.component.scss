@@ -1,18 +1,106 @@
-:host { display: block; }
+:host {
+  display: block;
+  overflow: hidden;
+  height: auto !important; /* força o item a crescer */
+}
+
+.card-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  width: 100%;
+}
+
+.slide-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 0;
+  z-index: 1;
+
+  .slide-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 80px;
+    padding: 0 16px;
+    border: none;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+
+    ion-icon {
+      font-size: 24px;
+    }
+
+    &:hover {
+      opacity: 0.9;
+    }
+
+    &:active {
+      opacity: 0.7;
+    }
+  }
+
+  .slide-btn-delete {
+    background: #ef4444;
+
+    &:hover {
+      background: #dc2626;
+    }
+  }
+
+  .slide-btn-archive {
+    background: #f59e0b;
+
+    &:hover {
+      background: #d97706;
+    }
+  }
+}
 
 .procedure-card {
+  width: 100%;
+  min-width: 100%;
+  position: relative;
   display: flex;
   flex-direction: row;
+  align-items: stretch; /* força os lados a terem a mesma altura */
   overflow: hidden;
   background: #ffffff;
   border: 1px solid #e2e8f0;
+  z-index: 2;
+  background: #ffffff;
+  min-height: 120px;
   border-radius: 16px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  transition: box-shadow .2s ease, border-color .2s ease;
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+  will-change: transform;
+  touch-action: pan-y;
+  cursor: grab;
 
   &:hover {
     box-shadow: 0 10px 20px -8px rgba(15, 23, 42, 0.08);
     border-color: #cbd5e1;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  &.swiped-left {
+    border-color: transparent;
+    box-shadow: 0 10px 20px -8px rgba(15, 23, 42, 0.12);
   }
 }
 
@@ -27,6 +115,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
+  pointer-events: none; /* Impede que eventos de mouse interfiram no slide */
 }
 
 .side-inner {
@@ -38,13 +127,13 @@
 .side-label {
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: .12em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #94a3b8;
 }
 
 .side-room {
-  font-family: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
+  font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
   font-size: 28px;
   line-height: 1.1;
   font-weight: 700;
@@ -52,7 +141,9 @@
   margin-top: 2px;
 }
 
-.procedure-card.is-completed .side-room { color: #94a3b8; }
+.procedure-card.is-completed .side-room {
+  color: #94a3b8;
+}
 
 .time-badge {
   display: inline-flex;
@@ -76,41 +167,58 @@
     background: #fffbeb;
     border-color: #fde68a;
     color: #b45309;
-    .dot { background: #f59e0b; animation: pulse 1.6s ease-in-out infinite; }
+    .dot {
+      background: #f59e0b;
+      animation: pulse 1.6s ease-in-out infinite;
+    }
   }
 
   &.badge-in-progress {
     background: #eff6ff;
     border-color: #bfdbfe;
     color: #1d4ed8;
-    .dot { background: #3b82f6; animation: pulse 1.2s ease-in-out infinite; }
+    .dot {
+      background: #3b82f6;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
   }
 
   &.badge-completed {
     background: #ecfdf5;
     border-color: #a7f3d0;
     color: #047857;
-    .dot { background: #10b981; }
+    .dot {
+      background: #10b981;
+    }
   }
 
-    &.badge-cancelled {
+  &.badge-cancelled {
     background: #fee2e2;
     border-color: #fecaca;
     color: #dc2626;
-    .dot { background: #ef4444; }
+    .dot {
+      background: #ef4444;
+    }
   }
 
   &.badge-preparation {
     background: #bda3f3;
     border-color: #fde68a;
     color: #b45309;
-    .dot { background: #f59e0b; }
+    .dot {
+      background: #f59e0b;
+    }
   }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: .5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .card-body {
@@ -121,11 +229,13 @@
   gap: 20px;
   align-items: flex-start;
   justify-content: space-between;
+  pointer-events: none; /* Impede que eventos de mouse interfiram no slide */
 }
 
 .body-details {
   flex: 1;
   min-width: 0;
+  pointer-events: none;
 }
 
 .meta-row {
@@ -142,11 +252,20 @@
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .02em;
+  letter-spacing: 0.02em;
 
-  &.type-eletiva    { background: #eff6ff; color: #3b82f6; }
-  &.type-urgencia   { background: #fff7ed; color: #ea580c; }
-  &.type-emergencia { background: #fef2f2; color: #dc2626; }
+  &.type-eletiva {
+    background: #eff6ff;
+    color: #3b82f6;
+  }
+  &.type-urgencia {
+    background: #fff7ed;
+    color: #ea580c;
+  }
+  &.type-emergencia {
+    background: #fef2f2;
+    color: #dc2626;
+  }
 }
 
 .meta-text {
@@ -155,12 +274,12 @@
   color: #94a3b8;
 
   .mono {
-    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   }
 }
 
 .patient-name {
-  font-family: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
+  font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
   font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -187,9 +306,14 @@
   font-weight: 700;
   letter-spacing: -0.005em;
 
-  ion-icon { font-size: 20px; flex-shrink: 0; }
+  ion-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
 
-  &.no-procedure { color: #3b82f6; }
+  &.no-procedure {
+    color: #3b82f6;
+  }
 }
 
 .body-actions {
@@ -198,6 +322,7 @@
   flex-shrink: 0;
   gap: 10px;
   align-self: center;
+  pointer-events: auto; /* Permite interação com os botões */
 }
 
 .btn {
@@ -215,12 +340,19 @@
   font-weight: 700;
   letter-spacing: -0.005em;
   cursor: pointer;
-  transition: transform .1s ease, background-color .2s ease, border-color .2s ease;
+  transition:
+    transform 0.1s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
   white-space: nowrap;
 
-  ion-icon { font-size: 18px; }
+  ion-icon {
+    font-size: 18px;
+  }
 
-  &:active { transform: scale(0.96); }
+  &:active {
+    transform: scale(0.96);
+  }
 }
 
 .btn-primary {
@@ -228,7 +360,9 @@
   color: #ffffff;
   box-shadow: 0 10px 20px -8px rgba(59, 130, 246, 0.5);
 
-  &:hover { background: #2563eb; }
+  &:hover {
+    background: #2563eb;
+  }
 }
 
 .btn-outline {
@@ -236,41 +370,15 @@
   color: #475569;
   border-color: #f1f5f9;
 
-  &:hover { background: #f8fafc; border-color: #e2e8f0; }
+  &:hover {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+  }
 }
 
 .ripple-parent {
   position: relative;
   overflow: hidden;
-}
-
-@media (max-width: 900px) {
-  .card-side { width: 150px; padding: 18px 12px; }
-  .side-room { font-size: 26px; }
-  .card-body { padding: 18px 20px; gap: 16px; }
-  .patient-name { font-size: 20px; }
-  .btn { padding: 12px 18px; font-size: 13px; }
-}
-
-@media (max-width: 640px) {
-  .procedure-card { flex-direction: column; }
-  .card-side {
-    width: 100%;
-    flex-direction: row;
-    justify-content: space-between;
-    border-right: 0;
-    border-bottom: 1px solid #f1f5f9;
-    padding: 14px 18px;
-  }
-  .side-inner { flex-direction: row; align-items: baseline; gap: 8px; }
-  .card-body { flex-direction: column; align-items: stretch; }
-  .body-actions { flex-direction: row; }
-  .body-actions .btn { flex: 1; }
-}
-
-@media (hover: none) and (pointer: coarse) {
-  .btn { cursor: default; }
-  .btn:active { transform: scale(0.96); }
 }
 
 .anesthesist {
@@ -297,9 +405,128 @@
   color: #6b7280;
   border-color: #d1d5db;
   cursor: not-allowed;
-  opacity: .9;
+  opacity: 0.9;
 
   ion-icon {
     color: #6b7280;
   }
+}
+
+@media (max-width: 900px) {
+  .card-wrapper,
+  .procedure-card {
+    min-height: 110px;
+  }
+
+  .side-room {
+    font-size: 26px;
+  }
+
+  .card-body {
+    padding: 18px 20px;
+    gap: 16px;
+  }
+
+  .patient-name {
+    font-size: 20px;
+  }
+
+  .btn {
+    padding: 12px 18px;
+    font-size: 13px;
+  }
+
+  .slide-actions .slide-btn {
+    min-width: 70px;
+    padding: 0 14px;
+    font-size: 11px;
+
+    ion-icon {
+      font-size: 22px;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .procedure-card {
+    flex-direction: column;
+    min-width: 100%;
+  }
+
+  .card-side {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    border-right: 0;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 14px 18px;
+  }
+
+  .side-inner {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .card-body {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .body-actions {
+    flex-direction: row;
+  }
+
+  .body-actions .btn {
+    flex: 1;
+  }
+
+  .slide-actions .slide-btn {
+    min-width: 60px;
+    padding: 0 12px;
+    font-size: 10px;
+
+    ion-icon {
+      font-size: 20px;
+    }
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .btn {
+    cursor: default;
+  }
+
+  .btn:active {
+    transform: scale(0.96);
+  }
+
+  .slide-actions .slide-btn {
+    cursor: default;
+  }
+}
+
+@media (pointer: coarse) {
+  .procedure-card {
+    cursor: default;
+  }
+}
+
+.procedure-card.dragging {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.procedure-card.dragging {
+  box-shadow: 0 20px 40px -12px rgba(15, 23, 42, 0.2);
+  border-color: #94a3b8;
+}
+
+.procedure-card {
+  transform: translateX(0);
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.procedure-card.swiped-left {
+  transform: translateX(-160px); 
 }

@@ -56,6 +56,8 @@ export class PatientListPage implements OnInit {
   totalItems = 0;
   totalPages = 1;
 
+  openCardId: string | number | null = null;
+
   @ViewChild(IonContent, { static: false }) content!: IonContent;
 
   constructor(
@@ -311,5 +313,55 @@ export class PatientListPage implements OnInit {
   handleRefresh() {
     if (this.isRefreshing) return;
     this.loadData();
+  }
+
+  onOpenChange(cardId: any | number | null) {    
+    this.openCardId = cardId;
+  }
+
+  async abandonPatient(surgeryId: string | number, patientId: string) {
+    const alert = await this.alertController.create({
+      header: 'Deixar Paciente',
+      message: 'Deseja realmente deixar esse paciente?',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel', cssClass: 'secondary' },
+        {
+          text: 'Confirmar',
+          handler: async () => {
+            const loading = await this.loadingController.create({
+              message: 'Deixando paciente...',
+              duration: 1000,
+              spinner: 'circular',
+            });
+            await loading.present();
+
+            this.surgeryService.assumePatient(patientId, Number(surgeryId), 0).subscribe({
+              next: async () => {
+                await loading.dismiss();
+                const toast = await this.toastController.create({
+                  message: 'Paciente liberado com sucesso!',
+                  duration: 2000,
+                  color: 'success',
+                  icon: 'checkmark-circle',
+                });
+                await toast.present();
+                this.loadData();
+              },
+              error: async () => {
+                await loading.dismiss();
+                const toast = await this.toastController.create({
+                  message: 'Falha de comunicação com a API. Não foi possível liberar o paciente.',
+                  duration: 3000,
+                  color: 'danger',
+                });
+                await toast.present();
+              },
+            });
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 }

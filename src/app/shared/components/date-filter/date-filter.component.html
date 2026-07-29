@@ -1,6 +1,36 @@
-<div class="date-filter" (click)="openPicker(dateInput)">
+<!-- date-filter.component.html -->
+<div class="date-filter-container">
+  <div class="date-filter" (click)="openPicker(dateInput)">
     <label>
-        📅 Data: <strong>{{ formattedDate }}</strong>
+      📅 Data: <strong>{{ formattedDate || 'Todos' }}</strong>
     </label>
-    <input #dateInput id="date-input" type="date" (change)="onChange($event)" [value]="date">
+    <input 
+      #dateInput 
+      id="date-input" 
+      type="date" 
+      (change)="onChange($event)" 
+      [value]="date"
+    >
+  </div>
+  
+  <div class="filter-actions">
+    <span class="filter-status" *ngIf="date">
+      Filtrando
+    </span>
+    <button 
+      *ngIf="date" 
+      class="clear-btn" 
+      (click)="clearFilter(); $event.stopPropagation()"
+      title="Limpar filtro"
+    >
+      ✕
+    </button>
+    <button 
+      class="today-btn" 
+      (click)="setToday(); $event.stopPropagation()"
+      title="Hoje"
+    >
+      Hoje
+    </button>
+  </div>
 </div>

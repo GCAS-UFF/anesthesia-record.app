@@ -53,7 +53,7 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   userMenuOpen = false;
 
   navItems: NavItem[] = [
-    { icon: 'grid-outline', label: 'Painel de Cirurgias', route: '/pacientes', active: true },
+    { icon: 'grid-outline', label: 'Todos Pacientes', route: '/pacientes', active: true },
     { icon: 'people-outline', label: 'Meus Pacientes', route: '/meus-pacientes' },
     { icon: 'cloud-outline', label: 'Integração AGHU', route: '/integracoes' },
   ];
