@@ -1,14 +1,13 @@
 import { Component, Input, OnInit, OnDestroy, HostListener, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule, Location } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, AlertController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { AlertController } from '@ionic/angular';
-import { AuthService } from 'src/app/core/services/auth.service';
 import {
   menuOutline,
   gridOutline,
   peopleOutline,
+  personOutline,
   settingsOutline,
   cloudOutline,
   logOutOutline,
@@ -16,15 +15,21 @@ import {
   chevronDownOutline,
   arrowBackOutline,
   documentTextOutline,
-  medkit
+  medkit,
+  layersOutline,
+  analyticsOutline,
+  fileTrayFullOutline,
+  trashBinOutline
 } from 'ionicons/icons';
 import { Subscription } from 'rxjs';
+import { AuthService } from 'src/app/core/services/auth.service';
 
 interface NavItem {
   icon: string;
   label: string;
   route?: string;
   active?: boolean;
+  admin?: boolean;
 }
 
 @Component({
@@ -35,51 +40,96 @@ interface NavItem {
   styleUrls: ['./header-institucional.component.scss'],
 })
 export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
-  @Input() doctorName: string = '';
-  @Input() doctorCRM: string = '';
-  @Input() doctorRole: string = '';
+  @Input() doctorName = '';
+  @Input() doctorCRM = '';
+  @Input() doctorRole = '';
   @Input() showBackButton = false;
-  @Input() doctorInitials: string = 'Dr(a)';
+  @Input() doctorInitials = 'Dr(a)';
   @Input() showPreAnestesicaButton = false;
+  @Input() preAnestesicaButtonLabel = '';
+
   @Output() openPreAnestesica = new EventEmitter<void>();
-  @Input() preAnestesicaButtonLabel = ''//'Ficha Pré-Anestésica';
 
-  doctorId: number = 0;
+  doctorId = 0;
   private isLoggingOut = false;
-
-  private userSubscription: Subscription = new Subscription();
+  private userSubscription = new Subscription();
 
   menuOpen = false;
   userMenuOpen = false;
 
   navItems: NavItem[] = [
-    { icon: 'grid-outline', label: 'Todos Pacientes', route: '/pacientes', active: true },
-    { icon: 'people-outline', label: 'Meus Pacientes', route: '/meus-pacientes' },
-    { icon: 'cloud-outline', label: 'Integração AGHU', route: '/integracoes' },
+    // Comum
+    {
+      icon: 'people-outline',
+      label: 'Todos os Pacientes',
+      route: '/pacientes',
+      active: true
+    },
+    {
+      icon: 'person-outline',
+      label: 'Meus Pacientes',
+      route: '/meus-pacientes'
+    },
+    // Admin
+    {
+      icon: 'layers-outline',
+      label: 'Manutenção de Itens (Admin)',
+      route: '/admin/manutencao-itens',
+      admin: true
+    },
+    {
+      icon: 'cloud-outline',
+      label: 'Integrações (Admin)',
+      route: '/admin/integracoes',
+      admin: true
+    },
+    {
+      icon: 'cloud-outline',
+      label: 'Acompanhamento de Integrações',
+      route: '/integracoes/fichas',
+      admin: true
+    },
+    {
+      icon: 'analytics-outline',
+      label: 'Relatórios (Admin)',
+      route: '/admin/relatorios',
+      admin: true
+    },
+    {
+      icon: 'file-tray-full-outline',
+      label: 'Histórico de Fichas (Admin)',
+      route: '/admin/historico-fichas',
+      admin: true
+    }    
   ];
 
   constructor(
     private router: Router,
     private location: Location,
     private authService: AuthService,
-    private alertController: AlertController,
+    private alertController: AlertController
   ) {
     addIcons({
       arrowBackOutline,
       menuOutline,
       gridOutline,
       peopleOutline,
+      personOutline,
       settingsOutline,
       cloudOutline,
       logOutOutline,
       closeOutline,
       chevronDownOutline,
       documentTextOutline,
-      medkit
+      medkit,
+      layersOutline,
+      analyticsOutline,
+      fileTrayFullOutline,
+      trashBinOutline
     });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadUserData();
 
     this.userSubscription = this.authService.user$.subscribe(user => {
@@ -87,16 +137,18 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
         this.handleLogout();
         return;
       }
+
       this.updateUserData(user);
     });
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.userSubscription.unsubscribe();
   }
 
-  loadUserData() {
+  loadUserData(): void {
     const user = this.authService.getUser();
+
     if (user) {
       this.updateUserData(user);
     } else {
@@ -104,14 +156,14 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
     }
   }
 
-  private updateUserData(user: any) {
+  private updateUserData(user: any): void {
     this.doctorId = user.id;
     this.doctorName = user.name || user.username || 'Erro';
     this.doctorRole = user.role || 'Médico';
     this.doctorInitials = this.getInitials(user.username || user.name || '');
   }
 
-  private loadFromStorageFallback() {
+  private loadFromStorageFallback(): void {
     const name = sessionStorage.getItem('name') || localStorage.getItem('name');
     const role = sessionStorage.getItem('userRole') || localStorage.getItem('userRole');
     const username = sessionStorage.getItem('userCRM') || localStorage.getItem('userCRM');
@@ -121,35 +173,36 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
     if (username) this.doctorInitials = this.getInitials(username);
   }
 
-  openMenu() {
+  openMenu(): void {
     this.menuOpen = true;
   }
 
-  voltar() {
-    this.location.back();
-  }
-
-  closeMenu() {
+  closeMenu(): void {
     this.menuOpen = false;
   }
 
-  closeUserMenu(event?: Event) {
-    if (event) event.stopPropagation();
-    this.userMenuOpen = false;
+  voltar(): void {
+    this.location.back();
   }
 
-  toggleUserMenu() {
+  toggleUserMenu(): void {
     this.userMenuOpen = !this.userMenuOpen;
   }
 
-  goToSettings() {
+  closeUserMenu(event?: Event): void {
+    event?.stopPropagation();
+    this.userMenuOpen = false;
+  }
+
+  goToSettings(): void {
     this.closeUserMenu();
-    this.router.navigate(['/config']);
+    this.router.navigate(['/configuracoes']);
   }
 
   async handleLogout(): Promise<void> {
-    if (this.isLoggingOut) 
+    if (this.isLoggingOut) {
       return;
+    }
 
     const alert = await this.alertController.create({
       header: 'Sair',
@@ -175,10 +228,12 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  navigate(item: NavItem) {
+  navigate(item: NavItem): void {
     this.closeMenu();
 
-    if (!item.route) return;
+    if (!item.route) {
+      return;
+    }
 
     if (item.route === '/meus-pacientes') {
       this.router.navigate(['/meus-pacientes', this.doctorId]);
@@ -189,8 +244,9 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   }
 
   getInitials(fullName: string): string {
-    if (!fullName)
+    if (!fullName) {
       return '';
+    }
 
     return fullName
       .split(' ')
@@ -199,8 +255,9 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   }
 
   @HostListener('document:click', ['$event'])
-  onDocumentClick(event: Event) {
+  onDocumentClick(event: Event): void {
     const target = event.target as HTMLElement;
+
     if (!target.closest('.doctor-chip')) {
       this.userMenuOpen = false;
     }

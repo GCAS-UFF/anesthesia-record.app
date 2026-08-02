@@ -1,11 +1,5 @@
 import { Routes } from '@angular/router';
 
-/**
- * Rotas principais da aplicação.
- *
- * - '/login': Página de login (standalone, lazy)
- * - '/pacientes': Listagem operacional de pacientes
- */
 export const routes: Routes = [
   {
     path: '',
@@ -37,7 +31,7 @@ export const routes: Routes = [
     loadComponent: () => import('./features/my-patient/my-patients.page').then(m => m.MyPatientsPage)
   },
   {
-    path: 'integracoes',
+    path: 'admin/integracoes',
     loadComponent: () => import('./features/aghu-integration/aghu-integration.page').then(m => m.AghuIntegrationPage)
   },
   {
