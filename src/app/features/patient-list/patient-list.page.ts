@@ -64,7 +64,7 @@ export class PatientListPage implements OnInit {
     private datePipe: DatePipe,
     private router: Router,
     private alertController: AlertController,
-    private loadingController: LoadingController,
+    private loadingController: LoadingController,    
     private toastController: ToastController,
     private surgeryService: SurgeryService,
     private authService: AuthService,
