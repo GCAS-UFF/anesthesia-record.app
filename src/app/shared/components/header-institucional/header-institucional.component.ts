@@ -9,11 +9,11 @@ import {
   peopleOutline,
   personOutline,
   settingsOutline,
-  cloudOutline,
   logOutOutline,
   closeOutline,
   chevronDownOutline,
   arrowBackOutline,
+  downloadOutline,
   documentTextOutline,
   medkit,
   layersOutline,
@@ -78,8 +78,8 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
       admin: true
     },
     {
-      icon: 'cloud-outline',
-      label: 'Integrações AGHU (Admin)',
+      icon: 'download-outline',
+      label: 'Obter dados AGHU (Admin)',
       route: '/admin/integracoes',
       admin: true
     },
@@ -116,7 +116,7 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
       peopleOutline,
       personOutline,
       settingsOutline,
-      cloudOutline,
+      downloadOutline,
       logOutOutline,
       closeOutline,
       chevronDownOutline,
