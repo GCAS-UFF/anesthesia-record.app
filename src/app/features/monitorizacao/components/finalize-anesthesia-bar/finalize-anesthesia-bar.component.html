@@ -1,4 +1,4 @@
-<footer class="finalize-bar" [class.disabled]="!isAnesthesiaStarted || isSurgeryFinished">
+<footer class="finalize-bar" [class.disabled]="!isAnesthesiaStarted || isAnesthesiaFinished">
 
   <div class="status-cluster">
     <div class="status-item">
@@ -30,10 +30,10 @@
   </div>
 
   <button class="btn-finalize"
-          [disabled]="!isAnesthesiaStarted || isSurgeryFinished"
+          [disabled]="!isAnesthesiaStarted || isAnesthesiaFinished"
           (click)="finalize.emit()">
     <ion-icon name="power-outline"></ion-icon>
-    <span>FINALIZAR ANESTESIA</span>
+    <span>{{ isSurgeryFinished ? 'FINALIZAR ANESTESIA' : 'FINALIZAR CIRURGIA' }}</span>
   </button>
 
 </footer>

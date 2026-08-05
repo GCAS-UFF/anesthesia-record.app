@@ -26,6 +26,7 @@
     </div>
 
     <div class="ch-actions">
+
       <ion-button size="small" fill="clear" [disabled]="readonly" (click)="onAddFieldClick()" title="Adicionar campo personalizado">
         <ion-icon name="settings-outline" slot="icon-only"></ion-icon>
       </ion-button>
@@ -40,18 +41,21 @@
   </header>
 
   <div class="clinical-legend">
-    <span class="lg-group"><span class="sym sym-fc"></span><span class="lbl">FC</span></span>
-    <span class="lg-group"><span class="sym sym-pas">▲</span><span class="lbl">PAS</span></span>
-    <span class="lg-group"><span class="sym sym-pad">▼</span><span class="lbl">PAD</span></span>
-    <span class="lg-group"><span class="sym sym-pam">■</span><span class="lbl">PAM</span></span>
+    <span class="lg-group"><span class="sym sym-fc" style="font-size: 16px;">●</span><span class="lbl">FC</span></span>
+    <span class="lg-group"><span class="sym sym-pas">v</span><span class="lbl">PAS</span></span>
+    <span class="lg-group"><span class="sym sym-pad">^</span><span class="lbl">PAD</span></span>
+    <span class="lg-group"><span class="sym sym-pam">▲</span><span class="lbl">PAM</span></span>
     <span class="lg-sep"></span>
     <span class="lg-group"><span class="sym sym-spo2">●</span><span class="lbl">SpO₂</span></span>
-    <span class="lg-group"><span class="sym sym-temp"></span><span class="lbl">T°C</span></span>
-    <span class="lg-group"><span class="sym sym-bis"></span><span class="lbl">BIS</span></span>
+    <span class="lg-group"><span class="sym sym-temp">●</span><span class="lbl">T°C</span></span>
     <span class="lg-sep"></span>
-    <span class="lg-group"><span class="sym" style="color:#0f172a;font-weight:900">✕</span><span class="lbl">Início anestesia</span></span>
-    <span class="lg-group"><span class="sym" style="color:#0f172a">◯</span><span class="lbl">Início cirurgia</span></span>
-    <span class="lg-group"><span class="sym" style="color:#0f172a">◉</span><span class="lbl">Fim cirurgia</span></span>
+    <span class="lg-group"><span class="sym" style="color:#7c3aed;font-weight:900">✕</span><span class="lbl">Anestesia</span></span>
+    <span class="lg-group"><span class="sym" style="color:#0ea5e9;font-weight:900">⊙</span><span class="lbl">Cirurgia</span></span>
+    
+    <ng-container *ngFor="let cf of customFields; let i = index">
+      <span class="lg-sep"></span>
+      <span class="lg-group"><span class="sym" style="color:#64748b; font-size:16px;">{{ ['■','★','◆','✚'][i % 4] }}</span><span class="lbl">{{ cf.label }}</span></span>
+    </ng-container>
   </div>
 
   <div class="chart-area">

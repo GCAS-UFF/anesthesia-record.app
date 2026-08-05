@@ -22,11 +22,16 @@ export class FinalizeAnesthesiaBarComponent {
   @Input() pendingSyncCount = 0;
   @Input() isAnesthesiaStarted = false;
   @Input() isSurgeryFinished = false;
+  @Input() isAnesthesiaFinished = false;
   @Input() isSyncing = false;
 
   @Output() syncNow = new EventEmitter<void>();
   @Output() openHistory = new EventEmitter<void>();
   @Output() finalize = new EventEmitter<void>();
+
+  get isReadOnly(): boolean {
+    return this.isAnesthesiaFinished;
+  }
 
   constructor() {
     addIcons({ saveOutline, cloudUploadOutline, cloudDoneOutline, cloudOfflineOutline,

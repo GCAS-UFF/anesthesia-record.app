@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header class="ion-no-border custom-header">
   <ion-toolbar>
     <ion-title>
       <ng-container [ngSwitch]="type">
@@ -16,148 +16,155 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  <div class="modal-shell">
 
-  <!-- ═══════════════════ AGENTES ═══════════════════ -->
-  <ng-container *ngIf="type === 'agent'">
+    <!-- ═══════════════════ AGENTES ═══════════════════ -->
+    <ng-container *ngIf="type === 'agent'">
 
-    <!-- Busca de medicação por nome -->
-    <div class="field">
-      <label class="field-label">Medicação *</label>
-      <div class="med-search" [class.open]="medDropdownOpen">
-        <div class="med-input-wrap">
-          <ion-icon name="search-outline" class="med-icon"></ion-icon>
-          <input
-            type="text"
-            class="med-input"
-            placeholder="Digite o nome da medicação..."
-            [value]="medSearchTerm"
-            (input)="onMedSearchInput($any($event.target).value)"
-            (focus)="onMedFocus()"
-            (blur)="onMedBlur()"
-            (keydown)="onMedKeydown($event)"
-            autocomplete="off" />
-          <button
-            *ngIf="medSearchTerm"
-            type="button"
-            class="med-clear"
-            (mousedown)="$event.preventDefault()"
-            (click)="clearMedication()">
-            <ion-icon name="close-circle"></ion-icon>
-          </button>
+      <!-- Busca de medicação por nome -->
+      <div class="field">
+        <label class="field-label">Medicação *</label>
+        <div class="custom-search" [class.open]="medDropdownOpen">
+          <div class="custom-input-wrap">
+            <ion-icon name="search-outline" class="custom-icon"></ion-icon>
+            <input
+              type="text"
+              class="custom-input"
+              placeholder="Digite o nome da medicação..."
+              [value]="medSearchTerm"
+              (input)="onMedSearchInput($any($event.target).value)"
+              (focus)="onMedFocus()"
+              (blur)="onMedBlur()"
+              (keydown)="onMedKeydown($event)"
+              autocomplete="off" />
+            <button
+              *ngIf="medSearchTerm"
+              type="button"
+              class="custom-clear"
+              (mousedown)="$event.preventDefault()"
+              (click)="clearMedication()">
+              <ion-icon name="close-circle"></ion-icon>
+            </button>
+          </div>
+
+          <div class="custom-dropdown" *ngIf="medDropdownOpen && medSuggestions.length">
+            <button
+              *ngFor="let m of medSuggestions; let i = index"
+              type="button"
+              class="custom-option"
+              [class.active]="i === medHighlightIndex"
+              (mousedown)="$event.preventDefault()"
+              (click)="selectMedication(m)">
+              <span class="custom-name">{{ m.description }}</span>
+              <ion-icon
+                *ngIf="agent.medicationId === m.id"
+                name="checkmark-outline"
+                class="custom-check"></ion-icon>
+            </button>
+          </div>
+
+          <div class="custom-empty"
+               *ngIf="medDropdownOpen && !medSuggestions.length && medSearchTerm">
+            Nenhuma medicação encontrada.
+          </div>
         </div>
+        <ion-note *ngIf="!medications.length" color="warning" class="ion-margin-top">
+          Nenhuma medicação carregada no storage.
+        </ion-note>
+      </div>
 
-        <div class="med-dropdown" *ngIf="medDropdownOpen && medSuggestions.length">
-          <button
-            *ngFor="let m of medSuggestions; let i = index"
-            type="button"
-            class="med-option"
-            [class.active]="i === medHighlightIndex"
-            (mousedown)="$event.preventDefault()"
-            (click)="selectMedication(m)">
-            <span class="med-name">{{ m.description }}</span>
-            <ion-icon
-              *ngIf="agent.medicationId === m.id"
-              name="checkmark-outline"
-              class="med-check"></ion-icon>
-          </button>
-        </div>
-
-        <div class="med-empty"
-             *ngIf="medDropdownOpen && !medSuggestions.length && medSearchTerm">
-          Nenhuma medicação encontrada.
+      <div class="field">
+        <label class="field-label">Dose *</label>
+        <div class="custom-input-wrap">
+          <input class="custom-input" type="text" [(ngModel)]="agent.dose" placeholder="ex: 100mg, 2mL, 5UI" />
         </div>
       </div>
-      <ion-note *ngIf="!medications.length" color="warning">
-        Nenhuma medicação carregada no storage.
-      </ion-note>
-    </div>
 
-    <ion-item lines="full">
-      <ion-label position="stacked">Dose *</ion-label>
-      <ion-input [(ngModel)]="agent.dose" placeholder="ex: 100mg, 2mL, 5UI"></ion-input>
-    </ion-item>
-
-    <ion-item lines="full">
-      <ion-label position="stacked">Via</ion-label>
-      <ion-select interface="popover" [(ngModel)]="agent.route" placeholder="Selecione">
-        <ion-select-option *ngFor="let r of routeOptions" [value]="r">{{ r }}</ion-select-option>
-      </ion-select>
-    </ion-item>
-  </ng-container>
-
-  <!-- ═══════════════════ EVENTOS ═══════════════════ -->
-  <ng-container *ngIf="type === 'event'">
-    <ion-item lines="full">
-      <ion-label position="stacked">Categoria *</ion-label>
-      <ion-select
-        interface="popover"
-        placeholder="Selecione a categoria"
-        [ngModel]="event.categoryId"
-        (ngModelChange)="onEventCategoryChange($event)">
-        <ion-select-option *ngFor="let c of eventCategories" [value]="c.id">
-          {{ c.emoji }} &nbsp; {{ c.label }}
-        </ion-select-option>
-      </ion-select>
-    </ion-item>
-
-    <ion-item lines="full">
-      <ion-label position="stacked">Descrição *</ion-label>
-      <ion-input [(ngModel)]="event.description" placeholder="Descreva o evento..."></ion-input>
-    </ion-item>
-  </ng-container>
-
-  <!-- ═══════════════════ BALANÇO ═══════════════════ -->
-  <ng-container *ngIf="type === 'balance'">
-    <ion-item lines="full">
-      <ion-label position="stacked">Tipo *</ion-label>
-      <div class="seg-row">
-        <ion-button
-          [fill]="balance.type === 'gain' ? 'solid' : 'outline'"
-          color="success"
-          (click)="onBalanceTypeChange('gain')">Ganho</ion-button>
-        <ion-button
-          [fill]="balance.type === 'loss' ? 'solid' : 'outline'"
-          color="danger"
-          (click)="onBalanceTypeChange('loss')">Perda</ion-button>
+      <div class="field">
+        <label class="field-label">Via</label>
+        <div class="custom-input-wrap select-wrap">
+          <select class="custom-input" [(ngModel)]="agent.route">
+            <option value="" disabled selected hidden>Selecione</option>
+            <option *ngFor="let r of routeOptions" [value]="r">{{ r }}</option>
+          </select>
+          <ion-icon name="chevron-down-outline" class="select-icon"></ion-icon>
+        </div>
       </div>
-    </ion-item>
+    </ng-container>
 
-    <ion-item lines="full">
-      <ion-label position="stacked">Item *</ion-label>
-      <ion-select
-        interface="popover"
-        placeholder="Selecione"
-        [ngModel]="balance.itemId"
-        (ngModelChange)="onBalanceItemChange($event)">
-        <ion-select-option *ngFor="let i of balanceItems" [value]="i.id">
-          {{ i.label }}
-        </ion-select-option>
-      </ion-select>
-    </ion-item>
+    <!-- ═══════════════════ EVENTOS ═══════════════════ -->
+    <ng-container *ngIf="type === 'event'">
+      <div class="field">
+        <label class="field-label">Categoria *</label>
+        <div class="custom-input-wrap select-wrap">
+          <select class="custom-input" [ngModel]="event.categoryId" (ngModelChange)="onEventCategoryChange($event)">
+            <option value="" disabled selected hidden>Selecione a categoria</option>
+            <option *ngFor="let c of eventCategories" [value]="c.id">
+              {{ c.emoji }} {{ c.label }}
+            </option>
+          </select>
+          <ion-icon name="chevron-down-outline" class="select-icon"></ion-icon>
+        </div>
+      </div>
 
-    <ion-item *ngIf="needsDetail" lines="full">
-      <ion-label position="stacked">Detalhar "Outro" *</ion-label>
-      <ion-input [(ngModel)]="balance.detail" placeholder="Especifique..."></ion-input>
-    </ion-item>
+      <div class="field">
+        <label class="field-label">Descrição *</label>
+        <div class="custom-input-wrap">
+          <input class="custom-input" type="text" [(ngModel)]="event.description" placeholder="Descreva o evento..." />
+        </div>
+      </div>
+    </ng-container>
 
-    <ion-item lines="full">
-      <ion-label position="stacked">Volume (ml) *</ion-label>
-      <ion-input type="number" inputmode="numeric" [(ngModel)]="balance.volumeMl" placeholder="0"></ion-input>
-    </ion-item>
-  </ng-container>
+    <!-- ═══════════════════ BALANÇO ═══════════════════ -->
+    <ng-container *ngIf="type === 'balance'">
+      <div class="field">
+        <label class="field-label">Tipo *</label>
+        <div class="seg-row">
+          <ion-button
+            [fill]="balance.type === 'gain' ? 'solid' : 'outline'"
+            color="success"
+            (click)="onBalanceTypeChange('gain')">Ganho</ion-button>
+          <ion-button
+            [fill]="balance.type === 'loss' ? 'solid' : 'outline'"
+            color="danger"
+            (click)="onBalanceTypeChange('loss')">Perda</ion-button>
+        </div>
+      </div>
 
+      <div class="field">
+        <label class="field-label">Item *</label>
+        <div class="custom-input-wrap select-wrap">
+          <select class="custom-input" [ngModel]="balance.itemId" (ngModelChange)="onBalanceItemChange($event)">
+            <option value="" disabled selected hidden>Selecione</option>
+            <option *ngFor="let i of balanceItems" [value]="i.id">{{ i.label }}</option>
+          </select>
+          <ion-icon name="chevron-down-outline" class="select-icon"></ion-icon>
+        </div>
+      </div>
+
+      <div class="field" *ngIf="needsDetail">
+        <label class="field-label">Detalhar "Outro" *</label>
+        <div class="custom-input-wrap">
+          <input class="custom-input" type="text" [(ngModel)]="balance.detail" placeholder="Especifique..." />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Volume (ml) *</label>
+        <div class="custom-input-wrap">
+          <input class="custom-input" type="number" inputmode="numeric" [(ngModel)]="balance.volumeMl" placeholder="0" />
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
 </ion-content>
 
-<ion-footer>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button (click)="cancel()">Cancelar</ion-button>
-    </ion-buttons>
-    <ion-buttons slot="end">
-      <ion-button fill="solid" color="primary" [disabled]="!canSave" (click)="save()">
-        <ion-icon name="checkmark-outline" slot="start"></ion-icon>
-        Salvar
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+<ion-footer class="ion-no-border">
+  <div class="modal-footer">
+    <button class="btn-cancel" (click)="cancel()">Cancelar</button>
+    <button class="btn-save" [disabled]="!canSave" (click)="save()">
+      <ion-icon name="checkmark-outline"></ion-icon> Salvar
+    </button>
+  </div>
 </ion-footer>

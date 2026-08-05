@@ -87,7 +87,7 @@
 .bars-area {
   flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
   padding: 8px 12px;
   position: relative;
   display: flex;

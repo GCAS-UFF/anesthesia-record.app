@@ -70,6 +70,15 @@ export class HistoryDrawerComponent implements OnInit {
   itemName(b: any): string { return b?.item ?? b?.name ?? b?.description ?? ''; }
   vol(b: any): number { return Number(b?.volumeMl ?? b?.volume ?? 0) || 0; }
   eventLabel(e: any): string {
+    if (e?.categoryLabel) return e.categoryLabel;
+    const cat = String(e?.category || e?.categoryId || '').toLowerCase();
+    const map: Record<string, string> = {
+      intubation: 'Intubação', extubation: 'Extubação', incision: 'Incisão',
+      block: 'Bloqueio', tourniquet_on: 'Garrote ON', tourniquet_off: 'Garrote OFF',
+      position: 'Posição', complication: 'Complicação', other: 'Outro'
+    };
+    if (map[cat]) return map[cat];
+
     const t = String(e?.type || '').toLowerCase();
     if (t === 'position') return 'Posição';
     if (t === 'incident') return 'Incidente';

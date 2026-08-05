@@ -6,6 +6,7 @@ import {
   ModalController, AlertController, ToastController,
 } from '@ionic/angular/standalone';
 import { finalize, Subscription } from 'rxjs';
+import { ScreenOrientation } from '@capacitor/screen-orientation';
 
 import { AnesthesiaRecordService } from 'src/app/core/services/anesthesia-record.service';
 import { SurgeryService } from 'src/app/core/services/surgery.service';
@@ -23,6 +24,7 @@ import { FluidBalanceChartComponent } from './components/fluid-balance-chart/flu
 import { QuickActionSidebarComponent } from './components/quick-action-sidebar/quick-action-sidebar.component';
 import { FinalizeAnesthesiaBarComponent } from './components/finalize-anesthesia-bar/finalize-anesthesia-bar.component';
 import { HistoryDrawerComponent, HistoryTab } from './components/history-drawer/history-drawer.component';
+import { RecordViewerModalComponent, RecordData } from '../../shared/components/record-viewer-modal/record-viewer-modal.component';
 
 interface VitalRecord {
   clientId?: string; timestamp: string; time: string;
@@ -38,7 +40,6 @@ interface Agent {
   name: string;
   dose?: string | null;
   route?: string | null;
-  presentation?: string | null;
   medicationId?: number | null;
 }
 interface ClinicalEvent {
@@ -123,9 +124,13 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   surgeryStartTime: Date | null = null;
   surgeryEndTime: Date | null = null;
   anesthesiaEndTime: Date | null = null;
+  isAnesthesiaFinished = false;
   anesthesiaTimer = '00:00:00';
   surgeryTimer = '00:00:00';
   private tickSub?: any;
+
+  viewStartTime: number | null = null;
+  viewEndTime: number | null = null;
 
   posicaoAtual: string = '';
   posicoesPossiveis: string[] = [
@@ -181,12 +186,24 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.subscribeToPendingSync();
     this.rebuildRecentActivity();
     this.isLoading = false;
+
+    try {
+      await ScreenOrientation.lock({ orientation: 'landscape' });
+    } catch (e) {
+      console.warn('ScreenOrientation not supported or failed to lock', e);
+    }
   }
 
   ngOnDestroy() {
     clearInterval(this.tickSub);
     clearInterval(this.autoMonitoringSub);
     this.pendingSub?.unsubscribe();
+    
+    try {
+      ScreenOrientation.unlock();
+    } catch (e) {
+      console.warn('ScreenOrientation not supported or failed to unlock', e);
+    }
   }
 
   private async loadInitialData() {
@@ -213,6 +230,11 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
           || this.patient?.asa
           || this.selectedSurgery?.asa;
         if (asaBack) this.patientAsa = `ASA ${asaBack}`;
+      }
+
+      if (surgery?.status === 3 || surgery?.status === 'Concluido' || surgery?.status === 'Completed') {
+        this.isSurgeryFinished = true;
+        this.isAnesthesiaFinished = true;
       }
     } catch (err) {
       console.error('[Monitorização] loadInitialData falhou', err);
@@ -244,23 +266,19 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     }
     if (draft.anesthesiaEndTime) {
       this.anesthesiaEndTime = new Date(draft.anesthesiaEndTime);
-      this.isSurgeryFinished = true;
+      this.isAnesthesiaFinished = true;
     }
 
-    if (this.isAnesthesiaStarted && !this.isSurgeryFinished) {
+    if (this.isAnesthesiaStarted && !this.isAnesthesiaFinished) {
       this.startAutoMonitoring();
     }
   }
 
   private startClockTick() {
-    if (this.isSurgeryFinished) {
-      this.anesthesiaTimer = this.formatDuration(this.startTimeAnesthesia, this.anesthesiaEndTime);
-      this.surgeryTimer = this.formatDuration(this.startTimeSurgery, this.surgeryEndTime);
-      return;
-    }
+    clearInterval(this.tickSub);
     this.tickSub = setInterval(() => {
-      this.anesthesiaTimer = this.formatDuration(this.startTimeAnesthesia, this.anesthesiaEndTime);
-      this.surgeryTimer = this.formatDuration(this.startTimeSurgery, this.surgeryEndTime);
+      this.anesthesiaTimer = this.formatDuration(this.startTimeAnesthesia, this.isAnesthesiaFinished ? this.anesthesiaEndTime : null);
+      this.surgeryTimer = this.formatDuration(this.startTimeSurgery, null);
     }, 1000);
   }
 
@@ -274,13 +292,49 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async iniciarAnestesia() {
-    if (this.isAnesthesiaStarted) return;
+    if (this.isAnesthesiaStarted) {
+      if (this.isAnesthesiaFinished) return;
+      const alert = await this.alertController.create({
+        header: 'Editar Início Anestesia',
+        inputs: [
+          { name: 'time', type: 'time', value: this.formatHM(this.startTimeAnesthesia as Date) }
+        ],
+        buttons: [
+          { text: 'Cancelar', role: 'cancel' },
+          { text: 'Salvar', handler: (d) => {
+            if (!d.time) return;
+            const oldIso = (this.startTimeAnesthesia as Date).toISOString();
+            const iso = this.replaceTimeInIso(oldIso, d.time);
+            this.startTimeAnesthesia = new Date(iso);
+            this.anesthesiaStartTime = this.startTimeAnesthesia;
+            
+            // Se o primeiro registro vital estiver com o mesmo horário antigo, arrasta ele junto
+            if (this.vitalRecords.length > 0) {
+              const first = this.vitalRecords[0];
+              const firstTime = new Date(first.timestamp || 0).getTime();
+              if (Math.abs(firstTime - new Date(oldIso).getTime()) < 60000) {
+                first.timestamp = iso;
+                first.time = d.time;
+                this.vitalRecords = [...this.vitalRecords]; // trigger change detection
+              }
+            }
+            this.persistDraft();
+          }}
+        ]
+      });
+      await alert.present();
+      return;
+    }
     const now = new Date();
     this.startTimeAnesthesia = now;
     this.anesthesiaStartTime = now;
     this.isAnesthesiaStarted = true;
 
     await this.promptInitialPosition();
+
+    if (!this.vitalRecords.length) {
+      this.addVitalRecord({ timestamp: now.toISOString(), time: this.formatHM(now) });
+    }
 
     this.startAutoMonitoring();
     this.persistDraft();
@@ -311,12 +365,50 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     });
   }
 
-  iniciarCirurgia() {
-    if (!this.isAnesthesiaStarted || this.isSurgeryStarted) return;
+  async iniciarCirurgia() {
+    if (!this.isAnesthesiaStarted) return;
+    if (this.isSurgeryStarted) {
+      if (this.isAnesthesiaFinished || this.isSurgeryFinished) return;
+      const alert = await this.alertController.create({
+        header: 'Editar Início Cirurgia',
+        inputs: [
+          { name: 'time', type: 'time', value: this.formatHM(this.startTimeSurgery as Date) }
+        ],
+        buttons: [
+          { text: 'Cancelar', role: 'cancel' },
+          { text: 'Salvar', handler: (d) => {
+            if (!d.time) return;
+            const oldIso = (this.startTimeSurgery as Date).toISOString();
+            const iso = this.replaceTimeInIso(oldIso, d.time);
+            this.startTimeSurgery = new Date(iso);
+            this.surgeryStartTime = this.startTimeSurgery;
+            
+            // Se o primeiro registro vital estiver com o mesmo horário antigo, arrasta ele junto
+            if (this.vitalRecords.length > 0) {
+              const first = this.vitalRecords[0];
+              const firstTime = new Date(first.timestamp || 0).getTime();
+              if (Math.abs(firstTime - new Date(oldIso).getTime()) < 60000) {
+                first.timestamp = iso;
+                first.time = d.time;
+                this.vitalRecords = [...this.vitalRecords]; // trigger change detection
+              }
+            }
+            this.persistDraft();
+          }}
+        ]
+      });
+      await alert.present();
+      return;
+    }
     const now = new Date();
     this.startTimeSurgery = now;
     this.surgeryStartTime = now;
     this.isSurgeryStarted = true;
+
+    if (!this.vitalRecords.length) {
+      this.addVitalRecord({ timestamp: now.toISOString(), time: this.formatHM(now) });
+    }
+
     this.persistDraft();
   }
 
@@ -324,7 +416,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     clearInterval(this.autoMonitoringSub);
     const ms = Math.max(1, this.autoMonitoringIntervalMinutes) * 60 * 1000;
     this.autoMonitoringSub = setInterval(() => {
-      if (this.isSurgeryFinished) return;
+      if (this.isAnesthesiaFinished) return;
       this.autoSnapshotFromLast();
     }, ms);
   }
@@ -372,7 +464,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async addTimePoint(_auto = false) {
-    if (!this.isAnesthesiaStarted || this.isSurgeryFinished || this.isVitalModalOpen) return;
+    if (!this.isAnesthesiaStarted || this.isAnesthesiaFinished || this.isVitalModalOpen) return;
     this.isVitalModalOpen = true;
     try {
       const modal = await this.modalController.create({
@@ -419,7 +511,8 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
           text: 'Adicionar',
           handler: (data) => {
             if (!data.label?.trim()) return false;
-            const key = data.label.trim().toLowerCase().replace(/\s+/g, '_');
+            const safeLabel = data.label.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+            const key = `custom_${Date.now()}_${safeLabel}`;
             this.customFields = [...this.customFields, {
               key, label: data.label.trim(), unit: data.unit?.trim(),
             }];
@@ -464,6 +557,37 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.rebuildRecentActivity();
   }
 
+
+  async openFichaAnestesicaModal() {
+    const data = {
+      title: 'Ficha Anestésica',
+      sections: [
+        {
+          title: 'Resumo da Monitorização',
+          fields: [
+            { label: 'Tempo de Anestesia', value: this.anesthesiaTimer },
+            { label: 'Tempo de Cirurgia', value: this.surgeryTimer },
+            { label: 'Sinais Vitais Registrados', value: this.vitalRecords.length }
+          ]
+        },
+        {
+          title: 'Equipe e Sala',
+          fields: [
+            { label: 'Cirurgião', value: this.selectedSurgery?.surgeonName || '--' },
+            { label: 'Procedimento', value: this.selectedProcedure?.name || '--' }
+          ]
+        }
+      ]
+    };
+
+    const modal = await this.modalController.create({
+      component: RecordViewerModalComponent,
+      componentProps: { data },
+      cssClass: 'record-viewer-modal'
+    });
+    await modal.present();
+  }
+
   async onEditAgent(a: Agent) {
     const alert = await this.alertController.create({
       header: 'Editar agente',
@@ -472,7 +596,6 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         { name: 'name', type: 'text', value: a.name, placeholder: 'Nome' },
         { name: 'dose', type: 'text', value: a.dose || '', placeholder: 'Dose' },
         { name: 'route', type: 'text', value: a.route || '', placeholder: 'Via' },
-        { name: 'presentation', type: 'text', value: a.presentation || '', placeholder: 'Apresentação' },
       ],
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
@@ -588,7 +711,6 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         name: data.name,
         dose: data.dose ?? null,
         route: data.route ?? null,
-        presentation: data.presentation ?? null,
       };
       this.agents = [...this.agents, entry].sort(this.byTs);
       this.offlineQueue?.enqueue?.('agent', entry);
@@ -693,7 +815,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       const entry: FluidBalance = {
         clientId: this.newClientId(),
         timestamp: now.toISOString(), time: this.formatHM(now),
-        type: data.type,
+        type: data.balanceType,
         item: data.item,
         volumeMl: Number(data.volumeMl),
         itemId: data.itemId ?? null,
@@ -739,6 +861,39 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.hoverTime = ts;
   }
 
+  onViewBoundsChange(bounds: { min: number, max: number }) {
+    this.viewStartTime = bounds.min;
+    this.viewEndTime = bounds.max;
+    this.cdr.detectChanges();
+  }
+
+  // Sincronização de arraste (pan) nos canais secundários
+  private isPanning = false;
+  private lastPanX = 0;
+  
+  onPointerDown(e: PointerEvent) {
+    if (e.button !== 0) return; // Apenas clique esquerdo ou toque
+    this.isPanning = true;
+    this.lastPanX = e.clientX;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  }
+
+  onPointerMove(e: PointerEvent, chartRef: any) {
+    if (!this.isPanning || !chartRef) return;
+    const deltaX = e.clientX - this.lastPanX;
+    this.lastPanX = e.clientX;
+    if (deltaX !== 0) {
+      chartRef.panChart(deltaX);
+    }
+  }
+
+  onPointerUp(e: PointerEvent) {
+    this.isPanning = false;
+    if ((e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) {
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    }
+  }
+
   openHistoryDrawer(tab: HistoryTab = 'vitals') {
     this.historyDrawerTab = tab;
     this.drawerTab = tab;
@@ -772,7 +927,43 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async openAnestesicaRecord() {
-    console.warn('[Monitorização] PreAnestesicaViewerComponent não importado — ajuste o path.');
+    // A estrutura do JSON de "carregamento inicial" foi definida como RecordData.
+    // O backend (Bruno) pode retornar os dados neste formato na consulta da cirurgia,
+    // e o frontend apenas fará o binding. Aqui construímos um fallback dinâmico básico.
+    const data: RecordData = this.selectedSurgery?.preAnesthesiaData || {
+      title: 'Ficha Pré-Anestésica',
+      sections: [
+        {
+          title: 'Dados do Paciente',
+          fields: [
+            { label: 'Nome', value: this.patient?.name || '—' },
+            { label: 'Idade', value: this.patientAge },
+            { label: 'Peso', value: this.patientWeight ? `${this.patientWeight} kg` : '—' },
+            { label: 'ASA', value: this.patientAsa },
+          ]
+        },
+        {
+          title: 'Procedimento',
+          fields: [
+            { label: 'Cirurgia', value: this.selectedProcedure?.description || '—' },
+            { label: 'Prioridade', value: this.selectedSurgery?.priority || '—' },
+          ]
+        },
+        {
+          title: 'Status',
+          fields: [
+             { label: 'Integração backend', value: 'Quando o backend enviar "preAnesthesiaData" no formato RecordData JSON, esta ficha será preenchida automaticamente com os dados oficiais.' }
+          ]
+        }
+      ]
+    };
+
+    const modal = await this.modalController.create({
+      component: RecordViewerModalComponent,
+      componentProps: { data },
+      cssClass: 'record-viewer-modal'
+    });
+    await modal.present();
   }
 
   private buildDraftPayload() {
@@ -830,6 +1021,39 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     }
   }
 
+  async clickFinalize() {
+    if (!this.isSurgeryFinished) {
+      this.encerrarCirurgia();
+    } else {
+      this.encerrarAnestesia();
+    }
+  }
+
+  async encerrarCirurgia() {
+    const alert = await this.alertController.create({
+      header: 'Finalizar Cirurgia',
+      subHeader: 'Deseja marcar o fim da cirurgia?',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        { text: 'Finalizar', handler: () => {
+          this.isSurgeryFinished = true;
+          this.surgeryEndTime = new Date();
+          
+          if (!this.vitalRecords.length) {
+            this.addVitalRecord({ timestamp: this.surgeryEndTime.toISOString(), time: this.formatHM(this.surgeryEndTime) });
+          } else {
+             // Forçar snapshot para marcar a linha no gráfico
+             this.autoSnapshotFromLast();
+          }
+
+          this.persistDraft();
+          // Aqui no futuro pode mandar um patch pra API pra registrar o fim da cirurgia
+        }},
+      ],
+    });
+    await alert.present();
+  }
+
   async encerrarAnestesia() {
     const totalLancamentos =
       this.vitalRecords.length +
@@ -857,8 +1081,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
   private async executarEncerramento() {
     const now = new Date();
-    this.isSurgeryFinished = true;
-    this.surgeryEndTime = this.surgeryEndTime || now;
+    this.isAnesthesiaFinished = true;
     this.anesthesiaEndTime = now;
 
     clearInterval(this.autoMonitoringSub);
@@ -866,7 +1089,11 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.tickSub = undefined;
 
     this.anesthesiaTimer = this.formatDuration(this.startTimeAnesthesia, this.anesthesiaEndTime);
-    this.surgeryTimer = this.formatDuration(this.startTimeSurgery, this.surgeryEndTime);
+    this.surgeryTimer = this.formatDuration(this.startTimeSurgery, this.anesthesiaEndTime);
+
+    if (this.vitalRecords.length) {
+      this.autoSnapshotFromLast();
+    }
 
     this.persistDraft();
 

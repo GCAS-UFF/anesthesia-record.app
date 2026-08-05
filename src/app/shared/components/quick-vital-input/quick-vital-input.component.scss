@@ -48,9 +48,9 @@
 }
 
 .modal-shell {
-  padding: 14px;
+  padding: 20px;
   display: grid;
-  gap: 12px; 
+  gap: 16px; 
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
 
@@ -101,10 +101,10 @@
 }
 
 .vital-grid {
-  padding: 12px;
+  padding: 16px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .vital-field {
@@ -137,14 +137,20 @@
     font-weight: 700;
   }
 
-  ion-input {
+  .custom-input {
     min-height: 38px;
-    --padding-start: 0;
-    --padding-end: 0;
     color: var(--vital-text-0);
-    font-size: 24px;
-    font-weight: 900;
-    --highlight-color-focused: var(--vital-primary);
+    font-size: 18px;
+    font-weight: 700;
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    
+    &::placeholder {
+      color: #94a3b8;
+      font-weight: 500;
+    }
   }
 }
 
@@ -165,16 +171,58 @@ ion-footer {
   border-top: 1px solid var(--vital-border);
   box-shadow: 0 -4px 14px rgba(15, 23, 42, 0.06);
 }
-ion-footer ion-toolbar {
-  --background: var(--vital-surface);
-  --border-color: transparent;
-  --min-height: 64px;
-  padding-bottom: env(safe-area-inset-bottom);
 
-  ion-button {
-    min-height: 44px;
-    font-weight: 800;
-    --border-radius: 12px;
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #ffffff;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0 24px;
+    gap: 8px;
+
+    &.btn-cancel {
+      background: transparent;
+      color: var(--vital-text-2);
+      &:hover {
+        background: #f1f5f9;
+        color: var(--vital-text-0);
+      }
+    }
+
+    &.btn-save {
+      background: #3b82f6;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+
+      &:hover:not(:disabled) {
+        background: #2563eb;
+      }
+      
+      &:disabled {
+        background: #cbd5e1;
+        box-shadow: none;
+        cursor: not-allowed;
+      }
+      
+      ion-icon {
+        font-size: 18px;
+      }
+    }
   }
 }
 

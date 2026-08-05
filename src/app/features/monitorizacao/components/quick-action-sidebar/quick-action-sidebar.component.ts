@@ -21,6 +21,7 @@ export class QuickActionSidebarComponent {
   @Input() isAnesthesiaStarted = false;
   @Input() isSurgeryStarted = false;
   @Input() isSurgeryFinished = false;
+  @Input() isAnesthesiaFinished = false;
   @Input() startTimeAnesthesia: Date | string | null = null;
   @Input() startTimeSurgery: Date | string | null = null;
   @Input() anesthesiaTimer = '00:00:00';

@@ -21,8 +21,10 @@ type AnyBalance = any;
 })
 export class FluidBalanceChartComponent {
   @Input() balance: AnyBalance[] = [];
-  @Input() anesthesiaStartTime: Date | null = null;
-  @Input() surgeryEndTime: Date | null = null;
+  @Input() anesthesiaStartTime: Date | string | null = null;
+  @Input() surgeryEndTime: Date | string | null = null;
+  @Input() viewStartTime: number | null = null;
+  @Input() viewEndTime: number | null = null;
   @Input() hoverTime: number | null = null;
   @Input() collapsed = false;
   @Input() readonly = false;
@@ -59,11 +61,16 @@ export class FluidBalanceChartComponent {
 
   posX(item: AnyBalance): number {
     if (!this.anesthesiaStartTime) return 50;
-    const start = this.anesthesiaStartTime.getTime();
-    const end = (this.surgeryEndTime ?? new Date()).getTime();
+    
+    // Se temos view bounds do pan/zoom, usamos eles. Senão, usamos os tempos totais.
+    const start = this.viewStartTime ?? new Date(this.anesthesiaStartTime).getTime();
+    const end = this.viewEndTime ?? (this.surgeryEndTime ? new Date(this.surgeryEndTime).getTime() : Date.now());
+    
     const total = Math.max(end - start, 1);
     const t = new Date(item?.timestamp || Date.now()).getTime();
-    return Math.max(0, Math.min(100, ((t - start) / total) * 100));
+    
+    // Retorna a porcentagem relativa à janela visualizada atual
+    return ((t - start) / total) * 100;
   }
 
   get maxVol(): number {

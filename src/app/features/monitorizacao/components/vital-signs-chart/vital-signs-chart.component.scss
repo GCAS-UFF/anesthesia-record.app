@@ -9,6 +9,7 @@
   grid-template-rows: auto auto 1fr; 
   height: 100%;
   min-height: 0;
+  min-width: 0;
   background: #fff;
   border-radius: 12px;
   overflow: hidden;
@@ -164,11 +165,7 @@
     line-height: 1;
 
     &.sym-fc {
-      width: 9px;
-      height: 9px;
-      min-width: 9px;
-      border-radius: 50%;
-      background: #ef4444;
+      color: #ef4444;
     }
     &.sym-pas,
     &.sym-pad {
@@ -181,11 +178,7 @@
       color: #10b981;
     }
     &.sym-temp {
-      width: 9px;
-      height: 9px;
-      min-width: 9px;
-      border-radius: 50%;
-      background: #f59e0b;
+      color: #f59e0b;
     }
     &.sym-bis {
       width: 10px;
@@ -199,12 +192,12 @@
 }
 
 .chart-area {
+  flex: 1;
   position: relative;
   min-height: 0;
   height: 100%;
   padding: 8px;
   canvas {
-    max-height: 100%;
     width: 100% !important;
     height: 100% !important;
   }

@@ -46,9 +46,12 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   @Input() showBackButton = false;
   @Input() doctorInitials = 'Dr(a)';
   @Input() showPreAnestesicaButton = false;
-  @Input() preAnestesicaButtonLabel = '';
+  @Input() preAnestesicaButtonLabel = 'Ficha Pré-Anestésica';
+  @Input() showAnestesicaButton = false;
+  @Input() anestesicaButtonLabel = 'Ficha Anestésica';
 
   @Output() openPreAnestesica = new EventEmitter<void>();
+  @Output() openAnestesica = new EventEmitter<void>();
 
   doctorId = 0;
   private isLoggingOut = false;

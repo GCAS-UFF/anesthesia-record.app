@@ -56,7 +56,7 @@
     <button
       class="qa qa-vital"
       (click)="addVital.emit()"
-      [disabled]="!isAnesthesiaStarted || isSurgeryFinished"
+      [disabled]="!isAnesthesiaStarted || isAnesthesiaFinished"
     >
       <ion-icon name="pulse-outline"></ion-icon>
       <span>Sinal Vital</span>
@@ -64,7 +64,7 @@
     <button
       class="qa qa-agent"
       (click)="addAgent.emit()"
-      [disabled]="!isAnesthesiaStarted || isSurgeryFinished"
+      [disabled]="!isAnesthesiaStarted || isAnesthesiaFinished"
     >
       <ion-icon name="medkit-outline"></ion-icon>
       <span>Agente</span>
@@ -72,7 +72,7 @@
     <button
       class="qa qa-event"
       (click)="addEvent.emit()"
-      [disabled]="!isAnesthesiaStarted || isSurgeryFinished"
+      [disabled]="!isAnesthesiaStarted || isAnesthesiaFinished"
     >
       <ion-icon name="warning-outline"></ion-icon>
       <span>Evento</span>
@@ -80,7 +80,7 @@
     <button
       class="qa qa-fluid"
       (click)="addBalance.emit()"
-      [disabled]="!isAnesthesiaStarted || isSurgeryFinished"
+      [disabled]="!isAnesthesiaStarted || isAnesthesiaFinished"
     >
       <ion-icon name="water-outline"></ion-icon>
       <span>Balanço</span>
@@ -93,7 +93,7 @@
       <button
         class="btn-change"
         (click)="togglePos()"
-        [disabled]="!isSurgeryStarted || isSurgeryFinished"
+        [disabled]="!isSurgeryStarted || isAnesthesiaFinished"
       >
         Mudar
       </button>

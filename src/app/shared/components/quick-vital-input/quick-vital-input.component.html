@@ -33,16 +33,16 @@
             {{ field.label }}
             <small class="unit-chip" *ngIf="field.unit">{{ field.unit }}</small>
           </span>
-          <ion-input
+          <input
+            class="custom-input"
             type="number"
             inputmode="decimal"
             [min]="field.min"
             [max]="field.max"
             [step]="field.step || '1'"
             [value]="form[field.key]"
-            (ionInput)="setValue(field.key, $event.detail.value)"
+            (input)="setValue(field.key, $any($event.target).value)"
             placeholder="--">
-          </ion-input>
         </label>
       </div>
     </section>
@@ -56,13 +56,13 @@
             {{ field.label }}
             <small class="unit-chip" *ngIf="field.unit">{{ field.unit }}</small>
           </span>
-          <ion-input
+          <input
+            class="custom-input"
             type="number"
             inputmode="decimal"
             [value]="form.custom?.[field.key]"
-            (ionInput)="setCustomValue(field.key, $event.detail.value)"
+            (input)="setCustomValue(field.key, $any($event.target).value)"
             placeholder="--">
-          </ion-input>
         </label>
       </div>
     </section>
@@ -73,16 +73,11 @@
   </div>
 </ion-content>
 
-<ion-footer>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button fill="clear" color="medium" (click)="cancel()">Cancelar</ion-button>
-    </ion-buttons>
-    <ion-buttons slot="end">
-      <ion-button fill="solid" color="primary" [disabled]="!hasAnyRequiredSignal()" (click)="save()">
-        <ion-icon name="save-outline" slot="start"></ion-icon>
-        Salvar registro
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+<ion-footer class="ion-no-border">
+  <div class="modal-footer">
+    <button class="btn-cancel" (click)="cancel()">Cancelar</button>
+    <button class="btn-save" [disabled]="!hasAnyRequiredSignal()" (click)="save()">
+      <ion-icon name="save-outline"></ion-icon> Salvar registro
+    </button>
+  </div>
 </ion-footer>

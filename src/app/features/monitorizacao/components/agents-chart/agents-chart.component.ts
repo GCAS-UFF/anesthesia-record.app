@@ -21,8 +21,10 @@ type AnyAgent = any;
 })
 export class AgentsChartComponent {
   @Input() agents: AnyAgent[] = [];
-  @Input() anesthesiaStartTime: Date | null = null;
-  @Input() surgeryEndTime: Date | null = null;
+  @Input() anesthesiaStartTime: Date | string | null = null;
+  @Input() surgeryEndTime: Date | string | null = null;
+  @Input() viewStartTime: number | null = null;
+  @Input() viewEndTime: number | null = null;
   @Input() hoverTime: number | null = null;
   @Input() collapsed = false;
   @Input() readonly = false;
@@ -67,13 +69,16 @@ export class AgentsChartComponent {
     return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   }
 
-  posX(item: AnyAgent): number {
+  posX(a: AnyAgent): number {
     if (!this.anesthesiaStartTime) return 50;
-    const start = this.anesthesiaStartTime.getTime();
-    const end = (this.surgeryEndTime ?? new Date()).getTime();
+    
+    const start = this.viewStartTime ?? new Date(this.anesthesiaStartTime).getTime();
+    const end = this.viewEndTime ?? (this.surgeryEndTime ? new Date(this.surgeryEndTime).getTime() : Date.now());
+    
     const total = Math.max(end - start, 1);
-    const pct = ((this.itemTime(item) - start) / total) * 100;
-    return Math.max(0, Math.min(100, pct));
+    const t = this.itemTime(a);
+    
+    return ((t - start) / total) * 100;
   }
 
   colorFor(name: string): string {

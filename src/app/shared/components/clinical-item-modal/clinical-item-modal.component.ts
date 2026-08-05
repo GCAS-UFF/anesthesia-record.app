@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MasterDataService } from 'src/app/core/services/master-data.service';
 import { ModalController, IonicModule } from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { closeOutline, searchOutline, closeCircle, checkmarkOutline, chevronDownOutline } from 'ionicons/icons';
 
 type ItemType = 'agent' | 'event' | 'balance';
 
@@ -39,13 +41,15 @@ export class ClinicalItemModalComponent implements OnInit {
     categoryId: null, categoryLabel: '', description: '',
   };
   eventCategories: EventCategory[] = [
-    { id: 'position',   label: 'Posição',      emoji: '🔄' },
-    { id: 'airway',     label: 'Via aérea',    emoji: '🫁' },
-    { id: 'surgical',   label: 'Cirúrgico',    emoji: '🔪' },
-    { id: 'clinical',   label: 'Clínico',      emoji: '🩺' },
-    { id: 'medication', label: 'Medicação',    emoji: '💊' },
-    { id: 'anesthesia', label: 'Anestesia',    emoji: '💤' },
-    { id: 'other',      label: 'Outro',        emoji: '📝' },
+    { id: 'intubation',    label: 'Intubação',     emoji: '🫁' },
+    { id: 'extubation',    label: 'Extubação',     emoji: '🫁' },
+    { id: 'incision',      label: 'Incisão',       emoji: '🔪' },
+    { id: 'block',         label: 'Bloqueio',      emoji: '💉' },
+    { id: 'tourniquet_on', label: 'Garrote ON',    emoji: '🛑' },
+    { id: 'tourniquet_off',label: 'Garrote OFF',   emoji: '✅' },
+    { id: 'position',      label: 'Posição',       emoji: '🔄' },
+    { id: 'complication',  label: 'Complicação',   emoji: '⚠️' },
+    { id: 'other',         label: 'Outro',         emoji: '📝' },
   ];
 
   balance: {
@@ -84,7 +88,9 @@ export class ClinicalItemModalComponent implements OnInit {
   constructor(
     private modalCtrl: ModalController,
     private masterData: MasterDataService,
-  ) {}
+  ) {
+    addIcons({ closeOutline, searchOutline, closeCircle, checkmarkOutline, chevronDownOutline });
+  }
 
   async ngOnInit() {
     await this.loadMedications();

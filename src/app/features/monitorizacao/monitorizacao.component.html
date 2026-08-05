@@ -3,24 +3,29 @@
   <app-header-institucional
     [showBackButton]="true"
     [showPreAnestesicaButton]="true"
+    [showAnestesicaButton]="true"
     (openPreAnestesica)="openAnestesicaRecord()"
+    (openAnestesica)="openFichaAnestesicaModal()"
   >
   </app-header-institucional>
 
   <!-- MAIN GRID -->
   <div class="main-grid">
     <div class="channels-column" [style.gridTemplateRows]="channelsGridRows">
-      <app-vital-signs-chart
+      <app-vital-signs-chart #vitalSigns
         [vitalRecords]="vitalRecords"
+        [customFields]="customFields"
         [anesthesiaStartTime]="anesthesiaStartTime"
+        [anesthesiaEndTime]="anesthesiaEndTime"
         [surgeryStartTime]="surgeryStartTime"
         [surgeryEndTime]="surgeryEndTime"
         [positionHistory]="positionHistory"
         [clinicalEvents]="clinicalEvents"
         [agents]="agents"
         [hoverTime]="hoverTime"
-        [readonly]="isSurgeryFinished"
+        [readonly]="isAnesthesiaFinished"
         (hoverTimeChange)="hoverTime = $event"
+        (viewBoundsChange)="onViewBoundsChange($event)"
         (addVitalRecord)="openVitalModal()"
         (openHistory)="openDrawer('vitals')"
         (addCustomField)="openCustomFieldModal()"
@@ -28,24 +33,30 @@
       </app-vital-signs-chart>
 
       <app-agents-chart
-        class="channel channel-strip"
+        class="channel channel-strip secondary-pan-target"
         [class.is-collapsed]="expandedPanel !== 'agents'"
         [class.is-expanded]="expandedPanel === 'agents'"
         [collapsed]="expandedPanel !== 'agents'"
         [agents]="agents"
         [anesthesiaStartTime]="anesthesiaStartTime"
         [surgeryEndTime]="surgeryEndTime"
+        [viewStartTime]="viewStartTime"
+        [viewEndTime]="viewEndTime"
         [hoverTime]="sharedHoverTime"
         (hoverTimeChange)="onSharedHover($event)"
         (toggle)="togglePanel('agents')"
-        [readonly]="isSurgeryFinished"
+        [readonly]="isAnesthesiaFinished"
         (addAgent)="openAgentModal()"
         (openHistory)="openHistoryDrawer('agents')"
+        (pointerdown)="onPointerDown($event)"
+        (pointermove)="onPointerMove($event, vitalSigns)"
+        (pointerup)="onPointerUp($event)"
+        (pointercancel)="onPointerUp($event)"
       >
       </app-agents-chart>
 
       <app-events-chart
-        class="channel channel-strip"
+        class="channel channel-strip secondary-pan-target"
         [class.is-collapsed]="expandedPanel !== 'events'"
         [class.is-expanded]="expandedPanel === 'events'"
         [collapsed]="expandedPanel !== 'events'"
@@ -53,29 +64,40 @@
         [positionHistory]="positionHistory"
         [anesthesiaStartTime]="anesthesiaStartTime"
         [surgeryEndTime]="surgeryEndTime"
+        [viewStartTime]="viewStartTime"
+        [viewEndTime]="viewEndTime"
         [hoverTime]="sharedHoverTime"
         (hoverTimeChange)="onSharedHover($event)"
         (toggle)="togglePanel('events')"
-        [readonly]="isSurgeryFinished"
+        [readonly]="isAnesthesiaFinished"
         (addEvent)="openEventModal()"
-        (openHistory)="openHistoryDrawer('events')"
+        (pointerdown)="onPointerDown($event)"
+        (pointermove)="onPointerMove($event, vitalSigns)"
+        (pointerup)="onPointerUp($event)"
+        (pointercancel)="onPointerUp($event)"
       >
       </app-events-chart>
 
       <app-fluid-balance-chart
-        class="channel channel-strip"
+        class="channel channel-strip secondary-pan-target"
         [class.is-collapsed]="expandedPanel !== 'balance'"
         [class.is-expanded]="expandedPanel === 'balance'"
         [collapsed]="expandedPanel !== 'balance'"
         [balance]="fluidBalance"
         [anesthesiaStartTime]="anesthesiaStartTime"
         [surgeryEndTime]="surgeryEndTime"
+        [viewStartTime]="viewStartTime"
+        [viewEndTime]="viewEndTime"
         [hoverTime]="sharedHoverTime"
         (hoverTimeChange)="onSharedHover($event)"
         (toggle)="togglePanel('balance')"
-        [readonly]="isSurgeryFinished"
+        [readonly]="isAnesthesiaFinished"
         (addBalance)="openBalanceModal()"
         (openHistory)="openHistoryDrawer('balance')"
+        (pointerdown)="onPointerDown($event)"
+        (pointermove)="onPointerMove($event, vitalSigns)"
+        (pointerup)="onPointerUp($event)"
+        (pointercancel)="onPointerUp($event)"
       >
       </app-fluid-balance-chart>
     </div>
@@ -85,6 +107,7 @@
       [isAnesthesiaStarted]="isAnesthesiaStarted"
       [isSurgeryStarted]="isSurgeryStarted"
       [isSurgeryFinished]="isSurgeryFinished"
+      [isAnesthesiaFinished]="isAnesthesiaFinished"
       [startTimeAnesthesia]="startTimeAnesthesia"
       [startTimeSurgery]="startTimeSurgery"
       [anesthesiaTimer]="anesthesiaTimer"
@@ -112,10 +135,11 @@
     [pendingSyncCount]="pendingSyncCount"
     [isAnesthesiaStarted]="isAnesthesiaStarted"
     [isSurgeryFinished]="isSurgeryFinished"
+    [isAnesthesiaFinished]="isAnesthesiaFinished"
     [isSyncing]="isSyncing"
     (syncNow)="syncPendingNow()"
     (openHistory)="openHistoryDrawer('vitals')"
-    (finalize)="encerrarAnestesia()"
+    (finalize)="clickFinalize()"
   >
   </app-finalize-anesthesia-bar>
 
@@ -127,7 +151,7 @@
     [agents]="agents"
     [events]="clinicalEvents"
     [balance]="fluidBalance"
-    [isSurgeryFinished]="isSurgeryFinished"
+    [isSurgeryFinished]="isAnesthesiaFinished"
     (close)="historyDrawerOpen = false"
     (editRecord)="onEditVital($event)"
     (deleteRecord)="onDeleteVital($event)"

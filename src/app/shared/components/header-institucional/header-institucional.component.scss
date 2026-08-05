@@ -426,6 +426,20 @@
     visibility: hidden;
     pointer-events: none;
   }
+
+  &.header-pre-btn {
+    background: #e0f2fe;
+    color: #0284c7;
+    ion-icon { color: #0284c7; }
+    &:hover { background: #bae6fd; }
+  }
+
+  &.header-anes-btn {
+    background: #ecfdf5;
+    color: #059669;
+    ion-icon { color: #059669; }
+    &:hover { background: #d1fae5; }
+  }
 }
 
 .header-pre-btn {

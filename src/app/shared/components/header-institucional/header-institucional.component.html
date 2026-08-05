@@ -26,6 +26,18 @@
       <ion-icon name="document-text-outline"></ion-icon>
       {{ preAnestesicaButtonLabel }}
     </button>
+
+    <button
+      type="button"
+      class="header-pill-btn header-anes-btn"
+      [class.is-hidden]="menuOpen"
+      *ngIf="showAnestesicaButton"
+      (click)="openAnestesica.emit()"
+      [attr.aria-label]="anestesicaButtonLabel"
+    >
+      <ion-icon name="document-text-outline"></ion-icon>
+      {{ anestesicaButtonLabel }}
+    </button>
   </div>
 
   <div class="header-right">

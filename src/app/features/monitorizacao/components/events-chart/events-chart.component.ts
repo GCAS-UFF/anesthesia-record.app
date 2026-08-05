@@ -40,6 +40,8 @@ export class EventsChartComponent {
   @Input() positionHistory: AnyEvent[] = [];
   @Input() anesthesiaStartTime: Date | string | null = null;
   @Input() surgeryEndTime: Date | string | null = null;
+  @Input() viewStartTime: number | null = null;
+  @Input() viewEndTime: number | null = null;
   @Input() hoverTime: number | null = null;
   @Input() collapsed = false;
   @Input() readonly = false;
@@ -139,16 +141,16 @@ export class EventsChartComponent {
   }
 
   posX(item: AnyEvent): number {
-    const start = this.toDate(this.anesthesiaStartTime)?.getTime();
+    const start = this.viewStartTime ?? this.toDate(this.anesthesiaStartTime)?.getTime();
     const itemTime = this.itemTime(item);
 
     if (!start || !Number.isFinite(itemTime)) return 50;
 
-    const end = this.toDate(this.surgeryEndTime)?.getTime() || Date.now();
+    const end = this.viewEndTime ?? (this.toDate(this.surgeryEndTime)?.getTime() || Date.now());
     const total = Math.max(end - start, 1);
     const raw = ((itemTime - start) / total) * 100;
 
-    return Math.max(1, Math.min(99, raw));
+    return raw;
   }
 
   onMarkerEnter(item: AnyEvent): void {

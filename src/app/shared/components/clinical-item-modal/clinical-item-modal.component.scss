@@ -10,8 +10,23 @@
   --shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
 }
 
+.custom-header ion-toolbar {
+  --background: #ffffff;
+  border-bottom: 1px solid var(--field-border);
+
+  ion-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--field-text);
+  }
+}
+
+.modal-shell {
+  padding: 8px 12px 24px;
+}
+
 .field {
-  margin: 4px 0 16px;
+  margin: 0 0 20px;
 
   .field-label {
     display: block;
@@ -20,65 +35,85 @@
     color: var(--field-muted);
     letter-spacing: 0.02em;
     text-transform: uppercase;
-    margin: 0 4px 6px;
+    margin: 0 4px 8px;
   }
 }
 
-/* ═══════════════════ MEDICATION SEARCH ═══════════════════ */
-.med-search {
+/* ═══════════════════ CUSTOM INPUT WRAP ═══════════════════ */
+.custom-input-wrap {
   position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--field-bg);
+  border: 1.5px solid var(--field-border);
+  border-radius: 12px;
+  padding: 0 14px;
+  height: 48px;
+  transition: all 0.2s ease;
 
-  .med-input-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-    background: var(--field-bg);
-    border: 1.5px solid var(--field-border);
-    border-radius: 12px;
-    padding: 0 10px;
-    height: 46px;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  &:focus-within {
+    border-color: var(--field-border-focus);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.14);
+  }
 
-    &:focus-within {
-      border-color: var(--field-border-focus);
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.14);
+  &.select-wrap {
+    padding-right: 40px;
+    
+    .select-icon {
+      position: absolute;
+      right: 14px;
+      font-size: 18px;
+      color: var(--field-muted);
+      pointer-events: none;
     }
   }
+}
 
-  .med-icon {
-    font-size: 20px;
-    color: var(--field-muted);
-    margin-right: 8px;
-    flex-shrink: 0;
-  }
+.custom-icon {
+  font-size: 20px;
+  color: var(--field-muted);
+  margin-right: 10px;
+  flex-shrink: 0;
+}
 
-  .med-input {
-    flex: 1;
-    border: 0;
-    outline: none;
-    background: transparent;
-    font-size: 15px;
-    color: var(--field-text);
-    height: 100%;
-    padding: 0;
+.custom-input {
+  flex: 1;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--field-text);
+  height: 100%;
+  padding: 0;
+  width: 100%;
 
-    &::placeholder { color: #94a3b8; }
-  }
+  &::placeholder { color: #94a3b8; font-weight: 400; }
+}
 
-  .med-clear {
-    background: transparent;
-    border: 0;
-    padding: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    color: var(--field-muted);
+select.custom-input {
+  appearance: none;
+  cursor: pointer;
+}
 
-    ion-icon { font-size: 20px; }
-    &:hover { color: #ef4444; }
-  }
+.custom-clear {
+  background: transparent;
+  border: 0;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: var(--field-muted);
+  
+  ion-icon { font-size: 20px; }
+  &:hover { color: #ef4444; }
+}
 
-  .med-dropdown {
+/* ═══════════════════ SEARCH DROPDOWN ═══════════════════ */
+.custom-search {
+  position: relative;
+
+  .custom-dropdown, .custom-empty {
     position: absolute;
     top: calc(100% + 6px);
     left: 0;
@@ -87,13 +122,16 @@
     border: 1px solid var(--field-border);
     border-radius: 12px;
     box-shadow: var(--shadow);
+    z-index: 9999;
+  }
+  
+  .custom-dropdown {
     max-height: 280px;
     overflow-y: auto;
-    z-index: 9999;
     padding: 4px;
   }
 
-  .med-option {
+  .custom-option {
     width: 100%;
     display: flex;
     align-items: center;
@@ -105,66 +143,101 @@
     padding: 10px 12px;
     border-radius: 8px;
     font-size: 14px;
+    font-weight: 500;
     color: var(--field-text);
     cursor: pointer;
     transition: background 0.1s ease;
 
     &:hover  { background: var(--dropdown-hover); }
-    &.active { background: var(--dropdown-active); font-weight: 600; }
+    &.active { background: var(--dropdown-active); font-weight: 600; color: #2563eb; }
 
-    .med-name {
+    .custom-name {
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .med-check {
-      color: #16a34a;
+    
+    .custom-check {
+      color: #2563eb;
       font-size: 18px;
       flex-shrink: 0;
     }
   }
 
-  .med-empty {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    right: 0;
-    background: var(--dropdown-bg);
-    border: 1px solid var(--field-border);
-    border-radius: 12px;
-    box-shadow: var(--shadow);
+  .custom-empty {
     padding: 14px;
     text-align: center;
     color: var(--field-muted);
     font-size: 13px;
-    z-index: 9999;
+    font-weight: 500;
   }
 }
 
-/* ═══════════════════ GENERAL ═══════════════════ */
+/* ═══════════════════ BUTTONS ═══════════════════ */
 .seg-row {
   display: flex;
   gap: 8px;
-  padding: 8px 0;
 
   ion-button {
     flex: 1;
     --border-radius: 10px;
-    height: 40px;
+    height: 44px;
     margin: 0;
+    font-weight: 600;
   }
 }
 
-ion-item {
-  --padding-start: 0;
-  --inner-padding-end: 0;
-  --background: transparent;
-  margin-bottom: 4px;
-}
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #ffffff;
+  border-top: 1px solid var(--field-border);
 
-ion-footer ion-toolbar {
-  --border-width: 0;
-  --background: #ffffff;
-  padding: 6px 8px;
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0 24px;
+    gap: 8px;
+
+    &.btn-cancel {
+      background: transparent;
+      color: var(--field-muted);
+      &:hover {
+        background: #f1f5f9;
+        color: var(--field-text);
+      }
+    }
+
+    &.btn-save {
+      background: #3b82f6;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+
+      &:hover:not(:disabled) {
+        background: #2563eb;
+      }
+      
+      &:disabled {
+        background: #cbd5e1;
+        box-shadow: none;
+        cursor: not-allowed;
+      }
+      
+      ion-icon {
+        font-size: 18px;
+      }
+    }
+  }
 }
