@@ -79,7 +79,7 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
     },
     {
       icon: 'cloud-outline',
-      label: 'Integrações (Admin)',
+      label: 'Integrações AGHU (Admin)',
       route: '/admin/integracoes',
       admin: true
     },
