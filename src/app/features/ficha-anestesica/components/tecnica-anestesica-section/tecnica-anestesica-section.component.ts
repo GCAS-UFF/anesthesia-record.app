@@ -19,7 +19,7 @@ import { CheckboxGroupComponent } from '../../../../shared/components/checkbox-g
   ],
   templateUrl: './tecnica-anestesica-section.component.html',
   styleUrls: ['./tecnica-anestesica-section.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Default // MUDANÇA: Usar Default
+  changeDetection: ChangeDetectionStrategy.Default
 })
 export class TecnicaAnestesicaSectionComponent implements OnInit, AfterViewInit {
   @Input() formGroup!: FormGroup;
@@ -60,9 +60,14 @@ export class TecnicaAnestesicaSectionComponent implements OnInit, AfterViewInit 
     { label: 'Nasofaringe', value: 'Nasofaringe' }
   ];
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(private cdr: ChangeDetectorRef) { }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.clearNumberWhenUnchecked('vaGuedel', 'guedelNo');
+    this.clearNumberWhenUnchecked('vaMascLaringea', 'mascLaringeaNo');
+    this.clearNumberWhenUnchecked('vaMascFacial', 'mascFacialNo');
+    this.clearNumberWhenUnchecked('vaTubo', 'tuboNo');
+  }
 
   ngAfterViewInit() {
     setTimeout(() => {
@@ -84,8 +89,31 @@ export class TecnicaAnestesicaSectionComponent implements OnInit, AfterViewInit 
     this.cdr.detectChanges();
   }
 
-  // Método para forçar atualização manual
   refresh() {
     this.cdr.detectChanges();
+  }
+
+  private clearNumberWhenUnchecked(
+    checkboxControl: string,
+    numberControl: string
+  ): void {
+    this.formGroup.get(checkboxControl)?.valueChanges.subscribe(checked => {
+      if (!checked) {
+        this.formGroup.patchValue({
+          [numberControl]: null
+        });
+
+        if (checkboxControl === 'vaTubo') {
+          this.formGroup.patchValue({
+            cuff: false,
+            oral: false,
+            nasal: false,
+            iot: false,
+            facil: false,
+            dificil: false
+          });
+        }
+      }
+    });
   }
 }

@@ -83,6 +83,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   isCancelled = false;
   canEdit = true;
   loggedUser: any;
+  isReadOnlyRecord = false;
 
   isPreViewerOpen = false;
   preAnesthesiaData: any = null;
@@ -247,6 +248,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.autoSaveSub = this.form.valueChanges
       .pipe(debounceTime(1500))
       .subscribe(() => {
+        if (this.isReadOnlyRecord)
+          return;
+
         if (!this.isSaving)
           this.persistDraft();
       });
@@ -664,6 +668,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
 
   private persistDraft(data?: any) {
+    if (this.isReadOnlyRecord)
+      return;
+
     if (!this.cirurgiaId)
       return;
 
@@ -693,6 +700,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   private async tentarReenviarRascunho() {
+    if (this.isReadOnlyRecord)
+      return;
+
     if (!this.cirurgiaId)
       return;
 
@@ -766,9 +776,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
             ?? surgeryData.patient.surgeries?.[0];
 
           this.isCancelled = surgeryData.patient.status === SurgeryStatusEnum.Cancelada;
-          this.canEdit = surgeryData.firstAnesthesiologistId === this.loggedUser?.id;
 
-          // Busca o rascunho ou registro salvo
+          const firstAnesthesiologistId = surgeryData.firstAnesthesiologistId;
+
+          this.isReadOnlyRecord = !!firstAnesthesiologistId &&  firstAnesthesiologistId !== this.loggedUser?.id;
+          this.canEdit = !this.isReadOnlyRecord;
+
           const draft = this.anesthesiaService.getDraft(this.cirurgiaId!);
           this.anesthesiaService.getLatestByPatient(this.cirurgiaId!, patientId).subscribe({
             next: (savedRecord) => {
