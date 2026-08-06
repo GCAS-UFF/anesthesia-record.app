@@ -761,11 +761,10 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
             resolve();
             return;
           }
-
+          
           this.patient = {
             ...surgeryData.patient,
-            surgeryPerformed: surgeryData.surgeryPerformed ??
-              surgeryData.surgeries?.[0]?.procedures?.find((p: any) => p.isPrimary)?.description,
+            surgeryPerformed: surgeryData.surgeries?.[0]?.procedures?.find((p: any) => p.isPrimary)?.description,              
             gender: surgeryData.patient.gender || 'M',
             weight: (surgeryData.patient.weightKg ?? '').toString(),
             birthDate: this.formatDate(surgeryData.patient.birthDate)
@@ -779,7 +778,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
           const firstAnesthesiologistId = surgeryData.firstAnesthesiologistId;
 
-          this.isReadOnlyRecord = !!firstAnesthesiologistId &&  firstAnesthesiologistId !== this.loggedUser?.id;
+          this.isReadOnlyRecord = !!firstAnesthesiologistId && firstAnesthesiologistId !== this.loggedUser?.id;
           this.canEdit = !this.isReadOnlyRecord;
 
           const draft = this.anesthesiaService.getDraft(this.cirurgiaId!);
@@ -1498,9 +1497,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       console.error('Erro ao recarregar:', error);
       this.toast('Falha ao recarregar os dados', 'danger');
     } finally {
-      event.target.complete(); // finaliza o refresher
+      event.target.complete();
     }
-  }
+  } 
 
   private async refreshData(): Promise<void> {
     if (!this.cirurgiaId || !this.patientId) return;
@@ -1508,14 +1507,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.showValidationErrors = false;
     this.isLoading = true;
 
-
     try {
-      await this.masterData.downloadMasterData().toPromise(); // ou firstValueFrom
+      await this.masterData.downloadMasterData().toPromise();
       this.loadDropdownLists();
     } catch (err) {
       console.warn('Falha ao recarregar dados mestres', err);
     }
-
 
     await this.loadPatientData(this.cirurgiaId, this.patientId);
   }
