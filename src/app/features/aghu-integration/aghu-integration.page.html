@@ -25,29 +25,7 @@
         <ion-icon name="cloud-download-outline" aria-hidden="true"></ion-icon>
         Integrar tudo
       </button>
-    </section>
-
-    <section
-      class="sky-scene"
-      [class.is-active]="isAnyRunning"
-      aria-hidden="true"
-    >
-      <div class="sky-inner">
-        <ion-icon name="server-outline" class="sky-server"></ion-icon>
-        <div class="sky-track">
-          <span class="cloud cloud-1"></span>
-          <span class="cloud cloud-2"></span>
-          <span class="cloud cloud-3"></span>
-        </div>
-        <ion-icon name="cloud-done-outline" class="sky-cloud"></ion-icon>
-      </div>
-      <p class="sky-label">
-        <ng-container *ngIf="isAnyRunning; else idleLabel">
-          Sincronizando dados com o AGHU…
-        </ng-container>
-        <ng-template #idleLabel> Pronto para integrar com o AGHU </ng-template>
-      </p>
-    </section>
+    </section>   
 
     <section class="cards-grid">
       <article
