@@ -193,6 +193,7 @@ export class PatientListPage implements OnInit {
         patientId: item.patientId || item.id,
         patientName: item.fullName,
         age: item.age,
+        surgeryDate: this.datePipe.transform(dt, 'yyyy-MM-dd'),
         birthDate: item.birthDate,
         record: item.medicalRecordNumber || item.record,
         room: item.room || item.location?.room || '',

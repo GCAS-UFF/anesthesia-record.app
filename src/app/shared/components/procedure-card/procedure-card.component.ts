@@ -11,8 +11,7 @@ import {
   heartOutline,
   checkmarkCircle,
   trashOutline,
-  archiveOutline, personRemoveOutline, returnUpBackOutline, exitOutline
-} from 'ionicons/icons';
+  archiveOutline, personRemoveOutline, returnUpBackOutline, exitOutline, calendarClearOutline } from 'ionicons/icons';
 import { SurgeryStatusEnum } from 'src/app/core/models/api-enums.model';
 
 export type ProcedureStatus = SurgeryStatusEnum | null;
@@ -42,6 +41,7 @@ export class ProcedureCardComponent {
   @Input() time: string | null = '';
   @Input() completedAt: string | null = null;
   @Input() birthDate = '';
+  @Input() surgeryDate: string | null = null;
   @Input() anesthesiologist = '';
   @Input() age = 0;
   @Input() record = '';
@@ -75,7 +75,7 @@ export class ProcedureCardComponent {
   openCardId: string | number | null = null;
 
   constructor() {
-    addIcons({ exitOutline, fitnessOutline, medicalOutline, documentTextOutline, readerOutline, returnUpBackOutline, personRemoveOutline, archiveOutline, heartOutline, checkmarkCircle, personOutline, trashOutline });
+    addIcons({exitOutline,fitnessOutline,calendarClearOutline,medicalOutline,documentTextOutline,readerOutline,returnUpBackOutline,personRemoveOutline,archiveOutline,heartOutline,checkmarkCircle,personOutline,trashOutline});
   }
 
   get isCompleted(): boolean { return this.status === SurgeryStatusEnum.Concluido; }

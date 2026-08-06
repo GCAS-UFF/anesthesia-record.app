@@ -84,9 +84,15 @@
           >
             {{ type }}
           </span>
+
           <span class="meta-text">
             Prontuário: <span class="mono">{{ record }}</span> • ID: {{ id }}
           </span>
+        </div>
+
+        <div class="surgery-date">
+          <ion-icon name="calendar-clear-outline"></ion-icon>
+          <span>{{ surgeryDate | date: "dd/MM/yyyy" }}</span>
         </div>
 
         <h2 class="patient-name">{{ patientName }}</h2>
