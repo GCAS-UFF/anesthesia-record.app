@@ -549,3 +549,85 @@
     color: #3b82f6;
   }
 }
+
+.card-status {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  align-items: center;
+}
+
+.badge-time {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+
+  ion-icon {
+    font-size: 15px;
+    color: #3b82f6;
+  }
+}
+
+.time-badge,
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge-waiting {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+
+  .dot {
+    background: #f59e0b;
+  }
+}
+
+.badge-in-progress {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+
+  .dot {
+    background: #3b82f6;
+  }
+}
+
+.badge-completed {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+
+  .dot {
+    background: #10b981;
+  }
+}
+
+.badge-cancelled {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #dc2626;
+
+  .dot {
+    background: #ef4444;
+  }
+}
+
+.badge-preparation {
+  background: #ede9fe;
+  border-color: #c4b5fd;
+  color: #6d28d9;
+
+  .dot {
+    background: #7c3aed;
+  }
+}

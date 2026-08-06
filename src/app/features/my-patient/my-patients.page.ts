@@ -85,6 +85,10 @@ export class MyPatientsPage implements OnInit {
     this.loadData();
   }
 
+  ionViewWillEnter() {
+    this.loadData();
+  }
+
   async loadData() {
     this.isRefreshing = true;
     this.viewList = [];
@@ -189,6 +193,7 @@ export class MyPatientsPage implements OnInit {
         id: item.surgeryId || item.id,
         patientId: item.patientId || item.id,
         patientName: item.fullName,
+        surgeryDate: this.datePipe.transform(dt, 'yyyy-MM-dd'),
         age: item.age,
         birthDate: item.birthDate,
         record: item.medicalRecordNumber || item.record,
