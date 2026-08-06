@@ -761,10 +761,10 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
             resolve();
             return;
           }
-          
+
           this.patient = {
             ...surgeryData.patient,
-            surgeryPerformed: surgeryData.surgeries?.[0]?.procedures?.find((p: any) => p.isPrimary)?.description,              
+            surgeryPerformed: surgeryData.surgeries?.[0]?.procedures?.find((p: any) => p.isPrimary)?.description,
             gender: surgeryData.patient.gender || 'M',
             weight: (surgeryData.patient.weightKg ?? '').toString(),
             birthDate: this.formatDate(surgeryData.patient.birthDate)
@@ -806,7 +806,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
               } else {
 
                 const procedimentosFromSurgery = this.buildProcedimentosFromSurgery();
-                console.log('Procedimentos construídos:', procedimentosFromSurgery);
                 this.hydrateProcedimentos(procedimentosFromSurgery);
                 this.form.get('dadosVitais.peso')?.patchValue(this.patient.weightKg);
               }
@@ -828,7 +827,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   private formatDate(dateStr: string): string {
-    if (!dateStr) return '--';
+    if (!dateStr)
+      return '--';
+
     const d = new Date(dateStr);
     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
   }
@@ -1499,7 +1500,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     } finally {
       event.target.complete();
     }
-  } 
+  }
 
   private async refreshData(): Promise<void> {
     if (!this.cirurgiaId || !this.patientId) return;
