@@ -2,11 +2,14 @@ import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angu
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { FilterStateService } from 'src/app/core/services/filter-state.service';
+import { IonIcon } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { calendarOutline, chevronDownOutline, closeCircle } from 'ionicons/icons';
 
 @Component({
   selector: 'app-date-filter',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IonIcon],
   templateUrl: './date-filter.component.html',
   styleUrls: ['./date-filter.component.scss']
 })
@@ -16,7 +19,9 @@ export class DateFilterComponent implements OnInit, OnDestroy {
 
   private filterSubscription?: Subscription;
 
-  constructor(private filterState: FilterStateService) {}
+  constructor(private filterState: FilterStateService) {
+    addIcons({ calendarOutline, chevronDownOutline, closeCircle });
+  }
 
   ngOnInit() {
     const savedDate = this.filterState.getSelectedDate();

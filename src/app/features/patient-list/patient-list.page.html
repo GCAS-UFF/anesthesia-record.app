@@ -90,7 +90,7 @@
 
     <!-- Cards list -->
     <section class="procedures-list">
-      <ng-container *ngIf="!isRefreshing">
+      <ng-container *ngIf="!isLoading">
         <app-procedure-card
           *ngFor="let p of viewList"
           [patientName]="p.patientName"
@@ -127,7 +127,7 @@
       </ng-container>
 
       <!-- Skeleton loading -->
-      <ng-container *ngIf="isRefreshing">
+      <ng-container *ngIf="isLoading">
         <div class="skeleton-card" *ngFor="let item of [1,2,3]">
           <div class="skeleton-side">
             <ion-skeleton-text

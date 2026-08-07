@@ -1,9 +1,12 @@
 <!-- date-filter.component.html -->
 <div class="date-filter-container">
   <div class="date-filter" (click)="openPicker(dateInput)">
+    <ion-icon name="calendar-outline" class="calendar-icon"></ion-icon>
     <label>
-      📅 Data: <strong>{{ formattedDate || 'Todos' }}</strong>
+      <span class="label-text">Data:</span>
+      <strong class="date-text">{{ formattedDate || 'Todos' }}</strong>
     </label>
+    <ion-icon name="chevron-down-outline" class="chevron-icon"></ion-icon>
     <input 
       #dateInput 
       id="date-input" 
@@ -14,16 +17,13 @@
   </div>
   
   <div class="filter-actions">
-    <span class="filter-status" *ngIf="date">
-      Filtrando
-    </span>
     <button 
       *ngIf="date" 
       class="clear-btn" 
       (click)="clearFilter(); $event.stopPropagation()"
       title="Limpar filtro"
     >
-      ✕
+      <ion-icon name="close-circle"></ion-icon>
     </button>
     <button 
       class="today-btn" 

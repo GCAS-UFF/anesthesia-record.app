@@ -162,6 +162,13 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     }
 
     const apiPayload = this.mapToApiFormat(record, surgeryId);
+
+    if (record.isMonitoringDraft) {
+      return this.api.put(`monitoringrecord/${surgeryId}`, apiPayload).pipe(
+        map(response => ({ response, surgeryId }))
+      );
+    }
+
     return this.update(surgeryId, apiPayload).pipe(
       map(response => ({ response, surgeryId }))
     );
@@ -284,7 +291,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     });
   }
 
-  private updatePendingStatus(): void {
+  public updatePendingStatus(): void {
     const count = Object.keys(localStorage)
       .filter(key => key.startsWith(this.DRAFT_PREFIX) || key.startsWith('monitoring_draft_')).length;
     this.pendingDraftsCountSubject.next(count);
@@ -1380,6 +1387,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       time: this.formatTimeForApp(record.timestamp),
       posicao: record.position
     }));
+  }
 
   private formatDateForInput(dateValue: any): string {
     if (!dateValue) {

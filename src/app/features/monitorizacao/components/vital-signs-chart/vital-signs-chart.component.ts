@@ -338,8 +338,36 @@ export class VitalSignsChartComponent implements AfterViewInit, OnChanges, OnDes
   }
 
   private updateSnapshot(): void {
-    const last = this.vitalRecords[this.vitalRecords.length - 1];
-    this.currentSnapshot = last || null;
+    if (!this.vitalRecords || this.vitalRecords.length === 0) {
+      this.currentSnapshot = null;
+      return;
+    }
+
+    const snap: any = {};
+    const lastRec = this.vitalRecords[this.vitalRecords.length - 1];
+    snap.time = lastRec.time;
+
+    for (let i = this.vitalRecords.length - 1; i >= 0; i--) {
+      const r = this.vitalRecords[i] as any;
+      if (snap.fc == null && r.fc != null && r.fc !== '') snap.fc = r.fc;
+      if (snap.pas == null && r.pas != null && r.pas !== '') snap.pas = r.pas;
+      if (snap.pad == null && r.pad != null && r.pad !== '') snap.pad = r.pad;
+      if (snap.pam == null && r.pam != null && r.pam !== '') snap.pam = r.pam;
+      if (snap.spo2 == null && r.spo2 != null && r.spo2 !== '') snap.spo2 = r.spo2;
+      if (snap.etco2 == null && r.etco2 != null && r.etco2 !== '') snap.etco2 = r.etco2;
+      if (snap.temp == null && (r.temp ?? r.temperatura) != null && (r.temp ?? r.temperatura) !== '') snap.temp = r.temp ?? r.temperatura;
+      if (snap.bis == null && r.bis != null && r.bis !== '') snap.bis = r.bis;
+
+      (this.customFields || []).forEach(cf => {
+        if (snap[cf.key] == null && r.custom?.[cf.key] != null && r.custom?.[cf.key] !== '') {
+          snap[cf.key] = r.custom[cf.key];
+        } else if (snap[cf.key] == null && r[cf.key] != null && r[cf.key] !== '') {
+          snap[cf.key] = r[cf.key];
+        }
+      });
+    }
+
+    this.currentSnapshot = snap;
   }
 
   onAddClick(): void { this.addVitalRecord.emit(); }

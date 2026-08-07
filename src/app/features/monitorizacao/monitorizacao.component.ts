@@ -1003,8 +1003,8 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       const draft = this.buildDraftPayload();
       localStorage.setItem(MONITORING_DRAFT_KEY(this.surgeryId), JSON.stringify(draft));
       this.lastDraftSavedAt = new Date();
-      if ((this.anesthesiaRecordService as any).refreshPendingDrafts) {
-        (this.anesthesiaRecordService as any).refreshPendingDrafts();
+      if ((this.anesthesiaRecordService as any).updatePendingStatus) {
+        (this.anesthesiaRecordService as any).updatePendingStatus();
       }
     } catch (err) {
       console.warn('[Monitorização] falha ao gravar rascunho local', err);
@@ -1130,7 +1130,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       await this.toast('⚠️ Sem conexão. Registro salvo localmente e será enviado automaticamente.',
         'warning', 4000);
     } finally {
-      setTimeout(() => this.router.navigate(['/patient-list']), 1500);
+      setTimeout(() => this.router.navigate(['/pacientes']), 1500);
     }
   }
 

@@ -45,6 +45,7 @@ export class PatientListPage implements OnInit {
   selectedStatus: SurgeryStatusEnum | null = null;
   selectedDate = Date.now() ? new Date().toISOString().split('T')[0] : '';
   isRefreshing = false;
+  isLoading = false;
   viewList: any[] = [];
   readonly SurgeryStatusEnum = SurgeryStatusEnum;
   currentUserId: number | null = null;
@@ -121,8 +122,10 @@ export class PatientListPage implements OnInit {
 
   async loadData() {
     this.isRefreshing = true;
+    if (this.viewList.length === 0) {
+      this.isLoading = true;
+    }
     this.currentUserId = Number(this.authService.getCurrentUserId());
-    this.viewList = [];
 
     if (this.content) {
       this.content.scrollToTop(400);
@@ -145,9 +148,11 @@ export class PatientListPage implements OnInit {
           this.flattenData(resultData);
           this.canAssumePatient = resultData.canAssumePatient;
           this.isRefreshing = false;
+          this.isLoading = false;
         },
         error: () => {
           this.isRefreshing = false;
+          this.isLoading = false;
         },
       });
   }
@@ -215,19 +220,23 @@ export class PatientListPage implements OnInit {
 
   onSearchChange(searchTerm: string) {
     this.searchQuery = searchTerm;
-    if (this.searchQuery.length > 3 || this.searchQuery.length === 0)
+    if (this.searchQuery.length > 3 || this.searchQuery.length === 0) {
+      this.viewList = [];
       this.loadData();
+    }
   }
 
   changeStatus(status: SurgeryStatusEnum | null) {
     this.selectedStatus = status;
     this.currentPage = 1;
+    this.viewList = [];
     this.loadData();
   }
 
   onDateChange(newDate: string) {
     this.selectedDate = newDate;
     this.currentPage = 1;
+    this.viewList = [];
     this.loadData();
   }
 
