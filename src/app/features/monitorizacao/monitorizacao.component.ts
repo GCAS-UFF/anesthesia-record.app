@@ -171,6 +171,12 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
 
   async ngOnInit() {
+    try {
+      await ScreenOrientation.lock({ orientation: 'landscape' });
+    } catch (err) {
+      console.warn('[Monitorizacao] Não foi possível travar a rotação em landscape', err);
+    }
+    
     this.surgeryId = this.route.snapshot.paramMap.get('id') || '';
 
     const qp = this.route.snapshot.queryParamMap;
@@ -195,6 +201,12 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    try {
+      ScreenOrientation.unlock();
+    } catch (err) {
+      console.warn('[Monitorizacao] Não foi possível destravar a rotação', err);
+    }
+
     clearInterval(this.tickSub);
     clearInterval(this.autoMonitoringSub);
     this.pendingSub?.unsubscribe();
@@ -991,6 +1003,9 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       const draft = this.buildDraftPayload();
       localStorage.setItem(MONITORING_DRAFT_KEY(this.surgeryId), JSON.stringify(draft));
       this.lastDraftSavedAt = new Date();
+      if ((this.anesthesiaRecordService as any).refreshPendingDrafts) {
+        (this.anesthesiaRecordService as any).refreshPendingDrafts();
+      }
     } catch (err) {
       console.warn('[Monitorização] falha ao gravar rascunho local', err);
     }

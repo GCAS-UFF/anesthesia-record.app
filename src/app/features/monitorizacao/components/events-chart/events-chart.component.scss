@@ -113,7 +113,8 @@
   flex-direction: column;
   gap: 7px;
   padding: 8px 12px 14px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .lane {

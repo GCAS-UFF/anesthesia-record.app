@@ -1,10 +1,25 @@
 <div class="channel-inner">
   <header class="channel-header">
-    <div class="ch-title">
-      <span class="dot dot-fc"></span>
-      <ion-icon name="pulse-outline"></ion-icon>
-      <span>SINAIS VITAIS</span>
-      <span class="snap-time" *ngIf="currentSnapshot as s">· {{ s.time }}</span>
+    <div class="ch-top">
+      <div class="ch-title">
+        <span class="dot dot-fc"></span>
+        <ion-icon name="pulse-outline"></ion-icon>
+        <span>SINAIS VITAIS</span>
+        <span class="snap-time" *ngIf="currentSnapshot as s">· {{ s.time }}</span>
+      </div>
+
+      <div class="ch-actions">
+        <ion-button size="small" fill="clear" [disabled]="readonly" (click)="onAddFieldClick()" title="Adicionar campo personalizado">
+          <ion-icon name="settings-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button size="small" fill="clear" (click)="onHistoryClick()" title="Histórico detalhado">
+          <ion-icon name="list-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button size="small" fill="solid" color="primary" [disabled]="readonly" (click)="onAddClick()">
+          <ion-icon name="add-outline" slot="start"></ion-icon>
+          Registro
+        </ion-button>
+      </div>
     </div>
 
     <div class="snapshot" *ngIf="currentSnapshot as s">
@@ -23,20 +38,6 @@
           <span class="pam" *ngIf="f.unit">{{ f.unit }}</span>
         </div>
       </ng-container>
-    </div>
-
-    <div class="ch-actions">
-
-      <ion-button size="small" fill="clear" [disabled]="readonly" (click)="onAddFieldClick()" title="Adicionar campo personalizado">
-        <ion-icon name="settings-outline" slot="icon-only"></ion-icon>
-      </ion-button>
-      <ion-button size="small" fill="clear" (click)="onHistoryClick()" title="Histórico detalhado">
-        <ion-icon name="list-outline" slot="icon-only"></ion-icon>
-      </ion-button>
-      <ion-button size="small" fill="solid" color="primary" [disabled]="readonly" (click)="onAddClick()">
-        <ion-icon name="add-outline" slot="start"></ion-icon>
-        Registro
-      </ion-button>
     </div>
   </header>
 
