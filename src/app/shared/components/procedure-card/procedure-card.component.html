@@ -34,37 +34,46 @@
         <span class="side-room">{{ room }}</span>
       </div>
 
-      <div
-        class="time-badge"
-        [class.badge-waiting]="SurgeryStatusEnum.Agendado === status"
-        [class.badge-in-progress]="SurgeryStatusEnum.EmProgresso === status"
-        [class.badge-completed]="SurgeryStatusEnum.Concluido === status"
-        [class.badge-cancelled]="SurgeryStatusEnum.Cancelada === status"
-        [class.badge-preparation]="SurgeryStatusEnum.EmPreparacao === status"
-      >
-        <span class="dot"></span>
+      <div class="card-status">
+        <div class="time-badge badge-time">
+          <ion-icon name="time-outline"></ion-icon>
+          <span>
+            {{ time || "—" }}
+          </span>
+        </div>
 
-        <span class="label">
-          <ng-container *ngIf="SurgeryStatusEnum.Concluido === status">
-            Realizado: {{ completedAt || "—" }}
-          </ng-container>
+        <div
+          class="status-badge"
+          [class.badge-waiting]="SurgeryStatusEnum.Agendado === status"
+          [class.badge-in-progress]="SurgeryStatusEnum.EmProgresso === status"
+          [class.badge-completed]="SurgeryStatusEnum.Concluido === status"
+          [class.badge-cancelled]="SurgeryStatusEnum.Cancelada === status"
+          [class.badge-preparation]="SurgeryStatusEnum.EmPreparacao === status"
+        >
+          <span class="dot"></span>
 
-          <ng-container *ngIf="SurgeryStatusEnum.EmProgresso === status">
-            Em andamento • {{ time }}
-          </ng-container>
+          <span>
+            <ng-container *ngIf="SurgeryStatusEnum.Agendado === status">
+              Agendada
+            </ng-container>
 
-          <ng-container *ngIf="SurgeryStatusEnum.Agendado === status">
-            Previsto: {{ time }}
-          </ng-container>
+            <ng-container *ngIf="SurgeryStatusEnum.EmPreparacao === status">
+              Em preparação
+            </ng-container>
 
-          <ng-container *ngIf="SurgeryStatusEnum.Cancelada === status">
-            Cancelado: {{ completedAt || "—" }}
-          </ng-container>
+            <ng-container *ngIf="SurgeryStatusEnum.EmProgresso === status">
+              Em andamento
+            </ng-container>
 
-          <ng-container *ngIf="SurgeryStatusEnum.EmPreparacao === status">
-            Em Preparação
-          </ng-container>
-        </span>
+            <ng-container *ngIf="SurgeryStatusEnum.Concluido === status">
+              Realizada
+            </ng-container>
+
+            <ng-container *ngIf="SurgeryStatusEnum.Cancelada === status">
+              Cancelada
+            </ng-container>
+          </span>
+        </div>
       </div>
 
       <div class="anesthesist" *ngIf="anesthesiologist">
@@ -84,9 +93,15 @@
           >
             {{ type }}
           </span>
+
           <span class="meta-text">
             Prontuário: <span class="mono">{{ record }}</span> • ID: {{ id }}
           </span>
+        </div>
+
+        <div class="surgery-date">
+          <ion-icon name="calendar-clear-outline"></ion-icon>
+          <span>{{ surgeryDate | date: "dd/MM/yyyy" }}</span>
         </div>
 
         <h2 class="patient-name">{{ patientName }}</h2>

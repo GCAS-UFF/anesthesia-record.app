@@ -1,8 +1,9 @@
 import { Component, ViewChild, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { ToastController } from '@ionic/angular/standalone';
+import { ToastController, LoadingController, AlertController } from '@ionic/angular/standalone';
 import { IonContent, IonSpinner, IonSkeletonText, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
+
 import {
   chevronBackOutline,
   chevronForwardOutline,
@@ -21,6 +22,7 @@ import { HeaderInstitucionalComponent } from '../../shared/components/header-ins
 import { DateFilterComponent } from '../../shared/components/date-filter/date-filter.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { SurgeryStatusEnum } from 'src/app/core/models/api-enums.model';
+import { ProcedureCardComponent } from "src/app/shared/components/procedure-card/procedure-card.component";
 
 type MyPatientStatusFilter = 'all' | 'inProgress' | 'completed';
 
@@ -38,7 +40,8 @@ type MyPatientStatusFilter = 'all' | 'inProgress' | 'completed';
     HeaderInstitucionalComponent,
     DateFilterComponent,
     EmptyStateComponent,
-  ],
+    ProcedureCardComponent
+],
   providers: [DatePipe],
 })
 export class MyPatientsPage implements OnInit {
@@ -49,6 +52,7 @@ export class MyPatientsPage implements OnInit {
   viewList: any[] = [];
   readonly SurgeryStatusEnum = SurgeryStatusEnum;
 
+  openCardId: string | number | null = null;
   currentPage = 1;
   pageSize = 10;
   totalItems = 0;
@@ -62,6 +66,8 @@ export class MyPatientsPage implements OnInit {
     private toastController: ToastController,
     private surgeryService: SurgeryService,
     private authService: AuthService,
+    private alertController: AlertController,
+    private loadingController: LoadingController
   ) {
     addIcons({
       chevronBackOutline,
@@ -76,6 +82,10 @@ export class MyPatientsPage implements OnInit {
   }
 
   ngOnInit() {
+    this.loadData();
+  }
+
+  ionViewWillEnter() {
     this.loadData();
   }
 
@@ -136,7 +146,7 @@ export class MyPatientsPage implements OnInit {
     ].includes(status);
   }
 
-  canGoToMonitorizacao(status: SurgeryStatusEnum | null): boolean {    
+  canGoToMonitorizacao(status: SurgeryStatusEnum | null): boolean {
     if (status == null)
       return false;
 
@@ -183,10 +193,16 @@ export class MyPatientsPage implements OnInit {
         id: item.surgeryId || item.id,
         patientId: item.patientId || item.id,
         patientName: item.fullName,
+        surgeryDate: this.datePipe.transform(dt, 'yyyy-MM-dd'),
         age: item.age,
         birthDate: item.birthDate,
         record: item.medicalRecordNumber || item.record,
         room: item.room || item.location?.room || '',
+        surgicalCenter: item.location?.surgicalCenter?.description || '',
+        bed: item.currentLocation?.bed || '',
+        floor: item.currentLocation?.floor || '',
+        unit: item.currentLocation?.unit?.description || '',
+        anesthesiologist: item.firstAnesthesiologist || { fullName: 'Você' },
         procedure:
           primaryProc && primaryProc.description && primaryProc.description !== 'Não informado'
             ? primaryProc.description
@@ -275,5 +291,59 @@ export class MyPatientsPage implements OnInit {
   handleRefresh() {
     if (this.isRefreshing) return;
     this.loadData();
+  }
+
+  onOpenChange(cardId: any | number | null) {
+    this.openCardId = cardId;
+  }
+
+  onViewRegistro(id: string | number) {
+    this.router.navigate(['/registro-cirurgia', id]);
+  }
+
+  async abandonPatient(surgeryId: string | number, patientId: string) {
+    const alert = await this.alertController.create({
+      header: 'Deixar Paciente',
+      message: 'Deseja realmente deixar esse paciente?',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel', cssClass: 'secondary' },
+        {
+          text: 'Confirmar',
+          handler: async () => {
+            const loading = await this.loadingController.create({
+              message: 'Deixando paciente...',
+              duration: 1000,
+              spinner: 'circular',
+            });
+            await loading.present();
+
+            this.surgeryService.assumePatient(patientId, Number(surgeryId), 0).subscribe({
+              next: async () => {
+                await loading.dismiss();
+                const toast = await this.toastController.create({
+                  message: 'Paciente liberado com sucesso!',
+                  duration: 2000,
+                  color: 'success',
+                  icon: 'checkmark-circle',
+                });
+                await toast.present();
+                this.loadData();
+              },
+              error: async () => {
+                await loading.dismiss();
+                const toast = await this.toastController.create({
+                  message: 'Falha de comunicação com a API. Não foi possível liberar o paciente.',
+                  duration: 3000,
+                  color: 'danger',
+                });
+                await toast.present();
+              },
+            });
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 }

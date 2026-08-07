@@ -83,6 +83,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   isCancelled = false;
   canEdit = true;
   loggedUser: any;
+  isReadOnlyRecord = false;
 
   isPreViewerOpen = false;
   preAnesthesiaData: any = null;
@@ -247,6 +248,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.autoSaveSub = this.form.valueChanges
       .pipe(debounceTime(1500))
       .subscribe(() => {
+        if (this.isReadOnlyRecord)
+          return;
+
         if (!this.isSaving)
           this.persistDraft();
       });
@@ -664,6 +668,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
 
   private persistDraft(data?: any) {
+    if (this.isReadOnlyRecord)
+      return;
+
     if (!this.cirurgiaId)
       return;
 
@@ -693,6 +700,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   private async tentarReenviarRascunho() {
+    if (this.isReadOnlyRecord)
+      return;
+
     if (!this.cirurgiaId)
       return;
 
@@ -754,8 +764,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
           this.patient = {
             ...surgeryData.patient,
-            surgeryPerformed: surgeryData.surgeryPerformed ??
-              surgeryData.surgeries?.[0]?.procedures?.find((p: any) => p.isPrimary)?.description,
+            surgeryPerformed: surgeryData.surgeries?.[0]?.procedures?.find((p: any) => p.isPrimary)?.description,
             gender: surgeryData.patient.gender || 'M',
             weight: (surgeryData.patient.weightKg ?? '').toString(),
             birthDate: this.formatDate(surgeryData.patient.birthDate)
@@ -766,9 +775,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
             ?? surgeryData.patient.surgeries?.[0];
 
           this.isCancelled = surgeryData.patient.status === SurgeryStatusEnum.Cancelada;
-          this.canEdit = surgeryData.firstAnesthesiologistId === this.loggedUser?.id;
 
-          // Busca o rascunho ou registro salvo
+          const firstAnesthesiologistId = surgeryData.firstAnesthesiologistId;
+
+          this.isReadOnlyRecord = !!firstAnesthesiologistId && firstAnesthesiologistId !== this.loggedUser?.id;
+          this.canEdit = !this.isReadOnlyRecord;
+
           const draft = this.anesthesiaService.getDraft(this.cirurgiaId!);
           this.anesthesiaService.getLatestByPatient(this.cirurgiaId!, patientId).subscribe({
             next: (savedRecord) => {
@@ -794,7 +806,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
               } else {
 
                 const procedimentosFromSurgery = this.buildProcedimentosFromSurgery();
-                console.log('Procedimentos construídos:', procedimentosFromSurgery);
                 this.hydrateProcedimentos(procedimentosFromSurgery);
                 this.form.get('dadosVitais.peso')?.patchValue(this.patient.weightKg);
               }
@@ -816,7 +827,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   private formatDate(dateStr: string): string {
-    if (!dateStr) return '--';
+    if (!dateStr)
+      return '--';
+
     const d = new Date(dateStr);
     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
   }
@@ -1485,7 +1498,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       console.error('Erro ao recarregar:', error);
       this.toast('Falha ao recarregar os dados', 'danger');
     } finally {
-      event.target.complete(); // finaliza o refresher
+      event.target.complete();
     }
   }
 
@@ -1495,14 +1508,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.showValidationErrors = false;
     this.isLoading = true;
 
-
     try {
-      await this.masterData.downloadMasterData().toPromise(); // ou firstValueFrom
+      await this.masterData.downloadMasterData().toPromise();
       this.loadDropdownLists();
     } catch (err) {
       console.warn('Falha ao recarregar dados mestres', err);
     }
-
 
     await this.loadPatientData(this.cirurgiaId, this.patientId);
   }

@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\dist",
+    "\\dist\\out-tsc",
+    "\\dist\\out-tsc\\app",
+    "\\dist\\out-tsc\\app\\features",
+    "\\dist\\out-tsc\\app\\features\\ficha-anestesica",
+    "\\src",
+    "\\src\\app",
+    "\\src\\app\\features",
+    "\\src\\app\\features\\ficha-anestesica"
+  ],
+  "SelectedNode": "\\src\\app\\features\\ficha-anestesica\\ficha-anestesica.component.ts",
+  "PreviewInSolutionExplorer": false
+}

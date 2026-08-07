@@ -82,79 +82,34 @@
 
     <section class="procedures-list">
       <ng-container *ngIf="!isRefreshing">
-        <article
+        <app-procedure-card
           *ngFor="let p of viewList"
-          class="procedure-card"
-          [class.is-progress]="SurgeryStatusEnum.EmProgresso === p.status"
-          [class.is-completed]="SurgeryStatusEnum.Concluido === p.status"
-        >
-          <div class="card-side">
-            <span class="side-label">Sala de Cirurgia</span>
-            <span class="side-room">{{ p.room || '—' }}</span>
-
-            <div
-              class="time-badge"
-              [class.badge-waiting]="SurgeryStatusEnum.Agendado === p.status"
-              [class.badge-in-progress]="SurgeryStatusEnum.EmProgresso === p.status"
-              [class.badge-completed]="SurgeryStatusEnum.Concluido === p.status"
-              [class.badge-cancelled]="SurgeryStatusEnum.Cancelada === p.status"
-              [class.badge-preparation]="SurgeryStatusEnum.EmPreparacao === p.status"
-            >
-              <span class="dot"></span>
-              <span *ngIf="SurgeryStatusEnum.Concluido === p.status"
-                >Realizado: {{ p.completedAt }}</span
-              >
-              <span *ngIf="SurgeryStatusEnum.EmProgresso === p.status"
-                >Em atendimento • {{ p.time }}</span
-              >
-              <span *ngIf="p.status === SurgeryStatusEnum.Agendado"
-                >Previsto: {{ p.time }}</span
-              >
-              <ng-container *ngIf="SurgeryStatusEnum.Cancelada === p.status">
-                Cancelado: —
-              </ng-container>
-
-              <ng-container *ngIf="SurgeryStatusEnum.EmPreparacao === p.status">
-                Em Preparação
-              </ng-container>
-            </div>
-          </div>
-
-          <div class="card-body">
-            <div class="meta-line">
-              <span class="type-tag">Meu paciente</span>
-              <span class="meta-text">
-                Prontuário: <strong>{{ p.record }}</strong> • ID: {{ p.id }}
-              </span>
-            </div>
-            <h2 class="patient-name">{{ p.patientName }}</h2>
-            <p class="patient-info">{{ p.birthDate }} ({{ p.age }} anos)</p>
-
-            <div class="procedure-line">
-              <ion-icon name="medical-outline"></ion-icon>
-              <span>{{ p.procedure }}</span>
-            </div>
-          </div>
-
-          <div class="card-actions">
-            <button
-              *ngIf="canGoToMonitorizacao(p.status)"
-              class="btn btn-primary"
-              (click)="onOpenMonitorizacao(p.id)"
-            >
-              <ion-icon name="pulse-outline"></ion-icon>
-              {{ getMonitorizacaoButtonText(p.status) }}
-            </button>
-
-            <button
-              class="btn btn-outline"
-              (click)="onOpenFicha(p.id, p.patientId)"
-            >
-              <ion-icon name="document-text-outline"></ion-icon>
-              Ver Ficha Anestésica
-            </button>
-          </div>
-        </article>
+          [patientName]="p.patientName"
+          [room]="p.room"
+          [isOpen]="openCardId === p.id"
+          (openChange)="onOpenChange($event)"
+          [surgicalCenter]="p.surgicalCenter"
+          [canAbandon]="true"
+          [bed]="p.bed"
+          [floor]="p.floor"
+          [surgeryDate]="p.surgeryDate"
+          [unit]="p.unit"
+          [procedure]="p.procedure"
+          [status]="p.status"
+          [time]="p.time"
+          [completedAt]="p.completedAt"
+          [birthDate]="p.birthDate"
+          [age]="p.age"
+          [record]="p.record"
+          [id]="p.id"
+          [anesthesiologist]="p.anesthesiologist?.fullName || 'Você'"
+          [isCurrentAnesthesiologist]="true"
+          [canAssumePatient]="false"
+          (assume)="onOpenMonitorizacao(p.id)"
+          (openFicha)="onOpenFicha(p.id, p.patientId)"
+          (viewRegistro)="onViewRegistro(p.id)"
+          (abandonSurgery)="abandonPatient(p.id, p.patientId)"
+        ></app-procedure-card>
 
         <app-empty-state
           *ngIf="totalItems === 0"

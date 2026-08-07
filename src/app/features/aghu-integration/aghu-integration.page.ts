@@ -3,7 +3,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { ToastController, LoadingController } from '@ionic/angular/standalone';
 import { IonSpinner, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { cloudDownloadOutline, medkitOutline, clipboardOutline, peopleOutline, checkmarkCircle, alertCircleOutline, refreshOutline, timeOutline, cloudDoneOutline, serverOutline, medicalOutline } from 'ionicons/icons';
+import { cloudDownloadOutline, medkitOutline, clipboardOutline, peopleOutline, checkmarkCircle, alertCircleOutline, refreshOutline, timeOutline, cloudDoneOutline, serverOutline, medicalOutline, cloudOutline } from 'ionicons/icons';
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
 import { IntegrationService } from 'src/app/core/services/integration.service';
@@ -69,21 +69,9 @@ export class AghuIntegrationPage implements OnDestroy, OnInit {
 
   private timers = new Map<IntegrationKey, any>();
 
-  constructor(private toastController: ToastController, private integrationService: IntegrationService, private datePipe: DatePipe, private masterDataService: MasterDataService, 
+  constructor(private toastController: ToastController, private integrationService: IntegrationService, private datePipe: DatePipe, private masterDataService: MasterDataService,
     private loadingController: LoadingController) {
-    addIcons({
-      cloudDownloadOutline,
-      medkitOutline,
-      peopleOutline,
-      checkmarkCircle,
-      alertCircleOutline,
-      refreshOutline,
-      timeOutline,
-      cloudDoneOutline,
-      serverOutline,
-      medicalOutline,
-      clipboardOutline
-    });
+    addIcons({ serverOutline, cloudDownloadOutline, cloudOutline, cloudDoneOutline, timeOutline, checkmarkCircle, alertCircleOutline, medkitOutline, peopleOutline, refreshOutline, medicalOutline, clipboardOutline });
   }
 
   ngOnInit(): void {
