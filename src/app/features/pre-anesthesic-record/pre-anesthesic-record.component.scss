@@ -113,8 +113,6 @@
   position: sticky;
   top: 128px;
   align-self: flex-start;
-  /* Ajuste: usa a altura real disponível dentro do ion-content, evitando
-     que o último item ("Extras") seja cortado em landscape */
   height: calc(100dvh - 128px);
   max-height: calc(100dvh - 128px);
   overflow: hidden;
@@ -125,14 +123,11 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-    /* padding-bottom extra garante que o último item apareça mesmo com
-       barras de navegação/gestos do tablet */
     padding: 16px 12px 96px;
     display: flex;
     flex-direction: column;
     gap: 2px;
   }
-
 
   &__item {
     display: flex;
@@ -482,7 +477,7 @@
 
   .pre-nav {
     position: sticky;
-    top: 128px; 
+    top: 128px;
     height: auto;
     max-height: none;
     overflow: visible;
@@ -560,8 +555,6 @@
   }
 }
 
-
-/* Escala numérica de dor (0-10) */
 .chip-group--scale {
   display: flex;
   flex-wrap: wrap;
@@ -582,27 +575,39 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
-.chip--scale:hover { transform: translateY(-1px); }
+.chip--scale:hover {
+  transform: translateY(-1px);
+}
 
 .chip--scale[data-level="0"].active,
 .chip--scale[data-level="1"].active,
 .chip--scale[data-level="2"].active,
 .chip--scale[data-level="3"].active {
-  background: #16a34a; border-color: #16a34a; color: #fff;
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #fff;
 }
 .chip--scale[data-level="4"].active,
 .chip--scale[data-level="5"].active,
 .chip--scale[data-level="6"].active {
-  background: #f59e0b; border-color: #f59e0b; color: #fff;
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #fff;
 }
 .chip--scale[data-level="7"].active,
 .chip--scale[data-level="8"].active,
 .chip--scale[data-level="9"].active,
 .chip--scale[data-level="10"].active {
-  background: #ef4444; border-color: #ef4444; color: #fff;
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #fff;
 }
 
 .dor-label {
@@ -617,7 +622,6 @@
   letter-spacing: 0.02em;
 }
 
-/* Mallampati - cards com imagem */
 .mallampati-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -639,7 +643,11 @@
   border: 2px solid var(--pre-border, #e2e8f0);
   border-radius: 14px;
   cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
 
   img {
     width: 100%;
@@ -665,7 +673,8 @@
   &.active {
     border-color: var(--pre-primary);
     background: color-mix(in oklab, var(--pre-primary) 8%, #fff);
-    box-shadow: 0 6px 16px -8px color-mix(in oklab, var(--pre-primary) 55%, transparent);
+    box-shadow: 0 6px 16px -8px
+      color-mix(in oklab, var(--pre-primary) 55%, transparent);
 
     .mallampati-label {
       color: var(--pre-primary);
@@ -674,7 +683,9 @@
   }
 }
 
-.pre-footer { display: none !important; }
+.pre-footer {
+  display: none !important;
+}
 
 .grid-3 {
   display: grid;
@@ -728,10 +739,15 @@
   font-size: 14px;
   color: var(--pre-text);
   appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, #64748b 50%),
+  background-image:
+    linear-gradient(45deg, transparent 50%, #64748b 50%),
     linear-gradient(135deg, #64748b 50%, transparent 50%);
-  background-position: calc(100% - 18px) 19px, calc(100% - 13px) 19px;
-  background-size: 5px 5px, 5px 5px;
+  background-position:
+    calc(100% - 18px) 19px,
+    calc(100% - 13px) 19px;
+  background-size:
+    5px 5px,
+    5px 5px;
   background-repeat: no-repeat;
 
   &:focus {
@@ -764,11 +780,17 @@
   white-space: nowrap;
   margin-top: 10px;
 
-  ion-icon { font-size: 18px; }
-  &:hover { background: rgba(59, 130, 246, 0.14); }
+  ion-icon {
+    font-size: 18px;
+  }
+  &:hover {
+    background: rgba(59, 130, 246, 0.14);
+  }
 }
 
-.inline-add .btn-add { margin-top: 0; }
+.inline-add .btn-add {
+  margin-top: 0;
+}
 
 .repeat-list {
   display: flex;
@@ -838,12 +860,17 @@
   justify-content: center;
   cursor: pointer;
 
-  ion-icon { font-size: 18px; color: var(--pre-muted); }
+  ion-icon {
+    font-size: 18px;
+    color: var(--pre-muted);
+  }
 
   &--danger:hover {
     border-color: var(--pre-danger);
     background: var(--pre-danger-soft);
-    ion-icon { color: var(--pre-danger); }
+    ion-icon {
+      color: var(--pre-danger);
+    }
   }
 }
 
@@ -873,9 +900,10 @@
   color: #b45309;
 }
 
-.req { color: var(--pre-danger); font-style: normal; }
-
-
+.req {
+  color: var(--pre-danger);
+  font-style: normal;
+}
 
 .sign-modal {
   --width: 520px;
@@ -903,7 +931,9 @@
   background: var(--pre-primary-soft);
   color: var(--pre-primary);
 
-  ion-icon { font-size: 28px; }
+  ion-icon {
+    font-size: 28px;
+  }
 }
 
 .sign-modal-title {
@@ -999,4 +1029,32 @@
   justify-content: flex-end;
   gap: 10px;
   padding-top: 4px;
+}
+
+.sub-head small {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--pre-muted);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.sub-block {
+  .qa-row {
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--pre-border);
+
+    &:last-of-type {
+      border-bottom: none;
+    }
+  }
+
+  .mallampati-grid {
+    margin-top: 4px;
+  }
+
+  .field--full {
+    margin-top: 12px;
+  }
 }

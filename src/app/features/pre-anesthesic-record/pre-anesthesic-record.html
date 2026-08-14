@@ -258,7 +258,6 @@
         </label>
       </section>
 
-      <!-- 05 · ALERGIAS E REAÇÕES ADVERSAS -->
       <section id="sec-alergias" class="pre-section" formGroupName="alergias">
         <div class="pre-section__head">
           <span class="pre-section__num">05</span>
@@ -344,8 +343,44 @@
           </div>
         </div>
 
-        <div class="qa-row qa-row--column">
-          <span class="qa-label">Classificação de Mallampati</span>
+        <div class="sub-block">
+          <h3 class="sub-head">Mucosas <small>(múltipla escolha)</small></h3>
+          <div class="chip-group">
+            <button type="button" *ngFor="let opt of mucosasOptions" class="chip chip--outline"
+              [class.active]="isMulti('exameFisico.mucosas', opt)"
+              (click)="toggleMulti('exameFisico.mucosas', opt)">{{ opt }}</button>
+          </div>
+        </div>
+
+        <div class="sub-block">
+          <h3 class="sub-head">Boca &mdash; Dentição</h3>
+          <div class="chip-group">
+            <button type="button" *ngFor="let opt of denticaoOptions" class="chip chip--outline"
+              [class.active]="isValue('exameFisico.denticao', opt)"
+              (click)="setValue('exameFisico.denticao', opt)">{{ opt }}</button>
+          </div>
+        </div>
+
+        <div class="sub-block">
+          <h3 class="sub-head">Distância Inter-Incisivos</h3>
+          <div class="chip-group">
+            <button type="button" *ngFor="let opt of interIncisivosOptions" class="chip chip--outline"
+              [class.active]="isValue('exameFisico.distanciaInterIncisivos', opt)"
+              (click)="setValue('exameFisico.distanciaInterIncisivos', opt)">{{ opt }}</button>
+          </div>
+        </div>
+
+        <div class="sub-block">
+          <h3 class="sub-head">Comprimento dos Incisivos Superiores</h3>
+          <div class="chip-group">
+            <button type="button" *ngFor="let opt of incisivosSuperioresOptions" class="chip chip--outline"
+              [class.active]="isValue('exameFisico.comprimentoIncisivosSuperiores', opt)"
+              (click)="setValue('exameFisico.comprimentoIncisivosSuperiores', opt)">{{ opt }}</button>
+          </div>
+        </div>
+
+        <div class="sub-block">
+          <h3 class="sub-head">Classificação de Mallampati</h3>
           <div class="mallampati-grid">
             <button type="button"
               *ngFor="let opt of mallampatiOptions"
@@ -358,41 +393,120 @@
           </div>
         </div>
 
-        <div class="qa-row">
-          <span class="qa-label">Abertura bucal &lt; 3 cm?</span>
-          <div class="chips">
-            <button type="button" class="chip chip--sim" [class.active]="isBool('exameFisico.aberturaBucalMenor3cm', true)" (click)="setBool('exameFisico.aberturaBucalMenor3cm', true)">SIM</button>
-            <button type="button" class="chip chip--nao" [class.active]="isBool('exameFisico.aberturaBucalMenor3cm', false)" (click)="setBool('exameFisico.aberturaBucalMenor3cm', false)">NÃO</button>
+        <div class="sub-block">
+          <h3 class="sub-head">Relação Incisivos Maxilares X Mandibulares em Perfil</h3>
+          <div class="chip-group">
+            <button type="button" *ngFor="let opt of relacaoIncisivosOptions" class="chip chip--outline"
+              [class.active]="isValue('exameFisico.relacaoIncisivos', opt)"
+              (click)="setValue('exameFisico.relacaoIncisivos', opt)">{{ opt }}</button>
           </div>
         </div>
-        <div class="qa-row">
-          <span class="qa-label">Distância tireomentoniana reduzida?</span>
-          <div class="chips">
-            <button type="button" class="chip chip--sim" [class.active]="isBool('exameFisico.distanciaTireomentoniana', true)" (click)="setBool('exameFisico.distanciaTireomentoniana', true)">SIM</button>
-            <button type="button" class="chip chip--nao" [class.active]="isBool('exameFisico.distanciaTireomentoniana', false)" (click)="setBool('exameFisico.distanciaTireomentoniana', false)">NÃO</button>
+
+        <div class="sub-block">
+          <h3 class="sub-head">Palato</h3>
+          <div class="chip-group">
+            <button type="button" *ngFor="let opt of palatoOptions" class="chip chip--outline"
+              [class.active]="isValue('exameFisico.palato', opt)"
+              (click)="setValue('exameFisico.palato', opt)">{{ opt }}</button>
           </div>
         </div>
-        <div class="qa-row">
-          <span class="qa-label">Extensão cervical limitada?</span>
-          <div class="chips">
-            <button type="button" class="chip chip--sim" [class.active]="isBool('exameFisico.extensaoCervicalLimitada', true)" (click)="setBool('exameFisico.extensaoCervicalLimitada', true)">SIM</button>
-            <button type="button" class="chip chip--nao" [class.active]="isBool('exameFisico.extensaoCervicalLimitada', false)" (click)="setBool('exameFisico.extensaoCervicalLimitada', false)">NÃO</button>
+
+        <div class="sub-block">
+          <h3 class="sub-head">Protusão da Mandíbula em Perfil</h3>
+          <div class="qa-row">
+            <span class="qa-label">Dentes ultrapassam a linha dos maxilares?</span>
+            <div class="chip-group">
+              <button type="button" *ngFor="let opt of simNaoNaOptions" class="chip chip--outline"
+                [class.active]="isValue('exameFisico.protusaoMandibula', opt)"
+                (click)="setValue('exameFisico.protusaoMandibula', opt)">{{ opt }}</button>
+            </div>
           </div>
         </div>
-        <div class="qa-row">
-          <span class="qa-label">Dentição alterada?</span>
-          <div class="chips">
-            <button type="button" class="chip chip--sim" [class.active]="isBool('exameFisico.denticaoAlterada', true)" (click)="setBool('exameFisico.denticaoAlterada', true)">SIM</button>
-            <button type="button" class="chip chip--nao" [class.active]="isBool('exameFisico.denticaoAlterada', false)" (click)="setBool('exameFisico.denticaoAlterada', false)">NÃO</button>
+
+        <div class="sub-block">
+          <h3 class="sub-head">Pescoço</h3>
+
+          <div class="qa-row">
+            <span class="qa-label">Comprimento</span>
+            <div class="chip-group">
+              <button type="button" *ngFor="let opt of pescocoComprimentoOptions" class="chip chip--outline"
+                [class.active]="isValue('exameFisico.pescocoComprimento', opt)"
+                (click)="setValue('exameFisico.pescocoComprimento', opt)">{{ opt }}</button>
+            </div>
           </div>
-        </div>
-        <div class="qa-row">
-          <span class="qa-label">Prótese dentária?</span>
-          <div class="chips">
-            <button type="button" class="chip chip--sim" [class.active]="isBool('exameFisico.proteseDentaria', true)" (click)="setBool('exameFisico.proteseDentaria', true)">SIM</button>
-            <button type="button" class="chip chip--nao" [class.active]="isBool('exameFisico.proteseDentaria', false)" (click)="setBool('exameFisico.proteseDentaria', false)">NÃO</button>
+
+          <div class="qa-row">
+            <span class="qa-label">Largura</span>
+            <div class="chip-group">
+              <button type="button" *ngFor="let opt of pescocoLarguraOptions" class="chip chip--outline"
+                [class.active]="isValue('exameFisico.pescocoLargura', opt)"
+                (click)="setValue('exameFisico.pescocoLargura', opt)">{{ opt }}</button>
+            </div>
           </div>
+
+          <div class="qa-row">
+            <span class="qa-label">Distância Esternocleidomentoniana</span>
+            <div class="chip-group">
+              <button type="button" *ngFor="let opt of esternoMentonianaOptions" class="chip chip--outline"
+                [class.active]="isValue('exameFisico.distanciaEsternocleidomentoniana', opt)"
+                (click)="setValue('exameFisico.distanciaEsternocleidomentoniana', opt)">{{ opt }}</button>
+            </div>
+          </div>
+
+          <div class="qa-row">
+            <span class="qa-label">Distância Tireomentoniana</span>
+            <div class="chip-group">
+              <button type="button" *ngFor="let opt of tireomentonianaOptions" class="chip chip--outline"
+                [class.active]="isValue('exameFisico.distanciaTireomentoniana', opt)"
+                (click)="setValue('exameFisico.distanciaTireomentoniana', opt)">{{ opt }}</button>
+            </div>
+          </div>
+
+          <div class="qa-row">
+            <span class="qa-label">Flexão do Pescoço</span>
+            <div class="chip-group">
+              <button type="button" *ngFor="let opt of normalAnormalOptions" class="chip chip--outline"
+                [class.active]="isValue('exameFisico.flexaoPescoco', opt)"
+                (click)="setValue('exameFisico.flexaoPescoco', opt)">{{ opt }}</button>
+            </div>
+          </div>
+
+          <div class="qa-row">
+            <span class="qa-label">Extensão do Pescoço</span>
+            <div class="chip-group">
+              <button type="button" *ngFor="let opt of normalAnormalOptions" class="chip chip--outline"
+                [class.active]="isValue('exameFisico.extensaoPescoco', opt)"
+                (click)="setValue('exameFisico.extensaoPescoco', opt)">{{ opt }}</button>
+            </div>
+          </div>
+
+          <div class="qa-row">
+            <span class="qa-label">Complacência do Espaço Mandibular</span>
+            <div class="chip-group">
+              <button type="button" *ngFor="let opt of normalAnormalOptions" class="chip chip--outline"
+                [class.active]="isValue('exameFisico.complacenciaEspacoMandibular', opt)"
+                (click)="setValue('exameFisico.complacenciaEspacoMandibular', opt)">{{ opt }}</button>
+            </div>
+          </div>
+
+          <label class="field field--full">
+            <span>Observações</span>
+            <textarea rows="2" formControlName="observacoesViaAerea"></textarea>
+          </label>
         </div>
+
+        <div class="sub-block">
+          <h3 class="sub-head">Anomalia de Caixa Torácica?</h3>
+          <div class="chips">
+            <button type="button" class="chip chip--sim" [class.active]="isBool('exameFisico.anomaliaCaixaToracica', true)" (click)="setBool('exameFisico.anomaliaCaixaToracica', true)">SIM</button>
+            <button type="button" class="chip chip--nao" [class.active]="isBool('exameFisico.anomaliaCaixaToracica', false)" (click)="setBool('exameFisico.anomaliaCaixaToracica', false)">NÃO</button>
+          </div>
+          <label class="field field--full" *ngIf="isBool('exameFisico.anomaliaCaixaToracica', true)">
+            <span>Descrição da anomalia</span>
+            <textarea rows="2" formControlName="anomaliaCaixaToracicaDescricao"></textarea>
+          </label>
+        </div>
+
         <div class="qa-row">
           <span class="qa-label">Previsão de intubação difícil?</span>
           <div class="chips">
@@ -400,6 +514,7 @@
             <button type="button" class="chip chip--nao" [class.active]="isBool('exameFisico.previsaoIotDificil', false)" (click)="setBool('exameFisico.previsaoIotDificil', false)">NÃO</button>
           </div>
         </div>
+
 
         <div class="sub-block" *ngFor="let g of exameFisicoGroups" [formGroupName]="g.key">
           <h3 class="sub-head">{{ g.title }}</h3>
@@ -445,6 +560,10 @@
           <label class="field"><span>Creatinina (mg/dL)</span><input type="number" step="0.01" formControlName="creatinina" /></label>
           <label class="field"><span>Sódio (mEq/L)</span><input type="number" formControlName="sodio" /></label>
           <label class="field"><span>Potássio (mEq/L)</span><input type="number" step="0.1" formControlName="potassio" /></label>
+          <label class="field"><span>TP (s)</span><input type="text" formControlName="tp" /></label>
+          <label class="field"><span>EAS</span><input type="text" formControlName="eas" /></label>
+          <label class="field"><span>Testes de função hepática</span><input type="text" formControlName="funcaoHepatica" /></label>
+          <label class="field"><span>Teste de gravidez</span><input type="text" formControlName="testeGravidez" /></label>
         </div>
 
         <h3 class="sub-head">Imagem e gráficos</h3>
@@ -452,7 +571,8 @@
           <label class="field"><span>ECG</span><input type="text" formControlName="ecg" placeholder="Achados" /></label>
           <label class="field"><span>RX de tórax</span><input type="text" formControlName="rxTorax" placeholder="Achados" /></label>
           <label class="field"><span>Ecocardiograma</span><input type="text" formControlName="ecocardiograma" placeholder="Achados" /></label>
-          <label class="field"><span>Outros exames</span><input type="text" formControlName="outrosExames" /></label>
+          <label class="field"><span>Prova de função respiratória</span><input type="text" formControlName="provaFuncaoRespiratoria" /></label>
+          <label class="field"><span>Outros</span><input type="text" formControlName="outrosExames" /></label>
         </div>
 
         <h3 class="sub-head">Pareceres</h3>
@@ -463,7 +583,10 @@
 
         <div class="repeat-list" formArrayName="outrosPareceres">
           <div class="repeat-row repeat-row--parecer" *ngFor="let p of outrosPareceres.controls; let i = index" [formGroupName]="i">
-            <input type="text" formControlName="especialidade" placeholder="Especialidade" />
+            <select class="select-control" formControlName="especialidade">
+              <option value="">Especialidade…</option>
+              <option *ngFor="let e of especialidadesHuap" [value]="e">{{ e }}</option>
+            </select>
             <input type="text" formControlName="descricao" placeholder="Parecer" />
             <button type="button" class="btn-icon btn-icon--danger" (click)="removeParecer(i)">
               <ion-icon name="trash-outline"></ion-icon>
@@ -527,7 +650,6 @@
     </main>
   </div>
 
-  
   <ion-modal [isOpen]="isSignModalOpen" (didDismiss)="closeSignModal()" class="sign-modal">
     <ng-template>
       <div class="sign-modal-body">

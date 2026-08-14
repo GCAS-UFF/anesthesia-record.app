@@ -64,7 +64,6 @@ interface CheckGroupDef {
   options: CheckOption[];
 }
 
-/** Gerar uma chave de controle segura a partir do rótulo. */
 function slug(label: string): string {
   return label
     .normalize('NFD')
@@ -106,22 +105,46 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
   isSaving = false;
 
-  
   isSignModalOpen = false;
   signatureAgreed = false;
   signaturePassword = '';
   signatureError = '';
 
-  
   loggedUser: any = null;
   lastSavedAt: Date | null = null;
   autosaveTimer: any = null;
 
   activeSectionId = 'procedimento';
-  
 
   readonly asaOptions = ['I', 'II', 'III', 'IV', 'V', 'VI'];
   readonly mallampatiOptions = ['I', 'II', 'III', 'IV'];
+
+  readonly mucosasOptions = ['Coradas', 'Hipocoradas', 'Hipercoradas', 'Hidratadas', 'Desidratadas', 'Hiperhidratadas'];
+  readonly denticaoOptions = ['Presente', 'Ausente', 'Prótese Superior', 'Prótese Inferior'];
+  readonly interIncisivosOptions = ['> 3 cm', '< 3 cm', 'NA'];
+  readonly incisivosSuperioresOptions = ['Curto', 'Longo', 'NA'];
+  readonly relacaoIncisivosOptions = [
+    'Maxilares alinhados aos mandibulares',
+    'Maxilares anteriores',
+    'Maxilares posteriores',
+    'NA',
+  ];
+  readonly palatoOptions = ['Normal', 'Estreito', 'Ogival'];
+  readonly simNaoNaOptions = ['Sim', 'Não', 'NA'];
+  readonly pescocoComprimentoOptions = ['Normal', 'Longo', 'Curto'];
+  readonly pescocoLarguraOptions = ['Normal', 'Grosso'];
+  readonly esternoMentonianaOptions = ['> 12,5 cm', '< 12,5 cm'];
+  readonly tireomentonianaOptions = ['\u2265 5 cm', '< 5 cm'];
+  readonly normalAnormalOptions = ['Normal', 'Anormal'];
+
+  readonly especialidadesHuap = [
+    'Cardiologista',
+    'Clínico Geral',
+    'Pneumologista',
+    'Nefrologista',
+    'Endocrinologista',
+    'Outra',
+  ];
 
   readonly lateralidadeOptions = [
     'Direita',
@@ -130,7 +153,6 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     'Não se aplica',
   ];
 
-  
   readonly cirurgiasAghu: string[] = [
     'Colecistectomia videolaparoscópica',
     'Herniorrafia inguinal',
@@ -309,7 +331,6 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     sc?.removeEventListener('scroll', this.onScroll);
   }
 
-
   private checkGroup(def: CheckGroupDef): FormGroup {
     const controls: Record<string, any> = {};
     def.options.forEach((o) => (controls[o.key] = [false]));
@@ -387,12 +408,24 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
       exameFisico: this.fb.group({
         ...exameGroups,
+        mucosas: [[] as string[]],
+        denticao: [null],
+        distanciaInterIncisivos: [null],
+        comprimentoIncisivosSuperiores: [null],
         mallampati: [null],
-        aberturaBucalMenor3cm: [null],
+        relacaoIncisivos: [null],
+        palato: [null],
+        protusaoMandibula: [null],
+        pescocoComprimento: [null],
+        pescocoLargura: [null],
+        distanciaEsternocleidomentoniana: [null],
         distanciaTireomentoniana: [null],
-        extensaoCervicalLimitada: [null],
-        denticaoAlterada: [null],
-        proteseDentaria: [null],
+        flexaoPescoco: [null],
+        extensaoPescoco: [null],
+        complacenciaEspacoMandibular: [null],
+        observacoesViaAerea: [''],
+        anomaliaCaixaToracica: [null],
+        anomaliaCaixaToracicaDescricao: [''],
         previsaoIotDificil: [null],
       }),
 
@@ -408,6 +441,11 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
         creatinina: [null],
         sodio: [null],
         potassio: [null],
+        tp: [''],
+        eas: [''],
+        funcaoHepatica: [''],
+        testeGravidez: [''],
+        provaFuncaoRespiratoria: [''],
         ecg: [''],
         rxTorax: [''],
         ecocardiograma: [''],
@@ -439,7 +477,8 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
       g.get('imc')?.setValue(Number((peso / (m * m)).toFixed(2)), { emitEvent: false });
     }
   }
- 
+
+  /* ---------------- cirurgias propostas ---------------- */
 
   get cirurgias(): FormArray {
     return this.form.get('procedimento.cirurgias') as FormArray;
@@ -463,7 +502,6 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     this.cirurgias.controls.forEach((c, idx) => c.get('principal')?.setValue(idx === i));
   }
 
-
   private novaMedicacao(): FormGroup {
     return this.fb.group({ nome: [''], dose: [''], via: [''], frequencia: [''] });
   }
@@ -481,7 +519,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     else this.medicacoes.at(0).reset();
   }
 
- 
+
   get outrosPareceres(): FormArray {
     return this.form.get('exames.outrosPareceres') as FormArray;
   }
@@ -494,7 +532,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     this.outrosPareceres.removeAt(i);
   }
 
-  
+
   setBool(path: string, value: boolean): void {
     this.form.get(path)?.setValue(value);
   }
@@ -509,6 +547,22 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
   isValue(path: string, value: any): boolean {
     return this.form.get(path)?.value === value;
+  }
+
+  toggleMulti(path: string, value: string): void {
+    const ctrl = this.form.get(path);
+    if (!ctrl) return;
+    const current: string[] = Array.isArray(ctrl.value) ? [...ctrl.value] : [];
+    const idx = current.indexOf(value);
+    if (idx >= 0) current.splice(idx, 1);
+    else current.push(value);
+    ctrl.setValue(current);
+    ctrl.markAsDirty();
+  }
+
+  isMulti(path: string, value: string): boolean {
+    const v = this.form.get(path)?.value;
+    return Array.isArray(v) && v.includes(value);
   }
 
   toggleValue(path: string): void {
@@ -528,7 +582,6 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     return `${base}.${groupKey}.${optionKey}`;
   }
 
- 
   private setupAutosave(): void {
     this.autosaveTimer = setInterval(() => this.saveDraft(), 20000);
   }
@@ -547,10 +600,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   private loadDraft(): void {
     try {
       const raw = localStorage.getItem(this.storageKey());
-      
-      if (!raw) 
-        return;
-      
+      if (!raw) return;
       const data = JSON.parse(raw);
 
       const cirurgias = data?.procedimento?.cirurgias ?? [];
@@ -617,7 +667,6 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     return (this.loggedUser?.name || this.loggedUser?.fullName || '').trim();
   }
 
-  
   async salvar(): Promise<void> {
     this.saveDraft();
     if (this.form.invalid) {
@@ -668,7 +717,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     const payload = { ...this.buildPayload(), assinatura: { senha } };
 
     // TODO: chamar PreAnesthesiaService.save(payload)
-    // A senha é validada no backend; nunca deve ser persistida no rascunho local.
+    // Validar senha no back
     console.log('[pre-anestesica] payload assinado', { ...payload, assinatura: { senha: '***' } });
 
     setTimeout(async () => {
@@ -685,7 +734,6 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     }, 700);
   }
 
-  
   private selectedLabels(def: CheckGroupDef, value: any): string[] {
     return def.options.filter((o) => !!value?.[o.key]).map((o) => o.label);
   }
@@ -700,6 +748,28 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
       outrosDescricao: raw.comorbidades[g.key]?.outrosDescricao ?? '',
       observacoes: raw.comorbidades[g.key]?.observacoes ?? '',
     }));
+
+    const viaAerea = {
+      mucosas: raw.exameFisico.mucosas,
+      denticao: raw.exameFisico.denticao,
+      distanciaInterIncisivos: raw.exameFisico.distanciaInterIncisivos,
+      comprimentoIncisivosSuperiores: raw.exameFisico.comprimentoIncisivosSuperiores,
+      mallampati: raw.exameFisico.mallampati,
+      relacaoIncisivos: raw.exameFisico.relacaoIncisivos,
+      palato: raw.exameFisico.palato,
+      protusaoMandibula: raw.exameFisico.protusaoMandibula,
+      pescocoComprimento: raw.exameFisico.pescocoComprimento,
+      pescocoLargura: raw.exameFisico.pescocoLargura,
+      distanciaEsternocleidomentoniana: raw.exameFisico.distanciaEsternocleidomentoniana,
+      distanciaTireomentoniana: raw.exameFisico.distanciaTireomentoniana,
+      flexaoPescoco: raw.exameFisico.flexaoPescoco,
+      extensaoPescoco: raw.exameFisico.extensaoPescoco,
+      complacenciaEspacoMandibular: raw.exameFisico.complacenciaEspacoMandibular,
+      observacoes: raw.exameFisico.observacoesViaAerea,
+      anomaliaCaixaToracica: raw.exameFisico.anomaliaCaixaToracica,
+      anomaliaCaixaToracicaDescricao: raw.exameFisico.anomaliaCaixaToracicaDescricao,
+      previsaoIotDificil: raw.exameFisico.previsaoIotDificil,
+    };
 
     const exameFisico = this.exameFisicoGroups.map((g) => ({
       area: g.title,
@@ -743,15 +813,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
         itens: (raw.medicacoes.itens ?? []).filter((m: any) => (m?.nome ?? '').trim()),
       },
       exameFisico: {
-        viaAerea: {
-          mallampati: raw.exameFisico.mallampati,
-          aberturaBucalMenor3cm: raw.exameFisico.aberturaBucalMenor3cm,
-          distanciaTireomentoniana: raw.exameFisico.distanciaTireomentoniana,
-          extensaoCervicalLimitada: raw.exameFisico.extensaoCervicalLimitada,
-          denticaoAlterada: raw.exameFisico.denticaoAlterada,
-          proteseDentaria: raw.exameFisico.proteseDentaria,
-          previsaoIotDificil: raw.exameFisico.previsaoIotDificil,
-        },
+        viaAerea,
         areas: exameFisico,
       },
       exames: {
@@ -767,11 +829,16 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
           creatinina: raw.exames.creatinina,
           sodio: raw.exames.sodio,
           potassio: raw.exames.potassio,
+          tp: raw.exames.tp,
+          eas: raw.exames.eas,
+          funcaoHepatica: raw.exames.funcaoHepatica,
+          testeGravidez: raw.exames.testeGravidez,
         },
         imagemEGraficos: {
           ecg: raw.exames.ecg,
           rxTorax: raw.exames.rxTorax,
           ecocardiograma: raw.exames.ecocardiograma,
+          provaFuncaoRespiratoria: raw.exames.provaFuncaoRespiratoria,
           outrosExames: raw.exames.outrosExames,
         },
         pareceres: [
