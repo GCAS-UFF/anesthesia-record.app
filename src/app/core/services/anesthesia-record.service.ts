@@ -236,7 +236,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     const surgeryId = Number(this.pick(draft.cirurgiaId, draft.surgeryId, draft.id));
     if (!Number.isFinite(surgeryId) || surgeryId <= 0) return false;
 
-   
+
     if (draft.isMonitoringDraft && !draft.readyForApiSync && !draft.finalized) {
       return false;
     }
@@ -293,7 +293,11 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
   public updatePendingStatus(): void {
     const count = Object.keys(localStorage)
-      .filter(key => key.startsWith(this.DRAFT_PREFIX) || key.startsWith('monitoring_draft_')).length;
+      .filter(key =>
+        key.startsWith(this.DRAFT_PREFIX) ||        
+        key.startsWith('draft_monitoring_') ||     
+        key.startsWith('monitoring_draft_')        
+      ).length;
     this.pendingDraftsCountSubject.next(count);
   }
 
@@ -436,7 +440,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     if (!Array.isArray(records)) return [];
 
     const mapRoute = (r: string) => {
-      switch((r || '').toUpperCase()) {
+      switch ((r || '').toUpperCase()) {
         case 'IV': return 0;
         case 'IM': return 1;
         case 'SC': return 2;
@@ -459,7 +463,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     if (!Array.isArray(records)) return [];
 
     const mapEventType = (t: string) => {
-      switch(t) {
+      switch (t) {
         case 'position': return 1;
         case 'airway': return 2;
         case 'surgical': return 3;
@@ -1322,9 +1326,9 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
   private mapMonitoringAgentsToApp(records: any[]): any[] {
     if (!Array.isArray(records)) return [];
-    
+
     const mapRouteToApp = (r: number) => {
-      switch(r) {
+      switch (r) {
         case 0: return 'IV';
         case 1: return 'IM';
         case 2: return 'SC';
@@ -1347,7 +1351,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     if (!Array.isArray(records)) return [];
 
     const mapEventTypeToApp = (t: number) => {
-      switch(t) {
+      switch (t) {
         case 1: return 'position';
         case 2: return 'airway';
         case 3: return 'surgical';

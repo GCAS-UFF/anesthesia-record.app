@@ -13,7 +13,6 @@ import { SurgeryService } from 'src/app/core/services/surgery.service';
 
 import { StatusBarComponent } from 'src/app/shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from 'src/app/shared/components/header-institucional/header-institucional.component';
-import { PatientInfoCardComponent } from 'src/app/shared/components/patient-info-card/patient-info-card.component';
 import { ClinicalItemModalComponent } from 'src/app/shared/components/clinical-item-modal/clinical-item-modal.component';
 import { QuickVitalInputComponent } from 'src/app/shared/components/quick-vital-input/quick-vital-input.component';
 
@@ -94,7 +93,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   patientAge = '';
   patientWeight: string | number = '--';
   patientAsa = '';
-  
+
   expandedPanel: 'agents' | 'events' | 'balance' | null = null;
 
   get channelsGridRows(): string {
@@ -176,7 +175,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     } catch (err) {
       console.warn('[Monitorizacao] Não foi possível travar a rotação em landscape', err);
     }
-    
+
     this.surgeryId = this.route.snapshot.paramMap.get('id') || '';
 
     const qp = this.route.snapshot.queryParamMap;
@@ -198,6 +197,8 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     } catch (e) {
       console.warn('ScreenOrientation not supported or failed to lock', e);
     }
+
+    this.anesthesiaRecordService.updatePendingStatus();
   }
 
   ngOnDestroy() {
@@ -210,7 +211,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     clearInterval(this.tickSub);
     clearInterval(this.autoMonitoringSub);
     this.pendingSub?.unsubscribe();
-    
+
     try {
       ScreenOrientation.unlock();
     } catch (e) {
@@ -313,25 +314,27 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         ],
         buttons: [
           { text: 'Cancelar', role: 'cancel' },
-          { text: 'Salvar', handler: (d) => {
-            if (!d.time) return;
-            const oldIso = (this.startTimeAnesthesia as Date).toISOString();
-            const iso = this.replaceTimeInIso(oldIso, d.time);
-            this.startTimeAnesthesia = new Date(iso);
-            this.anesthesiaStartTime = this.startTimeAnesthesia;
-            
-            // Se o primeiro registro vital estiver com o mesmo horário antigo, arrasta ele junto
-            if (this.vitalRecords.length > 0) {
-              const first = this.vitalRecords[0];
-              const firstTime = new Date(first.timestamp || 0).getTime();
-              if (Math.abs(firstTime - new Date(oldIso).getTime()) < 60000) {
-                first.timestamp = iso;
-                first.time = d.time;
-                this.vitalRecords = [...this.vitalRecords]; // trigger change detection
+          {
+            text: 'Salvar', handler: (d) => {
+              if (!d.time) return;
+              const oldIso = (this.startTimeAnesthesia as Date).toISOString();
+              const iso = this.replaceTimeInIso(oldIso, d.time);
+              this.startTimeAnesthesia = new Date(iso);
+              this.anesthesiaStartTime = this.startTimeAnesthesia;
+
+              // Se o primeiro registro vital estiver com o mesmo horário antigo, arrasta ele junto
+              if (this.vitalRecords.length > 0) {
+                const first = this.vitalRecords[0];
+                const firstTime = new Date(first.timestamp || 0).getTime();
+                if (Math.abs(firstTime - new Date(oldIso).getTime()) < 60000) {
+                  first.timestamp = iso;
+                  first.time = d.time;
+                  this.vitalRecords = [...this.vitalRecords]; // trigger change detection
+                }
               }
+              this.persistDraft();
             }
-            this.persistDraft();
-          }}
+          }
         ]
       });
       await alert.present();
@@ -388,25 +391,27 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         ],
         buttons: [
           { text: 'Cancelar', role: 'cancel' },
-          { text: 'Salvar', handler: (d) => {
-            if (!d.time) return;
-            const oldIso = (this.startTimeSurgery as Date).toISOString();
-            const iso = this.replaceTimeInIso(oldIso, d.time);
-            this.startTimeSurgery = new Date(iso);
-            this.surgeryStartTime = this.startTimeSurgery;
-            
-            // Se o primeiro registro vital estiver com o mesmo horário antigo, arrasta ele junto
-            if (this.vitalRecords.length > 0) {
-              const first = this.vitalRecords[0];
-              const firstTime = new Date(first.timestamp || 0).getTime();
-              if (Math.abs(firstTime - new Date(oldIso).getTime()) < 60000) {
-                first.timestamp = iso;
-                first.time = d.time;
-                this.vitalRecords = [...this.vitalRecords]; // trigger change detection
+          {
+            text: 'Salvar', handler: (d) => {
+              if (!d.time) return;
+              const oldIso = (this.startTimeSurgery as Date).toISOString();
+              const iso = this.replaceTimeInIso(oldIso, d.time);
+              this.startTimeSurgery = new Date(iso);
+              this.surgeryStartTime = this.startTimeSurgery;
+
+              // Se o primeiro registro vital estiver com o mesmo horário antigo, arrasta ele junto
+              if (this.vitalRecords.length > 0) {
+                const first = this.vitalRecords[0];
+                const firstTime = new Date(first.timestamp || 0).getTime();
+                if (Math.abs(firstTime - new Date(oldIso).getTime()) < 60000) {
+                  first.timestamp = iso;
+                  first.time = d.time;
+                  this.vitalRecords = [...this.vitalRecords]; // trigger change detection
+                }
               }
+              this.persistDraft();
             }
-            this.persistDraft();
-          }}
+          }
         ]
       });
       await alert.present();
@@ -882,7 +887,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   // Sincronização de arraste (pan) nos canais secundários
   private isPanning = false;
   private lastPanX = 0;
-  
+
   onPointerDown(e: PointerEvent) {
     if (e.button !== 0) return; // Apenas clique esquerdo ou toque
     this.isPanning = true;
@@ -964,7 +969,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         {
           title: 'Status',
           fields: [
-             { label: 'Integração backend', value: 'Quando o backend enviar "preAnesthesiaData" no formato RecordData JSON, esta ficha será preenchida automaticamente com os dados oficiais.' }
+            { label: 'Integração backend', value: 'Quando o backend enviar "preAnesthesiaData" no formato RecordData JSON, esta ficha será preenchida automaticamente com os dados oficiais.' }
           ]
         }
       ]
@@ -1003,9 +1008,8 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       const draft = this.buildDraftPayload();
       localStorage.setItem(MONITORING_DRAFT_KEY(this.surgeryId), JSON.stringify(draft));
       this.lastDraftSavedAt = new Date();
-      if ((this.anesthesiaRecordService as any).updatePendingStatus) {
-        (this.anesthesiaRecordService as any).updatePendingStatus();
-      }
+
+      this.anesthesiaRecordService.updatePendingStatus();
     } catch (err) {
       console.warn('[Monitorização] falha ao gravar rascunho local', err);
     }
@@ -1050,20 +1054,22 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       subHeader: 'Deseja marcar o fim da cirurgia?',
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
-        { text: 'Finalizar', handler: () => {
-          this.isSurgeryFinished = true;
-          this.surgeryEndTime = new Date();
-          
-          if (!this.vitalRecords.length) {
-            this.addVitalRecord({ timestamp: this.surgeryEndTime.toISOString(), time: this.formatHM(this.surgeryEndTime) });
-          } else {
-             // Forçar snapshot para marcar a linha no gráfico
-             this.autoSnapshotFromLast();
-          }
+        {
+          text: 'Finalizar', handler: () => {
+            this.isSurgeryFinished = true;
+            this.surgeryEndTime = new Date();
 
-          this.persistDraft();
-          // Aqui no futuro pode mandar um patch pra API pra registrar o fim da cirurgia
-        }},
+            if (!this.vitalRecords.length) {
+              this.addVitalRecord({ timestamp: this.surgeryEndTime.toISOString(), time: this.formatHM(this.surgeryEndTime) });
+            } else {
+              // Forçar snapshot para marcar a linha no gráfico
+              this.autoSnapshotFromLast();
+            }
+
+            this.persistDraft();
+            // Aqui no futuro pode mandar um patch pra API pra registrar o fim da cirurgia
+          }
+        },
       ],
     });
     await alert.present();
@@ -1123,6 +1129,9 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       await this.anesthesiaRecordService.saveRecord(record).toPromise();
       await loading.dismiss();
       localStorage.removeItem(MONITORING_DRAFT_KEY(this.surgeryId));
+
+      this.anesthesiaRecordService.updatePendingStatus();
+
       await this.toast('✅ Anestesia encerrada e enviada com sucesso.', 'success', 3000);
     } catch (err) {
       console.error('[Encerramento] falha ao enviar, mantendo rascunho local', err);
