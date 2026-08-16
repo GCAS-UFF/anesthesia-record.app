@@ -109,6 +109,8 @@
           (openFicha)="onOpenFicha(p.id, p.patientId)"
           (viewRegistro)="onViewRegistro(p.id)"
           (abandonSurgery)="abandonPatient(p.id, p.patientId)"
+          [isPreAnesthesiaRecordDone]="p.isPreAnesthesiaRecordDone"
+          (openPreAnesthesia)="onOpenPreAnesthesia(p.patientId)"
         ></app-procedure-card>
 
         <app-empty-state

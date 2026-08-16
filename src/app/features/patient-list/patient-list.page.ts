@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit } from '@angular/core';
+import { Component, ViewChild, OnInit, Input } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular/standalone';
 import { IonContent, IonSpinner, IonSkeletonText, IonIcon } from '@ionic/angular/standalone';
@@ -50,6 +50,7 @@ export class PatientListPage implements OnInit {
   readonly SurgeryStatusEnum = SurgeryStatusEnum;
   currentUserId: number | null = null;
   canAssumePatient = true;
+ 
   private userSubscription?: any;
 
   currentPage = 1;
@@ -65,7 +66,7 @@ export class PatientListPage implements OnInit {
     private datePipe: DatePipe,
     private router: Router,
     private alertController: AlertController,
-    private loadingController: LoadingController,    
+    private loadingController: LoadingController,
     private toastController: ToastController,
     private surgeryService: SurgeryService,
     private authService: AuthService,
@@ -325,7 +326,7 @@ export class PatientListPage implements OnInit {
     this.loadData();
   }
 
-  onOpenChange(cardId: any | number | null) {    
+  onOpenChange(cardId: any | number | null) {
     this.openCardId = cardId;
   }
 
@@ -373,5 +374,14 @@ export class PatientListPage implements OnInit {
     });
 
     await alert.present();
+  }
+
+  onOpenPreAnesthesia(patientId: string): void {    
+    if (!patientId) {
+      console.error('Patient ID não encontrado');
+      return;
+    }
+
+    this.router.navigate(['/ficha-pre-anestesica', patientId]);
   }
 }

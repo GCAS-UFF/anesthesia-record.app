@@ -1,11 +1,10 @@
 <div class="card-wrapper">
-  <div class="slide-actions">
+  <div class="slide-actions" *ngIf="shouldShowAbandonButton">
     <button
-      [class.btn-disabled]="!canAssumeThisPatient || !canAbandon"
-      [disabled]="!canAssumeThisPatient || !canAbandon"
+      [class.btn-disabled]="!isAbandonButtonEnabled"
+      [disabled]="!isAbandonButtonEnabled"
       class="slide-btn slide-btn-delete"
       (click)="onAbandon()"
-      *ngIf="showDeleteAction"
     >
       <ion-icon name="exit-outline"></ion-icon>
       <span>Abandonar Cirurgia</span>
@@ -37,9 +36,7 @@
       <div class="card-status">
         <div class="time-badge badge-time">
           <ion-icon name="time-outline"></ion-icon>
-          <span>
-            {{ time || "—" }}
-          </span>
+          <span>{{ time || "—" }}</span>
         </div>
 
         <div
@@ -51,24 +48,19 @@
           [class.badge-preparation]="SurgeryStatusEnum.EmPreparacao === status"
         >
           <span class="dot"></span>
-
           <span>
             <ng-container *ngIf="SurgeryStatusEnum.Agendado === status">
               Agendada
             </ng-container>
-
             <ng-container *ngIf="SurgeryStatusEnum.EmPreparacao === status">
               Em preparação
             </ng-container>
-
             <ng-container *ngIf="SurgeryStatusEnum.EmProgresso === status">
               Em andamento
             </ng-container>
-
             <ng-container *ngIf="SurgeryStatusEnum.Concluido === status">
               Realizada
             </ng-container>
-
             <ng-container *ngIf="SurgeryStatusEnum.Cancelada === status">
               Cancelada
             </ng-container>
@@ -118,52 +110,71 @@
       </div>
 
       <div class="body-actions">
-        <ng-container
-          *ngIf="
-            SurgeryStatusEnum.Concluido === status ||
-              SurgeryStatusEnum.Cancelada === status;
-            else waitingActions
-          "
-        >
+        <ng-container *ngIf="shouldShowOnlyViewRecords; else activeActions">
           <button
             class="btn btn-primary ion-activatable ripple-parent"
-            (click)="onOpenFicha()"
+            (click)="onViewRegistro()"
           >
             <ion-icon name="document-text-outline"></ion-icon>
-            Ver Registro
+            Ver Registros
             <ion-ripple-effect></ion-ripple-effect>
           </button>
         </ng-container>
 
-        <ng-template #waitingActions>
+        <ng-template #activeActions>
           <button
-            class="btn"
-            [class.btn-primary]="!anesthesiologist || isCurrentAnesthesiologist"
+            class="btn btn-pre-anesthesia ion-activatable ripple-parent"
+            [class.btn-pre-anesthesia-done]="isPreAnesthesiaRecordDone"
+            [disabled]="!canFillPreAnesthesia"
+            (click)="onOpenPreAnesthesia()"
+          >
+            <ion-icon
+              [name]="
+                isPreAnesthesiaRecordDone
+                  ? 'checkmark-circle-outline'
+                  : 'clipboard-outline'
+              "
+            ></ion-icon>
+            {{
+              isPreAnesthesiaRecordDone
+                ? "Pré Anestesia Concluída"
+                : "Pré Anestesia"
+            }}
+            <ion-ripple-effect></ion-ripple-effect>
+          </button>
+
+          <button
+            class="btn btn-outline ion-activatable ripple-parent"
+            [class.btn-disabled]="!canOpenAnestheticRecord"
+            [disabled]="!canOpenAnestheticRecord"
+            (click)="onOpenFicha()"
+          >
+            <ion-icon name="reader-outline"></ion-icon>
+            Ficha Anestésica
+            <ion-ripple-effect></ion-ripple-effect>
+          </button>
+
+          <button
+            *ngIf="shouldShowAssumeButton"
+            class="btn btn-primary ion-activatable ripple-parent"
             [class.btn-disabled]="!canAssumeThisPatient"
             [disabled]="!canAssumeThisPatient"
             (click)="onAssume()"
           >
-            <ion-icon
-              [name]="
-                isCurrentAnesthesiologist ? 'medical-outline' : 'person-outline'
-              "
-            >
-            </ion-icon>
-
-            {{
-              isCurrentAnesthesiologist
-                ? "Ir para Cirurgia"
-                : anesthesiologist
-                  ? "Paciente com responsável"
-                  : "Assumir Paciente"
-            }}
+            <ion-icon name="person-outline"></ion-icon>
+            Assumir Paciente
+            <ion-ripple-effect></ion-ripple-effect>
           </button>
+
           <button
-            class="btn btn-outline ion-activatable ripple-parent"
-            (click)="onOpenFicha()"
+            *ngIf="shouldShowGoToSurgeryButton"
+            class="btn btn-primary ion-activatable ripple-parent"
+            [class.btn-disabled]="!isGoToSurgeryButtonEnabled"
+            [disabled]="!isGoToSurgeryButtonEnabled"
+            (click)="onAssume()"
           >
-            <ion-icon name="reader-outline"></ion-icon>
-            Abrir Ficha Anestésica
+            <ion-icon name="medical-outline"></ion-icon>
+            Ir para Cirurgia
             <ion-ripple-effect></ion-ripple-effect>
           </button>
         </ng-template>

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ElementRef, ViewChild } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { IonRippleEffect, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -10,8 +10,16 @@ import {
   fitnessOutline,
   heartOutline,
   checkmarkCircle,
+  checkmarkCircleOutline,
+  clipboardOutline,
   trashOutline,
-  archiveOutline, personRemoveOutline, returnUpBackOutline, exitOutline, calendarClearOutline, timeOutline } from 'ionicons/icons';
+  archiveOutline,
+  personRemoveOutline,
+  returnUpBackOutline,
+  exitOutline,
+  calendarClearOutline,
+  timeOutline
+} from 'ionicons/icons';
 import { SurgeryStatusEnum } from 'src/app/core/models/api-enums.model';
 
 export type ProcedureStatus = SurgeryStatusEnum | null;
@@ -46,23 +54,23 @@ export class ProcedureCardComponent {
   @Input() age = 0;
   @Input() record = '';
 
+  @Input() isCurrentAnesthesiologist = false;
+  @Input() isPreAnesthesiaRecordDone = false;
   @Input() canAssumePatient = true;
   @Input() canAbandon = true;
-  @Input() isCurrentAnesthesiologist = false;
+
+  @Output() openPreAnesthesia = new EventEmitter<void>();
+  @Output() assume = new EventEmitter<boolean>();
+  @Output() openFicha = new EventEmitter<void>();
+  @Output() viewRegistro = new EventEmitter<void>();
+  @Output() abandonSurgery = new EventEmitter<void>();
 
   @Input() id!: string | number;
   @Input() isOpen: boolean = false;
   @Output() openChange = new EventEmitter<string | number | null>();
-
   @Input() swipeThreshold = 80;
   @Input() maxSwipeOffset = 200;
   @Input() showDeleteAction = true;
-
-  @Output() assume = new EventEmitter<boolean>();
-  @Output() openFicha = new EventEmitter<void>();
-  @Output() viewRegistro = new EventEmitter<void>();
-
-  @Output() abandonSurgery = new EventEmitter<void>();
 
   isSwipedLeft = false;
   slideOffset = 0;
@@ -75,18 +83,52 @@ export class ProcedureCardComponent {
   openCardId: string | number | null = null;
 
   constructor() {
-    addIcons({exitOutline,timeOutline,fitnessOutline,calendarClearOutline,medicalOutline,documentTextOutline,readerOutline,returnUpBackOutline,personRemoveOutline,archiveOutline,heartOutline,checkmarkCircle,personOutline,trashOutline});
+    addIcons({
+      exitOutline,
+      timeOutline,
+      fitnessOutline,
+      calendarClearOutline,
+      medicalOutline,
+      documentTextOutline,
+      readerOutline,
+      returnUpBackOutline,
+      personRemoveOutline,
+      archiveOutline,
+      heartOutline,
+      checkmarkCircle,
+      checkmarkCircleOutline,
+      clipboardOutline,
+      personOutline,
+      trashOutline
+    });
   }
 
-  get isCompleted(): boolean { return this.status === SurgeryStatusEnum.Concluido; }
-  get isInProgress(): boolean { return this.status === SurgeryStatusEnum.EmProgresso; }
-  get isWaiting(): boolean { return this.status === SurgeryStatusEnum.Agendado; }
+  get isCompleted(): boolean {
+    return this.status === SurgeryStatusEnum.Concluido;
+  }
+
+  get isInProgress(): boolean {
+    return this.status === SurgeryStatusEnum.EmProgresso;
+  }
+
+  get isWaiting(): boolean {
+    return this.status === SurgeryStatusEnum.Agendado;
+  }
+
+  get isFinished(): boolean {
+    return this.status === SurgeryStatusEnum.Concluido ||
+      this.status === SurgeryStatusEnum.Cancelada;
+  }
 
   get hasProcedure(): boolean {
     return !!this.procedure && this.procedure !== 'Procedimento não informado';
   }
 
   get canAssumeThisPatient(): boolean {
+    if (!this.canAssumePatient) {
+      return false;
+    }
+
     if (this.isCurrentAnesthesiologist) {
       return true;
     }
@@ -95,7 +137,122 @@ export class ProcedureCardComponent {
       return false;
     }
 
-    return this.canAssumePatient;
+    return true;
+  }
+
+
+  get shouldShowAssumeButton(): boolean {
+    if (!this.canAssumePatient) {
+      return false;
+    }
+
+    if (this.isFinished) {
+      return false;
+    }
+
+    if (this.isCurrentAnesthesiologist) {
+      return false;
+    }
+
+    // Mostrar se o paciente não tem responsável
+    return !this.anesthesiologist || this.anesthesiologist.trim() === '';
+  }
+
+
+  get canFillPreAnesthesia(): boolean {
+    if (this.isFinished) {
+      return false;
+    }
+
+    if (this.isPreAnesthesiaRecordDone) {
+      return false;
+    }
+
+    if (!this.canAssumePatient) {
+      return true;
+    }
+
+    if (this.canAssumePatient && !this.anesthesiologist) {
+      return true;
+    }
+
+    return false;
+  }
+ 
+  get shouldShowOnlyViewRecords(): boolean {
+    return this.isFinished;
+  }
+ 
+  get shouldShowAbandonButton(): boolean {
+    if (!this.isCurrentAnesthesiologist) {
+      return false;
+    }
+
+    if (this.canAssumePatient) {
+      return false;
+    }
+
+    if (this.isFinished) {
+      return false;
+    }
+
+    if (!this.canAbandon) {
+      return false;
+    }
+
+    return true;
+  }
+
+  get isAbandonButtonEnabled(): boolean {
+    if (!this.shouldShowAbandonButton) {
+      return false;
+    }
+
+    return true;
+  }
+
+  get canOpenAnestheticRecord(): boolean {
+    if (!this.isPreAnesthesiaRecordDone) {
+      return false;
+    }
+
+    if (this.isFinished) {
+      return false;
+    }
+
+    if (!this.canAssumePatient) {
+      if (this.isCurrentAnesthesiologist) {
+        return true;
+      }
+      return true;
+    }
+
+    if (this.canAssumePatient && this.isPreAnesthesiaRecordDone) {
+      return true;
+    }
+
+    return false;
+  }
+
+  get shouldShowGoToSurgeryButton(): boolean {
+    if (this.canAssumePatient) {
+      return false;
+    }
+
+    if (!this.isCurrentAnesthesiologist) {
+      return false;
+    }
+
+    if (this.isFinished) {
+      return false;
+    }
+
+    return true;
+  }
+
+  
+  get isGoToSurgeryButtonEnabled(): boolean {
+    return this.isPreAnesthesiaRecordDone && !this.isFinished;
   }
 
   get slideTransform(): string {
@@ -134,7 +291,6 @@ export class ProcedureCardComponent {
   }
 
   onTouchEnd(event: TouchEvent) {
-
     if (this.isSwiping) {
       this.openChange.emit(this.id);
     } else {
@@ -142,8 +298,7 @@ export class ProcedureCardComponent {
       this.openChange.emit(null);
     }
 
-    if (!this.isDragging)
-      return;
+    if (!this.isDragging) return;
 
     this.isDragging = false;
     this.touchId = null;
@@ -215,6 +370,11 @@ export class ProcedureCardComponent {
     }
   }
 
+  onOpenPreAnesthesia() {
+    this.resetSwipe();
+    this.openPreAnesthesia.emit();
+  }
+
   onAssume() {
     this.resetSwipe();
     this.assume.emit(this.isCurrentAnesthesiologist);
@@ -231,6 +391,7 @@ export class ProcedureCardComponent {
   }
 
   onAbandon() {
+    this.resetSwipe();
     this.abandonSurgery.emit();
   }
 }

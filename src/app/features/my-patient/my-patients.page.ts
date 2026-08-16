@@ -41,10 +41,11 @@ type MyPatientStatusFilter = 'all' | 'inProgress' | 'completed';
     DateFilterComponent,
     EmptyStateComponent,
     ProcedureCardComponent
-],
+  ],
   providers: [DatePipe],
 })
 export class MyPatientsPage implements OnInit {
+
   searchQuery = '';
   selectedStatus: MyPatientStatusFilter = 'all';
   selectedDate = new Date().toISOString().split('T')[0];
@@ -345,5 +346,14 @@ export class MyPatientsPage implements OnInit {
     });
 
     await alert.present();
+  }
+
+  onOpenPreAnesthesia(patientId: string): void {    
+    if (!patientId) {
+      console.error('Patient ID não encontrado');
+      return;
+    }
+    
+    this.router.navigate(['/ficha-pre-anestesica', patientId]);
   }
 }

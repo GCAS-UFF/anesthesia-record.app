@@ -65,7 +65,6 @@
       </div>
     </section>
 
-    <!-- Date + refresh + count -->
     <section class="meta-bar">
       <div class="meta-left">
         <app-date-filter
@@ -88,14 +87,13 @@
       <span class="count-pill"> {{ totalItems }} procedimentos hoje </span>
     </section>
 
-    <!-- Cards list -->
     <section class="procedures-list">
       <ng-container *ngIf="!isLoading">
         <app-procedure-card
           *ngFor="let p of viewList"
           [patientName]="p.patientName"
           [room]="p.room"
-          [isOpen]="openCardId === p.id"  
+          [isOpen]="openCardId === p.id"
           (openChange)="onOpenChange($event)"
           [surgicalCenter]="p.surgicalCenter"
           [canAbandon]="p.anesthesiologist !== null && p.anesthesiologist.id === currentUserId"
@@ -118,6 +116,7 @@
           (openFicha)="onOpenFicha(p.id, p.patientId)"
           (viewRegistro)="onViewRegistro(p.id)"
           (abandonSurgery)="abandonPatient(p.id, p.patientId)"
+          (openPreAnesthesia)="onOpenPreAnesthesia(p.patientId)"
         ></app-procedure-card>
 
         <app-empty-state
@@ -127,7 +126,6 @@
         ></app-empty-state>
       </ng-container>
 
-      <!-- Skeleton loading -->
       <ng-container *ngIf="isLoading">
         <div class="skeleton-card" *ngFor="let item of [1,2,3]">
           <div class="skeleton-side">
@@ -181,7 +179,6 @@
       </ng-container>
     </section>
 
-    <!-- Pagination -->
     <div class="pagination-container" *ngIf="totalItems > pageSize">
       <button
         (click)="prevPage()"

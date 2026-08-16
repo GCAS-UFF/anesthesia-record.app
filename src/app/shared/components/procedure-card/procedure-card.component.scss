@@ -318,11 +318,13 @@
 
 .body-actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   flex-shrink: 0;
   gap: 10px;
   align-self: center;
-  pointer-events: auto; /* Permite interação com os botões */
+  align-items: center;
+  pointer-events: auto;
 }
 
 .btn {
@@ -333,7 +335,7 @@
   justify-content: center;
   gap: 8px;
   min-height: 48px;
-  padding: 12px 22px;
+  padding: 12px 18px;
   border-radius: 12px;
   border: 2px solid transparent;
   font-size: 14px;
@@ -352,6 +354,28 @@
 
   &:active {
     transform: scale(0.96);
+  }
+}
+
+.btn-pre-anesthesia {
+  background: #f5f3ff;
+  color: #7c3aed;
+  border-color: #ddd6fe;
+
+  &:hover {
+    background: #ede9fe;
+    border-color: #c4b5fd;
+  }
+}
+
+.btn-pre-anesthesia-done {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+
+  &:hover {
+    background: #d1fae5;
+    border-color: #6ee7b7;
   }
 }
 
@@ -528,7 +552,7 @@
 }
 
 .procedure-card.swiped-left {
-  transform: translateX(-160px); 
+  transform: translateX(-160px);
 }
 
 .surgery-date {
@@ -630,4 +654,19 @@
   .dot {
     background: #7c3aed;
   }
+}
+
+.body-actions {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 10px;
+  align-self: center;
+  align-items: stretch;
+  width: 240px;
+  pointer-events: auto;
+}
+
+.body-actions .btn {
+  width: 100%;
 }
