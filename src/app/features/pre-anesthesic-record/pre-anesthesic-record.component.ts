@@ -636,7 +636,11 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     } catch {}
   }
 
+  private isScrolling = false;
+  private scrollTimeout: any;
+
   private onScroll = () => {
+    if (this.isScrolling) return;
     const scrollContainer = document.querySelector('.pre-scroll') as HTMLElement | null;
     if (!scrollContainer) return;
     const top = scrollContainer.scrollTop + 120;
@@ -656,7 +660,14 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   goToSection(id: string): void {
     this.activeSectionId = id;
     const el = document.getElementById(`sec-${id}`);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (el) {
+      this.isScrolling = true;
+      clearTimeout(this.scrollTimeout);
+      this.scrollTimeout = setTimeout(() => {
+        this.isScrolling = false;
+      }, 800);
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   goBack(): void {

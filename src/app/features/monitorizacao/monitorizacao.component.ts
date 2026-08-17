@@ -225,10 +225,26 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       if (draft) this.hydrateFromDraft(draft);
 
       const svc: any = this.surgeryService;
-      const surgery = await (svc.getById?.(this.surgeryId)?.toPromise?.()
-        ?? svc.getSurgery?.(this.surgeryId)?.toPromise?.()
-        ?? svc.get?.(this.surgeryId)?.toPromise?.()
-        ?? Promise.resolve(null));
+      let surgery = null;
+      try {
+        surgery = await (svc.getById?.(this.surgeryId)?.toPromise?.()
+          ?? svc.getSurgery?.(this.surgeryId)?.toPromise?.()
+          ?? svc.get?.(this.surgeryId)?.toPromise?.()
+          ?? Promise.resolve(null));
+        if (surgery) {
+          localStorage.setItem(`surgery_cache_${this.surgeryId}`, JSON.stringify(surgery));
+        }
+      } catch (err) {
+        console.warn('Falha ao buscar cirurgia na API. Tentando carregar cache local...');
+      }
+
+      if (!surgery) {
+        const cached = localStorage.getItem(`surgery_cache_${this.surgeryId}`);
+        if (cached) {
+          surgery = JSON.parse(cached);
+        }
+      }
+
       this.selectedSurgery = surgery;
       this.selectedProcedure = surgery?.procedures?.find((p: any) => p.isPrimary) || surgery?.procedures?.[0];
       this.patient = surgery?.patient
@@ -833,7 +849,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         clientId: this.newClientId(),
         timestamp: now.toISOString(), time: this.formatHM(now),
         type: data.balanceType,
-        item: data.item,
+        item: data.itemLabel || data.label || data.item,
         volumeMl: Number(data.volumeMl),
         itemId: data.itemId ?? null,
         detail: data.detail ?? null,
@@ -931,13 +947,22 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         color: (e.type || '').toLowerCase() === 'position' ? '#16a34a' : '#f97316',
         ts: new Date(e.timestamp || 0).getTime(),
       })),
-      ...this.fluidBalance.map(b => ({
-        time: b.time,
-        icon: b.type === 'gain' ? '💧' : '🩸',
-        label: `${b.item} ${b.volumeMl}ml`,
-        color: b.type === 'gain' ? '#22c55e' : '#dc2626',
-        ts: new Date(b.timestamp || 0).getTime(),
-      })),
+      ...this.fluidBalance.map(b => {
+        let displayName = b.item;
+        if (displayName === 'Outro' && b.detail) {
+          displayName = b.detail;
+        } else if (b.detail) {
+          displayName = `${displayName} (${b.detail})`;
+        }
+        
+        return {
+          time: b.time,
+          icon: b.type === 'gain' ? '💧' : '🩸',
+          label: `${displayName} ${b.volumeMl}ml`,
+          color: b.type === 'gain' ? '#22c55e' : '#dc2626',
+          ts: new Date(b.timestamp || 0).getTime(),
+        };
+      }),
     ];
     this.recentActivity = merged.sort((a, b) => b.ts - a.ts).slice(0, 3);
     this.cdr.markForCheck();
@@ -992,6 +1017,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       surgeryEndTime: this.surgeryEndTime?.toISOString?.() ?? null,
       anesthesiaEndTime: this.anesthesiaEndTime?.toISOString?.() ?? null,
       isMonitoringDraft: true,
+      finalized: this.isAnesthesiaFinished,
       monitoringUpdatedAt: new Date().toISOString(),
       vitalRecords: this.vitalRecords,
       customFields: this.customFields,

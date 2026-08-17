@@ -44,7 +44,15 @@ export class FluidBalanceChartComponent {
   onHeaderClick(_e: MouseEvent) { this.toggle.emit(); }
 
   vol(b: AnyBalance): number { return Number(b?.volumeMl ?? b?.volume ?? 0) || 0; }
-  itemName(b: AnyBalance): string { return b?.item ?? b?.name ?? b?.description ?? ''; }
+  itemName(b: AnyBalance): string { 
+    let displayName = b?.item ?? b?.name ?? b?.description ?? '';
+    if (displayName === 'Outro' && b?.detail) {
+      displayName = b.detail;
+    } else if (b?.detail) {
+      displayName = `${displayName} (${b.detail})`;
+    }
+    return displayName;
+  }
 
   itemHM(b: AnyBalance): string {
     if (b?.time) return String(b.time);

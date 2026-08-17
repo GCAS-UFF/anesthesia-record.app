@@ -45,7 +45,7 @@ export class PatientListPage implements OnInit {
   selectedStatus: SurgeryStatusEnum | null = null;
   selectedDate = Date.now() ? new Date().toISOString().split('T')[0] : '';
   isRefreshing = false;
-  isLoading = false;
+  isLoading = true;
   viewList: any[] = [];
   readonly SurgeryStatusEnum = SurgeryStatusEnum;
   currentUserId: number | null = null;
@@ -83,7 +83,6 @@ export class PatientListPage implements OnInit {
 
   ngOnInit() {
     this.ensureMasterData();
-    this.loadData();
   }
 
   ionViewWillEnter() {
@@ -123,9 +122,8 @@ export class PatientListPage implements OnInit {
 
   async loadData() {
     this.isRefreshing = true;
-    if (this.viewList.length === 0) {
-      this.isLoading = true;
-    }
+    this.isLoading = true;
+    this.viewList = [];
     this.currentUserId = Number(this.authService.getCurrentUserId());
 
     if (this.content) {
