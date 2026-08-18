@@ -507,15 +507,6 @@
           </label>
         </div>
 
-        <div class="qa-row">
-          <span class="qa-label">Previsão de intubação difícil?</span>
-          <div class="chips">
-            <button type="button" class="chip chip--sim" [class.active]="isBool('exameFisico.previsaoIotDificil', true)" (click)="setBool('exameFisico.previsaoIotDificil', true)">SIM</button>
-            <button type="button" class="chip chip--nao" [class.active]="isBool('exameFisico.previsaoIotDificil', false)" (click)="setBool('exameFisico.previsaoIotDificil', false)">NÃO</button>
-          </div>
-        </div>
-
-
         <div class="sub-block" *ngFor="let g of exameFisicoGroups" [formGroupName]="g.key">
           <h3 class="sub-head">{{ g.title }}</h3>
 
