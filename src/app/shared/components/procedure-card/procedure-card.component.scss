@@ -424,15 +424,21 @@
   }
 }
 
-.btn-disabled {
-  background: #d1d5db;
-  color: #6b7280;
-  border-color: #d1d5db;
-  cursor: not-allowed;
-  opacity: 0.9;
+.btn-disabled,
+.btn-disabled:hover,
+.btn-disabled:active,
+.btn-disabled:focus {
+  background: #e2e8f0 !important;
+  color: #94a3b8 !important;
+  border-color: #e2e8f0 !important;
+  cursor: not-allowed !important;
+  opacity: 0.8 !important;
+  transform: none !important;
+  box-shadow: none !important;
+  pointer-events: none !important; /* Previne o ripple e interações extras */
 
   ion-icon {
-    color: #6b7280;
+    color: #94a3b8 !important;
   }
 }
 

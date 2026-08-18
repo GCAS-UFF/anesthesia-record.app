@@ -147,9 +147,11 @@
       color 0.15s;
     width: 100%;
 
-    &:hover {
-      background: #f4f6fa;
-      color: var(--pre-text);
+    @media (hover: hover) {
+      &:hover {
+        background: #f4f6fa;
+        color: var(--pre-text);
+      }
     }
 
     &.active {
