@@ -111,6 +111,7 @@
           [id]="p.id"
           [anesthesiologist]="p.anesthesiologist?.fullName || ''"
           [isCurrentAnesthesiologist]="isUserAssignedToThisPatient(p)"
+          [isPreAnesthesiaRecordDone]="p.isPreAnesthesiaRecordDone"
           [canAssumePatient]="canAssumePatient"
           (assume)="onAssume(p.id, p.patientId, $event)"
           (openFicha)="onOpenFicha(p.id, p.patientId)"

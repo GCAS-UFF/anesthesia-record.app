@@ -214,6 +214,7 @@ export class PatientListPage implements OnInit {
         date: this.datePipe.transform(dt, 'yyyy-MM-dd'),
         time: this.datePipe.transform(dt, 'HH:mm'),
         completedAt: completedTime,
+        isPreAnesthesiaRecordDone: item.isPreAnesthesiaRecordDone || false,
       });
     });
   }

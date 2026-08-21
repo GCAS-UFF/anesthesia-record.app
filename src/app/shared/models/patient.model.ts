@@ -39,6 +39,7 @@ export interface Surgery {
   specialty: Specialty;
   location: SurgeryLocation;
   procedures: Procedure[];
+  isPreAnesthesiaRecordDone?: boolean;
 }
 
 export interface Patient {

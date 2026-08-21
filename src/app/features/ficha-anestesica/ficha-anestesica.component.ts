@@ -778,7 +778,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
           const firstAnesthesiologistId = surgeryData.firstAnesthesiologistId;
 
-          this.isReadOnlyRecord = !!firstAnesthesiologistId && firstAnesthesiologistId !== this.loggedUser?.id;
+          this.isReadOnlyRecord = !!firstAnesthesiologistId && String(firstAnesthesiologistId) !== String(this.loggedUser?.id);
           this.canEdit = !this.isReadOnlyRecord;
 
           const draft = this.anesthesiaService.getDraft(this.cirurgiaId!);

@@ -164,10 +164,6 @@ export class ProcedureCardComponent {
       return false;
     }
 
-    if (this.isPreAnesthesiaRecordDone) {
-      return false;
-    }
-
     if (!this.canAssumePatient) {
       return true;
     }
