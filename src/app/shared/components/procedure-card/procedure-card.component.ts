@@ -163,16 +163,7 @@ export class ProcedureCardComponent {
     if (this.isFinished) {
       return false;
     }
-
-    if (!this.canAssumePatient) {
-      return true;
-    }
-
-    if (this.canAssumePatient && !this.anesthesiologist) {
-      return true;
-    }
-
-    return false;
+    return this.isCurrentAnesthesiologist;
   }
  
   get shouldShowOnlyViewRecords(): boolean {
@@ -216,18 +207,7 @@ export class ProcedureCardComponent {
       return false;
     }
 
-    if (!this.canAssumePatient) {
-      if (this.isCurrentAnesthesiologist) {
-        return true;
-      }
-      return true;
-    }
-
-    if (this.canAssumePatient && this.isPreAnesthesiaRecordDone) {
-      return true;
-    }
-
-    return false;
+    return this.isCurrentAnesthesiologist;
   }
 
   get shouldShowGoToSurgeryButton(): boolean {

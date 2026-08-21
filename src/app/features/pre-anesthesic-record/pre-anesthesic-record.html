@@ -18,10 +18,14 @@
         <ion-icon slot="start" name="save-outline"></ion-icon>
         Salvar rascunho
       </ion-button>
-      <ion-button class="btn-primary" (click)="salvar()" [disabled]="isSaving">
+      <ion-button class="btn-primary" (click)="salvar()" [disabled]="isSaving" *ngIf="!isFinalized">
         <ion-spinner *ngIf="isSaving" name="dots" slot="start"></ion-spinner>
         <ion-icon *ngIf="!isSaving" slot="start" name="save-outline"></ion-icon>
         Finalizar avaliação
+      </ion-button>
+      <ion-button color="warning" (click)="irParaFichaAnestesica()" *ngIf="isFinalized">
+        <ion-icon slot="start" name="reader-outline"></ion-icon>
+        Ir para Ficha Anestésica
       </ion-button>
     </div>
   </header>

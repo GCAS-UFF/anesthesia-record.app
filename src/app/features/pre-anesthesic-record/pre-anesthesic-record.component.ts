@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   FormArray,
   FormBuilder,
@@ -195,6 +195,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
+    private router: Router,
     private location: Location,
     private toastCtrl: ToastController,
     private authService: AuthService,
@@ -1017,5 +1018,10 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
         await t.present();
       },
     });
+  }
+  irParaFichaAnestesica(): void {
+    if (this.anesthesiaRecordId && this.patientId) {
+      this.router.navigate(['/ficha-anestesica', this.anesthesiaRecordId, this.patientId]);
+    }
   }
 }

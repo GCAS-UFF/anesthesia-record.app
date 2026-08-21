@@ -288,7 +288,7 @@ export class PatientListPage implements OnInit {
                   icon: 'checkmark-circle',
                 });
                 await toast.present();
-                this.onOpenMonitorizacao(surgeryId);
+                this.onOpenPreAnesthesia(surgeryId, patientId);
               },
               error: async () => {
                 await loading.dismiss();
