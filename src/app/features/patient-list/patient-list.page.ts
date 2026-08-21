@@ -187,7 +187,7 @@ export class PatientListPage implements OnInit {
       const dt = new Date(item.expectedAt || item.surgeryDate || new Date());
 
       let completedTime = null;
-      if (item.status === 1 || item.status === 3) {
+      if (item.status === SurgeryStatusEnum.EmPreparacao || item.status === SurgeryStatusEnum.Concluido) {
         const endDt = new Date(dt.getTime() + 2 * 60 * 60 * 1000);
         completedTime = this.datePipe.transform(endDt, 'HH:mm');
       }
@@ -209,8 +209,8 @@ export class PatientListPage implements OnInit {
         procedure:
           primaryProc && primaryProc.description && primaryProc.description !== 'Não informado'
             ? primaryProc.description
-            : 'Procedimento não informado',
-        status: item.status === 0 ? SurgeryStatusEnum.Agendado : item.status === 1 ? SurgeryStatusEnum.EmPreparacao : item.status === 2 ? SurgeryStatusEnum.EmProgresso : item.status === 3 ? SurgeryStatusEnum.Concluido : item.status === 4 ? SurgeryStatusEnum.Cancelada : null,
+            : 'Procedimento não informado',       
+        status: item.status === SurgeryStatusEnum.Agendado ? SurgeryStatusEnum.Agendado : item.status === SurgeryStatusEnum.EmPreparacao ? SurgeryStatusEnum.EmPreparacao : item.status === SurgeryStatusEnum.EmProgresso ? SurgeryStatusEnum.EmProgresso : item.status === SurgeryStatusEnum.Concluido ? SurgeryStatusEnum.Concluido : item.status === SurgeryStatusEnum.Cancelada ? SurgeryStatusEnum.Cancelada : null,
         date: this.datePipe.transform(dt, 'yyyy-MM-dd'),
         time: this.datePipe.transform(dt, 'HH:mm'),
         completedAt: completedTime,
@@ -374,12 +374,12 @@ export class PatientListPage implements OnInit {
     await alert.present();
   }
 
-  onOpenPreAnesthesia(patientId: string): void {    
-    if (!patientId) {
-      console.error('Patient ID não encontrado');
+  onOpenPreAnesthesia(id: string | number, patientId: string): void {
+    if (!id || !patientId) {
+      console.error('Id da cirurgia/ficha ou Patient ID não encontrado');
       return;
     }
 
-    this.router.navigate(['/ficha-pre-anestesica', patientId]);
+    this.router.navigate(['/pre-anesthesia-record', id, patientId]);
   }
 }

@@ -9,6 +9,7 @@ import {
   closeOutline, addOutline, settingsOutline, trashOutline, createOutline,
   pulseOutline, medkitOutline, warningOutline, waterOutline
 } from 'ionicons/icons';
+import { FLUID_CATEGORY_LABELS, FluidCategoryEnum, CLINICAL_EVENT_TYPE_LABELS, ClinicalEventTypeEnum } from 'src/app/core/models/api-enums.model';
 
 export type HistoryTab = 'vitals' | 'agents' | 'events' | 'balance';
 
@@ -67,10 +68,22 @@ export class HistoryDrawerComponent implements OnInit {
   temp(r: any): any { return r?.temperatura ?? r?.temp ?? '—'; }
   custom(r: any, key: string): any { return (r && r[key] != null) ? r[key] : '—'; }
   desc(e: any): string { return e?.description ?? e?.note ?? e?.observation ?? ''; }
-  itemName(b: any): string { return b?.item ?? b?.name ?? b?.description ?? ''; }
+  itemName(b: any): string {
+  
+    const categoryId: FluidCategoryEnum | undefined = b?.categoryId ?? b?.category;
+    const categoryLabel = categoryId != null ? FLUID_CATEGORY_LABELS[categoryId as FluidCategoryEnum] : null;
+    return b?.item ?? b?.name ?? b?.description ?? categoryLabel ?? 'Outro';
+  }
   vol(b: any): number { return Number(b?.volumeMl ?? b?.volume ?? 0) || 0; }
   eventLabel(e: any): string {
     if (e?.categoryLabel) return e.categoryLabel;
+
+   
+    const eventTypeId: ClinicalEventTypeEnum | undefined = e?.eventTypeId;
+    if (eventTypeId != null && CLINICAL_EVENT_TYPE_LABELS[eventTypeId]) {
+      return CLINICAL_EVENT_TYPE_LABELS[eventTypeId];
+    }
+
     const cat = String(e?.category || e?.categoryId || '').toLowerCase();
     const map: Record<string, string> = {
       intubation: 'Intubação', extubation: 'Extubação', incision: 'Incisão',

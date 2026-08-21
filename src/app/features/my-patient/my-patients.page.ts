@@ -178,17 +178,18 @@ export class MyPatientsPage implements OnInit {
       const dt = new Date(item.expectedAt || item.surgeryDate || new Date());
 
       let completedTime: string | null = null;
-      if (item.status === 3) {
+      if (item.status === SurgeryStatusEnum.Concluido) {
         const endDt = new Date(dt.getTime() + 2 * 60 * 60 * 1000);
         completedTime = this.datePipe.transform(endDt, 'HH:mm');
       }
 
+     
       const status =
-        item.status === 0 ? SurgeryStatusEnum.Agendado :
-          item.status === 1 ? SurgeryStatusEnum.EmPreparacao :
-            item.status === 2 ? SurgeryStatusEnum.EmProgresso :
-              item.status === 3 ? SurgeryStatusEnum.Concluido :
-                item.status === 4 ? SurgeryStatusEnum.Cancelada : null;
+        item.status === SurgeryStatusEnum.Agendado ? SurgeryStatusEnum.Agendado :
+          item.status === SurgeryStatusEnum.EmPreparacao ? SurgeryStatusEnum.EmPreparacao :
+            item.status === SurgeryStatusEnum.EmProgresso ? SurgeryStatusEnum.EmProgresso :
+              item.status === SurgeryStatusEnum.Concluido ? SurgeryStatusEnum.Concluido :
+                item.status === SurgeryStatusEnum.Cancelada ? SurgeryStatusEnum.Cancelada : null;
 
       this.viewList.push({
         id: item.surgeryId || item.id,
@@ -348,12 +349,12 @@ export class MyPatientsPage implements OnInit {
     await alert.present();
   }
 
-  onOpenPreAnesthesia(patientId: string): void {    
-    if (!patientId) {
-      console.error('Patient ID não encontrado');
+  onOpenPreAnesthesia(id: string | number, patientId: string): void {
+    if (!id || !patientId) {
+      console.error('Id da cirurgia/ficha ou Patient ID não encontrado');
       return;
     }
-    
-    this.router.navigate(['/ficha-pre-anestesica', patientId]);
+
+    this.router.navigate(['/pre-anesthesia-record', id, patientId]);
   }
 }

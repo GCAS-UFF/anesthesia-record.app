@@ -39,7 +39,14 @@
   }
 }
 
-/* ═══════════════════ CUSTOM INPUT WRAP ═══════════════════ */
+.dose-row {
+  display: flex;
+  gap: 12px;
+
+  .dose-value { flex: 1.2; }
+  .dose-unit { flex: 1; }
+}
+
 .custom-input-wrap {
   position: relative;
   display: flex;

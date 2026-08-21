@@ -75,6 +75,25 @@
   text-transform: uppercase;
 }
 
+.finalized-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 24px 0;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--pre-primary-soft);
+  color: var(--pre-primary);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+
+  ion-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+}
+
 .save-status {
   display: inline-flex;
   align-items: center;

@@ -73,19 +73,30 @@
         </ion-note>
       </div>
 
-      <div class="field">
-        <label class="field-label">Dose *</label>
-        <div class="custom-input-wrap">
-          <input class="custom-input" type="text" [(ngModel)]="agent.dose" placeholder="ex: 100mg, 2mL, 5UI" />
+      <div class="field dose-row">
+        <div class="dose-value">
+          <label class="field-label">Dose *</label>
+          <div class="custom-input-wrap">
+            <input class="custom-input" type="number" inputmode="decimal" min="0" step="any" [(ngModel)]="agent.doseValue" placeholder="ex: 100" />
+          </div>
+        </div>
+        <div class="dose-unit">
+          <label class="field-label">Unidade *</label>
+          <div class="custom-input-wrap select-wrap">
+            <select class="custom-input" [(ngModel)]="agent.doseUnit">
+              <option *ngFor="let u of unitOptions" [ngValue]="u.id">{{ u.label }}</option>
+            </select>
+            <ion-icon name="chevron-down-outline" class="select-icon"></ion-icon>
+          </div>
         </div>
       </div>
 
       <div class="field">
-        <label class="field-label">Via</label>
+        <label class="field-label">Via *</label>
         <div class="custom-input-wrap select-wrap">
-          <select class="custom-input" [(ngModel)]="agent.route">
-            <option value="" disabled selected hidden>Selecione</option>
-            <option *ngFor="let r of routeOptions" [value]="r">{{ r }}</option>
+          <select class="custom-input" [(ngModel)]="agent.routeId">
+            <option [ngValue]="null" disabled selected hidden>Selecione</option>
+            <option *ngFor="let r of routeOptions" [ngValue]="r.id">{{ r.label }}</option>
           </select>
           <ion-icon name="chevron-down-outline" class="select-icon"></ion-icon>
         </div>

@@ -30,8 +30,8 @@ export const routes: Routes = [
     path: 'admin/integracoes',
     loadComponent: () => import('./features/aghu-integration/aghu-integration.page').then(m => m.AghuIntegrationPage)
   },
-  {
-    path: 'ficha-pre-anestesica/:id',
+  {   
+    path: 'pre-anesthesia-record/:id/:patientId',
     loadComponent: () => import('./features/pre-anesthesic-record/pre-anesthesic-record.component').then(m => m.FichaPreAnestesicaComponent)
   }
 ];

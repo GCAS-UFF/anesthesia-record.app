@@ -7,6 +7,25 @@ import { from, interval, Observable, of, Subscription, throwError } from "rxjs";
 import { catchError, concatMap, delay, map, startWith } from "rxjs/operators";
 import { BehaviorSubject } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+import {
+  MedicationUnitEnum,
+  MEDICATION_UNIT_LABELS,
+  AdministrationRouteEnum,
+  ADMINISTRATION_ROUTE_LABELS,
+  ClinicalEventTypeEnum,
+  CLINICAL_EVENT_TYPE_KEY_TO_ID,
+  CLINICAL_EVENT_TYPE_LABELS,
+  FluidCategoryEnum,
+  FLUID_CATEGORY_KEY_TO_ID,
+  FLUID_CATEGORY_LABELS,
+  FluidBalanceTypeEnum,
+  SurgicalPositionEnum,
+  SURGICAL_POSITION_LABEL_TO_ID,
+  SURGICAL_POSITION_LABELS,
+  SurgeryStatusEnum,
+} from "../models/api-enums.model";
+import { MonitoringPayload } from "../models/monitoring-payload.model";
+import { AuthService } from "./auth.service";
 
 @Injectable({
   providedIn: 'root'
@@ -149,7 +168,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     'Outros': 5
   };
 
-  constructor(api: ApiService) {
+  constructor(api: ApiService, private authService: AuthService) {
     super(api, 'anesthesiarecord');
     this.updatePendingStatus();
   }
@@ -161,14 +180,13 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       return throwError(() => new Error('Não foi possível sincronizar: cirurgiaId/surgeryId inválido.'));
     }
 
-    const apiPayload = this.mapToApiFormat(record, surgeryId);
-
     if (record.isMonitoringDraft) {
-      return this.api.put(`monitoringrecord/${surgeryId}`, apiPayload).pipe(
+      return this.submitMonitoringRecord(record, surgeryId).pipe(
         map(response => ({ response, surgeryId }))
       );
     }
 
+    const apiPayload = this.mapToApiFormat(record, surgeryId);
     return this.update(surgeryId, apiPayload).pipe(
       map(response => ({ response, surgeryId }))
     );
@@ -294,9 +312,9 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   public updatePendingStatus(): void {
     const count = Object.keys(localStorage)
       .filter(key =>
-        key.startsWith(this.DRAFT_PREFIX) ||        
-        key.startsWith('draft_monitoring_') ||     
-        key.startsWith('monitoring_draft_')        
+        key.startsWith(this.DRAFT_PREFIX) ||
+        key.startsWith('draft_monitoring_') ||
+        key.startsWith('monitoring_draft_')
       ).length;
     this.pendingDraftsCountSubject.next(count);
   }
@@ -346,6 +364,54 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   clearDraft(pacienteId: string): void {
     localStorage.removeItem(`draft_anesthesia_${pacienteId}`);
     this.updatePendingStatus();
+  }
+
+
+  private readonly FINALIZED_MONITORING_PREFIX = 'finalized_monitoring_';
+
+  saveFinalizedMonitoringRecord(surgeryId: string | number, record: any): void {
+    try {
+      localStorage.setItem(
+        `${this.FINALIZED_MONITORING_PREFIX}${surgeryId}`,
+        JSON.stringify({ ...record, isMonitoringDraft: false, cachedAt: new Date().toISOString() }),
+      );
+    } catch (err) {
+      console.warn('[AnesthesiaRecordService] falha ao cachear registro de monitorização finalizado', err);
+    }
+  }
+
+  getFinalizedMonitoringRecord(surgeryId: string | number): any | null {
+    return this.safeJsonParse(localStorage.getItem(`${this.FINALIZED_MONITORING_PREFIX}${surgeryId}`));
+  }
+
+
+  clearFinalizedMonitoringRecord(surgeryId: string | number): void {
+    localStorage.removeItem(`${this.FINALIZED_MONITORING_PREFIX}${surgeryId}`);
+  }
+
+
+  mapMonitoringPayloadToApp(api: any): any {
+    return {
+      anesthesiaRecordId: api.anesthesiaRecordId ?? null,
+      surgeryId: api.surgeryId ?? null,
+      recordedByProfessionalId: api.recordedByProfessionalId ?? null,
+      anesthesiaStartTime: api.startedAt ?? null,
+      anesthesiaEndTime: api.endedAt ?? null,
+      surgeryStartTime: api.surgeryStartedAt ?? null,
+      surgeryEndTime: api.surgeryEndedAt ?? null,
+      isMonitoringDraft: false,
+      monitoringUpdatedAt: api.monitoringUpdatedAt ?? null,
+      status: api.status ?? null,
+      vitalRecords: this.mapVitalRecordsToApp(api.vitalSigns ?? []),
+      agents: this.mapMonitoringAgentsToApp(api.administeredAgents ?? []),
+      events: this.mapMonitoringEventsToApp(api.clinicalEvents ?? []),
+      fluidBalance: this.mapFluidBalanceToApp(api.fluidBalances ?? []),
+      positions: this.mapPositionsToApp(api.positions ?? []),
+      posicaoAtual: (() => {
+        const mapped = this.mapPositionsToApp(api.positions ?? []);
+        return mapped[mapped.length - 1]?.position ?? null;
+      })(),
+    };
   }
 
   getPdfUrl(id: number): string {
@@ -420,7 +486,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       }));
 
       const dt = new Date(this.normalizeIso(record.timestamp) ?? new Date().toISOString());
-      
+
       return {
         time: dt.toISOString().split('T')[1].substring(0, 8),
         date: dt.toISOString().split('T')[0] + 'T00:00:00.000Z',
@@ -442,13 +508,19 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   private mapMonitoringAgents(records: any[]): any[] {
     if (!Array.isArray(records)) return [];
 
-    const mapRoute = (r: string) => {
-      switch ((r || '').toUpperCase()) {
-        case 'IV': return 1;
-        case 'IM': return 2;
-        case 'SC': return 3;
-        case 'VO': return 4;
-        default: return 1;
+
+    const mapRoute = (record: any): AdministrationRouteEnum => {
+      if (typeof record.routeId === 'number') return record.routeId;
+      const r = String(record.route ?? record.via ?? '').toUpperCase();
+      switch (r) {
+        case 'EV': case 'IV': return AdministrationRouteEnum.IV;
+        case 'IM': return AdministrationRouteEnum.IM;
+        case 'VO': return AdministrationRouteEnum.VO;
+        case 'SC': return AdministrationRouteEnum.SC;
+        case 'IN': return AdministrationRouteEnum.IN;
+        case 'PERIDURAL': case 'EPIDURAL': return AdministrationRouteEnum.Epidural;
+        case 'RAQUIDIANA': case 'RAQUIANESTESIA': return AdministrationRouteEnum.Raquianestesia;
+        default: return AdministrationRouteEnum.IV;
       }
     };
 
@@ -457,10 +529,10 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       return {
         time: dt.toISOString().split('T')[1].substring(0, 8),
         date: dt.toISOString().split('T')[0] + 'T00:00:00.000Z',
-        dose: this.parseNumber(record.dose),
-        unit: 1, // Fixado como 1 temporariamente até ter o enum real de MedicationUnitEnum
-        route: mapRoute(record.route ?? record.via),
-        drugId: record.medicationId ?? record.id ?? 0
+        dose: record.doseValue != null ? this.parseNumber(record.doseValue) : this.parseNumber(record.dose),
+        unit: typeof record.unit === 'number' ? record.unit : MedicationUnitEnum.Milligram,
+        route: mapRoute(record),
+        drugId: record.medicationId ?? record.drugId ?? record.id ?? 0
       };
     });
   }
@@ -468,16 +540,14 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   private mapMonitoringEvents(records: any[]): any[] {
     if (!Array.isArray(records)) return [];
 
-    const mapEventType = (t: string) => {
-      switch (t) {
-        case 'position': return 1;
-        case 'airway': return 2;
-        case 'surgical': return 3;
-        case 'clinical': return 4;
-        case 'medication': return 5;
-        case 'anesthesia': return 6;
-        default: return 7;
-      }
+
+    const mapEventType = (record: any): ClinicalEventTypeEnum => {
+      if (typeof record.eventTypeId === 'number') return record.eventTypeId;
+      const categoryKey = String(record.category ?? '').toLowerCase();
+      if (CLINICAL_EVENT_TYPE_KEY_TO_ID[categoryKey]) return CLINICAL_EVENT_TYPE_KEY_TO_ID[categoryKey];
+      const typeKey = String(record.type ?? record.tipo ?? '').toLowerCase();
+      if (CLINICAL_EVENT_TYPE_KEY_TO_ID[typeKey]) return CLINICAL_EVENT_TYPE_KEY_TO_ID[typeKey];
+      return ClinicalEventTypeEnum.Other;
     };
 
     return records.map(record => {
@@ -485,8 +555,8 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       return {
         time: dt.toISOString().split('T')[1].substring(0, 8),
         date: dt.toISOString().split('T')[0] + 'T00:00:00.000Z',
-        eventType: mapEventType(record.type ?? record.tipo),
-        observations: record.observation ?? record.observacao ?? ''
+        eventType: mapEventType(record),
+        observations: record.description ?? record.observation ?? record.observacao ?? ''
       };
     });
   }
@@ -494,24 +564,16 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   private mapFluidBalance(records: any[]): any[] {
     if (!Array.isArray(records)) return [];
 
-    const idToCategoryMap: Record<string, number> = {
-      'crystalloid': 1,
-      'colloid': 2,
-      'blood': 3,
-      'urine': 4,
-      'bleeding': 5,
-      'drain': 6,
-      'aspirate': 7,
-      'other_gain': 8,
-      'other_loss': 8,
-      'insensible': 8 // mapped to other if no better match
-    };
+
+    const idToCategoryMap = FLUID_CATEGORY_KEY_TO_ID;
 
     return records.map(record => {
       const dt = new Date(this.normalizeIso(record.timestamp) ?? new Date().toISOString());
-      
-      let catNum = 1; // default Cristaloide
-      if (typeof record.itemId === 'number') {
+
+      let catNum: FluidCategoryEnum = FluidCategoryEnum.Crystalloid; // default
+      if (typeof record.categoryId === 'number') {
+        catNum = record.categoryId;
+      } else if (typeof record.itemId === 'number') {
         catNum = record.itemId;
       } else if (typeof record.itemId === 'string' && idToCategoryMap[record.itemId]) {
         catNum = idToCategoryMap[record.itemId];
@@ -521,10 +583,9 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         time: dt.toISOString().split('T')[1].substring(0, 8),
         date: dt.toISOString().split('T')[0] + 'T00:00:00.000Z',
         category: catNum,
-        categoryId: catNum, // mandando ambos por garantia
-        details: record.detail ?? record.item ?? record.description ?? '',
+        description: record.detail ?? record.item ?? record.description ?? '',
         volumeMl: this.parseNumber(record.volumeMl ?? record.volume),
-        type: (record.type ?? record.tipo) === 'loss' ? 2 : 1 // 1: Gain, 2: Loss
+        type: (record.type ?? record.tipo) === 'loss' ? FluidBalanceTypeEnum.Loss : FluidBalanceTypeEnum.Gain
       };
     });
   }
@@ -534,12 +595,50 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
     return records.map(record => {
       const dt = new Date(this.normalizeIso(record.timestamp) ?? new Date().toISOString());
+
+      const label = String(record.position ?? record.posicao ?? '').toLowerCase().trim();
+      const positionId: SurgicalPositionEnum =
+        typeof record.positionId === 'number'
+          ? record.positionId
+          : (SURGICAL_POSITION_LABEL_TO_ID[label] ?? SurgicalPositionEnum.Supine);
       return {
         time: dt.toISOString().split('T')[1].substring(0, 8),
         date: dt.toISOString().split('T')[0] + 'T00:00:00.000Z',
-        position: this.POSITION_REVERSE_MAP[record.position ?? record.posicao] || 1
+        position: positionId
       };
     });
+  }
+
+
+  private buildMonitoringRecordPayload(app: any, surgeryId: number): MonitoringPayload {
+    const recordedByProfessionalId = Number(
+      this.pick(app.recordedByProfessionalId, this.authService.getCurrentUserId(), 0)
+    ) || 0;
+
+    return {
+      anesthesiaRecordId: Number(this.pick(app.anesthesiaRecordId, app.id, 0)) || 0,
+      surgeryId,
+      recordedByProfessionalId,
+      startedAt: this.normalizeIso(app.anesthesiaStartTime) ?? this.normalizeIso(app.startedAt),
+      endedAt: this.normalizeIso(app.anesthesiaEndTime) ?? this.normalizeIso(app.endedAt) ?? new Date().toISOString(),
+      surgeryStartedAt: this.normalizeIso(app.surgeryStartTime) ?? this.normalizeIso(app.surgeryStartedAt),
+      surgeryEndedAt: this.normalizeIso(app.surgeryEndTime) ?? this.normalizeIso(app.surgeryEndedAt) ?? new Date().toISOString(),
+
+      isMonitoringDraft: false,
+      monitoringUpdatedAt: new Date().toISOString(),
+      vitalSigns: this.mapVitalRecords(app.vitalRecords),
+      administeredAgents: this.mapMonitoringAgents(app.agents),
+      clinicalEvents: this.mapMonitoringEvents(app.events ?? app.clinicalEvents),
+      fluidBalances: this.mapFluidBalance(app.fluidBalance),
+      positions: this.mapPositions(app.positions ?? app.positionHistory),
+      status: SurgeryStatusEnum.Concluido,
+    };
+  }
+
+
+  submitMonitoringRecord(app: any, surgeryId: number): Observable<any> {
+    const payload = this.buildMonitoringRecordPayload(app, surgeryId);
+    return this.api.post('MonitoringRecord', payload);
   }
 
   private mapToApiFormat(app: any, surgeryId: number): any {
@@ -795,8 +894,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       patientId: app.patientId || null,
       recordDate: app.recordDate || todayDate,
       surgeryDate: app.surgeryDate || todayDate,
-      
-      // Datas e profissionais necessários para MonitoringRecord
+
       recordedByProfessionalId: firstAnesthesiologistId ?? 0,
       startedAt: this.normalizeIso(app.equipe?.horaInicioAnestesia) ?? new Date().toISOString(),
       endedAt: this.normalizeIso(app.posProcedimento?.horaTerminoAnestesia) ?? null,
@@ -1351,7 +1449,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         if (cf.name && cf.value) custom[cf.name] = cf.value;
       });
 
-      const fullIsoString = (record.date && record.time) 
+      const fullIsoString = (record.date && record.time)
         ? `${record.date.split('T')[0]}T${record.time}Z`
         : record.timestamp;
 
@@ -1376,27 +1474,23 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   private mapMonitoringAgentsToApp(records: any[]): any[] {
     if (!Array.isArray(records)) return [];
 
-    const mapRouteToApp = (r: number) => {
-      switch (r) {
-        case 1: return 'IV';
-        case 2: return 'IM';
-        case 3: return 'SC';
-        case 4: return 'VO';
-        default: return 'IV';
-      }
-    };
-
     return records.map(record => {
-      const fullIsoString = (record.date && record.time) 
+      const fullIsoString = (record.date && record.time)
         ? `${record.date.split('T')[0]}T${record.time}Z`
         : record.timestamp;
+
+      const unitLabel = MEDICATION_UNIT_LABELS[record.unit as MedicationUnitEnum] ?? '';
+      const routeLabel = ADMINISTRATION_ROUTE_LABELS[record.route as AdministrationRouteEnum] ?? null;
 
       return {
         timestamp: fullIsoString,
         time: this.formatTimeForApp(record.time || record.timestamp),
-        dose: record.dose,
-        via: mapRouteToApp(record.route),
-        apresentacao: record.presentation,
+        dose: record.dose != null ? `${record.dose}${unitLabel}` : null,
+        doseValue: record.dose ?? null,
+        unit: record.unit ?? null,
+        via: routeLabel,
+        route: routeLabel,
+        routeId: record.route ?? null,
         medicationId: record.drugId
       };
     });
@@ -1405,29 +1499,27 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   private mapMonitoringEventsToApp(records: any[]): any[] {
     if (!Array.isArray(records)) return [];
 
-    const mapEventTypeToApp = (t: number) => {
-      switch (t) {
-        case 1: return 'position';
-        case 2: return 'airway';
-        case 3: return 'surgical';
-        case 4: return 'clinical';
-        case 5: return 'medication';
-        case 6: return 'anesthesia';
-        default: return 'other';
-      }
-    };
+    const idToKey: Record<number, string> = {};
+    Object.entries(CLINICAL_EVENT_TYPE_KEY_TO_ID).forEach(([key, id]) => { idToKey[id] = key; });
 
     return records.map(record => {
-      const fullIsoString = (record.date && record.time) 
+      const fullIsoString = (record.date && record.time)
         ? `${record.date.split('T')[0]}T${record.time}Z`
         : record.timestamp;
+
+      const key = idToKey[record.eventType] ?? 'other';
+      const label = CLINICAL_EVENT_TYPE_LABELS[record.eventType as ClinicalEventTypeEnum] ?? 'Evento';
 
       return {
         timestamp: fullIsoString,
         time: this.formatTimeForApp(record.time || record.timestamp),
-        type: mapEventTypeToApp(record.eventType),
+        type: key,
+        category: key,
+        categoryId: record.eventType ?? null,
+        categoryLabel: label,
         observacao: record.observations,
-        descricao: record.description
+        descricao: record.observations,
+        description: record.observations,
       };
     });
   }
@@ -1435,37 +1527,28 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   private mapFluidBalanceToApp(records: any[]): any[] {
     if (!Array.isArray(records)) return [];
 
-    const categoryMap: Record<number, string> = {
-      1: 'Cristaloide',
-      2: 'Coloide',
-      3: 'Sangue e Derivados',
-      4: 'Diurese',
-      5: 'Sangramento',
-      6: 'Dreno',
-      7: 'Aspirado Gástrico',
-      8: 'Outro'
-    };
-
     return records.map(record => {
-      const fullIsoString = (record.date && record.time) 
+      const fullIsoString = (record.date && record.time)
         ? `${record.date.split('T')[0]}T${record.time}Z`
         : record.timestamp;
 
-      let itemName = record.details || record.description || record.item;
-      const catId = record.categoryId || record.category;
-      if (!itemName && catId) {
-        itemName = categoryMap[catId] || 'Outro';
+      const catId: FluidCategoryEnum | undefined = record.category ?? record.categoryId;
+
+      let itemName = record.description || record.details || record.item;
+      if (!itemName && catId != null) {
+        itemName = FLUID_CATEGORY_LABELS[catId] || 'Outro';
       }
 
       return {
         timestamp: fullIsoString,
         time: this.formatTimeForApp(record.time || record.timestamp),
-        tipo: record.type === 2 ? 'loss' : 'gain', // mantendo para legado
-        type: record.type === 2 ? 'loss' : 'gain', // adicionando o campo correto
+        tipo: record.type === FluidBalanceTypeEnum.Loss ? 'loss' : 'gain', // mantendo para legado
+        type: record.type === FluidBalanceTypeEnum.Loss ? 'loss' : 'gain', // adicionando o campo correto
         item: itemName,
-        volume: record.volumeMl,     // mantendo para legado
-        volumeMl: record.volumeMl,   // adicionando o campo correto
-        itemId: catId,
+        volume: record.volumeMl,
+        volumeMl: record.volumeMl,
+        itemId: catId ?? null,
+        categoryId: catId ?? null,
         detail: record.description || null
       };
     });
@@ -1475,14 +1558,15 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     if (!Array.isArray(records)) return [];
 
     return records.map(record => {
-      const fullIsoString = (record.date && record.time) 
+      const fullIsoString = (record.date && record.time)
         ? `${record.date.split('T')[0]}T${record.time}Z`
         : record.timestamp;
 
       return {
         timestamp: fullIsoString,
-        time: this.formatTimeForApp(record.time || record.timestamp),
-        posicao: this.POSITION_MAP[record.position] || record.position
+        time: this.formatTimeForApp(record.time || record.timestamp),       
+        position: SURGICAL_POSITION_LABELS[record.position as SurgicalPositionEnum] || record.position,
+        positionId: record.position ?? null,
       };
     });
   }

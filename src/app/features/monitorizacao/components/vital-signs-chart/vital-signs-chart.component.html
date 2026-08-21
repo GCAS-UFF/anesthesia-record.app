@@ -62,4 +62,18 @@
   <div class="chart-area">
     <canvas #chartCanvas></canvas>
   </div>
+
+ 
+  <div class="chart-scrollbar" [class.locked]="readonly">
+    <ion-icon name="pulse-outline" class="scrollbar-hint" *ngIf="readonly" title="Arraste/zoom desabilitados — cirurgia finalizada"></ion-icon>
+    <input
+      type="range"
+      class="scrollbar-input"
+      min="0" max="100" step="0.5"
+      [value]="scrollbarValue"
+      (input)="onScrollbarInput($any($event.target).valueAsNumber)" />
+    <button type="button" class="scrollbar-reset" (click)="resetToLatest()" title="Voltar ao mais recente">
+      Recente
+    </button>
+  </div>
 </div>

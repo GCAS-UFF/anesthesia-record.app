@@ -110,7 +110,7 @@
           (viewRegistro)="onViewRegistro(p.id)"
           (abandonSurgery)="abandonPatient(p.id, p.patientId)"
           [isPreAnesthesiaRecordDone]="p.isPreAnesthesiaRecordDone"
-          (openPreAnesthesia)="onOpenPreAnesthesia(p.patientId)"
+          (openPreAnesthesia)="onOpenPreAnesthesia(p.id, p.patientId)"
         ></app-procedure-card>
 
         <app-empty-state

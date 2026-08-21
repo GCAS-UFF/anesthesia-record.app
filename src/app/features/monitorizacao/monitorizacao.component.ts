@@ -10,6 +10,20 @@ import { ScreenOrientation } from '@capacitor/screen-orientation';
 
 import { AnesthesiaRecordService } from 'src/app/core/services/anesthesia-record.service';
 import { SurgeryService } from 'src/app/core/services/surgery.service';
+import {
+  SurgeryStatusEnum,
+  SURGERY_STATUS_LABELS,
+  MedicationUnitEnum,
+  AdministrationRouteEnum,
+  ClinicalEventTypeEnum,
+  FluidCategoryEnum,
+  FluidBalanceTypeEnum,
+  SurgicalPositionEnum,
+  CLINICAL_EVENT_TYPE_LABELS,
+  FLUID_CATEGORY_LABELS,
+  SURGICAL_POSITION_LABEL_TO_ID,
+} from 'src/app/core/models/api-enums.model';
+import { MonitoringPayload } from 'src/app/core/models/monitoring-payload.model';
 
 import { StatusBarComponent } from 'src/app/shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from 'src/app/shared/components/header-institucional/header-institucional.component';
@@ -40,6 +54,10 @@ interface Agent {
   dose?: string | null;
   route?: string | null;
   medicationId?: number | null;
+  // Campos numéricos exigidos pelo contrato do backend (ver api-enums.model.ts).
+  doseValue?: number | null;
+  unit?: MedicationUnitEnum | null;
+  routeId?: AdministrationRouteEnum | null;
 }
 interface ClinicalEvent {
   clientId?: string; timestamp: string; time: string;
@@ -48,15 +66,22 @@ interface ClinicalEvent {
   category?: string | null;
   itemId?: number | null;
   detail?: string | null;
+  // ID numérico exigido pelo contrato do backend.
+  eventTypeId?: ClinicalEventTypeEnum | null;
 }
 interface FluidBalance {
   clientId?: string; timestamp: string; time: string;
   type: 'gain' | 'loss'; item: string; volumeMl: number;
   itemId?: number | null;
   detail?: string | null;
+  // IDs numéricos exigidos pelo contrato do backend.
+  categoryId?: FluidCategoryEnum | null;
+  balanceTypeId?: FluidBalanceTypeEnum | null;
 }
 interface PositionEntry {
   clientId?: string; timestamp: string; time: string; position: string;
+  // ID numérico exigido pelo contrato do backend.
+  positionId?: SurgicalPositionEnum | null;
 }
 
 
@@ -212,6 +237,14 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     clearInterval(this.autoMonitoringSub);
     this.pendingSub?.unsubscribe();
 
+    // Ticket #4: "Assim que o usuário sair da tela, limpar o stage" — o
+    // registro finalizado é só um cache de leitura rápida (a fonte de
+    // verdade é o backend); não faz sentido mantê-lo em localStorage depois
+    // que o usuário sai da tela de monitorização.
+    if (this.surgeryId) {
+      this.anesthesiaRecordService.clearFinalizedMonitoringRecord(this.surgeryId);
+    }
+
     try {
       ScreenOrientation.unlock();
     } catch (e) {
@@ -261,13 +294,41 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         if (asaBack) this.patientAsa = `ASA ${asaBack}`;
       }
 
-      if (surgery?.status === 3 || surgery?.status === 'Concluido' || surgery?.status === 'Completed') {
+     
+      const finishedVariants = ['concluido', 'concluída', 'concluida', 'completed'];
+      const statusRaw = surgery?.status;
+      const statusIsFinished =
+        statusRaw === SurgeryStatusEnum.Concluido ||
+        (typeof statusRaw === 'string' && finishedVariants.includes(statusRaw.toLowerCase()));
+
+      if (statusIsFinished) {
         this.isSurgeryFinished = true;
         this.isAnesthesiaFinished = true;
+        this.loadFinalizedMonitoringRecord(surgery);
       }
     } catch (err) {
       console.error('[Monitorização] loadInitialData falhou', err);
     }
+  }
+
+
+  private loadFinalizedMonitoringRecord(surgery: any) {
+    const embedded = surgery?.monitoringRecord
+      ?? surgery?.monitoring
+      ?? surgery?.anesthesiaRecord?.monitoringRecord
+      ?? surgery?.anesthesiaRecord?.monitoring
+      ?? null;
+
+  
+    const source = embedded ?? this.anesthesiaRecordService.getFinalizedMonitoringRecord(this.surgeryId);
+    if (!source) return;
+
+    if (embedded) {
+      this.anesthesiaRecordService.saveFinalizedMonitoringRecord(this.surgeryId, embedded);
+    }
+
+    const mapped = this.anesthesiaRecordService.mapMonitoringPayloadToApp(source);
+    this.hydrateFromDraft(mapped);
   }
 
   private hydrateFromDraft(draft: any) {
@@ -591,27 +652,50 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
 
+  /**
+   * Ticket #6: a Ficha Anestésica deve carregar do cache local os dados que
+   * vieram do backend (registro de monitorização finalizado — o mesmo cache
+   * usado no ticket #4/`loadFinalizedMonitoringRecord`), além dos dados
+   * dinâmicos já calculados em tela. Isso permite reabrir a ficha rápido,
+   * mesmo sem conexão, com o que já foi confirmado pelo backend.
+   */
   async openFichaAnestesicaModal() {
-    const data = {
-      title: 'Ficha Anestésica',
-      sections: [
-        {
-          title: 'Resumo da Monitorização',
-          fields: [
-            { label: 'Tempo de Anestesia', value: this.anesthesiaTimer },
-            { label: 'Tempo de Cirurgia', value: this.surgeryTimer },
-            { label: 'Sinais Vitais Registrados', value: this.vitalRecords.length }
-          ]
-        },
-        {
-          title: 'Equipe e Sala',
-          fields: [
-            { label: 'Cirurgião', value: this.selectedSurgery?.surgeonName || '--' },
-            { label: 'Procedimento', value: this.selectedProcedure?.name || '--' }
-          ]
-        }
-      ]
-    };
+    const sections: RecordData['sections'] = [
+      {
+        title: 'Resumo da Monitorização',
+        fields: [
+          { label: 'Tempo de Anestesia', value: this.anesthesiaTimer },
+          { label: 'Tempo de Cirurgia', value: this.surgeryTimer },
+          { label: 'Sinais Vitais Registrados', value: this.vitalRecords.length }
+        ]
+      },
+      {
+        title: 'Equipe e Sala',
+        fields: [
+          { label: 'Cirurgião', value: this.selectedSurgery?.surgeonName || '--' },
+          { label: 'Procedimento', value: this.selectedProcedure?.name || '--' }
+        ]
+      }
+    ];
+
+    const cachedFinalized = this.anesthesiaRecordService.getFinalizedMonitoringRecord(this.surgeryId);
+    if (cachedFinalized) {
+      sections.push({
+        title: 'Dados confirmados pelo backend',
+        fields: [
+          { label: 'Status', value: SURGERY_STATUS_LABELS[cachedFinalized.status as SurgeryStatusEnum] ?? cachedFinalized.status ?? '--' },
+          { label: 'Atualizado em', value: cachedFinalized.monitoringUpdatedAt ?? '--' },
+          { label: 'Agentes administrados', value: (cachedFinalized.administeredAgents ?? []).length },
+          { label: 'Eventos clínicos', value: (cachedFinalized.clinicalEvents ?? []).length },
+          { label: 'Balanços hídricos', value: (cachedFinalized.fluidBalances ?? []).length },
+        ]
+      });
+    }
+
+    const data: RecordData = { title: 'Ficha Anestésica', sections };
+
+
+    this.cacheRecordViewerData(this.FICHA_ANESTESICA_CACHE_KEY, data);
 
     const modal = await this.modalController.create({
       component: RecordViewerModalComponent,
@@ -619,6 +703,27 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       cssClass: 'record-viewer-modal'
     });
     await modal.present();
+  }
+
+  private readonly FICHA_ANESTESICA_CACHE_KEY = 'cache_ficha_anestesica_';
+  private readonly FICHA_PRE_ANESTESICA_CACHE_KEY = 'cache_ficha_pre_anestesica_';
+
+  
+  private cacheRecordViewerData(prefix: string, data: RecordData): void {
+    try {
+      localStorage.setItem(`${prefix}${this.surgeryId}`, JSON.stringify(data));
+    } catch (err) {
+      console.warn('[Monitorização] falha ao cachear dados da ficha', err);
+    }
+  }
+
+  private getCachedRecordViewerData(prefix: string): RecordData | null {
+    try {
+      const raw = localStorage.getItem(`${prefix}${this.surgeryId}`);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
   }
 
   async onEditAgent(a: Agent) {
@@ -744,6 +849,9 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         name: data.name,
         dose: data.dose ?? null,
         route: data.route ?? null,
+        doseValue: data.doseValue ?? null,
+        unit: data.unit ?? null,
+        routeId: data.routeId ?? null,
       };
       this.agents = [...this.agents, entry].sort(this.byTs);
       this.offlineQueue?.enqueue?.('agent', entry);
@@ -775,6 +883,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         itemId: data.itemId ?? null,
         description: data.description ?? data.item ?? '',
         detail: data.detail ?? null,
+        eventTypeId: data.eventTypeId ?? null,
       };
       this.clinicalEvents = [...this.clinicalEvents, entry].sort(this.byTs);
       this.offlineQueue?.enqueue?.('event', entry);
@@ -853,6 +962,8 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         volumeMl: Number(data.volumeMl),
         itemId: data.itemId ?? null,
         detail: data.detail ?? null,
+        categoryId: data.categoryId ?? null,
+        balanceTypeId: data.balanceTypeId ?? null,
       };
       this.fluidBalance = [...this.fluidBalance, entry].sort(this.byTs);
       this.offlineQueue?.enqueue?.('fluidBalance', entry);
@@ -871,8 +982,9 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   private registerPositionChange(pos: string) {
     const now = new Date();
     const clientId = this.newClientId();
+    const positionId = SURGICAL_POSITION_LABEL_TO_ID[pos.toLowerCase().trim()] ?? null;
     const entry: PositionEntry = {
-      clientId, timestamp: now.toISOString(), time: this.formatHM(now), position: pos,
+      clientId, timestamp: now.toISOString(), time: this.formatHM(now), position: pos, positionId,
     };
     this.positionHistory = [...this.positionHistory, entry];
     this.posicaoAtual = pos;
@@ -900,7 +1012,6 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  // Sincronização de arraste (pan) nos canais secundários
   private isPanning = false;
   private lastPanX = 0;
 
@@ -937,24 +1048,31 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   private rebuildRecentActivity() {
     const merged: any[] = [
       ...this.agents.map(a => ({
-        time: a.time, icon: '💊', label: a.name, color: '#8b5cf6',
+        time: a.time, icon: '💊',
+        label: a.name || (a.medicationId != null ? `Medicação #${a.medicationId}` : 'Agente'),
+        color: '#8b5cf6',
         ts: new Date(a.timestamp || 0).getTime(),
       })),
-      ...this.clinicalEvents.map(e => ({
-        time: e.time,
-        icon: (e.type || '').toLowerCase() === 'position' ? '🧍' : '🔔',
-        label: e.description || e.type,
-        color: (e.type || '').toLowerCase() === 'position' ? '#16a34a' : '#f97316',
-        ts: new Date(e.timestamp || 0).getTime(),
-      })),
+      ...this.clinicalEvents.map(e => {
+        const eventTypeLabel = e.eventTypeId != null ? CLINICAL_EVENT_TYPE_LABELS[e.eventTypeId] : null;
+        return {
+          time: e.time,
+          icon: (e.type || '').toLowerCase() === 'position' ? '🧍' : '🔔',          
+          label: e.description || eventTypeLabel || e.type || 'Evento',
+          color: (e.type || '').toLowerCase() === 'position' ? '#16a34a' : '#f97316',
+          ts: new Date(e.timestamp || 0).getTime(),
+        };
+      }),
       ...this.fluidBalance.map(b => {
-        let displayName = b.item;
+       
+        const categoryLabel = b.categoryId != null ? FLUID_CATEGORY_LABELS[b.categoryId] : null;
+        let displayName = b.item || categoryLabel || 'Outro';
         if (displayName === 'Outro' && b.detail) {
           displayName = b.detail;
         } else if (b.detail) {
           displayName = `${displayName} (${b.detail})`;
         }
-        
+
         return {
           time: b.time,
           icon: b.type === 'gain' ? '💧' : '🩸',
@@ -969,36 +1087,43 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async openAnestesicaRecord() {
-    // A estrutura do JSON de "carregamento inicial" foi definida como RecordData.
-    // O backend (Bruno) pode retornar os dados neste formato na consulta da cirurgia,
-    // e o frontend apenas fará o binding. Aqui construímos um fallback dinâmico básico.
-    const data: RecordData = this.selectedSurgery?.preAnesthesiaData || {
-      title: 'Ficha Pré-Anestésica',
-      sections: [
-        {
-          title: 'Dados do Paciente',
-          fields: [
-            { label: 'Nome', value: this.patient?.name || '—' },
-            { label: 'Idade', value: this.patientAge },
-            { label: 'Peso', value: this.patientWeight ? `${this.patientWeight} kg` : '—' },
-            { label: 'ASA', value: this.patientAsa },
-          ]
-        },
-        {
-          title: 'Procedimento',
-          fields: [
-            { label: 'Cirurgia', value: this.selectedProcedure?.description || '—' },
-            { label: 'Prioridade', value: this.selectedSurgery?.priority || '—' },
-          ]
-        },
-        {
-          title: 'Status',
-          fields: [
-            { label: 'Integração backend', value: 'Quando o backend enviar "preAnesthesiaData" no formato RecordData JSON, esta ficha será preenchida automaticamente com os dados oficiais.' }
-          ]
-        }
-      ]
-    };
+    let data: RecordData | null = this.selectedSurgery?.preAnesthesiaData ?? null;
+
+    if (data) {
+      this.cacheRecordViewerData(this.FICHA_PRE_ANESTESICA_CACHE_KEY, data);
+    } else {
+      data = this.getCachedRecordViewerData(this.FICHA_PRE_ANESTESICA_CACHE_KEY);
+    }
+
+    if (!data) {
+      data = {
+        title: 'Ficha Pré-Anestésica',
+        sections: [
+          {
+            title: 'Dados do Paciente',
+            fields: [
+              { label: 'Nome', value: this.patient?.name || '—' },
+              { label: 'Idade', value: this.patientAge },
+              { label: 'Peso', value: this.patientWeight ? `${this.patientWeight} kg` : '—' },
+              { label: 'ASA', value: this.patientAsa },
+            ]
+          },
+          {
+            title: 'Procedimento',
+            fields: [
+              { label: 'Cirurgia', value: this.selectedProcedure?.description || '—' },
+              { label: 'Prioridade', value: this.selectedSurgery?.priority || '—' },
+            ]
+          },
+          {
+            title: 'Status',
+            fields: [
+              { label: 'Integração backend', value: 'Quando o backend enviar "preAnesthesiaData" no formato RecordData JSON, esta ficha será preenchida automaticamente com os dados oficiais.' }
+            ]
+          }
+        ]
+      };
+    }
 
     const modal = await this.modalController.create({
       component: RecordViewerModalComponent,
@@ -1150,11 +1275,19 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     await loading.present();
 
     const record = this.buildDraftPayload();
+    const surgeryIdNum = Number(this.surgeryId);
 
     try {
-      await this.anesthesiaRecordService.saveRecord(record).toPromise();
+     
+      const response: any = await this.anesthesiaRecordService.submitMonitoringRecord(record, surgeryIdNum).toPromise();
       await loading.dismiss();
       localStorage.removeItem(MONITORING_DRAFT_KEY(this.surgeryId));
+
+    
+      this.anesthesiaRecordService.saveFinalizedMonitoringRecord(
+        this.surgeryId,
+        response?.data ?? response ?? record,
+      );
 
       this.anesthesiaRecordService.updatePendingStatus();
 
@@ -1162,6 +1295,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     } catch (err) {
       console.error('[Encerramento] falha ao enviar, mantendo rascunho local', err);
       await loading.dismiss();
+      
       await this.toast('⚠️ Sem conexão. Registro salvo localmente e será enviado automaticamente.',
         'warning', 4000);
     } finally {

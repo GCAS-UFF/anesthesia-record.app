@@ -26,6 +26,14 @@
     </div>
   </header>
 
+  <div class="finalized-banner" *ngIf="isFinalized">
+    <ion-icon name="lock-closed-outline"></ion-icon>
+    <span *ngIf="!hasChangesSinceFinalization">Esta avaliação pré-anestésica já foi finalizada.</span>
+    <span *ngIf="hasChangesSinceFinalization">
+      Você alterou uma avaliação já finalizada. As alterações estão salvas como rascunho e serão reenviadas ao clicar em <strong>Finalizar avaliação</strong> novamente.
+    </span>
+  </div>
+
   <div class="pre-layout">
 
     <aside class="pre-nav">
@@ -86,7 +94,7 @@
             <span>Lateralidade</span>
             <select class="select-control" formControlName="lateralidade">
               <option value="">Selecione…</option>
-              <option *ngFor="let l of lateralidadeOptions" [value]="l">{{ l }}</option>
+              <option *ngFor="let l of lateralidadeOptions" [value]="l.value">{{ l.label }}</option>
             </select>
           </label>
           <label class="field">
@@ -347,8 +355,8 @@
           <h3 class="sub-head">Mucosas <small>(múltipla escolha)</small></h3>
           <div class="chip-group">
             <button type="button" *ngFor="let opt of mucosasOptions" class="chip chip--outline"
-              [class.active]="isMulti('exameFisico.mucosas', opt)"
-              (click)="toggleMulti('exameFisico.mucosas', opt)">{{ opt }}</button>
+              [class.active]="isMulti('exameFisico.mucosas', opt.value)"
+              (click)="toggleMulti('exameFisico.mucosas', opt.value)">{{ opt.label }}</button>
           </div>
         </div>
 
@@ -356,8 +364,8 @@
           <h3 class="sub-head">Boca &mdash; Dentição</h3>
           <div class="chip-group">
             <button type="button" *ngFor="let opt of denticaoOptions" class="chip chip--outline"
-              [class.active]="isValue('exameFisico.denticao', opt)"
-              (click)="setValue('exameFisico.denticao', opt)">{{ opt }}</button>
+              [class.active]="isValue('exameFisico.denticao', opt.value)"
+              (click)="setValue('exameFisico.denticao', opt.value)">{{ opt.label }}</button>
           </div>
         </div>
 
@@ -365,8 +373,8 @@
           <h3 class="sub-head">Distância Inter-Incisivos</h3>
           <div class="chip-group">
             <button type="button" *ngFor="let opt of interIncisivosOptions" class="chip chip--outline"
-              [class.active]="isValue('exameFisico.distanciaInterIncisivos', opt)"
-              (click)="setValue('exameFisico.distanciaInterIncisivos', opt)">{{ opt }}</button>
+              [class.active]="isValue('exameFisico.distanciaInterIncisivos', opt.value)"
+              (click)="setValue('exameFisico.distanciaInterIncisivos', opt.value)">{{ opt.label }}</button>
           </div>
         </div>
 
@@ -374,8 +382,8 @@
           <h3 class="sub-head">Comprimento dos Incisivos Superiores</h3>
           <div class="chip-group">
             <button type="button" *ngFor="let opt of incisivosSuperioresOptions" class="chip chip--outline"
-              [class.active]="isValue('exameFisico.comprimentoIncisivosSuperiores', opt)"
-              (click)="setValue('exameFisico.comprimentoIncisivosSuperiores', opt)">{{ opt }}</button>
+              [class.active]="isValue('exameFisico.comprimentoIncisivosSuperiores', opt.value)"
+              (click)="setValue('exameFisico.comprimentoIncisivosSuperiores', opt.value)">{{ opt.label }}</button>
           </div>
         </div>
 
@@ -385,10 +393,10 @@
             <button type="button"
               *ngFor="let opt of mallampatiOptions"
               class="mallampati-card"
-              [class.active]="isValue('exameFisico.mallampati', opt)"
-              (click)="setValue('exameFisico.mallampati', opt)">
-              <img [src]="'assets/mallampati/palato_' + opt + '.png'" [alt]="'Mallampati ' + opt" />
-              <span class="mallampati-label">Classe {{ opt }}</span>
+              [class.active]="isValue('exameFisico.mallampati', opt.value)"
+              (click)="setValue('exameFisico.mallampati', opt.value)">
+              <img [src]="'assets/mallampati/palato_' + opt.label + '.png'" [alt]="'Mallampati ' + opt.label" />
+              <span class="mallampati-label">Classe {{ opt.label }}</span>
             </button>
           </div>
         </div>
@@ -397,8 +405,8 @@
           <h3 class="sub-head">Relação Incisivos Maxilares X Mandibulares em Perfil</h3>
           <div class="chip-group">
             <button type="button" *ngFor="let opt of relacaoIncisivosOptions" class="chip chip--outline"
-              [class.active]="isValue('exameFisico.relacaoIncisivos', opt)"
-              (click)="setValue('exameFisico.relacaoIncisivos', opt)">{{ opt }}</button>
+              [class.active]="isValue('exameFisico.relacaoIncisivos', opt.value)"
+              (click)="setValue('exameFisico.relacaoIncisivos', opt.value)">{{ opt.label }}</button>
           </div>
         </div>
 
@@ -406,8 +414,8 @@
           <h3 class="sub-head">Palato</h3>
           <div class="chip-group">
             <button type="button" *ngFor="let opt of palatoOptions" class="chip chip--outline"
-              [class.active]="isValue('exameFisico.palato', opt)"
-              (click)="setValue('exameFisico.palato', opt)">{{ opt }}</button>
+              [class.active]="isValue('exameFisico.palato', opt.value)"
+              (click)="setValue('exameFisico.palato', opt.value)">{{ opt.label }}</button>
           </div>
         </div>
 
@@ -416,9 +424,9 @@
           <div class="qa-row">
             <span class="qa-label">Dentes ultrapassam a linha dos maxilares?</span>
             <div class="chip-group">
-              <button type="button" *ngFor="let opt of simNaoNaOptions" class="chip chip--outline"
-                [class.active]="isValue('exameFisico.protusaoMandibula', opt)"
-                (click)="setValue('exameFisico.protusaoMandibula', opt)">{{ opt }}</button>
+              <button type="button" *ngFor="let opt of yesNoNaOptions" class="chip chip--outline"
+                [class.active]="isValue('exameFisico.protusaoMandibula', opt.value)"
+                (click)="setValue('exameFisico.protusaoMandibula', opt.value)">{{ opt.label }}</button>
             </div>
           </div>
         </div>
@@ -430,8 +438,8 @@
             <span class="qa-label">Comprimento</span>
             <div class="chip-group">
               <button type="button" *ngFor="let opt of pescocoComprimentoOptions" class="chip chip--outline"
-                [class.active]="isValue('exameFisico.pescocoComprimento', opt)"
-                (click)="setValue('exameFisico.pescocoComprimento', opt)">{{ opt }}</button>
+                [class.active]="isValue('exameFisico.pescocoComprimento', opt.value)"
+                (click)="setValue('exameFisico.pescocoComprimento', opt.value)">{{ opt.label }}</button>
             </div>
           </div>
 
@@ -439,8 +447,8 @@
             <span class="qa-label">Largura</span>
             <div class="chip-group">
               <button type="button" *ngFor="let opt of pescocoLarguraOptions" class="chip chip--outline"
-                [class.active]="isValue('exameFisico.pescocoLargura', opt)"
-                (click)="setValue('exameFisico.pescocoLargura', opt)">{{ opt }}</button>
+                [class.active]="isValue('exameFisico.pescocoLargura', opt.value)"
+                (click)="setValue('exameFisico.pescocoLargura', opt.value)">{{ opt.label }}</button>
             </div>
           </div>
 
@@ -448,8 +456,8 @@
             <span class="qa-label">Distância Esternocleidomentoniana</span>
             <div class="chip-group">
               <button type="button" *ngFor="let opt of esternoMentonianaOptions" class="chip chip--outline"
-                [class.active]="isValue('exameFisico.distanciaEsternocleidomentoniana', opt)"
-                (click)="setValue('exameFisico.distanciaEsternocleidomentoniana', opt)">{{ opt }}</button>
+                [class.active]="isValue('exameFisico.distanciaEsternocleidomentoniana', opt.value)"
+                (click)="setValue('exameFisico.distanciaEsternocleidomentoniana', opt.value)">{{ opt.label }}</button>
             </div>
           </div>
 
@@ -457,8 +465,8 @@
             <span class="qa-label">Distância Tireomentoniana</span>
             <div class="chip-group">
               <button type="button" *ngFor="let opt of tireomentonianaOptions" class="chip chip--outline"
-                [class.active]="isValue('exameFisico.distanciaTireomentoniana', opt)"
-                (click)="setValue('exameFisico.distanciaTireomentoniana', opt)">{{ opt }}</button>
+                [class.active]="isValue('exameFisico.distanciaTireomentoniana', opt.value)"
+                (click)="setValue('exameFisico.distanciaTireomentoniana', opt.value)">{{ opt.label }}</button>
             </div>
           </div>
 
@@ -466,8 +474,8 @@
             <span class="qa-label">Flexão do Pescoço</span>
             <div class="chip-group">
               <button type="button" *ngFor="let opt of normalAnormalOptions" class="chip chip--outline"
-                [class.active]="isValue('exameFisico.flexaoPescoco', opt)"
-                (click)="setValue('exameFisico.flexaoPescoco', opt)">{{ opt }}</button>
+                [class.active]="isValue('exameFisico.flexaoPescoco', opt.value)"
+                (click)="setValue('exameFisico.flexaoPescoco', opt.value)">{{ opt.label }}</button>
             </div>
           </div>
 
@@ -475,8 +483,8 @@
             <span class="qa-label">Extensão do Pescoço</span>
             <div class="chip-group">
               <button type="button" *ngFor="let opt of normalAnormalOptions" class="chip chip--outline"
-                [class.active]="isValue('exameFisico.extensaoPescoco', opt)"
-                (click)="setValue('exameFisico.extensaoPescoco', opt)">{{ opt }}</button>
+                [class.active]="isValue('exameFisico.extensaoPescoco', opt.value)"
+                (click)="setValue('exameFisico.extensaoPescoco', opt.value)">{{ opt.label }}</button>
             </div>
           </div>
 
@@ -484,8 +492,8 @@
             <span class="qa-label">Complacência do Espaço Mandibular</span>
             <div class="chip-group">
               <button type="button" *ngFor="let opt of normalAnormalOptions" class="chip chip--outline"
-                [class.active]="isValue('exameFisico.complacenciaEspacoMandibular', opt)"
-                (click)="setValue('exameFisico.complacenciaEspacoMandibular', opt)">{{ opt }}</button>
+                [class.active]="isValue('exameFisico.complacenciaEspacoMandibular', opt.value)"
+                (click)="setValue('exameFisico.complacenciaEspacoMandibular', opt.value)">{{ opt.label }}</button>
             </div>
           </div>
 
@@ -576,7 +584,7 @@
           <div class="repeat-row repeat-row--parecer" *ngFor="let p of outrosPareceres.controls; let i = index" [formGroupName]="i">
             <select class="select-control" formControlName="especialidade">
               <option value="">Especialidade…</option>
-              <option *ngFor="let e of especialidadesHuap" [value]="e">{{ e }}</option>
+              <option *ngFor="let e of especialidadesHuap" [value]="e.value">{{ e.label }}</option>
             </select>
             <input type="text" formControlName="descricao" placeholder="Parecer" />
             <button type="button" class="btn-icon btn-icon--danger" (click)="removeParecer(i)">
@@ -603,8 +611,8 @@
           <span class="qa-label">Classificação ASA <em class="req">*</em></span>
           <div class="chip-group">
             <button type="button" *ngFor="let opt of asaOptions" class="chip chip--outline"
-              [class.active]="isValue('conduta.asa', opt)"
-              (click)="setValue('conduta.asa', opt)">ASA {{ opt }}</button>
+              [class.active]="isValue('conduta.asa', opt.value)"
+              (click)="setValue('conduta.asa', opt.value)">ASA {{ opt.label }}</button>
             <button type="button" class="chip chip--outline chip--emergencia"
               [class.active]="isChecked('conduta.emergencia')"
               (click)="toggleValue('conduta.emergencia')">Emergência (E)</button>

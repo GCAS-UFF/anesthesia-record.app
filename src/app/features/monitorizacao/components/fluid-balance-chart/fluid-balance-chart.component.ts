@@ -8,6 +8,7 @@ import {
   waterOutline, addOutline, listOutline,
   chevronUpOutline, chevronDownOutline,
 } from 'ionicons/icons';
+import { FLUID_CATEGORY_LABELS, FluidCategoryEnum } from 'src/app/core/models/api-enums.model';
 
 type AnyBalance = any;
 
@@ -44,8 +45,11 @@ export class FluidBalanceChartComponent {
   onHeaderClick(_e: MouseEvent) { this.toggle.emit(); }
 
   vol(b: AnyBalance): number { return Number(b?.volumeMl ?? b?.volume ?? 0) || 0; }
-  itemName(b: AnyBalance): string { 
-    let displayName = b?.item ?? b?.name ?? b?.description ?? '';
+  itemName(b: AnyBalance): string {
+   
+    const categoryId: FluidCategoryEnum | undefined = b?.categoryId ?? b?.category;
+    const categoryLabel = categoryId != null ? FLUID_CATEGORY_LABELS[categoryId as FluidCategoryEnum] : null;
+    let displayName = b?.item ?? b?.name ?? b?.description ?? categoryLabel ?? 'Outro';
     if (displayName === 'Outro' && b?.detail) {
       displayName = b.detail;
     } else if (b?.detail) {

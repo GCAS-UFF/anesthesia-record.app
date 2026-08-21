@@ -125,6 +125,12 @@ export class VitalSignsChartComponent implements AfterViewInit, OnChanges, OnDes
       this.updateChart();
     }
     if (c['vitalRecords']) this.updateSnapshot();
+
+
+    if (c['readonly'] && this.chart) {
+      this.applyReadonlyToZoomConfig();
+      this.chart.update();
+    }
   }
 
   ngOnDestroy(): void { this.resizeObs?.disconnect(); this.chart?.destroy(); }
@@ -143,13 +149,13 @@ export class VitalSignsChartComponent implements AfterViewInit, OnChanges, OnDes
           legend: { display: false },
           zoom: {
             pan: {
-              enabled: true,
+              enabled: !this.readonly,
               mode: 'x',
               onPan: ({chart}) => this.emitBounds(chart)
             },
             zoom: {
-              wheel: { enabled: true },
-              pinch: { enabled: true },
+              wheel: { enabled: !this.readonly },
+              pinch: { enabled: !this.readonly },
               mode: 'x',
               onZoom: ({chart}) => this.emitBounds(chart)
             }
@@ -275,10 +281,11 @@ export class VitalSignsChartComponent implements AfterViewInit, OnChanges, OnDes
 
     // Forçar a escala X a englobar desde o início da anestesia até o momento atual (ou fim)
     if (this.chart.options.scales && this.chart.options.scales['x']) {
-      // Se o usuário já deu zoom ou pan, não sobrescrevemos a escala para não dar "reset"
+      // Se o usuário já deu zoom, pan, ou moveu a barra de rolagem, não
+      // sobrescrevemos a escala para não dar "reset" na visualização.
       const isZoomed = (this.chart as any).isZoomedOrPanned ? (this.chart as any).isZoomedOrPanned() : false;
-      
-      if (!isZoomed) {
+
+      if (!isZoomed && !this.hasCustomView) {
         delete this.chart.options.scales['x'].min;
         delete this.chart.options.scales['x'].max;
         
@@ -328,13 +335,91 @@ export class VitalSignsChartComponent implements AfterViewInit, OnChanges, OnDes
     const max = chart.scales['x'].max;
     if (min !== undefined && max !== undefined) {
       this.viewBoundsChange.emit({ min, max });
+      this.syncScrollbarFromBounds(min, max);
     }
   }
 
   panChart(deltaX: number) {
+    if (this.readonly) return; // Cirurgia finalizada: arraste/pan desabilitado (ver ngOnChanges).
     if (this.chart) {
       (this.chart as any).pan({ x: deltaX }, undefined, 'x');
     }
+  }
+
+  private applyReadonlyToZoomConfig(): void {
+    if (!this.chart) return;
+    const zoomOpts: any = (this.chart.options.plugins as any)?.zoom;
+    if (!zoomOpts) return;
+    zoomOpts.pan.enabled = !this.readonly;
+    zoomOpts.zoom.wheel.enabled = !this.readonly;
+    zoomOpts.zoom.pinch.enabled = !this.readonly;
+  }
+
+  
+  scrollbarValue = 0; 
+  private readonly MIN_WINDOW_MS = 2 * 60 * 60 * 1000; 
+  private syncingScrollbar = false;
+  private hasCustomView = false;
+
+  private getFullRange(): { start: number; end: number } {
+    const start = this.anesthesiaStartTime
+      ? new Date(this.anesthesiaStartTime).getTime()
+      : (this.vitalRecords[0] ? new Date((this.vitalRecords[0] as any).timestamp || (this.vitalRecords[0] as any).time).getTime() : Date.now() - this.MIN_WINDOW_MS);
+
+    let end = this.surgeryEndTime ? new Date(this.surgeryEndTime).getTime() : Date.now();
+    const lastRec = this.vitalRecords[this.vitalRecords.length - 1] as any;
+    if (lastRec) {
+      const lastRecTime = new Date(lastRec.timestamp || lastRec.time).getTime();
+      if (lastRecTime > end) end = lastRecTime;
+    }
+    if (end - start < this.MIN_WINDOW_MS) end = start + this.MIN_WINDOW_MS;
+    return { start, end };
+  }
+
+  private syncScrollbarFromBounds(min: number, max: number): void {
+    if (this.syncingScrollbar) return;
+    const { start, end } = this.getFullRange();
+    const windowSpan = Math.max(max - min, 1);
+    const travel = Math.max(end - start - windowSpan, 1);
+    const center = min - start;
+    this.scrollbarValue = Math.min(100, Math.max(0, (center / travel) * 100));
+  }
+
+  onScrollbarInput(value: number): void {
+    if (!this.chart) return;
+    this.scrollbarValue = value;
+    const { start, end } = this.getFullRange();
+
+    const currentScale: any = this.chart.scales['x'];
+    const currentSpan = (currentScale?.max != null && currentScale?.min != null)
+      ? (currentScale.max - currentScale.min)
+      : this.MIN_WINDOW_MS;
+    const windowSpan = Math.max(currentSpan, this.MIN_WINDOW_MS);
+    const travel = Math.max(end - start - windowSpan, 1);
+
+    const newMin = start + (travel * (value / 100));
+    const newMax = newMin + windowSpan;
+
+    this.syncingScrollbar = true;
+    this.hasCustomView = true;
+    if (this.chart.options.scales && this.chart.options.scales['x']) {
+      (this.chart.options.scales['x'] as any).min = newMin;
+      (this.chart.options.scales['x'] as any).max = newMax;
+    }
+    this.chart.update('none');
+    this.viewBoundsChange.emit({ min: newMin, max: newMax });
+    this.syncingScrollbar = false;
+  }
+
+  
+  resetToLatest(): void {
+    this.hasCustomView = false;
+    if (this.chart?.options?.scales?.['x']) {
+      delete (this.chart.options.scales['x'] as any).min;
+      delete (this.chart.options.scales['x'] as any).max;
+    }
+    (this.chart as any)?.resetZoom?.();
+    this.updateChart();
   }
 
   private updateSnapshot(): void {

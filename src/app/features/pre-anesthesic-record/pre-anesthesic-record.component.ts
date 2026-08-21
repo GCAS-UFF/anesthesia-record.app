@@ -9,6 +9,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 import {
   IonButton,
@@ -45,38 +47,42 @@ import {
 
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
+import { AuthService } from '../../core/services/auth.service';
+import { PreAnesthesicRecordService } from '../../core/services/pre-anesthesic-record.service';
+import {
+  ChecklistGroupDef,
+  ChecklistOption,
+  COMORBIDITY_GROUPS,
+  PHYSICAL_EXAM_GROUPS,
+  DRUG_OPTIONS,
+  ALLERGY_OPTIONS,
+  CONDUCT_OPTIONS,
+  ASA_OPTIONS,
+  MALLAMPATI_OPTIONS,
+  LATERALITY_OPTIONS,
+  MUCOSA_OPTIONS,
+  DENTITION_OPTIONS,
+  INTER_INCISOR_DISTANCE_OPTIONS,
+  UPPER_INCISOR_LENGTH_OPTIONS,
+  INCISOR_RELATION_OPTIONS,
+  PALATE_OPTIONS,
+  YES_NO_NA_OPTIONS,
+  NECK_LENGTH_OPTIONS,
+  NECK_WIDTH_OPTIONS,
+  STERNOMENTAL_DISTANCE_OPTIONS,
+  THYROMENTAL_DISTANCE_OPTIONS,
+  NORMAL_ABNORMAL_OPTIONS,
+  HUAP_SPECIALTY_OPTIONS,
+  PreAnesthesicRecordDraft,
+  PreAnesthesicRecordPayload,
+  PreAnesthesicChecklistFinding,
+} from '../../shared/models/pre-anesthesic-record.model';
 
 interface PreAnesthesiaSection {
   id: string;
   index: number;
   title: string;
   icon: string;
-}
-
-interface CheckOption {
-  key: string;
-  label: string;
-}
-
-interface CheckGroupDef {
-  key: string;
-  title: string;
-  options: CheckOption[];
-}
-
-function slug(label: string): string {
-  return label
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-zA-Z0-9]+/g, ' ')
-    .trim()
-    .split(' ')
-    .map((w, i) => (i === 0 ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()))
-    .join('');
-}
-
-function group(key: string, title: string, labels: string[]): CheckGroupDef {
-  return { key, title, options: labels.map((l) => ({ key: slug(l), label: l })) };
 }
 
 @Component({
@@ -100,10 +106,13 @@ function group(key: string, title: string, labels: string[]): CheckGroupDef {
 export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   form!: FormGroup;
 
-  patientId: string | null = null;
+  patientId: string | null = null;  
+  anesthesiaRecordId: number | null = null;  
+  private finalizedRecordId: number | null = null;
   patient: any = null;
 
   isSaving = false;
+  isLoadingRecord = false;
 
   isSignModalOpen = false;
   signatureAgreed = false;
@@ -112,46 +121,31 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
   loggedUser: any = null;
   lastSavedAt: Date | null = null;
-  autosaveTimer: any = null;
+  
+  isFinalized = false;  
+  hasChangesSinceFinalization = false;
+  private finalizedBaseline: PreAnesthesicRecordDraft | null = null;
+  private formSub?: Subscription;
 
   activeSectionId = 'procedimento';
 
-  readonly asaOptions = ['I', 'II', 'III', 'IV', 'V', 'VI'];
-  readonly mallampatiOptions = ['I', 'II', 'III', 'IV'];
+  readonly asaOptions = ASA_OPTIONS;
+  readonly mallampatiOptions = MALLAMPATI_OPTIONS;
+  readonly lateralidadeOptions = LATERALITY_OPTIONS;
 
-  readonly mucosasOptions = ['Coradas', 'Hipocoradas', 'Hipercoradas', 'Hidratadas', 'Desidratadas', 'Hiperhidratadas'];
-  readonly denticaoOptions = ['Presente', 'Ausente', 'Prótese Superior', 'Prótese Inferior'];
-  readonly interIncisivosOptions = ['> 3 cm', '< 3 cm', 'NA'];
-  readonly incisivosSuperioresOptions = ['Curto', 'Longo', 'NA'];
-  readonly relacaoIncisivosOptions = [
-    'Maxilares alinhados aos mandibulares',
-    'Maxilares anteriores',
-    'Maxilares posteriores',
-    'NA',
-  ];
-  readonly palatoOptions = ['Normal', 'Estreito', 'Ogival'];
-  readonly simNaoNaOptions = ['Sim', 'Não', 'NA'];
-  readonly pescocoComprimentoOptions = ['Normal', 'Longo', 'Curto'];
-  readonly pescocoLarguraOptions = ['Normal', 'Grosso'];
-  readonly esternoMentonianaOptions = ['> 12,5 cm', '< 12,5 cm'];
-  readonly tireomentonianaOptions = ['\u2265 5 cm', '< 5 cm'];
-  readonly normalAnormalOptions = ['Normal', 'Anormal'];
-
-  readonly especialidadesHuap = [
-    'Cardiologista',
-    'Clínico Geral',
-    'Pneumologista',
-    'Nefrologista',
-    'Endocrinologista',
-    'Outra',
-  ];
-
-  readonly lateralidadeOptions = [
-    'Direita',
-    'Esquerda',
-    'Bilateral',
-    'Não se aplica',
-  ];
+  readonly mucosasOptions = MUCOSA_OPTIONS;
+  readonly denticaoOptions = DENTITION_OPTIONS;
+  readonly interIncisivosOptions = INTER_INCISOR_DISTANCE_OPTIONS;
+  readonly incisivosSuperioresOptions = UPPER_INCISOR_LENGTH_OPTIONS;
+  readonly relacaoIncisivosOptions = INCISOR_RELATION_OPTIONS;
+  readonly palatoOptions = PALATE_OPTIONS;
+  readonly yesNoNaOptions = YES_NO_NA_OPTIONS;
+  readonly pescocoComprimentoOptions = NECK_LENGTH_OPTIONS;
+  readonly pescocoLarguraOptions = NECK_WIDTH_OPTIONS;
+  readonly esternoMentonianaOptions = STERNOMENTAL_DISTANCE_OPTIONS;
+  readonly tireomentonianaOptions = THYROMENTAL_DISTANCE_OPTIONS;
+  readonly normalAnormalOptions = NORMAL_ABNORMAL_OPTIONS;
+  readonly especialidadesHuap = HUAP_SPECIALTY_OPTIONS;
 
   readonly cirurgiasAghu: string[] = [
     'Colecistectomia videolaparoscópica',
@@ -180,100 +174,11 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     'Safenectomia / Varizes de MMII',
   ];
 
-  readonly comorbidadeGroups: CheckGroupDef[] = [
-    group('cardiovascular', 'Cardiovascular', [
-      'Sem alterações',
-      'Hipertensão Arterial',
-      'Cardiopatia',
-      'Arritmia',
-      'Insuficiência Cardíaca',
-      'Outros',
-    ]),
-    group('respiratorio', 'Respiratório', [
-      'Sem alterações',
-      'Asma',
-      'DPOC',
-      'Bronquite',
-      'Outros',
-    ]),
-    group('neurologico', 'Neurológico', [
-      'Sem alterações',
-      'Epilepsia',
-      'Parkinson',
-      'Neuropatia Periférica Diabética',
-      'Outros',
-    ]),
-    group('genitoUrinario', 'Sistema gênito-urinário, incluindo DUM', [
-      'Sem alterações',
-      'Insuficiência renal',
-      'Doença renal crônica',
-      'Outros',
-    ]),
-    group('endocrino', 'Endócrino', [
-      'Sem alterações',
-      'Diabetes',
-      'Síndrome metabólica',
-      'Hipotireoidismo',
-      'Hipertireoidismo',
-      'Obesidade',
-      'Outros',
-    ]),
-    group('digestivo', 'Digestivo', [
-      'Sem alterações',
-      'Refluxo gastroesofágico',
-      'Úlcera gástrica',
-      'Úlcera duodenal',
-      'Outros',
-    ]),
-    group('imunologico', 'Imunológico', [
-      'Sem alterações',
-      'Lúpus',
-      'Artrite reumatóide',
-      'Tireoidite de Hashimoto',
-      'Doença de Graves',
-      'Outros',
-    ]),
-  ];
-
-  readonly exameFisicoGroups: CheckGroupDef[] = [
-    group('ausculaCardiaca', 'Ausculta cardíaca', [
-      'Sem alterações',
-      'Estalidos',
-      'Cliques',
-      'Terceira Bulha',
-      'Quarta Bulha',
-      'Hipofonese',
-      'Outros',
-    ]),
-    group('ausculaPulmonar', 'Ausculta pulmonar', [
-      'Sem alterações',
-      'Estertores crepitantes',
-      'Estertores grossos',
-      'Sibilos',
-      'Roncos',
-      'Outros',
-    ]),
-    group('abdome', 'Abdome', ['Sem alterações']),
-    group('membrosSuperiores', 'Membros Superiores', ['Sem alterações']),
-    group('membrosInferiores', 'Membros Inferiores', ['Sem alterações']),
-    group('dorsoLombar', 'Dorso e Região Lombar', ['Sem alterações']),
-  ];
-
-  readonly drogasOptions: CheckOption[] = ['Maconha', 'Cocaína', 'Heroína', 'LSD', 'Outros'].map(
-    (l) => ({ key: slug(l), label: l }),
-  );
-
-  readonly alergiaOptions: CheckOption[] = ['Látex', 'Penicilina', 'Dipirona', 'Ibuprofeno', 'Outros'].map(
-    (l) => ({ key: slug(l), label: l }),
-  );
-
-  readonly condutaOptions: CheckOption[] = [
-    'Paciente liberado para o procedimento anestésico-cirúrgico',
-    'Paciente orientado quanto ao jejum',
-    'Termo de Consentimento informado para Anestesia ou Sedação foi aplicado após os esclarecimentos',
-    'Termo de consentimento para Transfusão foi aplicado após os esclarecimentos',
-    'Medicação pré-anestésica prescrita no prontuário',
-  ].map((l) => ({ key: slug(l), label: l }));
+  readonly comorbidadeGroups: ChecklistGroupDef[] = COMORBIDITY_GROUPS;
+  readonly exameFisicoGroups: ChecklistGroupDef[] = PHYSICAL_EXAM_GROUPS;
+  readonly drogasOptions: ChecklistOption[] = DRUG_OPTIONS;
+  readonly alergiaOptions: ChecklistOption[] = ALLERGY_OPTIONS;
+  readonly condutaOptions: ChecklistOption[] = CONDUCT_OPTIONS;
 
   readonly sections: PreAnesthesiaSection[] = [
     { id: 'procedimento', index: 1, title: 'Procedimento', icon: 'medkit-outline' },
@@ -292,6 +197,8 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private location: Location,
     private toastCtrl: ToastController,
+    private authService: AuthService,
+    private preAnesthesicService: PreAnesthesicRecordService,
   ) {
     addIcons({
       arrowBackOutline,
@@ -318,20 +225,23 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.patientId = this.route.snapshot.paramMap.get('id');
+    
+    const rawAnesthesiaRecordId = this.route.snapshot.paramMap.get('id');
+    this.anesthesiaRecordId = rawAnesthesiaRecordId ? Number(rawAnesthesiaRecordId) : null;
+    this.patientId = this.route.snapshot.paramMap.get('patientId');
+    this.loggedUser = this.authService.getUser();
     this.buildForm();
-    this.setupAutosave();
-    this.loadDraft();
+    this.loadInitialState();
     this.setupScrollSpy();
   }
 
   ngOnDestroy(): void {
-    if (this.autosaveTimer) clearInterval(this.autosaveTimer);
+    this.formSub?.unsubscribe();
     const sc = document.querySelector('.pre-scroll');
     sc?.removeEventListener('scroll', this.onScroll);
   }
 
-  private checkGroup(def: CheckGroupDef): FormGroup {
+  private checkGroup(def: ChecklistGroupDef): FormGroup {
     const controls: Record<string, any> = {};
     def.options.forEach((o) => (controls[o.key] = [false]));
     controls['outrosDescricao'] = [''];
@@ -519,7 +429,6 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     else this.medicacoes.at(0).reset();
   }
 
-
   get outrosPareceres(): FormArray {
     return this.form.get('exames.outrosPareceres') as FormArray;
   }
@@ -531,7 +440,6 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   removeParecer(i: number): void {
     this.outrosPareceres.removeAt(i);
   }
-
 
   setBool(path: string, value: boolean): void {
     this.form.get(path)?.setValue(value);
@@ -580,60 +488,396 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
   groupControlPath(base: string, groupKey: string, optionKey: string): string {
     return `${base}.${groupKey}.${optionKey}`;
-  }
+  } 
 
-  private setupAutosave(): void {
-    this.autosaveTimer = setInterval(() => this.saveDraft(), 20000);
-  }
+  private loadInitialState(): void {
+    if (!this.anesthesiaRecordId || !this.patientId) {
+      this.formSub = this.form.valueChanges.pipe(debounceTime(400)).subscribe(() => this.onFormChanged());
+      return;
+    }
 
-  private storageKey(): string {
-    return `pre-anestesica:draft:${this.patientId ?? 'novo'}`;
-  }
+    this.isLoadingRecord = true;
+    this.preAnesthesicService.getByAnesthesiaRecordId(this.anesthesiaRecordId).subscribe((record) => {
+      this.isLoadingRecord = false;
 
-  saveDraft(): void {
-    try {
-      localStorage.setItem(this.storageKey(), JSON.stringify(this.form.getRawValue()));
-      this.lastSavedAt = new Date();
-    } catch {}
-  }
-
-  private loadDraft(): void {
-    try {
-      const raw = localStorage.getItem(this.storageKey());
-      if (!raw) return;
-      const data = JSON.parse(raw);
-
-      const cirurgias = data?.procedimento?.cirurgias ?? [];
-      this.cirurgias.clear();
-      cirurgias.forEach((c: any) =>
-        this.cirurgias.push(this.fb.group({ nome: [c?.nome ?? ''], principal: [!!c?.principal] })),
-      );
-
-      const meds = data?.medicacoes?.itens ?? [];
-      if (meds.length) {
-        this.medicacoes.clear();
-        meds.forEach((m: any) =>
-          this.medicacoes.push(
-            this.fb.group({
-              nome: [m?.nome ?? ''],
-              dose: [m?.dose ?? ''],
-              via: [m?.via ?? ''],
-              frequencia: [m?.frequencia ?? ''],
-            }),
-          ),
-        );
+      if (record) {
+        this.finalizedRecordId = record.id ?? null;
+        this.finalizedBaseline = this.extractDraft(record);
+        this.isFinalized = true;
       }
 
-      const pareceres = data?.exames?.outrosPareceres ?? [];
-      this.outrosPareceres.clear();
-      pareceres.forEach((p: any) =>
-        this.outrosPareceres.push(
-          this.fb.group({ especialidade: [p?.especialidade ?? ''], descricao: [p?.descricao ?? ''] }),
+      const localDraft = this.preAnesthesicService.getDraft(this.anesthesiaRecordId!, this.patientId!);
+      if (localDraft) {
+        this.patchFormFromDraft(localDraft);
+        this.hasChangesSinceFinalization = this.isFinalized && !this.isEqualToBaseline(localDraft);
+      } else if (this.finalizedBaseline) {
+        this.patchFormFromDraft(this.finalizedBaseline);
+      }
+
+      this.formSub = this.form.valueChanges.pipe(debounceTime(400)).subscribe(() => this.onFormChanged());
+    });
+  }
+
+  private extractDraft(payload: PreAnesthesicRecordPayload): PreAnesthesicRecordDraft {
+    const { id, patientId, anesthesiaRecordId, signedByProfessionalId, signedByName, signedAt, ...draft } = payload;
+    return draft as PreAnesthesicRecordDraft;
+  }
+  
+  private stableStringify(value: any): string {
+    const normalize = (v: any): any => {
+      if (Array.isArray(v)) {
+        const mapped = v.map(normalize);
+        const allPrimitive = mapped.every((x) => x === null || typeof x !== 'object');
+        return allPrimitive ? [...mapped].sort() : mapped;
+      }
+      if (v && typeof v === 'object') {
+        return Object.keys(v)
+          .sort()
+          .reduce((acc: any, k) => {
+            acc[k] = normalize(v[k]);
+            return acc;
+          }, {});
+      }
+      return v;
+    };
+    return JSON.stringify(normalize(value));
+  }
+
+  private isEqualToBaseline(draft: PreAnesthesicRecordDraft): boolean {
+    if (!this.finalizedBaseline) return false;
+    return this.stableStringify(draft) === this.stableStringify(this.finalizedBaseline);
+  }
+ 
+  private onFormChanged(): void {
+    if (!this.anesthesiaRecordId || !this.patientId) return;
+    const currentDraft = this.toDraft();
+
+    if (this.isFinalized) {
+      const changed = !this.isEqualToBaseline(currentDraft);
+      this.hasChangesSinceFinalization = changed;
+      if (changed) {
+        this.preAnesthesicService.saveDraft(this.anesthesiaRecordId, this.patientId, currentDraft);
+        this.lastSavedAt = new Date();
+      } else {
+        this.preAnesthesicService.clearDraft(this.anesthesiaRecordId, this.patientId);
+      }
+      return;
+    }
+
+    this.preAnesthesicService.saveDraft(this.anesthesiaRecordId, this.patientId, currentDraft);
+    this.lastSavedAt = new Date();
+  }
+
+  
+  saveDraft(): void {
+    if (!this.anesthesiaRecordId || !this.patientId) return;
+    this.preAnesthesicService.saveDraft(this.anesthesiaRecordId, this.patientId, this.toDraft());
+    this.lastSavedAt = new Date();
+    if (this.isFinalized) {
+      this.hasChangesSinceFinalization = !this.isEqualToBaseline(this.toDraft());
+    }
+  }
+
+  private selectedKeys(def: ChecklistGroupDef, value: any): string[] {
+    return def.options.filter((o) => !!value?.[o.key]).map((o) => o.key);
+  }
+  
+  toDraft(): PreAnesthesicRecordDraft {
+    const raw = this.form.getRawValue();
+
+    const comorbidities: Record<string, PreAnesthesicChecklistFinding> = {};
+    this.comorbidadeGroups.forEach((g) => {
+      comorbidities[g.key] = {
+        findings: this.selectedKeys(g, raw.comorbidades[g.key]),
+        otherDescription: raw.comorbidades[g.key]?.outrosDescricao ?? '',
+        observations: raw.comorbidades[g.key]?.observacoes ?? '',
+      };
+    });
+
+    const physicalExamAreas: Record<string, PreAnesthesicChecklistFinding> = {};
+    this.exameFisicoGroups.forEach((g) => {
+      physicalExamAreas[g.key] = {
+        findings: this.selectedKeys(g, raw.exameFisico[g.key]),
+        otherDescription: raw.exameFisico[g.key]?.outrosDescricao ?? '',
+        observations: raw.exameFisico[g.key]?.observacoes ?? '',
+      };
+    });
+
+    const cardiologyDescricao = (raw.exames.parecerCardiologia ?? '').trim();
+    const outrosPareceres = (raw.exames.outrosPareceres ?? [])
+      .filter((p: any) => (p?.descricao ?? '').trim())
+      .map((p: any) => ({ specialty: p.especialidade ?? '', description: p.descricao }));
+
+    return {
+      procedure: {
+        surgeries: (raw.procedimento.cirurgias ?? []).map((c: any) => ({ name: c.nome ?? '', isPrimary: !!c.principal })),
+        laterality: raw.procedimento.lateralidade || null,
+        preOperativeDiagnosis: raw.procedimento.diagnosticoPreOperatorio ?? '',
+        consultationDate: raw.procedimento.dataConsulta ?? '',
+        observation: raw.procedimento.observacao ?? '',
+      },
+      anthropometry: {
+        weightKg: raw.antropometria.peso,
+        heightCm: raw.antropometria.altura,
+        bmi: raw.antropometria.imc,
+        heartRate: raw.antropometria.frequenciaCardiaca,
+        systolicBloodPressure: raw.antropometria.pressaoSistolica,
+        diastolicBloodPressure: raw.antropometria.pressaoDiastolica,
+        spo2: raw.antropometria.saturacao,
+        temperature: raw.antropometria.temperatura,
+        fastingSolidsHours: raw.antropometria.jejumSolidos,
+        fastingLiquidsHours: raw.antropometria.jejumLiquidos,
+      },
+      comorbidities,
+      comorbiditiesOtherDescription: raw.comorbidades.outros?.descricao ?? '',
+      familyHistory: raw.comorbidades.historiaFamiliar?.descricao ?? '',
+      habits: {
+        illicitDrugUse: raw.habitos.drogasIlicitas,
+        drugTypes: this.drogasOptions.filter((o) => raw.habitos.drogasTipos?.[o.key]).map((o) => o.key),
+        drugsOtherDescription: raw.habitos.drogasOutrosDescricao ?? '',
+        smoker: raw.habitos.tabagista,
+        smokingLoad: raw.habitos.cargaTabagica ?? '',
+        alcoholUse: raw.habitos.etilista,
+        alcoholGramsPerDay: raw.habitos.gramasAlcoolDia ?? '',
+      },
+      allergies: {
+        hasAllergy: raw.alergias.possuiAlergia,
+        substances: this.alergiaOptions.filter((o) => raw.alergias.tipos?.[o.key]).map((o) => o.key),
+        otherDescription: raw.alergias.outrosDescricao ?? '',
+        reactionType: raw.alergias.tipoReacao ?? '',
+        anestheticHistory: raw.alergias.antecedentesAnestesicos ?? '',
+      },
+      medicationsInUse: {
+        usesMedication: raw.medicacoes.usaMedicacao,
+        items: (raw.medicacoes.itens ?? [])
+          .filter((m: any) => (m?.nome ?? '').trim())
+          .map((m: any) => ({ name: m.nome ?? '', dose: m.dose ?? '', route: m.via ?? '', frequency: m.frequencia ?? '' })),
+      },
+      physicalExam: {
+        areas: physicalExamAreas,
+        airway: {
+          mucosa: raw.exameFisico.mucosas ?? [],
+          dentition: raw.exameFisico.denticao ?? null,
+          interIncisorDistance: raw.exameFisico.distanciaInterIncisivos ?? null,
+          upperIncisorLength: raw.exameFisico.comprimentoIncisivosSuperiores ?? null,
+          mallampatiClass: raw.exameFisico.mallampati ?? null,
+          incisorRelation: raw.exameFisico.relacaoIncisivos ?? null,
+          palate: raw.exameFisico.palato ?? null,
+          mandibleProtrusion: raw.exameFisico.protusaoMandibula ?? null,
+          neckLength: raw.exameFisico.pescocoComprimento ?? null,
+          neckWidth: raw.exameFisico.pescocoLargura ?? null,
+          sternomentalDistance: raw.exameFisico.distanciaEsternocleidomentoniana ?? null,
+          thyromentalDistance: raw.exameFisico.distanciaTireomentoniana ?? null,
+          neckFlexion: raw.exameFisico.flexaoPescoco ?? null,
+          neckExtension: raw.exameFisico.extensaoPescoco ?? null,
+          mandibularSpaceCompliance: raw.exameFisico.complacenciaEspacoMandibular ?? null,
+          observations: raw.exameFisico.observacoesViaAerea ?? '',
+        },
+        thoracicCageAbnormality: raw.exameFisico.anomaliaCaixaToracica,
+        thoracicCageAbnormalityDescription: raw.exameFisico.anomaliaCaixaToracicaDescricao ?? '',
+        difficultIntubationPrediction: raw.exameFisico.previsaoIotDificil,
+      },
+      labs: {
+        hemoglobin: raw.exames.hemoglobina,
+        hematocrit: raw.exames.hematocrito,
+        leukocytes: raw.exames.leucocitos,
+        platelets: raw.exames.plaquetas,
+        tapInr: raw.exames.tapInr,
+        aptt: raw.exames.ttpa,
+        glucose: raw.exames.glicemia,
+        urea: raw.exames.ureia,
+        creatinine: raw.exames.creatinina,
+        sodium: raw.exames.sodio,
+        potassium: raw.exames.potassio,
+        tp: raw.exames.tp ?? '',
+        urinalysis: raw.exames.eas ?? '',
+        liverFunctionTests: raw.exames.funcaoHepatica ?? '',
+        pregnancyTest: raw.exames.testeGravidez ?? '',
+      },
+      imaging: {
+        ecg: raw.exames.ecg ?? '',
+        chestXRay: raw.exames.rxTorax ?? '',
+        echocardiogram: raw.exames.ecocardiograma ?? '',
+        pulmonaryFunctionTest: raw.exames.provaFuncaoRespiratoria ?? '',
+        other: raw.exames.outrosExames ?? '',
+      },
+      reports: [
+        ...(cardiologyDescricao ? [{ specialty: 'CARDIOLOGIST', description: cardiologyDescricao }] : []),
+        ...outrosPareceres,
+      ],
+      conduct: {
+        asaClassification: raw.conduta.asa ?? null,
+        isEmergency: !!raw.conduta.emergencia,
+        notCleared: !!raw.conduta.naoLiberado,
+        notClearedReason: raw.conduta.motivoNaoLiberacao ?? '',
+        actions: this.condutaOptions.filter((o) => raw.conduta.condutas?.[o.key]).map((o) => o.key),
+        notes: raw.conduta.anotacoes ?? '',
+      },
+    };
+  }
+
+  /** Reconstrói o formulário (PT-BR) a partir de um rascunho/payload em inglês. */
+  private patchFormFromDraft(draft: PreAnesthesicRecordDraft): void {
+    this.cirurgias.clear();
+    (draft.procedure?.surgeries ?? []).forEach((s) =>
+      this.cirurgias.push(this.fb.group({ nome: [s.name ?? ''], principal: [!!s.isPrimary] })),
+    );
+
+    const meds = draft.medicationsInUse?.items ?? [];
+    this.medicacoes.clear();
+    if (meds.length) {
+      meds.forEach((m) =>
+        this.medicacoes.push(
+          this.fb.group({
+            nome: [m.name ?? ''],
+            dose: [m.dose ?? ''],
+            via: [m.route ?? ''],
+            frequencia: [m.frequency ?? ''],
+          }),
         ),
       );
+    } else {
+      this.medicacoes.push(this.novaMedicacao());
+    }
 
-      this.form.patchValue(data);
-    } catch {}
+    const reports = draft.reports ?? [];
+    const cardiologyReport = reports.find((r) => r.specialty === 'CARDIOLOGIST');
+    const otherReports = reports.filter((r) => r.specialty !== 'CARDIOLOGIST');
+    this.outrosPareceres.clear();
+    otherReports.forEach((r) =>
+      this.outrosPareceres.push(this.fb.group({ especialidade: [r.specialty ?? ''], descricao: [r.description ?? ''] })),
+    );
+
+    const comorbidadesPatch: any = {};
+    this.comorbidadeGroups.forEach((g) => {
+      const finding = draft.comorbidities?.[g.key];
+      const flags: Record<string, boolean> = {};
+      g.options.forEach((o) => (flags[o.key] = !!finding?.findings?.includes(o.key)));
+      comorbidadesPatch[g.key] = {
+        ...flags,
+        outrosDescricao: finding?.otherDescription ?? '',
+        observacoes: finding?.observations ?? '',
+      };
+    });
+
+    const exameFisicoPatch: any = {};
+    this.exameFisicoGroups.forEach((g) => {
+      const finding = draft.physicalExam?.areas?.[g.key];
+      const flags: Record<string, boolean> = {};
+      g.options.forEach((o) => (flags[o.key] = !!finding?.findings?.includes(o.key)));
+      exameFisicoPatch[g.key] = {
+        ...flags,
+        outrosDescricao: finding?.otherDescription ?? '',
+        observacoes: finding?.observations ?? '',
+      };
+    });
+
+    const drogasTiposPatch: Record<string, boolean> = {};
+    this.drogasOptions.forEach((o) => (drogasTiposPatch[o.key] = !!draft.habits?.drugTypes?.includes(o.key)));
+
+    const alergiaTiposPatch: Record<string, boolean> = {};
+    this.alergiaOptions.forEach((o) => (alergiaTiposPatch[o.key] = !!draft.allergies?.substances?.includes(o.key)));
+
+    const condutasPatch: Record<string, boolean> = {};
+    this.condutaOptions.forEach((o) => (condutasPatch[o.key] = !!draft.conduct?.actions?.includes(o.key)));
+
+    this.form.patchValue({
+      procedimento: {
+        lateralidade: draft.procedure?.laterality ?? '',
+        diagnosticoPreOperatorio: draft.procedure?.preOperativeDiagnosis ?? '',
+        dataConsulta: draft.procedure?.consultationDate || new Date().toISOString().slice(0, 16),
+        observacao: draft.procedure?.observation ?? '',
+      },
+      antropometria: {
+        peso: draft.anthropometry?.weightKg ?? null,
+        altura: draft.anthropometry?.heightCm ?? null,
+        imc: draft.anthropometry?.bmi ?? null,
+        frequenciaCardiaca: draft.anthropometry?.heartRate ?? null,
+        pressaoSistolica: draft.anthropometry?.systolicBloodPressure ?? null,
+        pressaoDiastolica: draft.anthropometry?.diastolicBloodPressure ?? null,
+        saturacao: draft.anthropometry?.spo2 ?? null,
+        temperatura: draft.anthropometry?.temperature ?? null,
+        jejumSolidos: draft.anthropometry?.fastingSolidsHours ?? 8,
+        jejumLiquidos: draft.anthropometry?.fastingLiquidsHours ?? 8,
+      },
+      comorbidades: {
+        ...comorbidadesPatch,
+        outros: { descricao: draft.comorbiditiesOtherDescription ?? '' },
+        historiaFamiliar: { descricao: draft.familyHistory ?? '' },
+      },
+      habitos: {
+        drogasIlicitas: draft.habits?.illicitDrugUse ?? null,
+        drogasTipos: drogasTiposPatch,
+        drogasOutrosDescricao: draft.habits?.drugsOtherDescription ?? '',
+        tabagista: draft.habits?.smoker ?? null,
+        cargaTabagica: draft.habits?.smokingLoad ?? '',
+        etilista: draft.habits?.alcoholUse ?? null,
+        gramasAlcoolDia: draft.habits?.alcoholGramsPerDay ?? '',
+      },
+      alergias: {
+        possuiAlergia: draft.allergies?.hasAllergy ?? null,
+        tipos: alergiaTiposPatch,
+        outrosDescricao: draft.allergies?.otherDescription ?? '',
+        tipoReacao: draft.allergies?.reactionType ?? '',
+        antecedentesAnestesicos: draft.allergies?.anestheticHistory ?? '',
+      },
+      medicacoes: {
+        usaMedicacao: draft.medicationsInUse?.usesMedication ?? null,
+      },
+      exameFisico: {
+        ...exameFisicoPatch,
+        mucosas: draft.physicalExam?.airway?.mucosa ?? [],
+        denticao: draft.physicalExam?.airway?.dentition ?? null,
+        distanciaInterIncisivos: draft.physicalExam?.airway?.interIncisorDistance ?? null,
+        comprimentoIncisivosSuperiores: draft.physicalExam?.airway?.upperIncisorLength ?? null,
+        mallampati: draft.physicalExam?.airway?.mallampatiClass ?? null,
+        relacaoIncisivos: draft.physicalExam?.airway?.incisorRelation ?? null,
+        palato: draft.physicalExam?.airway?.palate ?? null,
+        protusaoMandibula: draft.physicalExam?.airway?.mandibleProtrusion ?? null,
+        pescocoComprimento: draft.physicalExam?.airway?.neckLength ?? null,
+        pescocoLargura: draft.physicalExam?.airway?.neckWidth ?? null,
+        distanciaEsternocleidomentoniana: draft.physicalExam?.airway?.sternomentalDistance ?? null,
+        distanciaTireomentoniana: draft.physicalExam?.airway?.thyromentalDistance ?? null,
+        flexaoPescoco: draft.physicalExam?.airway?.neckFlexion ?? null,
+        extensaoPescoco: draft.physicalExam?.airway?.neckExtension ?? null,
+        complacenciaEspacoMandibular: draft.physicalExam?.airway?.mandibularSpaceCompliance ?? null,
+        observacoesViaAerea: draft.physicalExam?.airway?.observations ?? '',
+        anomaliaCaixaToracica: draft.physicalExam?.thoracicCageAbnormality ?? null,
+        anomaliaCaixaToracicaDescricao: draft.physicalExam?.thoracicCageAbnormalityDescription ?? '',
+        previsaoIotDificil: draft.physicalExam?.difficultIntubationPrediction ?? null,
+      },
+      exames: {
+        hemoglobina: draft.labs?.hemoglobin ?? null,
+        hematocrito: draft.labs?.hematocrit ?? null,
+        leucocitos: draft.labs?.leukocytes ?? null,
+        plaquetas: draft.labs?.platelets ?? null,
+        tapInr: draft.labs?.tapInr ?? null,
+        ttpa: draft.labs?.aptt ?? null,
+        glicemia: draft.labs?.glucose ?? null,
+        ureia: draft.labs?.urea ?? null,
+        creatinina: draft.labs?.creatinine ?? null,
+        sodio: draft.labs?.sodium ?? null,
+        potassio: draft.labs?.potassium ?? null,
+        tp: draft.labs?.tp ?? '',
+        eas: draft.labs?.urinalysis ?? '',
+        funcaoHepatica: draft.labs?.liverFunctionTests ?? '',
+        testeGravidez: draft.labs?.pregnancyTest ?? '',
+        ecg: draft.imaging?.ecg ?? '',
+        rxTorax: draft.imaging?.chestXRay ?? '',
+        ecocardiograma: draft.imaging?.echocardiogram ?? '',
+        provaFuncaoRespiratoria: draft.imaging?.pulmonaryFunctionTest ?? '',
+        outrosExames: draft.imaging?.other ?? '',
+        parecerCardiologia: cardiologyReport?.description ?? '',
+      },
+      conduta: {
+        asa: draft.conduct?.asaClassification ?? null,
+        emergencia: !!draft.conduct?.isEmergency,
+        naoLiberado: !!draft.conduct?.notCleared,
+        motivoNaoLiberacao: draft.conduct?.notClearedReason ?? '',
+        condutas: condutasPatch,
+        anotacoes: draft.conduct?.notes ?? '',
+      },
+    });
   }
 
   private isScrolling = false;
@@ -677,6 +921,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   get expectedSignatureName(): string {
     return (this.loggedUser?.name || this.loggedUser?.fullName || '').trim();
   }
+  
 
   async salvar(): Promise<void> {
     this.saveDraft();
@@ -720,158 +965,57 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     }
 
     this.isSignModalOpen = false;
-    this.executarSalvamento(senha);
+    this.executarSalvamento();
   }
 
-  private async executarSalvamento(senha: string): Promise<void> {
-    this.isSaving = true;
-    const payload = { ...this.buildPayload(), assinatura: { senha } };
-
-    // TODO: chamar PreAnesthesiaService.save(payload)
-    // Validar senha no back
-    console.log('[pre-anestesica] payload assinado', { ...payload, assinatura: { senha: '***' } });
-
-    setTimeout(async () => {
-      this.isSaving = false;
-      this.lastSavedAt = new Date();
-      this.signaturePassword = '';
-      const t = await this.toastCtrl.create({
-        message: 'Avaliação pré-anestésica assinada e salva com sucesso.',
-        duration: 2200,
-        color: 'success',
-        position: 'top',
-      });
-      await t.present();
-    }, 700);
-  }
-
-  private selectedLabels(def: CheckGroupDef, value: any): string[] {
-    return def.options.filter((o) => !!value?.[o.key]).map((o) => o.label);
-  }
-
-  buildPayload(): any {
-    const raw = this.form.getRawValue();
-
-    const comorbidades = this.comorbidadeGroups.map((g) => ({
-      sistema: g.title,
-      chave: g.key,
-      achados: this.selectedLabels(g, raw.comorbidades[g.key]),
-      outrosDescricao: raw.comorbidades[g.key]?.outrosDescricao ?? '',
-      observacoes: raw.comorbidades[g.key]?.observacoes ?? '',
-    }));
-
-    const viaAerea = {
-      mucosas: raw.exameFisico.mucosas,
-      denticao: raw.exameFisico.denticao,
-      distanciaInterIncisivos: raw.exameFisico.distanciaInterIncisivos,
-      comprimentoIncisivosSuperiores: raw.exameFisico.comprimentoIncisivosSuperiores,
-      mallampati: raw.exameFisico.mallampati,
-      relacaoIncisivos: raw.exameFisico.relacaoIncisivos,
-      palato: raw.exameFisico.palato,
-      protusaoMandibula: raw.exameFisico.protusaoMandibula,
-      pescocoComprimento: raw.exameFisico.pescocoComprimento,
-      pescocoLargura: raw.exameFisico.pescocoLargura,
-      distanciaEsternocleidomentoniana: raw.exameFisico.distanciaEsternocleidomentoniana,
-      distanciaTireomentoniana: raw.exameFisico.distanciaTireomentoniana,
-      flexaoPescoco: raw.exameFisico.flexaoPescoco,
-      extensaoPescoco: raw.exameFisico.extensaoPescoco,
-      complacenciaEspacoMandibular: raw.exameFisico.complacenciaEspacoMandibular,
-      observacoes: raw.exameFisico.observacoesViaAerea,
-      anomaliaCaixaToracica: raw.exameFisico.anomaliaCaixaToracica,
-      anomaliaCaixaToracicaDescricao: raw.exameFisico.anomaliaCaixaToracicaDescricao,
-      previsaoIotDificil: raw.exameFisico.previsaoIotDificil,
-    };
-
-    const exameFisico = this.exameFisicoGroups.map((g) => ({
-      area: g.title,
-      chave: g.key,
-      achados: this.selectedLabels(g, raw.exameFisico[g.key]),
-      outrosDescricao: raw.exameFisico[g.key]?.outrosDescricao ?? '',
-      observacoes: raw.exameFisico[g.key]?.observacoes ?? '',
-    }));
-
+  private buildFinalPayload(): PreAnesthesicRecordPayload {
     return {
+      ...this.toDraft(),
+      anesthesiaRecordId: this.anesthesiaRecordId,
       patientId: this.patientId,
-      procedimento: {
-        cirurgias: raw.procedimento.cirurgias,
-        lateralidade: raw.procedimento.lateralidade,
-        diagnosticoPreOperatorio: raw.procedimento.diagnosticoPreOperatorio,
-        dataConsulta: raw.procedimento.dataConsulta,
-        observacao: raw.procedimento.observacao,
-      },
-      antropometria: raw.antropometria,
-      comorbidades,
-      comorbidadesOutros: raw.comorbidades.outros?.descricao ?? '',
-      historiaFamiliar: raw.comorbidades.historiaFamiliar?.descricao ?? '',
-      habitos: {
-        drogasIlicitas: raw.habitos.drogasIlicitas,
-        drogas: this.drogasOptions.filter((o) => raw.habitos.drogasTipos?.[o.key]).map((o) => o.label),
-        drogasOutrosDescricao: raw.habitos.drogasOutrosDescricao,
-        tabagista: raw.habitos.tabagista,
-        cargaTabagica: raw.habitos.cargaTabagica,
-        etilista: raw.habitos.etilista,
-        gramasAlcoolDia: raw.habitos.gramasAlcoolDia,
-      },
-      alergias: {
-        possuiAlergia: raw.alergias.possuiAlergia,
-        substancias: this.alergiaOptions.filter((o) => raw.alergias.tipos?.[o.key]).map((o) => o.label),
-        outrosDescricao: raw.alergias.outrosDescricao,
-        tipoReacao: raw.alergias.tipoReacao,
-        antecedentesAnestesicos: raw.alergias.antecedentesAnestesicos,
-      },
-      medicacoesEmUso: {
-        usaMedicacao: raw.medicacoes.usaMedicacao,
-        itens: (raw.medicacoes.itens ?? []).filter((m: any) => (m?.nome ?? '').trim()),
-      },
-      exameFisico: {
-        viaAerea,
-        areas: exameFisico,
-      },
-      exames: {
-        laboratoriais: {
-          hemoglobina: raw.exames.hemoglobina,
-          hematocrito: raw.exames.hematocrito,
-          leucocitos: raw.exames.leucocitos,
-          plaquetas: raw.exames.plaquetas,
-          tapInr: raw.exames.tapInr,
-          ttpa: raw.exames.ttpa,
-          glicemia: raw.exames.glicemia,
-          ureia: raw.exames.ureia,
-          creatinina: raw.exames.creatinina,
-          sodio: raw.exames.sodio,
-          potassio: raw.exames.potassio,
-          tp: raw.exames.tp,
-          eas: raw.exames.eas,
-          funcaoHepatica: raw.exames.funcaoHepatica,
-          testeGravidez: raw.exames.testeGravidez,
-        },
-        imagemEGraficos: {
-          ecg: raw.exames.ecg,
-          rxTorax: raw.exames.rxTorax,
-          ecocardiograma: raw.exames.ecocardiograma,
-          provaFuncaoRespiratoria: raw.exames.provaFuncaoRespiratoria,
-          outrosExames: raw.exames.outrosExames,
-        },
-        pareceres: [
-          { especialidade: 'Cardiologia', descricao: raw.exames.parecerCardiologia },
-          ...(raw.exames.outrosPareceres ?? []),
-        ].filter((p: any) => (p?.descricao ?? '').trim()),
-      },
-      assinaturaMeta: {
-        assinadoPorId: this.loggedUser?.id ?? null,
-        assinadoPorNome: this.expectedSignatureName,
-        assinadoEm: new Date().toISOString(),
-      },
-      conduta: {
-        asa: raw.conduta.asa,
-        emergencia: raw.conduta.emergencia,
-        naoLiberado: raw.conduta.naoLiberado,
-        motivoNaoLiberacao: raw.conduta.motivoNaoLiberacao,
-        condutas: this.condutaOptions
-          .filter((o) => raw.conduta.condutas?.[o.key])
-          .map((o) => o.label),
-        anotacoes: raw.conduta.anotacoes,
-      },
+      signedByProfessionalId: this.loggedUser?.id ?? null,
+      signedByName: this.expectedSignatureName,
+      signedAt: new Date().toISOString(),
     };
+  }
+
+  private async executarSalvamento(): Promise<void> {
+    if (!this.anesthesiaRecordId || !this.patientId) return;
+
+    this.isSaving = true;
+    const payload = this.buildFinalPayload();
+
+    this.preAnesthesicService.submit(payload, this.finalizedRecordId).subscribe({
+      next: async (res: any) => {
+        this.isSaving = false;
+        this.isFinalized = true;
+        this.finalizedRecordId = res?.data?.id ?? res?.id ?? this.finalizedRecordId;
+        this.finalizedBaseline = this.toDraft();
+        this.hasChangesSinceFinalization = false;
+        this.preAnesthesicService.clearDraft(this.anesthesiaRecordId!, this.patientId!);
+        this.lastSavedAt = new Date();
+        this.signaturePassword = '';
+
+        const t = await this.toastCtrl.create({
+          message: 'Avaliação pré-anestésica assinada e salva com sucesso.',
+          duration: 2200,
+          color: 'success',
+          position: 'top',
+        });
+        await t.present();
+      },
+      error: async (error) => {
+        this.isSaving = false;
+        console.error('[pre-anestesica] erro ao enviar avaliação', error);
+
+        const t = await this.toastCtrl.create({
+          message: 'Não foi possível enviar a avaliação pré-anestésica para o servidor. O rascunho foi mantido — tente novamente.',
+          duration: 3000,
+          color: 'danger',
+          position: 'top',
+        });
+        await t.present();
+      },
+    });
   }
 }

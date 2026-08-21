@@ -1,11 +1,13 @@
-import { 
-  UnitEnum, 
-  AdministrationRouteEnum, 
-  MedicationPresentationEnum, 
-  ClinicalEventTypeEnum, 
-  FluidBalanceTypeEnum, 
-  FluidCategoryEnum 
+import {
+  MedicationUnitEnum,
+  AdministrationRouteEnum,
+  ClinicalEventTypeEnum,
+  FluidBalanceTypeEnum,
+  FluidCategoryEnum,
+  SurgicalPositionEnum,
+  SurgeryStatusEnum,
 } from './api-enums.model';
+
 
 export interface MonitoringCustomFieldPayload {
   name: string;
@@ -13,7 +15,8 @@ export interface MonitoringCustomFieldPayload {
 }
 
 export interface MonitoringVitalSignPayload {
-  timestamp: string; // ISO 8601
+  time: string;
+  date: string;
   systolicBloodPressure: number | null;
   diastolicBloodPressure: number | null;
   meanArterialPressure: number | null;
@@ -28,37 +31,50 @@ export interface MonitoringVitalSignPayload {
 }
 
 export interface MonitoringAgentPayload {
-  timestamp: string;
-  name: string;
-  dose: string;
-  unit: UnitEnum;
+  time: string;
+  date: string;
+  dose: number;
+  unit: MedicationUnitEnum;
   route: AdministrationRouteEnum;
-  presentation: MedicationPresentationEnum;
+  drugId: number;
 }
 
 export interface MonitoringEventPayload {
-  timestamp: string;
+  time: string;
+  date: string;
   eventType: ClinicalEventTypeEnum;
-  name: string;
   observations: string | null;
 }
 
 export interface MonitoringFluidBalancePayload {
-  timestamp: string;
-  balanceType: FluidBalanceTypeEnum;
+  time: string;
+  date: string; 
   category: FluidCategoryEnum;
-  name: string;
+  description: string;
   volumeMl: number;
+  type: FluidBalanceTypeEnum;
+}
+
+export interface MonitoringPositionPayload {
+  time: string;
+  date: string; 
+  position: SurgicalPositionEnum;
 }
 
 export interface MonitoringPayload {
-  anesthesiaRecordId: number | null;
-  surgeryId: number | null;
-  recordedByProfessionalId: number | null;
-  startedAt: string | null; // ISO 8601
-  endedAt: string | null; // ISO 8601
+  anesthesiaRecordId: number;
+  surgeryId: number;
+  recordedByProfessionalId: number;
+  startedAt: string | null; 
+  endedAt: string | null;
+  surgeryStartedAt: string | null; 
+  surgeryEndedAt: string | null; 
+  isMonitoringDraft: boolean;
+  monitoringUpdatedAt: string; 
   vitalSigns: MonitoringVitalSignPayload[];
   administeredAgents: MonitoringAgentPayload[];
   clinicalEvents: MonitoringEventPayload[];
   fluidBalances: MonitoringFluidBalancePayload[];
+  positions: MonitoringPositionPayload[];
+  status: SurgeryStatusEnum;
 }
