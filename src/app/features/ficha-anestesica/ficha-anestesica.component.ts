@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { AlertController, ToastController, IonContent, IonRefresherContent, IonRefresher } from '@ionic/angular/standalone';
+import { AlertController, ToastController, ModalController, IonContent, IonRefresherContent, IonRefresher } from '@ionic/angular/standalone';
 import { IonButton, IonIcon, IonCheckbox, IonSpinner, IonModal } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, ValidationErrors, Validators } from '@angular/forms';
@@ -45,6 +45,9 @@ import { AnesthesiaRecordModel } from 'src/app/shared/models/anesthesia-record.m
 import { AuthService } from 'src/app/core/services/auth.service';
 import { MasterDataService } from 'src/app/core/services/master-data.service';
 import { SurgeryStatusEnum } from 'src/app/core/models/api-enums.model';
+import { PreAnesthesicRecordService } from 'src/app/core/services/pre-anesthesic-record.service';
+import { RecordViewerModalComponent, RecordData } from 'src/app/shared/components/record-viewer-modal/record-viewer-modal.component';
+import { mapPreAnesthesiaToRecordData } from 'src/app/shared/models/pre-anesthesic.mapper';
 
 
 @Component({
@@ -85,8 +88,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   loggedUser: any;
   isReadOnlyRecord = false;
 
-  isPreViewerOpen = false;
-  preAnesthesiaData: any = null;
 
   medicationsLista: { id: string; name: string; codigo?: string }[] = [];
 
@@ -215,7 +216,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     private toastController: ToastController,
     private location: Location,
     private authService: AuthService,
-    private masterData: MasterDataService
+    private masterData: MasterDataService,
+    private preAnesthesicService: PreAnesthesicRecordService,
+    private modalCtrl: ModalController
   ) {
     addIcons({ checkmarkCircle, chevronDownOutline, addOutline, trashOutline, returnDownForwardOutline, closeCircleOutline, timeOutline, alertCircleOutline, lockClosedOutline, shieldCheckmarkOutline, syncOutline, printOutline, fitnessOutline, createOutline, medicalSharp, shieldCheckmark, cloudDoneOutline, pencilOutline, saveOutline, arrowBackOutline, closeOutline });
     this.initForm();
@@ -233,6 +236,13 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     if (this.cirurgiaId && this.patientId) {
       this.loadPatientData(this.cirurgiaId, this.patientId);
       this.tentarReenviarRascunho();
+
+      // Buscar a ficha pré-anestésica do backend e salvar no storage
+      this.preAnesthesicService.getByAnesthesiaRecordId(Number(this.cirurgiaId)).subscribe((preData) => {
+        if (preData) {
+          localStorage.setItem(`preAnesthesiaData_${this.cirurgiaId}`, JSON.stringify(preData));
+        }
+      });
     }
 
     this.setupConditionalLogic();
@@ -1363,15 +1373,26 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     return found.codigo ? `${found.codigo} — ${found.name}` : found.name;
   }
 
-  openPreAnestesica() {
-    if (!this.preAnesthesiaData) {
-      // opcional: chamar toast avisando "Ficha pré-anestésica não disponível"
+  async openPreAnestesica() {
+    const rawData = localStorage.getItem(`preAnesthesiaData_${this.cirurgiaId}`);
+    if (!rawData) {
+      this.toast('Ficha Pré-Anestésica não encontrada (ou offline).', 'warning');
+      return;
     }
-    this.isPreViewerOpen = true;
-  }
 
-  closePreAnestesica() {
-    this.isPreViewerOpen = false;
+    try {
+      const payload = JSON.parse(rawData);
+      const data: RecordData = mapPreAnesthesiaToRecordData(payload);
+
+      const modal = await this.modalCtrl.create({
+        component: RecordViewerModalComponent,
+        componentProps: { data }
+      });
+      await modal.present();
+    } catch (e) {
+      console.error('Erro ao ler Ficha Pré-Anestésica do storage', e);
+      this.toast('Erro ao abrir Ficha Pré-Anestésica', 'danger');
+    }
   }
 
 
@@ -1502,6 +1523,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }
   }
 
+
+
   private async refreshData(): Promise<void> {
     if (!this.cirurgiaId || !this.patientId) return;
 
@@ -1511,10 +1534,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     try {
       await this.masterData.downloadMasterData().toPromise();
       this.loadDropdownLists();
+      await this.loadPatientData(this.cirurgiaId, this.patientId);
     } catch (err) {
       console.warn('Falha ao recarregar dados mestres', err);
+    } finally {
+      this.isLoading = false;
     }
-
-    await this.loadPatientData(this.cirurgiaId, this.patientId);
   }
 }

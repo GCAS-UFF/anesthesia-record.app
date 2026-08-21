@@ -619,7 +619,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       anesthesiaRecordId: Number(this.pick(app.anesthesiaRecordId, app.id, 0)) || 0,
       surgeryId,
       recordedByProfessionalId,
-      startedAt: this.normalizeIso(app.anesthesiaStartTime) ?? this.normalizeIso(app.startedAt),
+      startedAt: this.normalizeIso(app.anesthesiaStartTime) ?? this.normalizeIso(app.startedAt) ?? new Date().toISOString(),
       endedAt: this.normalizeIso(app.anesthesiaEndTime) ?? this.normalizeIso(app.endedAt) ?? new Date().toISOString(),
       surgeryStartedAt: this.normalizeIso(app.surgeryStartTime) ?? this.normalizeIso(app.surgeryStartedAt),
       surgeryEndedAt: this.normalizeIso(app.surgeryEndTime) ?? this.normalizeIso(app.surgeryEndedAt) ?? new Date().toISOString(),

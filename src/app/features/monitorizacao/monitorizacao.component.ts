@@ -10,6 +10,8 @@ import { ScreenOrientation } from '@capacitor/screen-orientation';
 
 import { AnesthesiaRecordService } from 'src/app/core/services/anesthesia-record.service';
 import { SurgeryService } from 'src/app/core/services/surgery.service';
+import { PreAnesthesicRecordService } from 'src/app/core/services/pre-anesthesic-record.service';
+import { mapPreAnesthesiaToRecordData } from 'src/app/shared/models/pre-anesthesic.mapper';
 import {
   SurgeryStatusEnum,
   SURGERY_STATUS_LABELS,
@@ -190,6 +192,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     private toastController: ToastController,
     private anesthesiaRecordService: AnesthesiaRecordService,
     private surgeryService: SurgeryService,
+    private preAnesthesicService: PreAnesthesicRecordService,
     private cdr: ChangeDetectorRef,
   ) { }
 
@@ -224,6 +227,14 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     }
 
     this.anesthesiaRecordService.updatePendingStatus();
+
+    if (this.surgeryId) {
+      this.preAnesthesicService.getByAnesthesiaRecordId(Number(this.surgeryId)).subscribe((preData) => {
+        if (preData) {
+          localStorage.setItem(`preAnesthesiaData_${this.surgeryId}`, JSON.stringify(preData));
+        }
+      });
+    }
   }
 
   ngOnDestroy() {
@@ -294,7 +305,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         if (asaBack) this.patientAsa = `ASA ${asaBack}`;
       }
 
-     
+
       const finishedVariants = ['concluido', 'concluída', 'concluida', 'completed'];
       const statusRaw = surgery?.status;
       const statusIsFinished =
@@ -319,7 +330,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       ?? surgery?.anesthesiaRecord?.monitoring
       ?? null;
 
-  
+
     const source = embedded ?? this.anesthesiaRecordService.getFinalizedMonitoringRecord(this.surgeryId);
     if (!source) return;
 
@@ -706,9 +717,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   private readonly FICHA_ANESTESICA_CACHE_KEY = 'cache_ficha_anestesica_';
-  private readonly FICHA_PRE_ANESTESICA_CACHE_KEY = 'cache_ficha_pre_anestesica_';
 
-  
   private cacheRecordViewerData(prefix: string, data: RecordData): void {
     try {
       localStorage.setItem(`${prefix}${this.surgeryId}`, JSON.stringify(data));
@@ -717,14 +726,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     }
   }
 
-  private getCachedRecordViewerData(prefix: string): RecordData | null {
-    try {
-      const raw = localStorage.getItem(`${prefix}${this.surgeryId}`);
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
-  }
+
 
   async onEditAgent(a: Agent) {
     const alert = await this.alertController.create({
@@ -1057,14 +1059,14 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         const eventTypeLabel = e.eventTypeId != null ? CLINICAL_EVENT_TYPE_LABELS[e.eventTypeId] : null;
         return {
           time: e.time,
-          icon: (e.type || '').toLowerCase() === 'position' ? '🧍' : '🔔',          
+          icon: (e.type || '').toLowerCase() === 'position' ? '🧍' : '🔔',
           label: e.description || eventTypeLabel || e.type || 'Evento',
           color: (e.type || '').toLowerCase() === 'position' ? '#16a34a' : '#f97316',
           ts: new Date(e.timestamp || 0).getTime(),
         };
       }),
       ...this.fluidBalance.map(b => {
-       
+
         const categoryLabel = b.categoryId != null ? FLUID_CATEGORY_LABELS[b.categoryId] : null;
         let displayName = b.item || categoryLabel || 'Outro';
         if (displayName === 'Outro' && b.detail) {
@@ -1087,50 +1089,26 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async openAnestesicaRecord() {
-    let data: RecordData | null = this.selectedSurgery?.preAnesthesiaData ?? null;
-
-    if (data) {
-      this.cacheRecordViewerData(this.FICHA_PRE_ANESTESICA_CACHE_KEY, data);
-    } else {
-      data = this.getCachedRecordViewerData(this.FICHA_PRE_ANESTESICA_CACHE_KEY);
+    const rawData = localStorage.getItem(`preAnesthesiaData_${this.surgeryId}`);
+    if (!rawData) {
+      this.toast('Ficha Pré-Anestésica não encontrada (ou offline).', 'warning');
+      return;
     }
 
-    if (!data) {
-      data = {
-        title: 'Ficha Pré-Anestésica',
-        sections: [
-          {
-            title: 'Dados do Paciente',
-            fields: [
-              { label: 'Nome', value: this.patient?.name || '—' },
-              { label: 'Idade', value: this.patientAge },
-              { label: 'Peso', value: this.patientWeight ? `${this.patientWeight} kg` : '—' },
-              { label: 'ASA', value: this.patientAsa },
-            ]
-          },
-          {
-            title: 'Procedimento',
-            fields: [
-              { label: 'Cirurgia', value: this.selectedProcedure?.description || '—' },
-              { label: 'Prioridade', value: this.selectedSurgery?.priority || '—' },
-            ]
-          },
-          {
-            title: 'Status',
-            fields: [
-              { label: 'Integração backend', value: 'Quando o backend enviar "preAnesthesiaData" no formato RecordData JSON, esta ficha será preenchida automaticamente com os dados oficiais.' }
-            ]
-          }
-        ]
-      };
-    }
+    try {
+      const payload = JSON.parse(rawData);
+      const data: RecordData = mapPreAnesthesiaToRecordData(payload);
 
-    const modal = await this.modalController.create({
-      component: RecordViewerModalComponent,
-      componentProps: { data },
-      cssClass: 'record-viewer-modal'
-    });
-    await modal.present();
+      const modal = await this.modalController.create({
+        component: RecordViewerModalComponent,
+        componentProps: { data },
+        cssClass: 'record-viewer-modal'
+      });
+      await modal.present();
+    } catch (e) {
+      console.error('Erro ao ler Ficha Pré-Anestésica do storage', e);
+      this.toast('Erro ao abrir Ficha Pré-Anestésica', 'danger');
+    }
   }
 
   private buildDraftPayload() {
@@ -1278,12 +1256,13 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     const surgeryIdNum = Number(this.surgeryId);
 
     try {
-     
+
       const response: any = await this.anesthesiaRecordService.submitMonitoringRecord(record, surgeryIdNum).toPromise();
       await loading.dismiss();
       localStorage.removeItem(MONITORING_DRAFT_KEY(this.surgeryId));
+      localStorage.removeItem(`preAnesthesiaData_${this.surgeryId}`);
 
-    
+
       this.anesthesiaRecordService.saveFinalizedMonitoringRecord(
         this.surgeryId,
         response?.data ?? response ?? record,
@@ -1295,7 +1274,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     } catch (err) {
       console.error('[Encerramento] falha ao enviar, mantendo rascunho local', err);
       await loading.dismiss();
-      
+
       await this.toast('⚠️ Sem conexão. Registro salvo localmente e será enviado automaticamente.',
         'warning', 4000);
     } finally {

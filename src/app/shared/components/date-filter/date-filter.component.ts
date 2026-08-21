@@ -27,13 +27,13 @@ export class DateFilterComponent implements OnInit, OnDestroy {
     const savedDate = this.filterState.getSelectedDate();
     if (savedDate) {
       this.date = savedDate;
-      this.dateChange.emit(this.date);
+      setTimeout(() => this.dateChange.emit(this.date));
     }
 
     this.filterSubscription = this.filterState.filterState$.subscribe(state => {
       if (state.selectedDate !== this.date) {
         this.date = state.selectedDate || '';
-        this.dateChange.emit(this.date);
+        setTimeout(() => this.dateChange.emit(this.date));
       }
     });
   }
