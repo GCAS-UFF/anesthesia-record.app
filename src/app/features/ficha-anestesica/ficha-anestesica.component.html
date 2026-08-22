@@ -1229,7 +1229,7 @@
       </div>
 
       <!-- Marca de assinatura digital -->
-      <!-- <div class="signature-watermark">
+      <div class="signature-watermark" *ngIf="fichaFinalizada">
         <div class="signature-watermark-icon">
           <ion-icon name="shield-checkmark"></ion-icon>
         </div>
@@ -1239,19 +1239,18 @@
 
           <div class="signature-text">
             Esta ficha anestésica foi enviada em
-            <strong>17/07/2026</strong>
+            <strong>{{ fichaFinalizadaEm | date:'dd/MM/yyyy' }}</strong>
             às
-            <strong>19:42</strong>
+            <strong>{{ fichaFinalizadaEm | date:'HH:mm' }}</strong>
             e assinada por
-            <strong>Dr. João Carlos de Oliveira</strong>, CRM-RJ
-            <strong>52.123456-7</strong>, mediante autenticação com senha
-            pessoal do profissional.
+            <strong>{{ fichaFinalizadaPor }}</strong>, mediante autenticação
+            com senha pessoal do profissional.
           </div>
 
           <div class="signature-meta">
             <span>
               <ion-icon name="time-outline"></ion-icon>
-              Registro nº FA-20260717-000184
+              Registro nº FA-{{ cirurgiaId }}
             </span>
 
             <span>
@@ -1265,7 +1264,7 @@
             </span>
           </div>
         </div>
-      </div> -->
+      </div>
     </form>
   </ion-content>
 
@@ -1281,9 +1280,11 @@
         </div>
         <h2 class="sign-modal-title">Confirmar e Assinar Digitalmente</h2>
         <p class="sign-modal-subtitle">
-          Ao assinar, você declara que revisou todos os dados desta ficha
-          anestésica e assume responsabilidade profissional pelas informações
-          registradas.
+          O monitoramento desta cirurgia já foi finalizado. Ao assinar, você
+          declara que revisou todos os dados desta ficha anestésica e assume
+          responsabilidade profissional pelas informações registradas.
+          <strong>Este será o último salvamento — depois de confirmado, a
+          ficha não poderá mais ser editada.</strong>
         </p>
 
         <div class="sign-check-row">
@@ -1317,6 +1318,18 @@
           </p>
         </div>
 
+        <div class="sign-name-block">
+          <label class="field-label">Digite sua senha para assinar</label>
+          <input
+            type="password"
+            class="text-input sign-input"
+            [(ngModel)]="signaturePassword"
+            placeholder="Senha de acesso"
+            autocomplete="current-password"
+            (keyup.enter)="confirmarESalvar()"
+          />
+        </div>
+
         <p class="sign-error" *ngIf="signatureError">
           <ion-icon name="close-circle-outline"></ion-icon> {{ signatureError }}
         </p>
@@ -1332,7 +1345,7 @@
             color="primary"
             class="btn-primary-pill"
             (click)="confirmarESalvar()"
-            [disabled]="!signatureAgreed || !signatureTypedName.trim()"
+            [disabled]="!signatureAgreed || !signatureTypedName.trim() || !signaturePassword.trim()"
           >
             <ion-icon name="create-outline" slot="start"></ion-icon>
             Assinar e Salvar

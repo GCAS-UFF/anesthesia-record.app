@@ -193,7 +193,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   isSignModalOpen = false;
   signatureAgreed = false;
   signatureTypedName = '';
-  signatureError = '';
+  signaturePassword = '';
+  signatureError = ''; 
+  monitoringFinalizado = false; 
+  fichaFinalizada = false;
+  fichaFinalizadaEm: string | null = null;
+  fichaFinalizadaPor: string | null = null;
 
   private autoSaveSub?: Subscription;
   private conditionalSubs: Subscription[] = [];
@@ -234,14 +239,26 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.loadDropdownLists();
 
     if (this.cirurgiaId && this.patientId) {
-      this.loadPatientData(this.cirurgiaId, this.patientId);
       this.tentarReenviarRascunho();
 
-      // Buscar a ficha pré-anestésica do backend e salvar no storage
-      this.preAnesthesicService.getByAnesthesiaRecordId(Number(this.cirurgiaId)).subscribe((preData) => {
-        if (preData) {
-          localStorage.setItem(`preAnesthesiaData_${this.cirurgiaId}`, JSON.stringify(preData));
-        }
+      // Não confiar em nada guardado no front: sempre buscar no backend o status atual do
+      // monitoramento. Só quando ele estiver FINALIZADO é que o próximo salvamento da ficha
+      // deve pedir nome/senha e virar o salvamento definitivo.
+      this.anesthesiaService.getMonitoringStatus(Number(this.cirurgiaId)).subscribe((status) => {
+        this.monitoringFinalizado = status === SurgeryStatusEnum.Concluido;
+      });
+
+      // Buscar a ficha pré-anestésica do backend e salvar no storage ANTES de carregar a ficha
+      // anestésica: valores corrigidos pelo médico na pré-anestésica (ex.: peso) precisam estar
+      // disponíveis no storage a tempo de prevalecer sobre o dado original do AGHU.
+      this.preAnesthesicService.getByAnesthesiaRecordId(Number(this.cirurgiaId)).subscribe({
+        next: (preData) => {
+          if (preData) {
+            localStorage.setItem(`preAnesthesiaData_${this.cirurgiaId}`, JSON.stringify(preData));
+          }
+          this.loadPatientData(this.cirurgiaId!, this.patientId!);
+        },
+        error: () => this.loadPatientData(this.cirurgiaId!, this.patientId!)
       });
     }
 
@@ -258,7 +275,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.autoSaveSub = this.form.valueChanges
       .pipe(debounceTime(1500))
       .subscribe(() => {
-        if (this.isReadOnlyRecord)
+        if (this.isReadOnlyRecord || this.fichaFinalizada)
           return;
 
         if (!this.isSaving)
@@ -715,7 +732,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   private async tentarReenviarRascunho() {
-    if (this.isReadOnlyRecord)
+    if (this.isReadOnlyRecord || this.fichaFinalizada)
       return;
 
     if (!this.cirurgiaId)
@@ -736,7 +753,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         this.antibioticsList = cleanDraft.antibioticsList;
       }
 
-      const record = this.buildPayload();
+      const record: any = this.buildPayload();
+      record.finalize = !!draft.finalize;
 
       this.form.patchValue(originalFormValue);
       this.antibioticsList = originalAntibioticsList;
@@ -746,6 +764,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         next: async () => {
           this.anesthesiaService.clearDraft(this.cirurgiaId!);
           this.isSaving = false;
+          if (record.finalize) {
+            this.fichaFinalizada = true;
+            this.canEdit = false;
+            this.form.disable({ emitEvent: false });
+          }
           this.toast('Rascunho reenviado com sucesso!', 'success');
         },
         error: async (error) => {
@@ -794,7 +817,14 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
           const firstAnesthesiologistId = surgeryData.firstAnesthesiologistId;
 
           this.isReadOnlyRecord = !!firstAnesthesiologistId && String(firstAnesthesiologistId) !== String(this.loggedUser?.id);
-          this.canEdit = !this.isReadOnlyRecord;
+
+          // Salvamento definitivo já ocorreu (Status = Concluído no backend): a ficha vira
+          // somente leitura, independentemente de quem está logado.
+          this.fichaFinalizada = surgeryData.status === SurgeryStatusEnum.Concluido;
+          this.fichaFinalizadaEm = surgeryData.signatureDate ?? surgeryData.lastUpdate ?? null;
+          this.fichaFinalizadaPor = surgeryData.firstAnesthesiologistName ?? this.expectedSignatureName ?? null;
+
+          this.canEdit = !this.isReadOnlyRecord && !this.fichaFinalizada;
 
           const draft = this.anesthesiaService.getDraft(this.cirurgiaId!);
           this.anesthesiaService.getLatestByPatient(this.cirurgiaId!, patientId).subscribe({
@@ -822,8 +852,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
                 const procedimentosFromSurgery = this.buildProcedimentosFromSurgery();
                 this.hydrateProcedimentos(procedimentosFromSurgery);
-                this.form.get('dadosVitais.peso')?.patchValue(this.patient.weightKg);
+                this.form.get('dadosVitais.peso')?.patchValue(this.pesoFromPreAnestesicaOuAghu());
               }
+
+              if (this.fichaFinalizada)
+                this.form.disable({ emitEvent: false });
+
               this.isLoading = false;
               resolve();
             },
@@ -839,6 +873,31 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         }
       });
     });
+  }
+
+  /**
+   * O peso corrigido pelo médico na Ficha Pré-Anestésica prevalece sobre o valor original do
+   * AGHU (ex.: AGHU manda 80kg, médico corrige para 85kg na pré-anestésica — a ficha anestésica
+   * deve carregar 85kg). Só cai para o valor do AGHU se não houver pré-anestésica preenchida.
+   *
+   * Obs.: o mesmo princípio não foi aplicado ao campo "cirurgia/procedimento" porque a
+   * pré-anestésica guarda o nome do procedimento como texto livre, enquanto a ficha anestésica
+   * referencia o procedimento por ID vindo do catálogo sincronizado do AGHU — não há uma
+   * correspondência segura entre os dois para reconciliar automaticamente sem risco de
+   * selecionar o procedimento errado.
+   */
+  private pesoFromPreAnestesicaOuAghu(): number | string {
+    try {
+      const raw = localStorage.getItem(`preAnesthesiaData_${this.cirurgiaId}`);
+      const preData = raw ? JSON.parse(raw) : null;
+      const pesoPreAnestesica = preData?.anthropometry?.weightKg;
+      if (pesoPreAnestesica !== null && pesoPreAnestesica !== undefined && pesoPreAnestesica !== '') {
+        return pesoPreAnestesica;
+      }
+    } catch (error) {
+      console.warn('Não foi possível ler o peso da ficha pré-anestésica no storage:', error);
+    }
+    return this.patient?.weightKg ?? this.patient?.weight ?? '';
   }
 
   private formatDate(dateStr: string): string {
@@ -876,7 +935,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.setupConditionalLogic();
 
     if (this.patient) {
-      this.form.get('dadosVitais.peso')?.patchValue(this.patient.weight);
+      this.form.get('dadosVitais.peso')?.patchValue(this.pesoFromPreAnestesicaOuAghu());
     }
 
     if (this.cirurgiaId) {
@@ -929,6 +988,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
     this.signatureAgreed = false;
     this.signatureTypedName = '';
+    this.signaturePassword = '';
     this.signatureError = '';
     this.isSignModalOpen = true;
   }
@@ -941,6 +1001,20 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     return (this.loggedUser?.name || this.loggedUser?.fullName || '').trim();
   }
 
+  /**
+   * Clique em "Enviar": enquanto o MONITORAMENTO ainda está em andamento, é um salvamento
+   * normal (sem pedir nome/senha, ficha continua editável). Só quando o monitoramento já foi
+   * finalizado (consultado no backend, não em variável local) é que abrimos o modal de
+   * confirmação — esse será o salvamento definitivo da ficha.
+   */
+  onEnviarClick() {
+    if (this.monitoringFinalizado) {
+      this.openSignModal();
+    } else {
+      this.executarSalvamento(false);
+    }
+  }
+
   get headerActionButtons(): HeaderActionButton[] {
     const disabled = this.isSaving || this.isCancelled || !this.canEdit;
     return [
@@ -951,7 +1025,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         ariaLabel: 'Salvar',
         label: 'Enviar',
         disabled,
-        action: () => this.openSignModal()
+        action: () => this.onEnviarClick()
       },
       {
         id: 'ir-para-cirurgia',
@@ -982,14 +1056,24 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       this.signatureError = `O nome digitado não confere com o do profissional logado (${expected}).`;
       return;
     }
+    if (!this.signaturePassword.trim()) {
+      this.signatureError = 'Digite sua senha para confirmar.';
+      return;
+    }
 
     this.form.get('assinaturas.primeiroAnestesista')?.setValue(typed);
     this.form.get('assinaturas.dataAssinatura')?.setValue(new Date().toISOString().split('T')[0]);
     this.isSignModalOpen = false;
-    this.executarSalvamento();
+    this.executarSalvamento(true);
   }
 
-  private executarSalvamento() {
+  /**
+   * @param finalize Quando true, este é o salvamento DEFINITIVO da ficha (só deve ser chamado
+   * depois da confirmação de nome/senha, com o monitoramento já finalizado). O backend só
+   * efetivamente marca a ficha como concluída/somente-leitura se o monitoramento já estiver
+   * FINALIZADO — o front nunca decide isso sozinho.
+   */
+  private executarSalvamento(finalize: boolean) {
     this.isSaving = true;
     const record = this.buildPayload();
 
@@ -998,6 +1082,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       patientId: record.pacienteId ? String(record.pacienteId) : this.patientId ? String(this.patientId) : null,
       cirurgiaId: this.cirurgiaId ? String(this.cirurgiaId) : null,
       surgeryId: this.selectedSurgery?.id ? String(this.selectedSurgery.id) : null,
+      finalize,
       firstAnesthesiologistId: this.loggedUser?.id ? String(this.loggedUser.id) : record.assinaturas.primeiroAnestesista,
       secondAnesthesiologistId: record.assinaturas.segundoAnestesista,
       assinaturas: {
@@ -1011,7 +1096,17 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       next: async () => {
         this.anesthesiaService.clearDraft(this.cirurgiaId!);
         this.isSaving = false;
-        this.toast('Ficha Anestésica assinada e salva com sucesso!', 'success');
+
+        if (finalize) {
+          this.fichaFinalizada = true;
+          this.canEdit = false;
+          this.fichaFinalizadaEm = new Date().toISOString();
+          this.fichaFinalizadaPor = this.signatureTypedName || this.expectedSignatureName;
+          this.form.disable({ emitEvent: false });
+          this.toast('Ficha Anestésica assinada e salva com sucesso!', 'success');
+        } else {
+          this.toast('Ficha Anestésica salva com sucesso!', 'success');
+        }
       },
       error: async (error) => {
         this.isSaving = false;
@@ -1019,11 +1114,18 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         this.persistDraft({
           ...this.form.value,
           antibioticsList: this.antibioticsList,
+          finalize,
+          _isErrorDraft: true,
           _error: error?.message || 'Erro ao salvar ficha',
           _timestamp: new Date().toISOString()
         });
 
-        this.toast('Não foi possível enviar a ficha para o servidor nesse momento. Um rascunho foi salvo para tentativa de reenvio.', 'warning');
+        this.toast(
+          finalize
+            ? 'Não foi possível enviar a ficha para o servidor nesse momento. Um rascunho foi salvo para tentativa de reenvio.'
+            : 'Não foi possível salvar no servidor nesse momento. Um rascunho foi salvo localmente.',
+          'warning'
+        );
       }
     });
   }

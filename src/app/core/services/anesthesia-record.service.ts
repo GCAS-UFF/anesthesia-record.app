@@ -635,10 +635,16 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     };
   }
 
-
   submitMonitoringRecord(app: any, surgeryId: number): Observable<any> {
-    const payload = this.buildMonitoringRecordPayload(app, surgeryId);
-    return this.api.post('MonitoringRecord', payload);
+    const payload = this.buildMonitoringRecordPayload(app, surgeryId);   
+    return this.api.patch(`MonitoringRecord/${surgeryId}`, payload);
+  }
+
+  getMonitoringStatus(surgeryId: number): Observable<SurgeryStatusEnum | null> {
+    return this.api.get<any>(`MonitoringRecord/${surgeryId}`).pipe(
+      map((res: any) => (res?.data?.status ?? res?.status ?? null)),
+      catchError(() => of(null))
+    );
   }
 
   private mapToApiFormat(app: any, surgeryId: number): any {
@@ -891,6 +897,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       id: surgeryId,
       anesthesiaRecordId: surgeryId,
       surgeryId: surgeryId,
+      finalize: !!app.finalize,
       patientId: app.patientId || null,
       recordDate: app.recordDate || todayDate,
       surgeryDate: app.surgeryDate || todayDate,
