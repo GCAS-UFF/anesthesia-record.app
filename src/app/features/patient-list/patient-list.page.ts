@@ -50,6 +50,7 @@ export class PatientListPage implements OnInit {
   readonly SurgeryStatusEnum = SurgeryStatusEnum;
   currentUserId: number | null = null;
   canAssumePatient = true;
+  isAdminUser = false;
  
   private userSubscription?: any;
 
@@ -82,6 +83,7 @@ export class PatientListPage implements OnInit {
   }
 
   ngOnInit() {
+    this.isAdminUser = this.authService.isAdmin();
     this.ensureMasterData();
   }
 
@@ -145,7 +147,7 @@ export class PatientListPage implements OnInit {
           this.totalItems = resultData.totalItems || 0;
           this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1;
           this.flattenData(resultData);
-          this.canAssumePatient = resultData.canAssumePatient;
+          this.canAssumePatient = this.isAdminUser ? false : resultData.canAssumePatient;
           this.isRefreshing = false;
           this.isLoading = false;
         },
@@ -256,6 +258,10 @@ export class PatientListPage implements OnInit {
   }
 
   async onAssume(surgeryId: string | number, patientId: string, isAlreadyAssigned: boolean = false) {
+    if (this.isAdminUser) {
+      return;
+    }
+
     if (isAlreadyAssigned) {
       this.onOpenMonitorizacao(surgeryId);
       return;
@@ -331,15 +337,17 @@ export class PatientListPage implements OnInit {
 
   async abandonPatient(surgeryId: string | number, patientId: string) {
     const alert = await this.alertController.create({
-      header: 'Deixar Paciente',
-      message: 'Deseja realmente deixar esse paciente?',
+      header: this.isAdminUser ? 'Remover Médico' : 'Deixar Paciente',
+      message: this.isAdminUser
+        ? 'Deseja realmente remover o médico responsável por este paciente?'
+        : 'Deseja realmente deixar esse paciente?',
       buttons: [
         { text: 'Cancelar', role: 'cancel', cssClass: 'secondary' },
         {
           text: 'Confirmar',
           handler: async () => {
             const loading = await this.loadingController.create({
-              message: 'Deixando paciente...',
+              message: this.isAdminUser ? 'Removendo médico...' : 'Deixando paciente...',
               duration: 1000,
               spinner: 'circular',
             });
@@ -349,7 +357,7 @@ export class PatientListPage implements OnInit {
               next: async () => {
                 await loading.dismiss();
                 const toast = await this.toastController.create({
-                  message: 'Paciente liberado com sucesso!',
+                  message: this.isAdminUser ? 'Médico removido com sucesso!' : 'Paciente liberado com sucesso!',
                   duration: 2000,
                   color: 'success',
                   icon: 'checkmark-circle',
@@ -360,7 +368,9 @@ export class PatientListPage implements OnInit {
               error: async () => {
                 await loading.dismiss();
                 const toast = await this.toastController.create({
-                  message: 'Falha de comunicação com a API. Não foi possível liberar o paciente.',
+                  message: this.isAdminUser
+                    ? 'Falha de comunicação com a API. Não foi possível remover o médico.'
+                    : 'Falha de comunicação com a API. Não foi possível liberar o paciente.',
                   duration: 3000,
                   color: 'danger',
                 });

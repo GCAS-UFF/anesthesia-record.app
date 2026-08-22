@@ -12,6 +12,7 @@ interface UserData {
   id: number;
   sector: string;
   role: string;
+  isAdmin: boolean;
 }
 
 interface AuthResponse {
@@ -24,8 +25,9 @@ interface AuthResponse {
       login: string;
       sector: string;
       role: string;
-    };   
-  }; 
+      isAdmin?: boolean;
+    };
+  };
 }
 
 interface StoredSession {
@@ -36,6 +38,7 @@ interface StoredSession {
   name: string;
   userSector: string;
   userRole: string;
+  isAdmin: boolean;
 }
 
 @Injectable({
@@ -50,6 +53,7 @@ export class AuthService {
     NAME: 'name',
     USER_SECTOR: 'userSector',
     USER_ROLE: 'userRole',
+    IS_ADMIN: 'isAdmin',
     LAST_SAVED_CRM: 'lastSavedCRM',
     REMEMBER_ME: 'rememberMePreference',
     CACHE_PROFESSIONALS: 'cache_professionals',
@@ -107,6 +111,10 @@ export class AuthService {
     return this.loggedInUser;
   }
 
+  isAdmin(): boolean {
+    return this.getUser()?.isAdmin === true;
+  }
+
   getCurrentUserId(): number {
     if (this.loggedInUser?.id) {
       return this.loggedInUser.id;
@@ -140,7 +148,8 @@ export class AuthService {
       userId: userData.id,
       name: userData.name,
       userSector: userData.sector,
-      userRole: userData.role
+      userRole: userData.role,
+      isAdmin: userData.isAdmin
     };
 
     Object.entries(session).forEach(([key, value]) => {
@@ -163,7 +172,8 @@ export class AuthService {
       name: response.data?.usuario?.nome || '',
       id: response.data?.usuario?.id || 0,
       sector: response.data?.usuario?.sector || '',
-      role: response.data?.usuario?.role || ''
+      role: response.data?.usuario?.role || '',
+      isAdmin: response.data?.usuario?.isAdmin === true
     };
   }
 
@@ -206,12 +216,20 @@ export class AuthService {
       return localStorage.getItem(key) || '';
     };
 
+    const getIsAdmin = (): boolean => {
+      if (storageType === 'sessionStorage') {
+        return this.storageService.get<boolean>(this.SESSION_KEYS.IS_ADMIN) === true;
+      }
+      return localStorage.getItem(this.SESSION_KEYS.IS_ADMIN) === 'true';
+    };
+
     return {
       username: username as string,
       id: getId(),
       name: getString(this.SESSION_KEYS.NAME) || 'Usuário',
       role: getString(this.SESSION_KEYS.USER_ROLE) || 'Médico',
-      sector: getString(this.SESSION_KEYS.USER_SECTOR) || 'Setor Desconhecido'
+      sector: getString(this.SESSION_KEYS.USER_SECTOR) || 'Setor Desconhecido',
+      isAdmin: getIsAdmin()
     };
   }
 }

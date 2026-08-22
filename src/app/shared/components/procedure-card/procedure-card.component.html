@@ -6,8 +6,8 @@
       class="slide-btn slide-btn-delete"
       (click)="onAbandon()"
     >
-      <ion-icon name="exit-outline"></ion-icon>
-      <span>Abandonar Cirurgia</span>
+      <ion-icon [name]="abandonButtonIcon"></ion-icon>
+      <span>{{ abandonButtonLabel }}</span>
     </button>
   </div>
 
@@ -122,6 +122,7 @@
         </ng-container>
 
         <ng-template #activeActions>
+          <ng-container *ngIf="!isAdmin">
           <button
             class="btn btn-pre-anesthesia ion-activatable ripple-parent"
             [class.btn-pre-anesthesia-done]="isPreAnesthesiaRecordDone"
@@ -177,6 +178,7 @@
             Ir para Cirurgia
             <ion-ripple-effect></ion-ripple-effect>
           </button>
+          </ng-container>
         </ng-template>
       </div>
     </div>

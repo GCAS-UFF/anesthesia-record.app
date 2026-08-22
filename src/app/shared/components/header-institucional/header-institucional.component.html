@@ -126,7 +126,7 @@
 
   <nav class="drawer-nav">
     <button
-      *ngFor="let item of navItems"
+      *ngFor="let item of visibleNavItems"
       class="nav-item"
       [class.active]="item.active"
       (click)="navigate(item)"

@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { notAdminGuard } from './core/guards/not-admin.guard';
 
 export const routes: Routes = [
   {
@@ -24,6 +25,7 @@ export const routes: Routes = [
   },  
   {
     path: 'meus-pacientes/:id',
+    canActivate: [notAdminGuard],
     loadComponent: () => import('./features/my-patient/my-patients.page').then(m => m.MyPatientsPage)
   },
   {

@@ -113,6 +113,7 @@
           [isCurrentAnesthesiologist]="isUserAssignedToThisPatient(p)"
           [isPreAnesthesiaRecordDone]="p.isPreAnesthesiaRecordDone"
           [canAssumePatient]="canAssumePatient"
+          [isAdmin]="isAdminUser"
           (assume)="onAssume(p.id, p.patientId, $event)"
           (openFicha)="onOpenFicha(p.id, p.patientId)"
           (viewRegistro)="onViewRegistro(p.id)"

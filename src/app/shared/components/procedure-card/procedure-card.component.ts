@@ -58,6 +58,7 @@ export class ProcedureCardComponent {
   @Input() isPreAnesthesiaRecordDone = false;
   @Input() canAssumePatient = true;
   @Input() canAbandon = true;
+  @Input() isAdmin = false;
 
   @Output() openPreAnesthesia = new EventEmitter<void>();
   @Output() assume = new EventEmitter<boolean>();
@@ -125,6 +126,10 @@ export class ProcedureCardComponent {
   }
 
   get canAssumeThisPatient(): boolean {
+    if (this.isAdmin) {
+      return false;
+    }
+
     if (!this.canAssumePatient) {
       return false;
     }
@@ -142,6 +147,10 @@ export class ProcedureCardComponent {
 
 
   get shouldShowAssumeButton(): boolean {
+    if (this.isAdmin) {
+      return false;
+    }
+
     if (!this.canAssumePatient) {
       return false;
     }
@@ -171,15 +180,20 @@ export class ProcedureCardComponent {
   }
  
   get shouldShowAbandonButton(): boolean {
+    if (this.isFinished) {
+      return false;
+    }
+
+    if (this.isAdmin) {
+      // Admin remove o médico atualmente associado, independente de quem seja
+      return !!this.anesthesiologist && this.anesthesiologist.trim() !== '';
+    }
+
     if (!this.isCurrentAnesthesiologist) {
       return false;
     }
 
     if (this.canAssumePatient) {
-      return false;
-    }
-
-    if (this.isFinished) {
       return false;
     }
 
@@ -198,6 +212,14 @@ export class ProcedureCardComponent {
     return true;
   }
 
+  get abandonButtonLabel(): string {
+    return this.isAdmin ? 'Remover Médico' : 'Abandonar Cirurgia';
+  }
+
+  get abandonButtonIcon(): string {
+    return this.isAdmin ? 'person-remove-outline' : 'exit-outline';
+  }
+
   get canOpenAnestheticRecord(): boolean {
     if (!this.isPreAnesthesiaRecordDone) {
       return false;
@@ -211,6 +233,10 @@ export class ProcedureCardComponent {
   }
 
   get shouldShowGoToSurgeryButton(): boolean {
+    if (this.isAdmin) {
+      return false;
+    }
+
     if (this.canAssumePatient) {
       return false;
     }

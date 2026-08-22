@@ -31,6 +31,7 @@ interface NavItem {
   route?: string;
   active?: boolean;
   admin?: boolean;
+  hideForAdmin?: boolean;
 }
 
 @Component({
@@ -56,6 +57,7 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   @Output() openAnestesica = new EventEmitter<void>();
 
   doctorId = 0;
+  isAdmin = false;
   private isLoggingOut = false;
   private userSubscription = new Subscription();
 
@@ -72,9 +74,15 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
     {
       icon: 'person-outline',
       label: 'Meus Pacientes',
-      route: '/meus-pacientes'
+      route: '/meus-pacientes',
+      hideForAdmin: true
     },
     // Admin
+      {
+      icon: 'cloud-outline',
+      label: 'Acompanhamento de Integrações',
+      route: '/integracoes/fichas'
+    },
     {
       icon: 'layers-outline',
       label: 'Manutenção de Itens (Admin)',
@@ -86,13 +94,7 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
       label: 'Obter dados AGHU (Admin)',
       route: '/admin/integracoes',
       admin: true
-    },
-    {
-      icon: 'cloud-outline',
-      label: 'Acompanhamento de Integrações',
-      route: '/integracoes/fichas',
-      admin: true
-    },
+    },  
     {
       icon: 'analytics-outline',
       label: 'Relatórios (Admin)',
@@ -163,7 +165,8 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   private updateUserData(user: any): void {
     this.doctorId = user.id;
     this.doctorName = user.name || user.username || 'Erro';
-    this.doctorRole = user.role || 'Médico';
+    this.isAdmin = user.isAdmin === true;
+    this.doctorRole = this.isAdmin ? 'Administrador' : (user.role || 'Médico');
     this.doctorInitials = this.getInitials(user.username || user.name || '');
   }
 
@@ -171,10 +174,20 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
     const name = sessionStorage.getItem('name') || localStorage.getItem('name');
     const role = sessionStorage.getItem('userRole') || localStorage.getItem('userRole');
     const username = sessionStorage.getItem('userCRM') || localStorage.getItem('userCRM');
+    const isAdmin = sessionStorage.getItem('isAdmin') || localStorage.getItem('isAdmin');
 
+    if (isAdmin) this.isAdmin = JSON.parse(isAdmin) === true;
     if (name) this.doctorName = name;
-    if (role) this.doctorRole = role;
     if (username) this.doctorInitials = this.getInitials(username);
+    this.doctorRole = this.isAdmin ? 'Administrador' : (role || this.doctorRole);
+  }
+
+  get visibleNavItems(): NavItem[] {
+    return this.navItems.filter(item => {
+      if (item.hideForAdmin && this.isAdmin) return false;
+      if (item.admin && !this.isAdmin) return false;
+      return true;
+    });
   }
 
   openMenu(): void {
