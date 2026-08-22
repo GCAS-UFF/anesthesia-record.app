@@ -116,7 +116,7 @@
           [isAdmin]="isAdminUser"
           (assume)="onAssume(p.id, p.patientId, $event)"
           (openFicha)="onOpenFicha(p.id, p.patientId)"
-          (viewRegistro)="onViewRegistro(p.id)"
+          (viewRegistro)="onViewRegistro(p.id, p.patientId)"
           (abandonSurgery)="abandonPatient(p.id, p.patientId)"
           (openPreAnesthesia)="onOpenPreAnesthesia(p.id, p.patientId)"
         ></app-procedure-card>

@@ -322,8 +322,8 @@ export class PatientListPage implements OnInit {
     this.router.navigate(['/ficha-anestesica', id, patientId]);
   }
 
-  onViewRegistro(id: string | number) {
-    this.router.navigate(['/registro-cirurgia', id]);
+  onViewRegistro(id: string | number, patientId: string) {
+    this.router.navigate(['/ficha-anestesica', id, patientId], { queryParams: { readOnly: true } });
   }
 
   handleRefresh() {

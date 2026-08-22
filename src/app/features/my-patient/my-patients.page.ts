@@ -300,8 +300,8 @@ export class MyPatientsPage implements OnInit {
     this.openCardId = cardId;
   }
 
-  onViewRegistro(id: string | number) {
-    this.router.navigate(['/registro-cirurgia', id]);
+  onViewRegistro(id: string | number, patientId: string) {
+    this.router.navigate(['/ficha-anestesica', id, patientId], { queryParams: { readOnly: true } });
   }
 
   async abandonPatient(surgeryId: string | number, patientId: string) {

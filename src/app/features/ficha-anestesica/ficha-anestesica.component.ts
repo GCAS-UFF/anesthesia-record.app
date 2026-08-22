@@ -87,6 +87,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   canEdit = true;
   loggedUser: any;
   isReadOnlyRecord = false;
+  /** Acesso via "Ver Registros" (cirurgia finalizada/cancelada): força somente leitura total. */
+  forcedReadOnly = false;
 
 
   medicationsLista: { id: string; name: string; codigo?: string }[] = [];
@@ -236,6 +238,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.loggedUser = this.authService.getUser();
     this.cirurgiaId = this.route.snapshot.paramMap.get('id');
     this.patientId = this.route.snapshot.paramMap.get('patientId');
+    this.forcedReadOnly = this.route.snapshot.queryParamMap.get('readOnly') === 'true';
     this.loadDropdownLists();
 
     if (this.cirurgiaId && this.patientId) {
@@ -816,7 +819,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
           const firstAnesthesiologistId = surgeryData.firstAnesthesiologistId;
 
-          this.isReadOnlyRecord = !!firstAnesthesiologistId && String(firstAnesthesiologistId) !== String(this.loggedUser?.id);
+          this.isReadOnlyRecord = this.forcedReadOnly ||
+            (!!firstAnesthesiologistId && String(firstAnesthesiologistId) !== String(this.loggedUser?.id));
 
           // Salvamento definitivo já ocorreu (Status = Concluído no backend): a ficha vira
           // somente leitura, independentemente de quem está logado.
@@ -855,7 +859,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
                 this.form.get('dadosVitais.peso')?.patchValue(this.pesoFromPreAnestesicaOuAghu());
               }
 
-              if (this.fichaFinalizada)
+              if (this.fichaFinalizada || this.forcedReadOnly)
                 this.form.disable({ emitEvent: false });
 
               this.isLoading = false;
@@ -1016,27 +1020,33 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   get headerActionButtons(): HeaderActionButton[] {
-    const disabled = this.isSaving || this.isCancelled || !this.canEdit;
-    return [
-      {
+    const buttons: HeaderActionButton[] = [];
+
+    if (this.canEdit) {
+      buttons.push({
         id: 'salvar-ficha',
         icon: 'shield-checkmark-outline',
         color: 'primary',
         ariaLabel: 'Salvar',
         label: 'Enviar',
-        disabled,
+        disabled: this.isSaving || this.isCancelled,
         action: () => this.onEnviarClick()
-      },
-      {
-        id: 'ir-para-cirurgia',
-        icon: 'fitness-outline',
-        color: 'warning',
-        ariaLabel: 'Ir para Cirurgia',
-        label: 'Cirurgia',
-        disabled,
-        action: () => this.irParaCirurgia()
-      }
-    ];
+      });
+    }
+
+    // "Ir para Cirurgia" continua disponível mesmo com a ficha somente leitura
+    // (ficha finalizada/cancelada ou acesso via "Ver Registros").
+    buttons.push({
+      id: 'ir-para-cirurgia',
+      icon: 'fitness-outline',
+      color: 'warning',
+      ariaLabel: 'Ir para Cirurgia',
+      label: 'Cirurgia',
+      disabled: this.isSaving,
+      action: () => this.irParaCirurgia()
+    });
+
+    return buttons;
   }
 
   confirmarESalvar() {
@@ -1286,10 +1296,14 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   addProcedimento(): void {
+    if (!this.canEdit) return;
+
     this.procedimentosArray.push(this.createProcedimentoRow());
   }
 
   removeProcedimento(index: number): void {
+    if (!this.canEdit) return;
+
     if (this.procedimentosArray.length <= 1) {
       this.procedimentosArray.at(0).reset({ procedimentoId: '', hora: '', principal: false });
       return;
@@ -1302,6 +1316,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   setPrincipal(index: number, checked: boolean): void {
+    if (!this.canEdit) return;
+
     this.procedimentosArray.controls.forEach((ctrl, i) => {
       ctrl.get('principal')?.setValue(i === index ? checked : false, { emitEvent: false });
     });
@@ -1424,6 +1440,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   ddlPos: { top: number; left: number; width: number } | null = null;
 
   toggleDdl(key: string, ev?: Event): void {
+    if (!this.canEdit) return;
+
     const willOpen = this.openDdl !== key;
     this.openDdl = willOpen ? key : null;
 
@@ -1484,6 +1502,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   selectDdlOption(control: AbstractControl | null, key: string, id: string): void {
+    if (!this.canEdit) return;
+
     console.log(`Selecionando procedimento: ID=${id}, Key=${key}`);
     control?.setValue(id);
     control?.markAsDirty();

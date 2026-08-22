@@ -139,6 +139,7 @@
                   <button
                     type="button"
                     class="ddl-trigger text-input"
+                    [disabled]="!canEdit"
                     (click)="toggleDdl('preFarmaco', $event)"
                   >
                     <span
@@ -333,6 +334,7 @@
                   <button
                     type="button"
                     class="ddl-trigger text-input"
+                    [disabled]="!canEdit"
                     (click)="toggleDdl('atb-new', $event)"
                   >
                     <span
@@ -457,6 +459,7 @@
               <button
                 type="button"
                 class="ddl-trigger text-input"
+                [disabled]="!canEdit"
                 (click)="toggleDdl('cirurgiao', $event)"
               >
                 <span
@@ -526,6 +529,7 @@
               <button
                 type="button"
                 class="ddl-trigger text-input"
+                [disabled]="!canEdit"
                 (click)="toggleDdl('assistente', $event)"
               >
                 <span
@@ -720,6 +724,7 @@
                 <button
                   type="button"
                   class="ddl-trigger text-input"
+                  [disabled]="!canEdit"
                   (click)="toggleDdl('proc-' + i, $event)"
                 >
                   <span
@@ -796,6 +801,7 @@
                 <input
                   type="checkbox"
                   [checked]="row.get('principal')?.value"
+                  [disabled]="!canEdit"
                   (change)="setPrincipal(i, $any($event.target).checked)"
                 />
                 <span>Principal</span>
@@ -804,6 +810,7 @@
             <button
               type="button"
               class="proc-remove-btn"
+              [disabled]="!canEdit"
               (click)="removeProcedimento(i)"
               aria-label="Remover procedimento"
             >
@@ -813,6 +820,7 @@
           <button
             type="button"
             class="btn-add-proc"
+            [disabled]="!canEdit"
             (click)="addProcedimento()"
           >
             <ion-icon name="add-outline"></ion-icon>
@@ -1123,6 +1131,7 @@
               <button
                 type="button"
                 class="ddl-trigger text-input"
+                [disabled]="!canEdit"
                 (click)="toggleDdl('segundoAnestesista', $event)"
               >
                 <span
