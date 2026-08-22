@@ -51,7 +51,7 @@
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 18px;
 }
 
 .doctor-chip-wrapper {
@@ -388,37 +388,38 @@
   }
 }
 
-.header-pill-btn {
+.header-icon-btn {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px 8px 12px;
-  height: 40px;
-  border: 1px solid #e2e8f0;
-  border-radius: 999px;
-  background: #fff;
-  color: #2563eb;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: -0.2px;
+  justify-content: center;
+  gap: 3px;
+  width: auto;
+  min-width: 44px;
+  padding: 0;
+  margin: 0;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
   cursor: pointer;
   transition:
     transform 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease,
     opacity 0.2s ease,
     visibility 0.2s ease;
 
-  ion-icon {
-    font-size: 18px;
+  &:active {
+    transform: scale(0.96);
   }
 
-  &:hover {
-    background: #f8fafc;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
   }
-  &:active {
-    transform: scale(0.97);
+
+  &:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
   }
 
   &.is-hidden {
@@ -426,35 +427,115 @@
     visibility: hidden;
     pointer-events: none;
   }
+}
 
-  &.header-pre-btn {
+.header-icon-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  ion-icon {
+    font-size: 18px;
+  }
+
+  &--primary {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #fff;
+  }
+
+  &--success {
+    background: #16a34a;
+    border-color: #16a34a;
+    color: #fff;
+  }
+
+  &--warning {
+    background: #f59e0b;
+    border-color: #f59e0b;
+    color: #fff;
+  }
+
+  &--danger {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: #fff;
+  }
+
+  &--muted {
+    background: #eef1f6;
+    border-color: #cbd5e1;
+    color: #334155;
+  }
+
+  &--pre {
     background: #e0f2fe;
+    border-color: #e0f2fe;
     color: #0284c7;
-    ion-icon { color: #0284c7; }
-    &:hover { background: #bae6fd; }
   }
 
-  &.header-anes-btn {
+  &--anes {
     background: #ecfdf5;
+    border-color: #ecfdf5;
     color: #059669;
-    ion-icon { color: #059669; }
-    &:hover { background: #d1fae5; }
   }
 }
 
-.header-pre-btn {
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-  border-color: #bfdbfe;
-  color: #1d4ed8;
-
-  &:hover {
-    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+.header-icon-btn:hover:not(:disabled) {
+  .header-icon-btn-icon--primary {
+    background: #2563eb;
+    border-color: #2563eb;
+  }
+  .header-icon-btn-icon--success {
+    background: #15803d;
+    border-color: #15803d;
+  }
+  .header-icon-btn-icon--pre {
+    background: #bae6fd;
+    border-color: #bae6fd;
+  }
+  .header-icon-btn-icon--anes {
+    background: #d1fae5;
+    border-color: #d1fae5;
+  }
+  .header-icon-btn-icon--warning {
+    background: #d97706;
+    border-color: #d97706;
+  }
+  .header-icon-btn-icon--danger {
+    background: #dc2626;
+    border-color: #dc2626;
+  }
+  .header-icon-btn-icon--muted {
+    background: #e2e8f0;
+    border-color: #94a3b8;
   }
 }
 
-@media (max-width: 640px) {
-  .header-pill-btn {
-    padding: 8px 12px 8px 10px;
-    font-size: 12px;
+.header-icon-btn-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  line-height: 1;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .header-right {
+    gap: 6px;
+  }
+  .header-icon-btn-label {
+    display: none;
   }
 }

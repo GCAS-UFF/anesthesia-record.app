@@ -759,11 +759,12 @@
 
 .dor-section-container {
   margin-top: 22px;
-  background: #fef2f2;
+  background: var(--fa-soft);
   border-radius: var(--fa-radius);
   padding: 22px;
-  border: 1px solid #fee2e2;
+  border: 1px solid var(--fa-line);
   &.dor-invalid {
+    background: #fef2f2;
     border-color: #fca5a5;
     box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.08);
   }

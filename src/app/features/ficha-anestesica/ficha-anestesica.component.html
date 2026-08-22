@@ -3,6 +3,8 @@
   <app-header-institucional
     [showBackButton]="true"
     [showPreAnestesicaButton]="true"
+    [preAnestesicaButtonLabel]="'Pre Anest.'"
+    [actionButtons]="headerActionButtons"
     (openPreAnestesica)="openPreAnestesica()"
   >
   </app-header-institucional>
@@ -1207,25 +1209,6 @@
 
       <div class="form-actions">
         <ion-button
-          color="primary"
-          type="submit"
-          class="btn-primary-pill"
-          [disabled]="isSaving || isCancelled || !canEdit"
-        >
-          <ion-spinner
-            name="crescent"
-            *ngIf="isSaving"
-            slot="start"
-          ></ion-spinner>
-          <ion-icon
-            name="shield-checkmark-outline"
-            *ngIf="!isSaving"
-            slot="start"
-          ></ion-icon>
-          {{ isSaving ? "Salvando..." : "Salvar" }}
-        </ion-button>
-
-        <ion-button
           fill="outline"
           (click)="confirmarLimpeza()"
           class="btn-secondary-pill"
@@ -1242,16 +1225,6 @@
         >
           <ion-icon name="print-outline" slot="start"></ion-icon>
           Imprimir
-        </ion-button>
-
-        <ion-button
-          color="warning"
-          (click)="irParaCirurgia()"
-          class="btn-finalizar-pill"
-          [disabled]="isSaving || isCancelled || !canEdit"
-        >
-          <ion-icon name="fitness-outline" slot="start"></ion-icon>
-          Ir para Cirurgia
         </ion-button>
       </div>
 

@@ -6,7 +6,7 @@ import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   saveOutline, cloudUploadOutline, cloudDoneOutline, cloudOfflineOutline,
-  powerOutline, listOutline, refreshOutline
+  powerOutline, listOutline, refreshOutline, flagOutline
 } from 'ionicons/icons';
 
 @Component({

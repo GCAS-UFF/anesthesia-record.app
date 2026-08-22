@@ -1,5 +1,5 @@
 <app-status-bar></app-status-bar>
-<app-header-institucional [showBackButton]="true" (backClick)="goBack()"></app-header-institucional>
+<app-header-institucional [showBackButton]="true" [actionButtons]="headerActionButtons"></app-header-institucional>
 
 <div class="pre-page" [formGroup]="form">
 
@@ -14,28 +14,13 @@
         <ion-icon name="cloud-done-outline"></ion-icon>
         Rascunho salvo {{ lastSavedAt | date:'HH:mm' }}
       </span>
-      <ion-button fill="clear" size="small" (click)="saveDraft()">
-        <ion-icon slot="start" name="save-outline"></ion-icon>
-        Salvar rascunho
-      </ion-button>
-      <ion-button class="btn-primary" (click)="salvar()" [disabled]="isSaving" *ngIf="!isFinalized">
-        <ion-spinner *ngIf="isSaving" name="dots" slot="start"></ion-spinner>
-        <ion-icon *ngIf="!isSaving" slot="start" name="save-outline"></ion-icon>
-        Finalizar avaliação
-      </ion-button>
-      <ion-button color="warning" (click)="irParaFichaAnestesica()" *ngIf="isFinalized">
-        <ion-icon slot="start" name="reader-outline"></ion-icon>
-        Ir para Ficha Anestésica
-      </ion-button>
+      <ion-spinner *ngIf="isSaving" name="dots"></ion-spinner>
     </div>
   </header>
 
   <div class="finalized-banner" *ngIf="isFinalized">
     <ion-icon name="lock-closed-outline"></ion-icon>
-    <span *ngIf="!hasChangesSinceFinalization">Esta avaliação pré-anestésica já foi finalizada.</span>
-    <span *ngIf="hasChangesSinceFinalization">
-      Você alterou uma avaliação já finalizada. As alterações estão salvas como rascunho e serão reenviadas ao clicar em <strong>Finalizar avaliação</strong> novamente.
-    </span>
+    <span>Esta avaliação pré-anestésica já foi finalizada e não pode mais ser editada.</span>
   </div>
 
   <div class="pre-layout">

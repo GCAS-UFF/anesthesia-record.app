@@ -15,32 +15,62 @@
       <ion-icon name="arrow-back-outline"></ion-icon>
     </button>
 
+  </div>
+
+  <div class="header-right">
     <button
       type="button"
-      class="header-pill-btn header-pre-btn"
+      class="header-icon-btn"
       [class.is-hidden]="menuOpen"
       *ngIf="showPreAnestesicaButton"
       (click)="openPreAnestesica.emit()"
       [attr.aria-label]="preAnestesicaButtonLabel"
+      [title]="preAnestesicaButtonLabel"
     >
-      <ion-icon name="document-text-outline"></ion-icon>
-      {{ preAnestesicaButtonLabel }}
+      <span class="header-icon-btn-icon header-icon-btn-icon--pre">
+        <ion-icon name="document-text-outline"></ion-icon>
+      </span>
+      <span class="header-icon-btn-label" *ngIf="preAnestesicaButtonLabel">{{
+        preAnestesicaButtonLabel
+      }}</span>
     </button>
 
     <button
       type="button"
-      class="header-pill-btn header-anes-btn"
+      class="header-icon-btn"
       [class.is-hidden]="menuOpen"
       *ngIf="showAnestesicaButton"
       (click)="openAnestesica.emit()"
       [attr.aria-label]="anestesicaButtonLabel"
+      [title]="anestesicaButtonLabel"
     >
-      <ion-icon name="document-text-outline"></ion-icon>
-      {{ anestesicaButtonLabel }}
+      <span class="header-icon-btn-icon header-icon-btn-icon--anes">
+        <ion-icon name="document-text-outline"></ion-icon>
+      </span>
+      <span class="header-icon-btn-label" *ngIf="anestesicaButtonLabel">{{
+        anestesicaButtonLabel
+      }}</span>
     </button>
-  </div>
 
-  <div class="header-right">
+    <button
+      type="button"
+      *ngFor="let btn of actionButtons"
+      class="header-icon-btn"
+      [class.is-hidden]="menuOpen"
+      [disabled]="btn.disabled"
+      [attr.aria-label]="btn.ariaLabel"
+      [title]="btn.ariaLabel"
+      (click)="onActionButtonClick(btn)"
+    >
+      <span
+        class="header-icon-btn-icon"
+        [ngClass]="'header-icon-btn-icon--' + (btn.color || 'primary')"
+      >
+        <ion-icon [name]="btn.icon"></ion-icon>
+      </span>
+      <span class="header-icon-btn-label" *ngIf="btn.label">{{ btn.label }}</span>
+    </button>
+
     <div class="doctor-chip-wrapper">
       <div
         class="doctor-chip"

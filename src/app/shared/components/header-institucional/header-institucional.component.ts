@@ -23,6 +23,7 @@ import {
 } from 'ionicons/icons';
 import { Subscription } from 'rxjs';
 import { AuthService } from 'src/app/core/services/auth.service';
+import { HeaderActionButton } from './header-action-button.model';
 
 interface NavItem {
   icon: string;
@@ -46,9 +47,10 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   @Input() showBackButton = false;
   @Input() doctorInitials = 'Dr(a)';
   @Input() showPreAnestesicaButton = false;
-  @Input() preAnestesicaButtonLabel = 'Ficha Pré-Anestésica';
+  @Input() preAnestesicaButtonLabel = '';
   @Input() showAnestesicaButton = false;
-  @Input() anestesicaButtonLabel = 'Ficha Anestésica';
+  @Input() anestesicaButtonLabel = '';
+  @Input() actionButtons: HeaderActionButton[] = [];
 
   @Output() openPreAnestesica = new EventEmitter<void>();
   @Output() openAnestesica = new EventEmitter<void>();
@@ -60,8 +62,7 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   menuOpen = false;
   userMenuOpen = false;
 
-  navItems: NavItem[] = [
-    // Comum
+  navItems: NavItem[] = [    
     {
       icon: 'people-outline',
       label: 'Todos os Pacientes',
@@ -186,6 +187,11 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
 
   voltar(): void {
     this.location.back();
+  }
+
+  onActionButtonClick(btn: HeaderActionButton): void {
+    if (btn.disabled) return;
+    btn.action();
   }
 
   toggleUserMenu(): void {

@@ -1079,3 +1079,22 @@
     margin-top: 12px;
   }
 }
+
+.pre-scroll.is-locked {
+  .pre-section {
+    opacity: 0.75;
+  }
+
+  input,
+  textarea,
+  select,
+  .chip,
+  .chip--scale,
+  .mallampati-card,
+  .checkbox-tile,
+  .btn-add,
+  .btn-icon,
+  .pill {
+    cursor: not-allowed !important;
+  }
+}

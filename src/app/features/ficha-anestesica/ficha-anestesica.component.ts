@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { AlertController, ToastController, ModalController, IonContent, IonRefresherContent, IonRefresher } from '@ionic/angular/standalone';
-import { IonButton, IonIcon, IonCheckbox, IonSpinner, IonModal } from '@ionic/angular/standalone';
+import { IonButton, IonIcon, IonCheckbox, IonModal } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, ValidationErrors, Validators } from '@angular/forms';
 
@@ -32,6 +32,7 @@ import {
 
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
+import { HeaderActionButton } from '../../shared/components/header-institucional/header-action-button.model';
 import { PatientInfoCardComponent } from '../../shared/components/patient-info-card/patient-info-card.component';
 import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
 import { RadioGroupComponent } from '../../shared/components/radio-group/radio-group.component';
@@ -58,7 +59,6 @@ import { mapPreAnesthesiaToRecordData } from 'src/app/shared/models/pre-anesthes
     IonButton,
     IonIcon,
     IonCheckbox,
-    IonSpinner,
     IonModal,
     ReactiveFormsModule,
     FormsModule,
@@ -490,6 +490,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     aldGroup.get(flagKey)?.setValue(checked, { emitEvent: false });
     aldGroup.get(flagKey)?.markAsTouched();
     aldGroup.get(flagKey)?.markAsDirty();
+
+    if (!checked) {
+      aldGroup.get(valueKey)?.setValue('', { emitEvent: false });
+    }
+
     this.syncDorScaleValidator(flagKey, valueKey, min, max, checked);
     aldGroup.updateValueAndValidity({ emitEvent: false });
   }
@@ -934,6 +939,30 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   get expectedSignatureName(): string {
     return (this.loggedUser?.name || this.loggedUser?.fullName || '').trim();
+  }
+
+  get headerActionButtons(): HeaderActionButton[] {
+    const disabled = this.isSaving || this.isCancelled || !this.canEdit;
+    return [
+      {
+        id: 'salvar-ficha',
+        icon: 'shield-checkmark-outline',
+        color: 'primary',
+        ariaLabel: 'Salvar',
+        label: 'Enviar',
+        disabled,
+        action: () => this.openSignModal()
+      },
+      {
+        id: 'ir-para-cirurgia',
+        icon: 'fitness-outline',
+        color: 'warning',
+        ariaLabel: 'Ir para Cirurgia',
+        label: 'Cirurgia',
+        disabled,
+        action: () => this.irParaCirurgia()
+      }
+    ];
   }
 
   confirmarESalvar() {

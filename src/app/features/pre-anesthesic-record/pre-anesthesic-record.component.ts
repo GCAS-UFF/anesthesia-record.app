@@ -9,7 +9,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Subscription, interval } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
 import {
@@ -43,9 +43,11 @@ import {
   createOutline,
   closeCircleOutline,
   lockClosedOutline,
+  readerOutline,
 } from 'ionicons/icons';
 
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
+import { HeaderActionButton } from '../../shared/components/header-institucional/header-action-button.model';
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { AuthService } from '../../core/services/auth.service';
 import { PreAnesthesicRecordService } from '../../core/services/pre-anesthesic-record.service';
@@ -106,9 +108,9 @@ interface PreAnesthesiaSection {
 export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   form!: FormGroup;
 
-  patientId: string | null = null;  
-  anesthesiaRecordId: number | null = null;  
-  private finalizedRecordId: number | null = null;
+  patientId: string | null = null;
+  anesthesiaRecordId: number | null = null;
+  private remoteRecordId: number | null = null;
   patient: any = null;
 
   isSaving = false;
@@ -122,9 +124,10 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   loggedUser: any = null;
   lastSavedAt: Date | null = null;
   
-  isFinalized = false;  
-  hasChangesSinceFinalization = false;
-  private finalizedBaseline: PreAnesthesicRecordDraft | null = null;
+  isFinalized = false;
+  private isSubmittingSignature = false;
+  private pendingFinalizePayload: PreAnesthesicRecordPayload | null = null;
+  private syncTimerSub?: Subscription;
   private formSub?: Subscription;
 
   activeSectionId = 'procedimento';
@@ -222,6 +225,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
       createOutline,
       closeCircleOutline,
       lockClosedOutline,
+      readerOutline,
     });
   }
 
@@ -238,6 +242,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.formSub?.unsubscribe();
+    this.syncTimerSub?.unsubscribe();
     const sc = document.querySelector('.pre-scroll');
     sc?.removeEventListener('scroll', this.onScroll);
   }
@@ -398,6 +403,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   cirurgiaSelecionada = '';
 
   addCirurgia(nome?: string): void {
+    if (this.isFinalized) return;
     const valor = (nome ?? this.cirurgiaSelecionada ?? '').trim();
     if (!valor) return;
     if (this.cirurgias.value.some((c: any) => c.nome === valor)) return;
@@ -406,10 +412,12 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   removeCirurgia(i: number): void {
+    if (this.isFinalized) return;
     this.cirurgias.removeAt(i);
   }
 
   setCirurgiaPrincipal(i: number): void {
+    if (this.isFinalized) return;
     this.cirurgias.controls.forEach((c, idx) => c.get('principal')?.setValue(idx === i));
   }
 
@@ -422,10 +430,12 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   addMedicacao(): void {
+    if (this.isFinalized) return;
     this.medicacoes.push(this.novaMedicacao());
   }
 
   removeMedicacao(i: number): void {
+    if (this.isFinalized) return;
     if (this.medicacoes.length > 1) this.medicacoes.removeAt(i);
     else this.medicacoes.at(0).reset();
   }
@@ -435,14 +445,17 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   addParecer(): void {
+    if (this.isFinalized) return;
     this.outrosPareceres.push(this.fb.group({ especialidade: [''], descricao: [''] }));
   }
 
   removeParecer(i: number): void {
+    if (this.isFinalized) return;
     this.outrosPareceres.removeAt(i);
   }
 
   setBool(path: string, value: boolean): void {
+    if (this.isFinalized) return;
     this.form.get(path)?.setValue(value);
   }
 
@@ -451,6 +464,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   setValue(path: string, value: any): void {
+    if (this.isFinalized) return;
     this.form.get(path)?.setValue(value);
   }
 
@@ -459,6 +473,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   toggleMulti(path: string, value: string): void {
+    if (this.isFinalized) return;
     const ctrl = this.form.get(path);
     if (!ctrl) return;
     const current: string[] = Array.isArray(ctrl.value) ? [...ctrl.value] : [];
@@ -475,6 +490,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   toggleValue(path: string): void {
+    if (this.isFinalized) return;
     const ctrl = this.form.get(path);
     ctrl?.setValue(!ctrl.value);
   }
@@ -502,20 +518,76 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
       this.isLoadingRecord = false;
 
       if (record) {
-        this.finalizedRecordId = record.id ?? null;
-        this.finalizedBaseline = this.extractDraft(record);
-        this.isFinalized = true;
+        this.remoteRecordId = record.id ?? null;
+        this.isFinalized = !!(record.signedAt && record.signedAt.trim());
       }
 
-      const localDraft = this.preAnesthesicService.getDraft(this.anesthesiaRecordId!, this.patientId!);
-      if (localDraft) {
-        this.patchFormFromDraft(localDraft);
-        this.hasChangesSinceFinalization = this.isFinalized && !this.isEqualToBaseline(localDraft);
-      } else if (this.finalizedBaseline) {
-        this.patchFormFromDraft(this.finalizedBaseline);
+      if (this.isFinalized && record) {
+        // Registro já assinado: o servidor é a fonte autoritativa e a ficha vira somente leitura.
+        this.patchFormFromDraft(this.extractDraft(record));
+        this.preAnesthesicService.clearDraft(this.anesthesiaRecordId!, this.patientId!);
+        this.form.disable();
+      } else {
+        const localDraft = this.preAnesthesicService.getDraft(this.anesthesiaRecordId!, this.patientId!);
+        if (localDraft) {
+          this.patchFormFromDraft(localDraft);
+        }
       }
 
       this.formSub = this.form.valueChanges.pipe(debounceTime(400)).subscribe(() => this.onFormChanged());
+      this.startSyncTimer();
+    });
+  }
+
+  private startSyncTimer(): void {
+    if (this.syncTimerSub) return;
+    this.syncTimerSub = interval(15000).subscribe(() => this.trySync());
+  }
+
+  /** Único caso a reenviar automaticamente: uma assinatura que foi tentada mas falhou ao chegar no backend. */
+  private trySync(): void {
+    if (!this.pendingFinalizePayload || !navigator.onLine) return;
+
+    this.submitPayload(this.pendingFinalizePayload, {
+      onSuccess: async () => {
+        const t = await this.toastCtrl.create({
+          message: 'Avaliação pré-anestésica assinada e salva com sucesso.',
+          duration: 2200,
+          color: 'success',
+          position: 'top',
+        });
+        await t.present();
+      },
+    });
+  }
+
+  private submitPayload(
+    payload: PreAnesthesicRecordPayload,
+    opts: { onSuccess?: () => void; onError?: (err: any) => void },
+  ): void {
+    if (this.isSubmittingSignature) return;
+    this.isSubmittingSignature = true;
+
+    this.preAnesthesicService.submit(payload, this.remoteRecordId).subscribe({
+      next: (res: any) => {
+        this.isSubmittingSignature = false;
+        this.remoteRecordId = res?.data?.id ?? res?.id ?? this.remoteRecordId;
+        this.pendingFinalizePayload = null;
+        this.isFinalized = true;
+        this.form.disable();
+        this.preAnesthesicService.clearDraft(this.anesthesiaRecordId!, this.patientId!);
+        this.lastSavedAt = new Date();
+        this.syncTimerSub?.unsubscribe();
+        this.syncTimerSub = undefined;
+
+        opts.onSuccess?.();
+      },
+      error: (err) => {
+        this.isSubmittingSignature = false;
+        this.pendingFinalizePayload = payload;
+        console.warn('[pre-anestesica] falha ao enviar a assinatura, rascunho local mantido para nova tentativa', err);
+        opts.onError?.(err);
+      },
     });
   }
 
@@ -523,60 +595,17 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     const { id, patientId, anesthesiaRecordId, signedByProfessionalId, signedByName, signedAt, ...draft } = payload;
     return draft as PreAnesthesicRecordDraft;
   }
-  
-  private stableStringify(value: any): string {
-    const normalize = (v: any): any => {
-      if (Array.isArray(v)) {
-        const mapped = v.map(normalize);
-        const allPrimitive = mapped.every((x) => x === null || typeof x !== 'object');
-        return allPrimitive ? [...mapped].sort() : mapped;
-      }
-      if (v && typeof v === 'object') {
-        return Object.keys(v)
-          .sort()
-          .reduce((acc: any, k) => {
-            acc[k] = normalize(v[k]);
-            return acc;
-          }, {});
-      }
-      return v;
-    };
-    return JSON.stringify(normalize(value));
-  }
 
-  private isEqualToBaseline(draft: PreAnesthesicRecordDraft): boolean {
-    if (!this.finalizedBaseline) return false;
-    return this.stableStringify(draft) === this.stableStringify(this.finalizedBaseline);
-  }
- 
   private onFormChanged(): void {
-    if (!this.anesthesiaRecordId || !this.patientId) return;
-    const currentDraft = this.toDraft();
-
-    if (this.isFinalized) {
-      const changed = !this.isEqualToBaseline(currentDraft);
-      this.hasChangesSinceFinalization = changed;
-      if (changed) {
-        this.preAnesthesicService.saveDraft(this.anesthesiaRecordId, this.patientId, currentDraft);
-        this.lastSavedAt = new Date();
-      } else {
-        this.preAnesthesicService.clearDraft(this.anesthesiaRecordId, this.patientId);
-      }
-      return;
-    }
-
-    this.preAnesthesicService.saveDraft(this.anesthesiaRecordId, this.patientId, currentDraft);
-    this.lastSavedAt = new Date();
-  }
-
-  
-  saveDraft(): void {
-    if (!this.anesthesiaRecordId || !this.patientId) return;
+    if (!this.anesthesiaRecordId || !this.patientId || this.isFinalized) return;
     this.preAnesthesicService.saveDraft(this.anesthesiaRecordId, this.patientId, this.toDraft());
     this.lastSavedAt = new Date();
-    if (this.isFinalized) {
-      this.hasChangesSinceFinalization = !this.isEqualToBaseline(this.toDraft());
-    }
+  }
+
+  saveDraft(): void {
+    if (!this.anesthesiaRecordId || !this.patientId || this.isFinalized) return;
+    this.preAnesthesicService.saveDraft(this.anesthesiaRecordId, this.patientId, this.toDraft());
+    this.lastSavedAt = new Date();
   }
 
   private selectedKeys(def: ChecklistGroupDef, value: any): string[] {
@@ -922,7 +951,26 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   get expectedSignatureName(): string {
     return (this.loggedUser?.name || this.loggedUser?.fullName || '').trim();
   }
-  
+
+  get headerActionButtons(): HeaderActionButton[] {
+    if (this.isFinalized) {
+      return [
+        {
+          id: 'go-to-anesthesia-record',
+          icon: 'reader-outline',
+          color: 'warning',
+          ariaLabel: 'Ir para Ficha Anestésica',
+          label: 'Ficha Anest.',
+          action: () => this.irParaFichaAnestesica(),
+        },
+      ];
+    }
+    return [
+      { id: 'save-draft', icon: 'save-outline', color: 'muted', ariaLabel: 'Salvar rascunho', label: 'Salvar Rasc.', action: () => this.saveDraft() },
+      { id: 'finalize', icon: 'shield-checkmark-outline', color: 'primary', ariaLabel: 'Finalizar avaliação', label: 'Concluir', action: () => this.salvar() },
+    ];
+  }
+
 
   async salvar(): Promise<void> {
     this.saveDraft();
@@ -980,21 +1028,15 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     };
   }
 
-  private async executarSalvamento(): Promise<void> {
+  private executarSalvamento(): void {
     if (!this.anesthesiaRecordId || !this.patientId) return;
 
     this.isSaving = true;
     const payload = this.buildFinalPayload();
 
-    this.preAnesthesicService.submit(payload, this.finalizedRecordId).subscribe({
-      next: async (res: any) => {
+    this.submitPayload(payload, {
+      onSuccess: async () => {
         this.isSaving = false;
-        this.isFinalized = true;
-        this.finalizedRecordId = res?.data?.id ?? res?.id ?? this.finalizedRecordId;
-        this.finalizedBaseline = this.toDraft();
-        this.hasChangesSinceFinalization = false;
-        this.preAnesthesicService.clearDraft(this.anesthesiaRecordId!, this.patientId!);
-        this.lastSavedAt = new Date();
         this.signaturePassword = '';
 
         const t = await this.toastCtrl.create({
@@ -1005,13 +1047,12 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
         });
         await t.present();
       },
-      error: async (error) => {
+      onError: async () => {
         this.isSaving = false;
-        console.error('[pre-anestesica] erro ao enviar avaliação', error);
 
         const t = await this.toastCtrl.create({
-          message: 'Não foi possível enviar a avaliação pré-anestésica para o servidor. O rascunho foi mantido — tente novamente.',
-          duration: 3000,
+          message: 'Não foi possível enviar a avaliação pré-anestésica para o servidor. O rascunho foi mantido e o envio será refeito automaticamente assim que possível.',
+          duration: 3500,
           color: 'danger',
           position: 'top',
         });
