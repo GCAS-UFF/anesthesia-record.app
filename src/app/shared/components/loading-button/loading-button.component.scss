@@ -1,9 +1,9 @@
 .btn-login {
     width: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #3b82f6;
     border: none;
-    padding: 14px;
-    border-radius: 16px;
+    padding: 13px;
+    border-radius: 12px;
     color: white;
     font-weight: 700;
     font-size: 15px;
@@ -11,25 +11,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    transition: all 0.2s;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    gap: 8px;
+    transition: background 0.2s, box-shadow 0.2s;
+    margin-bottom: 4px;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
 }
 
-.btn-login:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
-}
-
-.btn-login:active {
-    transform: translateY(0);
+.btn-login:hover:not(:disabled) {
+    background: #2563eb;
 }
 
 .btn-login:disabled {
-    opacity: 0.7;
+    opacity: 0.6;
     cursor: not-allowed;
-    transform: none;
 }
 
 .loading-state {

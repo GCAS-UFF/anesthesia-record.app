@@ -1,5 +1,5 @@
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 .form-label {
     display: flex;
@@ -26,19 +26,22 @@
 }
 .form-input {
     width: 100%;
-    padding: 14px 16px 14px 48px;
+    padding: 12px 14px;
     border: 1.5px solid #e2e8f0;
-    border-radius: 16px;
+    border-radius: 12px;
     font-size: 15px;
     font-weight: 500;
     color: #1e293b;
     transition: all 0.2s;
     background: #fefefe;
 }
+.input-wrapper.has-icon .form-input {
+    padding-left: 44px;
+}
 .form-input:focus {
     outline: none;
-    border-color: #7c3aed;
-    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 .form-input::placeholder {
     color: #cbd5e1;
@@ -46,8 +49,7 @@
 }
 @media (max-width: 768px) {
     .form-input {
-        padding: 12px 14px 12px 44px;
-        font-size: 16px; /* Evita zoom no iOS */
+        font-size: 16px;
         cursor: pointer;
     }
 }

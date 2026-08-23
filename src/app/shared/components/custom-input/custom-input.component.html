@@ -3,7 +3,7 @@
     <span *ngIf="icon">{{ icon }}</span>
     <span>{{ label }}</span>
   </div>
-  <div class="input-wrapper">
+  <div class="input-wrapper" [class.has-icon]="inputIcon">
     <span class="input-icon" *ngIf="inputIcon">{{ inputIcon }}</span>
     <input
       [type]="type"

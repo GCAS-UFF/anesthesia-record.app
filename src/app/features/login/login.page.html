@@ -1,11 +1,4 @@
 <div class="fullscreen-container">
-  <!-- Status Bar -->
-  <div class="status-bar">
-    <span class="time">10:31</span>
-    <span class="date">Sábado, 21 de Março</span>
-  </div>
-
-  <!-- Main Content -->
   <div class="main-content">
     <div class="login-card">
       <div class="login-header">
@@ -16,12 +9,9 @@
             class="login-logo-img"
           />
         </div>
-        <h1 class="login-system-name">
-          Sistema Interno de Gerenciamento Anestésico
-        </h1>
+        <h1 class="login-system-name">Sistema de Gerenciamento Anestésico</h1>
       </div>
 
-      <!-- Mensagem de Erro -->
       <app-error-message [message]="error || ''"></app-error-message>
 
       <div class="status-group">
@@ -46,12 +36,9 @@
         </div>
       </div>
 
-      <!-- Formulário -->
       <form [formGroup]="form" (ngSubmit)="submit()" autocomplete="off">
         <app-custom-input
           label="Usuário"
-          icon="👨‍⚕️"
-          inputIcon="📋"
           type="text"
           placeholder="Digite seu usuário"
           [required]="true"
@@ -63,8 +50,6 @@
 
         <app-custom-input
           label="Senha"
-          icon="🔒"
-          inputIcon="●"
           type="password"
           placeholder="Digite sua senha"
           [required]="true"
@@ -75,7 +60,9 @@
         </app-custom-input>
 
         <div class="form-options">
-          <a href="#" class="forgot-link">Esqueceu a senha?</a>
+          <a href="#" class="forgot-link" (click)="esqueceuSenha($event)"
+            >Esqueceu a senha?</a
+          >
         </div>
 
         <app-loading-button
@@ -83,18 +70,23 @@
           [disabled]="form.invalid"
           type="submit"
         >
-          <span>→</span>
           <span>ENTRAR</span>
         </app-loading-button>
+
+        <div class="login-notice">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <span
+            >Utilize o mesmo usuário e senha do sistema AGHU para acessar.</span
+          >
+        </div>
       </form>
     </div>
   </div>
 
-  <!-- Footer -->
   <div class="footer">
     <div class="footer-text">
-      Sistema Interno de Gerenciamento Anestésico - v1.0 •
-      <a href="#">Suporte</a> • <a href="#">Política de Privacidade</a>
+      Sistema de Gerenciamento Anestésico - v1 <br />
+      UFF - Universidade Federal Fluminense
     </div>
   </div>
 </div>

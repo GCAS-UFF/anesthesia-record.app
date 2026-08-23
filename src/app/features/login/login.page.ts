@@ -9,11 +9,12 @@ import { ErrorMessageComponent } from '../../shared/components/error-message/err
 import { ConnectionStatusComponent } from '../../shared/components/connection-status/connection-status.component';
 
 import { Router } from '@angular/router';
+import { AlertController } from '@ionic/angular';
 
 import { AuthService } from '../../core/services/auth.service';
 import { catchError, interval, of, startWith, Subscription, switchMap } from 'rxjs';
 import { addIcons } from 'ionicons';
-import { wifiOutline, cloudOutline } from 'ionicons/icons';
+import { wifiOutline, cloudOutline, informationCircleOutline } from 'ionicons/icons';
 import { HealthService } from 'src/app/core/services/health.service';
 import { IonIcon } from "@ionic/angular/standalone";
 
@@ -51,11 +52,13 @@ export class LoginPage implements OnInit, OnDestroy {
     public facade: LoginFacade,
     private authService: AuthService,
     private router: Router,
-    private healthService: HealthService
+    private healthService: HealthService,
+    private alertController: AlertController
   ) {
     addIcons({
       wifiOutline,
-      cloudOutline
+      cloudOutline,
+      informationCircleOutline
     });
 
     const lastCRM = this.authService.getLastCRM();
@@ -124,5 +127,17 @@ export class LoginPage implements OnInit, OnDestroy {
    */
   clearError() {
     this.error = null;
+  }
+
+  async esqueceuSenha(event: Event): Promise<void> {
+    event.preventDefault();
+
+    const alert = await this.alertController.create({
+      header: 'Esqueceu a senha?',
+      message: 'O acesso utiliza o mesmo usuário e senha do sistema AGHU. Para redefinir sua senha, entre em contato com a equipe de TI responsável pelo AGHU.',
+      buttons: ['Entendi']
+    });
+
+    await alert.present();
   }
 }
