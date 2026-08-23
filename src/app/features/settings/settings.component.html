@@ -1,0 +1,355 @@
+<div class="cfg-page">
+  <app-status-bar></app-status-bar>
+  <app-header-institucional [showBackButton]="true"></app-header-institucional>
+
+  <!-- TOPBAR -->
+  <div class="cfg-topbar">
+    <div class="cfg-topbar__title">
+      <ion-icon name="settings-outline"></ion-icon>
+      <h1>Configurações</h1>
+      <span class="chip-tag" [class.is-admin]="isAdmin">
+        {{ isAdmin ? 'Administrador' : 'Usuário' }}
+      </span>
+    </div>
+
+    <div class="cfg-topbar__actions">
+      <span class="save-status" *ngIf="savedAt">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+        Salvo {{ savedAt | date: 'HH:mm' }}
+      </span>
+      <button class="btn btn-primary" (click)="abrirAssinatura()" [disabled]="saving">
+        <ion-spinner *ngIf="saving" name="crescent"></ion-spinner>
+        <ion-icon *ngIf="!saving" name="save-outline"></ion-icon>
+        Salvar alterações
+      </button>
+    </div>
+  </div>
+
+  <div class="cfg-layout" [formGroup]="form">
+    <!-- NAV -->
+    <aside class="cfg-nav">
+      <div class="cfg-nav__scroll">
+        <button
+          *ngFor="let s of visibleSections"
+          type="button"
+          class="cfg-nav__item"
+          [class.is-active]="activeSection === s.id"
+          (click)="scrollTo(s.id)"
+        >
+          <ion-icon [name]="s.icon"></ion-icon>
+          <span>{{ s.title }}</span>
+          <em class="lock" *ngIf="s.admin">admin</em>
+        </button>
+      </div>
+    </aside>
+
+    <!-- CONTEÚDO -->
+    <main class="cfg-content">
+      <!-- 01 · IDIOMA -->
+      <section class="card" id="sec-geral">
+        <header class="card__head">
+          <div class="card__idx">01</div>
+          <div>
+            <h2>Preferências gerais</h2>
+            <p>Idioma da interface do sistema anestésico.</p>
+          </div>
+          <ion-icon name="language-outline" class="card__icon"></ion-icon>
+        </header>
+
+        <div class="card__body">
+          <div class="field">
+            <label>Idioma</label>
+            <div class="option-grid option-grid--3">
+              <button
+                *ngFor="let i of idiomas"
+                type="button"
+                class="option-card"
+                [class.is-selected]="form.value.idioma === i.value"
+                (click)="setIdioma(i.value)"
+              >
+                <span class="flag">{{ i.flag }}</span>
+                <span class="option-card__label">{{ i.label }}</span>
+                <span class="option-card__meta">{{ i.value }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 02 · AFERIÇÃO -->
+      <section class="card" id="sec-afericao">
+        <header class="card__head">
+          <div class="card__idx">02</div>
+          <div>
+            <h2>Aferição automática</h2>
+            <p>Frequência com que os sinais vitais são registrados automaticamente na monitorização.</p>
+          </div>
+          <ion-icon name="timer-outline" class="card__icon"></ion-icon>
+        </header>
+
+        <div class="card__body">
+          <label class="switch-row">
+            <ion-checkbox formControlName="usarIntervaloInstitucional" labelPlacement="end">
+              Usar o intervalo institucional
+              (<strong>{{ form.value.intervaloInstitucional }} min</strong>)
+            </ion-checkbox>
+          </label>
+
+          <div class="field" [class.is-disabled]="form.value.usarIntervaloInstitucional">
+            <label>Meu intervalo de aferição</label>
+            <div class="chip-row">
+              <button
+                *ngFor="let m of intervalos"
+                type="button"
+                class="chip"
+                [disabled]="form.value.usarIntervaloInstitucional"
+                [class.is-selected]="form.value.intervaloAfericao === m"
+                (click)="setIntervalo('intervaloAfericao', m)"
+              >
+                {{ m }} min
+              </button>
+            </div>
+            <p class="hint">
+              <ion-icon name="information-circle-outline"></ion-icon>
+              Intervalos menores geram mais registros no gráfico de tendências.
+            </p>
+          </div>
+
+          <div class="field" *ngIf="isAdmin">
+            <label>Intervalo padrão institucional</label>
+            <div class="chip-row">
+              <button
+                *ngFor="let m of intervalos"
+                type="button"
+                class="chip chip--admin"
+                [class.is-selected]="form.value.intervaloInstitucional === m"
+                (click)="setIntervalo('intervaloInstitucional', m)"
+              >
+                {{ m }} min
+              </button>
+            </div>
+            <p class="hint">
+              Valor aplicado a todos os anestesistas. O usuário pode alterar o próprio intervalo.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 03 · INTEGRAÇÕES (ADMIN) -->
+      <section class="card" id="sec-integracoes" *ngIf="isAdmin">
+        <header class="card__head">
+          <div class="card__idx">03</div>
+          <div>
+            <h2>Integrações e APIs</h2>
+            <p>Endpoints usados para autenticação (SIGA) e para os dados hospitalares (AGHU / PHP).</p>
+          </div>
+          <ion-icon name="server-outline" class="card__icon"></ion-icon>
+        </header>
+
+        <div class="card__body">
+          <div class="field">
+            <label>URL da API do SIGA</label>
+            <div class="input-with-action">
+              <span class="input-icon"><ion-icon name="link-outline"></ion-icon></span>
+              <input
+                type="url"
+                inputmode="url"
+                formControlName="urlSiga"
+                placeholder="https://siga.huap.uff.br/api"
+              />
+              <button type="button" class="btn btn-ghost" (click)="testarConexao('siga')">
+                <ion-spinner *ngIf="testing['siga'] === 'running'" name="crescent"></ion-spinner>
+                <ion-icon *ngIf="testing['siga'] !== 'running'" name="refresh-outline"></ion-icon>
+                Testar
+              </button>
+            </div>
+            <p class="status-line ok" *ngIf="testing['siga'] === 'ok'">Conexão bem-sucedida.</p>
+            <p class="status-line fail" *ngIf="testing['siga'] === 'fail'">Falha ao conectar. Verifique a URL.</p>
+          </div>
+
+          <div class="field">
+            <label>URL da API do Servidor do Hospital (PHP → AGHU)</label>
+            <div class="input-with-action">
+              <span class="input-icon"><ion-icon name="cloud-outline"></ion-icon></span>
+              <input
+                type="url"
+                inputmode="url"
+                formControlName="urlAghu"
+                placeholder="https://servidor.huap.local/aghu/api"
+              />
+              <button type="button" class="btn btn-ghost" (click)="testarConexao('aghu')">
+                <ion-spinner *ngIf="testing['aghu'] === 'running'" name="crescent"></ion-spinner>
+                <ion-icon *ngIf="testing['aghu'] !== 'running'" name="refresh-outline"></ion-icon>
+                Testar
+              </button>
+            </div>
+            <p class="status-line ok" *ngIf="testing['aghu'] === 'ok'">Conexão bem-sucedida.</p>
+            <p class="status-line fail" *ngIf="testing['aghu'] === 'fail'">Falha ao conectar. Verifique a URL.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 04 · SEGURANÇA (ADMIN) -->
+      <section class="card" id="sec-seguranca" *ngIf="isAdmin">
+        <header class="card__head">
+          <div class="card__idx">04</div>
+          <div>
+            <h2>Segurança — senha administrativa (SIGA)</h2>
+            <p>Altere a senha da conta administrativa usada na integração com o SIGA.</p>
+          </div>
+          <ion-icon name="lock-closed-outline" class="card__icon"></ion-icon>
+        </header>
+
+        <div class="card__body" formGroupName="senhaAdmin">
+          <div class="grid-3">
+            <div class="field">
+              <label>Senha atual</label>
+              <div class="input-with-action">
+                <span class="input-icon"><ion-icon name="key-outline"></ion-icon></span>
+                <input [type]="mostrarSenha ? 'text' : 'password'" formControlName="atual" placeholder="••••••••" />
+                <button type="button" class="icon-btn" (click)="mostrarSenha = !mostrarSenha">
+                  <ion-icon [name]="mostrarSenha ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+                </button>
+              </div>
+            </div>
+            <div class="field">
+              <label>Nova senha</label>
+              <input [type]="mostrarSenha ? 'text' : 'password'" formControlName="nova" placeholder="Mínimo 6 caracteres" />
+            </div>
+            <div class="field">
+              <label>Confirmar nova senha</label>
+              <input [type]="mostrarSenha ? 'text' : 'password'" formControlName="confirmar" placeholder="Repita a nova senha" />
+            </div>
+          </div>
+          <p class="status-line fail" *ngIf="senhaMensagem">{{ senhaMensagem }}</p>
+          <p class="hint">
+            <ion-icon name="shield-checkmark-outline"></ion-icon>
+            Deixe os campos em branco para manter a senha atual.
+          </p>
+        </div>
+      </section>
+
+      <!-- 05 · HOSPITAL (ADMIN) -->
+      <section class="card" id="sec-hospital" *ngIf="isAdmin">
+        <header class="card__head">
+          <div class="card__idx">05</div>
+          <div>
+            <h2>Dados do hospital</h2>
+            <p>Informações institucionais impressas nas fichas anestésicas e relatórios.</p>
+          </div>
+          <ion-icon name="business-outline" class="card__icon"></ion-icon>
+        </header>
+
+        <div class="card__body" formGroupName="hospital">
+          <div class="grid-2">
+            <div class="field">
+              <label>Nome do hospital</label>
+              <input type="text" formControlName="nome" placeholder="Hospital Universitário Antônio Pedro" />
+            </div>
+            <div class="field">
+              <label>Setor / Unidade</label>
+              <input type="text" formControlName="setor" placeholder="Centro Cirúrgico — Anestesiologia" />
+            </div>
+          </div>
+
+          <div class="grid-3">
+            <div class="field">
+              <label>CNPJ</label>
+              <input type="text" inputmode="numeric" formControlName="cnpj" (input)="formatCnpj()" placeholder="00.000.000/0000-00" />
+            </div>
+            <div class="field">
+              <label>CEP</label>
+              <input type="text" inputmode="numeric" formControlName="cep" placeholder="24033-900" />
+            </div>
+            <div class="field">
+              <label>Bairro</label>
+              <input type="text" formControlName="bairro" placeholder="Centro" />
+            </div>
+          </div>
+
+          <div class="grid-endereco">
+            <div class="field">
+              <label>Logradouro</label>
+              <input type="text" formControlName="logradouro" placeholder="Av. Marquês do Paraná" />
+            </div>
+            <div class="field">
+              <label>Número</label>
+              <input type="text" inputmode="numeric" formControlName="numero" placeholder="303" />
+            </div>
+            <div class="field">
+              <label>Cidade</label>
+              <input type="text" formControlName="cidade" placeholder="Niterói" />
+            </div>
+            <div class="field">
+              <label>UF</label>
+              <input type="text" maxlength="2" formControlName="uf" placeholder="RJ" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="cfg-spacer"></div>
+    </main>
+  </div>
+
+  <!-- MODAL DE ASSINATURA -->
+  <ion-modal [isOpen]="showAssinatura" (didDismiss)="fecharAssinatura()" class="sign-modal">
+    <ng-template>
+      <div class="sign">
+        <header class="sign__head">
+          <div class="sign__title">
+            <ion-icon name="shield-checkmark-outline"></ion-icon>
+            <h3>Confirmar alterações</h3>
+          </div>
+          <button type="button" class="icon-btn" (click)="fecharAssinatura()">
+            <ion-icon name="close-outline"></ion-icon>
+          </button>
+        </header>
+
+        <div class="sign__body">
+          <label class="sign__check">
+            <ion-checkbox
+              [checked]="aceiteAssinatura"
+              (ionChange)="aceiteAssinatura = $event.detail.checked"
+              labelPlacement="end"
+            >
+              <span class="sign__check-text">
+                Declaro estar ciente de que estas configurações afetam o
+                funcionamento do sistema anestésico e confirmo as alterações.
+              </span>
+            </ion-checkbox>
+          </label>
+
+          <div class="field">
+            <label>Senha de acesso</label>
+            <div class="input-with-action">
+              <span class="input-icon"><ion-icon name="lock-closed-outline"></ion-icon></span>
+              <input
+                [type]="mostrarSenha ? 'text' : 'password'"
+                [(ngModel)]="senhaAssinatura"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="Digite sua senha para assinar"
+              />
+              <button type="button" class="icon-btn" (click)="mostrarSenha = !mostrarSenha">
+                <ion-icon [name]="mostrarSenha ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <footer class="sign__foot">
+          <button type="button" class="btn btn-ghost" (click)="fecharAssinatura()">Cancelar</button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="!aceiteAssinatura || senhaAssinatura.trim().length < 4"
+            (click)="confirmarSalvar()"
+          >
+            <ion-icon name="save-outline"></ion-icon>
+            Assinar e salvar
+          </button>
+        </footer>
+      </div>
+    </ng-template>
+  </ion-modal>
+</div>

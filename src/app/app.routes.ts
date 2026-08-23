@@ -35,5 +35,9 @@ export const routes: Routes = [
   {   
     path: 'pre-anesthesia-record/:id/:patientId',
     loadComponent: () => import('./features/pre-anesthesic-record/pre-anesthesic-record.component').then(m => m.FichaPreAnestesicaComponent)
+  },
+  {   
+    path: 'settings',
+    loadComponent: () => import('./features/settings/settings.component').then(m => m.SettingComponent)
   }
 ];

@@ -223,7 +223,7 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
 
   goToSettings(): void {
     this.closeUserMenu();
-    this.router.navigate(['/configuracoes']);
+    this.router.navigate(['/settings']);
   }
 
   async handleLogout(): Promise<void> {
