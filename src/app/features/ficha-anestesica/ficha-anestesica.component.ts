@@ -5,7 +5,10 @@ import { IonButton, IonIcon, IonCheckbox, IonModal } from '@ionic/angular/standa
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, ValidationErrors, Validators } from '@angular/forms';
 
-import { debounceTime, Subscription } from 'rxjs';
+import { debounceTime, Subscription, timeout, catchError, of } from 'rxjs';
+
+
+const NETWORK_TIMEOUT_MS = 20000;
 import { addIcons } from 'ionicons';
 import {
   pencilOutline,
@@ -247,8 +250,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       // Não confiar em nada guardado no front: sempre buscar no backend o status atual do
       // monitoramento. Só quando ele estiver FINALIZADO é que o próximo salvamento da ficha
       // deve pedir nome/senha e virar o salvamento definitivo.
-      this.anesthesiaService.getMonitoringStatus(Number(this.cirurgiaId)).subscribe((status) => {
-        this.monitoringFinalizado = status === SurgeryStatusEnum.Concluido;
+      this.anesthesiaService.getMonitoringStatus(Number(this.cirurgiaId)).pipe(
+        timeout(NETWORK_TIMEOUT_MS),
+        catchError(() => of(null)),
+      ).subscribe((status) => {
+        if (status !== null) this.monitoringFinalizado = status === SurgeryStatusEnum.Concluido;
       });
 
       // Buscar a ficha pré-anestésica do backend e salvar no storage ANTES de carregar a ficha
@@ -259,9 +265,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
           if (preData) {
             localStorage.setItem(`preAnesthesiaData_${this.cirurgiaId}`, JSON.stringify(preData));
           }
-          this.loadPatientData(this.cirurgiaId!, this.patientId!);
+          this.loadPatientData(this.cirurgiaId!, this.patientId!).catch(() => this.onLoadPatientDataFailed());
         },
-        error: () => this.loadPatientData(this.cirurgiaId!, this.patientId!)
+        error: () => this.loadPatientData(this.cirurgiaId!, this.patientId!).catch(() => this.onLoadPatientDataFailed())
       });
     }
 
@@ -270,8 +276,18 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    // Ver o mesmo comentário/correção em monitorizacao.component.ts: o modal rápido
+    // "Ficha Pré-Anestésica" (ModalController) não é filho do Angular e não fecha
+    // sozinho quando a rota muda — se ficar aberto ao navegar para fora daqui, o
+    // backdrop trava a tela seguinte inteira. Fecha explicitamente ao sair.
+    this.openRecordModal?.dismiss().catch(() => {});
     this.conditionalSubs.forEach(sub => sub.unsubscribe());
   }
+
+  // Modal rápido "Ficha Pré-Anestésica" (ModalController) — não é filho do Angular e
+  // não fecha sozinho quando a rota muda. Guardamos a referência ao abrir para poder
+  // fechar direto no ngOnDestroy, sem depender da pilha de overlays do Ionic.
+  private openRecordModal?: HTMLIonModalElement;
 
   private startAutoSave() {
     this.autoSaveSub?.unsubscribe();
@@ -725,7 +741,13 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       assinaturas: {
         ...draftData.assinaturas,
         primeiroAnestesistaId: this.loggedUser?.id ? String(this.loggedUser.id) : draftData.assinaturas?.primeiroAnestesistaId || null,
-        segundoAnestesistaId: draftData.assinaturas?.segundoAnestesistaId || null
+        segundoAnestesistaId: draftData.assinaturas?.segundoAnestesistaId || null,
+        // Resolve o nome no momento do save (mesma lista/mesma função que o template
+        // usa para exibir o rótulo do dropdown) para o draft local também carregar o
+        // nome, não só o ID — necessário para o modal rápido de somente-leitura.
+        segundoAnestesistaNome: draftData.assinaturas?.segundoAnestesista
+          ? this.getSelectedLabel(this.anestesistasLista, draftData.assinaturas.segundoAnestesista)
+          : draftData.assinaturas?.segundoAnestesistaNome || ''
       },
       firstAnesthesiologistId: this.loggedUser?.id ? String(this.loggedUser.id) : draftData.firstAnesthesiologistId || null,
       secondAnesthesiologistId: draftData.secondAnesthesiologistId || null
@@ -794,7 +816,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   private loadPatientData(id: string, patientId: string): Promise<void> {
     return new Promise((resolve, reject) => {
       this.isLoading = true;
-      this.surgeryService.getPatientDate(Number(id), patientId).subscribe({
+      this.surgeryService.getPatientDate(Number(id), patientId).pipe(
+        timeout(NETWORK_TIMEOUT_MS),
+      ).subscribe({
         next: (res: any) => {
           const surgeryData = res?.data;
           if (!surgeryData?.patient) {
@@ -831,7 +855,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
           this.canEdit = !this.isReadOnlyRecord && !this.fichaFinalizada;
 
           const draft = this.anesthesiaService.getDraft(this.cirurgiaId!);
-          this.anesthesiaService.getLatestByPatient(this.cirurgiaId!, patientId).subscribe({
+          this.anesthesiaService.getLatestByPatient(this.cirurgiaId!, patientId).pipe(
+            timeout(NETWORK_TIMEOUT_MS),
+          ).subscribe({
             next: (savedRecord) => {
               if (draft) {
 
@@ -866,8 +892,22 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
               resolve();
             },
             error: (err) => {
-              this.isLoading = false;
-              reject(err);
+              // API indisponível/lenta (ou timeout): se já existe rascunho local, não descarta
+              // o que o médico já preencheu — aplica o draft e segue offline em vez de travar
+              // a tela no carregamento.
+              console.warn('[FichaAnestesica] Falha ao buscar ficha na API, usando rascunho local se houver', err);
+              if (draft) {
+                this.hydrateProcedimentos((draft as any)?.posProcedimento?.procedimentos);
+                this.form.patchValue(draft);
+                if (draft.antibioticsList) this.antibioticsList = draft.antibioticsList;
+                if (this.fichaFinalizada || this.forcedReadOnly)
+                  this.form.disable({ emitEvent: false });
+                this.isLoading = false;
+                resolve();
+              } else {
+                this.isLoading = false;
+                reject(err);
+              }
             }
           });
         },
@@ -877,6 +917,14 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         }
       });
     });
+  }
+
+  // Chamado quando `loadPatientData` rejeita sem nenhum rascunho local para usar como
+  // fallback (ver bloco `error` de `getLatestByPatient` acima). `isLoading` já foi zerado
+  // ali, então o formulário aparece vazio em vez de ficar preso no skeleton — o usuário só
+  // precisa ser avisado do motivo.
+  private onLoadPatientDataFailed() {
+    this.toast('Não foi possível carregar a ficha (sem conexão com o servidor e sem rascunho local). Tente novamente.', 'danger');
   }
 
   /**
@@ -1525,23 +1573,28 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   async openPreAnestesica() {
-    const rawData = localStorage.getItem(`preAnesthesiaData_${this.cirurgiaId}`);
-    if (!rawData) {
+    const payload = this.preAnesthesicService.getBestAvailable(Number(this.cirurgiaId), this.patientId ?? '');
+    if (!payload) {
       this.toast('Ficha Pré-Anestésica não encontrada (ou offline).', 'warning');
       return;
     }
 
     try {
-      const payload = JSON.parse(rawData);
       const data: RecordData = mapPreAnesthesiaToRecordData(payload);
 
       const modal = await this.modalCtrl.create({
         component: RecordViewerModalComponent,
-        componentProps: { data }
+        componentProps: { data },
+        cssClass: 'fa-sheet-modal',
+        backdropDismiss: false,
+      });
+      this.openRecordModal = modal;
+      modal.onDidDismiss().then(() => {
+        if (this.openRecordModal === modal) this.openRecordModal = undefined;
       });
       await modal.present();
     } catch (e) {
-      console.error('Erro ao ler Ficha Pré-Anestésica do storage', e);
+      console.error('Erro ao abrir Ficha Pré-Anestésica', e);
       this.toast('Erro ao abrir Ficha Pré-Anestésica', 'danger');
     }
   }

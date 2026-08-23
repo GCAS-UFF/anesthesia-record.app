@@ -140,6 +140,19 @@ ion-radio {
   min-width: 120px;
 }
 
+.fa-sheet-modal {
+  --height: 96%;
+  --width: 100%;
+  --max-width: 100%;
+  --border-radius: 20px 20px 0 0;
+  align-items: flex-end;
+
+  &::part(content) {
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -8px 30px rgba(15, 23, 42, 0.18);
+  }
+}
+
 /* Modal Customizado */
 .auto-height-modal {
   --height: fit-content;

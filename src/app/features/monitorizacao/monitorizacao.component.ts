@@ -5,13 +5,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import {
   ModalController, AlertController, ToastController,
 } from '@ionic/angular/standalone';
-import { finalize, Subscription } from 'rxjs';
-import { ScreenOrientation } from '@capacitor/screen-orientation';
+import { finalize, firstValueFrom, Subscription } from 'rxjs';
 
 import { AnesthesiaRecordService } from 'src/app/core/services/anesthesia-record.service';
+import { OrientationService } from 'src/app/core/services/orientation.service';
 import { SurgeryService } from 'src/app/core/services/surgery.service';
 import { PreAnesthesicRecordService } from 'src/app/core/services/pre-anesthesic-record.service';
 import { mapPreAnesthesiaToRecordData } from 'src/app/shared/models/pre-anesthesic.mapper';
+import { mapAnesthesiaRecordToRecordData } from 'src/app/shared/models/anesthesia-record.mapper';
 import {
   SurgeryStatusEnum,
   SURGERY_STATUS_LABELS,
@@ -39,7 +40,8 @@ import { FluidBalanceChartComponent } from './components/fluid-balance-chart/flu
 import { QuickActionSidebarComponent } from './components/quick-action-sidebar/quick-action-sidebar.component';
 import { FinalizeAnesthesiaBarComponent } from './components/finalize-anesthesia-bar/finalize-anesthesia-bar.component';
 import { HistoryDrawerComponent, HistoryTab } from './components/history-drawer/history-drawer.component';
-import { RecordViewerModalComponent, RecordData } from '../../shared/components/record-viewer-modal/record-viewer-modal.component';
+import { RecordViewerModalComponent, RecordData, RecordSection } from '../../shared/components/record-viewer-modal/record-viewer-modal.component';
+import { formatDateTimeBR } from 'src/app/shared/utils/date-format.util';
 
 interface VitalRecord {
   clientId?: string; timestamp: string; time: string;
@@ -155,6 +157,10 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   surgeryTimer = '00:00:00';
   private tickSub?: any;
 
+  get isLocked(): boolean {
+    return this.isAnesthesiaFinished || this.isSurgeryFinished;
+  }
+
   viewStartTime: number | null = null;
   viewEndTime: number | null = null;
 
@@ -184,6 +190,8 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   private offlineQueue: any = null;
   private patientService: any = null;
 
+  private resolvedPatientId: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -193,16 +201,14 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     private anesthesiaRecordService: AnesthesiaRecordService,
     private surgeryService: SurgeryService,
     private preAnesthesicService: PreAnesthesicRecordService,
+    private orientationService: OrientationService,
     private cdr: ChangeDetectorRef,
   ) { }
 
+  private encerramentoTimeout?: any;
 
   async ngOnInit() {
-    try {
-      await ScreenOrientation.lock({ orientation: 'landscape' });
-    } catch (err) {
-      console.warn('[Monitorizacao] Não foi possível travar a rotação em landscape', err);
-    }
+    void this.orientationService.lockLandscape();
 
     this.surgeryId = this.route.snapshot.paramMap.get('id') || '';
 
@@ -220,46 +226,50 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.rebuildRecentActivity();
     this.isLoading = false;
 
-    try {
-      await ScreenOrientation.lock({ orientation: 'landscape' });
-    } catch (e) {
-      console.warn('ScreenOrientation not supported or failed to lock', e);
-    }
-
     this.anesthesiaRecordService.updatePendingStatus();
 
     if (this.surgeryId) {
       this.preAnesthesicService.getByAnesthesiaRecordId(Number(this.surgeryId)).subscribe((preData) => {
         if (preData) {
           localStorage.setItem(`preAnesthesiaData_${this.surgeryId}`, JSON.stringify(preData));
+          if (preData.patientId) {
+            this.resolvedPatientId = String(preData.patientId);
+          }
         }
+        this.buildFichaAnestesicaRecordData();
       });
     }
   }
 
-  ngOnDestroy() {
+  private resolvePatientId(): string | null {
+    if (this.selectedSurgery?.patientId) return String(this.selectedSurgery.patientId);
+    if (this.patient?.id) return String(this.patient.id);
+    if (this.resolvedPatientId) return this.resolvedPatientId;
     try {
-      ScreenOrientation.unlock();
-    } catch (err) {
-      console.warn('[Monitorizacao] Não foi possível destravar a rotação', err);
+      const raw = localStorage.getItem(`preAnesthesiaData_${this.surgeryId}`);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (parsed?.patientId) return String(parsed.patientId);
+    } catch {
+      // ignora — segue sem patientId
     }
+    return null;
+  }
+
+  ngOnDestroy() {
+    this.isLeavingView = true;
+
+    this.openOverlays.forEach(overlay => overlay.dismiss().catch(() => {}));
+    this.openOverlays.clear();
+
+    this.orientationService.unlock();
 
     clearInterval(this.tickSub);
     clearInterval(this.autoMonitoringSub);
+    clearTimeout(this.encerramentoTimeout);
     this.pendingSub?.unsubscribe();
 
-    // Ticket #4: "Assim que o usuário sair da tela, limpar o stage" — o
-    // registro finalizado é só um cache de leitura rápida (a fonte de
-    // verdade é o backend); não faz sentido mantê-lo em localStorage depois
-    // que o usuário sai da tela de monitorização.
     if (this.surgeryId) {
       this.anesthesiaRecordService.clearFinalizedMonitoringRecord(this.surgeryId);
-    }
-
-    try {
-      ScreenOrientation.unlock();
-    } catch (e) {
-      console.warn('ScreenOrientation not supported or failed to unlock', e);
     }
   }
 
@@ -464,6 +474,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
           },
         }],
       });
+      this.trackOverlay(alert);
       await alert.present();
     });
   }
@@ -545,6 +556,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   reconfigurarFrequencia() {
+    if (this.isLocked) return;
     this.alertController.create({
       header: 'Frequência de monitorização',
       inputs: [{
@@ -569,7 +581,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async addTimePoint(_auto = false) {
-    if (!this.isAnesthesiaStarted || this.isAnesthesiaFinished || this.isVitalModalOpen) return;
+    if (!this.isAnesthesiaStarted || this.isLocked || this.isVitalModalOpen) return;
     this.isVitalModalOpen = true;
     try {
       const modal = await this.modalController.create({
@@ -578,6 +590,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         backdropDismiss: false,
         componentProps: { customFields: this.customFields, isAuto: false, initialValue: null },
       });
+      this.trackOverlay(modal);
       await modal.present();
       const { data, role } = await modal.onDidDismiss();
       if (role !== 'confirm' || !data) return;
@@ -604,6 +617,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async addCustomField() {
+    if (this.isLocked) return;
     const alert = await this.alertController.create({
       header: 'Novo campo personalizado',
       inputs: [
@@ -633,12 +647,14 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   onEditVital(record: VitalRecord) { this.editVitalInline(record); }
 
   async editVitalInline(record: VitalRecord) {
+    if (this.isLocked) return;
     const modal = await this.modalController.create({
       component: QuickVitalInputComponent,
       cssClass: 'quick-vital-modal',
       backdropDismiss: false,
       componentProps: { customFields: this.customFields, isAuto: false, initialValue: record },
     });
+    this.trackOverlay(modal);
     await modal.present();
     const { data, role } = await modal.onDidDismiss();
     if (role !== 'confirm' || !data) return;
@@ -655,6 +671,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async onDeleteVital(record: VitalRecord) {
+    if (this.isLocked) return;
     const ok = await this.confirmDelete(`Remover lançamento das ${record.time}?`);
     if (!ok) return;
     this.vitalRecords = this.vitalRecords.filter(r => r.clientId !== record.clientId);
@@ -663,14 +680,8 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
 
-  /**
-   * Ticket #6: a Ficha Anestésica deve carregar do cache local os dados que
-   * vieram do backend (registro de monitorização finalizado — o mesmo cache
-   * usado no ticket #4/`loadFinalizedMonitoringRecord`), além dos dados
-   * dinâmicos já calculados em tela. Isso permite reabrir a ficha rápido,
-   * mesmo sem conexão, com o que já foi confirmado pelo backend.
-   */
-  async openFichaAnestesicaModal() {
+ 
+  private async buildFichaAnestesicaRecordData(): Promise<RecordData> {
     const sections: RecordData['sections'] = [
       {
         title: 'Resumo da Monitorização',
@@ -689,30 +700,118 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       }
     ];
 
-    const cachedFinalized = this.anesthesiaRecordService.getFinalizedMonitoringRecord(this.surgeryId);
-    if (cachedFinalized) {
-      sections.push({
-        title: 'Dados confirmados pelo backend',
-        fields: [
-          { label: 'Status', value: SURGERY_STATUS_LABELS[cachedFinalized.status as SurgeryStatusEnum] ?? cachedFinalized.status ?? '--' },
-          { label: 'Atualizado em', value: cachedFinalized.monitoringUpdatedAt ?? '--' },
-          { label: 'Agentes administrados', value: (cachedFinalized.administeredAgents ?? []).length },
-          { label: 'Eventos clínicos', value: (cachedFinalized.clinicalEvents ?? []).length },
-          { label: 'Balanços hídricos', value: (cachedFinalized.fluidBalances ?? []).length },
-        ]
-      });
+    const patientId = this.resolvePatientId();
+    if (patientId) {
+      let record = this.anesthesiaRecordService.getDraft(patientId);
+      if (!record) {
+        try {
+          record = await firstValueFrom(this.anesthesiaRecordService.getLatestByPatient(this.surgeryId, patientId));
+        } catch {
+          record = null;
+        }
+      }
+      if (record) {
+        sections.push(...mapAnesthesiaRecordToRecordData(record));
+      }
+    }
+
+    if (this.isSurgeryFinished || this.isAnesthesiaFinished) {
+      sections.push(...this.buildMonitoringDetailSections());
+
+      const cachedFinalized = this.anesthesiaRecordService.getFinalizedMonitoringRecord(this.surgeryId);
+      if (cachedFinalized?.status !== undefined) {
+        sections.push({
+          title: 'Status',
+          fields: [
+            { label: 'Status', value: SURGERY_STATUS_LABELS[cachedFinalized.status as SurgeryStatusEnum] ?? cachedFinalized.status ?? '--' },
+            { label: 'Atualizado em', value: formatDateTimeBR(cachedFinalized.monitoringUpdatedAt) ?? '--' },
+          ]
+        });
+      }
     }
 
     const data: RecordData = { title: 'Ficha Anestésica', sections };
 
+    const cacheKey = `${this.FICHA_ANESTESICA_CACHE_KEY}${this.surgeryId}`;
+    const previousRaw = localStorage.getItem(cacheKey);
+    const previous: RecordData | null = previousRaw ? this.safeJsonParseLocal(previousRaw) : null;
+    if (!previous || data.sections.length >= previous.sections.length) {
+      this.cacheRecordViewerData(this.FICHA_ANESTESICA_CACHE_KEY, data);
+      return data;
+    }
+    return previous;
+  }
 
-    this.cacheRecordViewerData(this.FICHA_ANESTESICA_CACHE_KEY, data);
+  private safeJsonParseLocal(raw: string): any {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  private buildMonitoringDetailSections(): RecordSection[] {
+    const sections: RecordSection[] = [];
+
+    if (this.agents.length > 0) {
+      sections.push({
+        title: 'Agentes Administrados',
+        fields: this.agents.map(a => ({
+          label: a.time || '--',
+          value: [a.name || (a.medicationId != null ? `Medicação #${a.medicationId}` : 'Agente'), a.dose, a.route].filter(Boolean).join(' · '),
+        })),
+      });
+    }
+
+    if (this.clinicalEvents.length > 0) {
+      sections.push({
+        title: 'Eventos Clínicos',
+        fields: this.clinicalEvents.map(e => {
+          const categoria = (e as any).categoryLabel
+            || (e.eventTypeId != null ? CLINICAL_EVENT_TYPE_LABELS[e.eventTypeId] : null)
+            || e.category
+            || e.type;
+          return {
+            label: e.time || '--',
+            value: [categoria, e.description].filter(Boolean).join(' — '),
+          };
+        }),
+      });
+    }
+
+    if (this.fluidBalance.length > 0) {
+      sections.push({
+        title: 'Balanço Hídrico',
+        fields: this.fluidBalance.map(b => ({
+          label: b.time || '--',
+          value: `${b.type === 'gain' ? 'Ganho' : 'Perda'} · ${b.item} · ${b.volumeMl}ml`,
+        })),
+      });
+    }
+
+    return sections;
+  }
+
+  private openOverlays = new Set<HTMLIonModalElement | HTMLIonAlertElement>();
+
+  private trackOverlay<T extends HTMLIonModalElement | HTMLIonAlertElement>(overlay: T): T {
+    this.openOverlays.add(overlay);
+    overlay.onDidDismiss().then(() => {
+      this.openOverlays.delete(overlay);
+    });
+    return overlay;
+  }
+
+  async openFichaAnestesicaModal() {
+    const data = await this.buildFichaAnestesicaRecordData();
 
     const modal = await this.modalController.create({
       component: RecordViewerModalComponent,
       componentProps: { data },
-      cssClass: 'record-viewer-modal'
+      cssClass: 'fa-sheet-modal',
+      backdropDismiss: false,
     });
+    this.trackOverlay(modal);
     await modal.present();
   }
 
@@ -729,6 +828,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
 
   async onEditAgent(a: Agent) {
+    if (this.isLocked) return;
     const alert = await this.alertController.create({
       header: 'Editar agente',
       inputs: [
@@ -755,6 +855,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     await alert.present();
   }
   async onDeleteAgent(a: Agent) {
+    if (this.isLocked) return;
     if (!await this.confirmDelete(`Remover ${a.name}?`)) return;
     this.agents = this.agents.filter(x => x.clientId !== a.clientId);
     this.persistDraft();
@@ -762,6 +863,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async onEditEvent(e: ClinicalEvent) {
+    if (this.isLocked) return;
     const alert = await this.alertController.create({
       header: 'Editar evento',
       inputs: [
@@ -788,6 +890,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async onDeleteEvent(e: ClinicalEvent) {
+    if (this.isLocked) return;
     if (!await this.confirmDelete(`Remover evento "${e.description || e.type}"?`)) return;
     this.clinicalEvents = this.clinicalEvents.filter(x => x.clientId !== e.clientId);
     if ((e.type || '').toLowerCase() === 'position') {
@@ -799,6 +902,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async onEditBalance(b: FluidBalance) {
+    if (this.isLocked) return;
     const alert = await this.alertController.create({
       header: 'Editar balanço',
       inputs: [
@@ -824,6 +928,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     await alert.present();
   }
   async onDeleteBalance(b: FluidBalance) {
+    if (this.isLocked) return;
     if (!await this.confirmDelete(`Remover ${b.item} (${b.volumeMl}ml)?`)) return;
     this.fluidBalance = this.fluidBalance.filter(x => x.clientId !== b.clientId);
     this.persistDraft();
@@ -832,7 +937,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
 
   async openAgentModal() {
-    if (this.isAgentModalOpen) return;
+    if (this.isLocked || this.isAgentModalOpen) return;
     this.isAgentModalOpen = true;
     try {
       const modal = await this.modalController.create({
@@ -840,6 +945,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         componentProps: { type: 'agent', mode: 'agent' },
         cssClass: 'clinical-item-modal',
       });
+      this.trackOverlay(modal);
       await modal.present();
       const { data } = await modal.onDidDismiss();
       if (!data) return;
@@ -865,7 +971,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async openEventModal() {
-    if (this.isEventModalOpen) return;
+    if (this.isLocked || this.isEventModalOpen) return;
     this.isEventModalOpen = true;
     try {
       const modal = await this.modalController.create({
@@ -873,6 +979,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         componentProps: { type: 'event', mode: 'event' },
         cssClass: 'clinical-item-modal',
       });
+      this.trackOverlay(modal);
       await modal.present();
       const { data } = await modal.onDidDismiss();
       if (!data) return;
@@ -921,7 +1028,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async openVitalModal() {
-    if (this.isVitalModalOpen) return;
+    if (this.isLocked || this.isVitalModalOpen) return;
     this.isVitalModalOpen = true;
     try {
       const modal = await this.modalController.create({
@@ -930,6 +1037,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         backdropDismiss: false,
         componentProps: { customFields: this.customFields, isAuto: false, initialValue: null },
       });
+      this.trackOverlay(modal);
       await modal.present();
       const { data, role } = await modal.onDidDismiss();
       if (role !== 'confirm' || !data) return;
@@ -944,7 +1052,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async openBalanceModal() {
-    if (this.isBalanceModalOpen) return;
+    if (this.isLocked || this.isBalanceModalOpen) return;
     this.isBalanceModalOpen = true;
     try {
       const modal = await this.modalController.create({
@@ -952,6 +1060,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         componentProps: { type: 'balance', mode: 'balance' },
         cssClass: 'clinical-item-modal',
       });
+      this.trackOverlay(modal);
       await modal.present();
       const { data } = await modal.onDidDismiss();
       if (!data) return;
@@ -977,7 +1086,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   mudarPosicao(pos: string) {
-    if (!pos || pos === this.posicaoAtual) return;
+    if (this.isLocked || !pos || pos === this.posicaoAtual) return;
     this.registerPositionChange(pos);
   }
 
@@ -1008,7 +1117,14 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.hoverTime = ts;
   }
 
+  private isLeavingView = false;
+
+  ionViewWillLeave(): void {
+    this.isLeavingView = true;
+  }
+
   onViewBoundsChange(bounds: { min: number, max: number }) {
+    if (this.isLeavingView) return;
     this.viewStartTime = bounds.min;
     this.viewEndTime = bounds.max;
     this.cdr.detectChanges();
@@ -1089,24 +1205,26 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async openAnestesicaRecord() {
-    const rawData = localStorage.getItem(`preAnesthesiaData_${this.surgeryId}`);
-    if (!rawData) {
+    const patientId = this.resolvePatientId() ?? '';
+    const payload = this.preAnesthesicService.getBestAvailable(Number(this.surgeryId), patientId);
+    if (!payload) {
       this.toast('Ficha Pré-Anestésica não encontrada (ou offline).', 'warning');
       return;
     }
 
     try {
-      const payload = JSON.parse(rawData);
       const data: RecordData = mapPreAnesthesiaToRecordData(payload);
 
       const modal = await this.modalController.create({
         component: RecordViewerModalComponent,
         componentProps: { data },
-        cssClass: 'record-viewer-modal'
+        cssClass: 'fa-sheet-modal',
+        backdropDismiss: false,
       });
+      this.trackOverlay(modal);
       await modal.present();
     } catch (e) {
-      console.error('Erro ao ler Ficha Pré-Anestésica do storage', e);
+      console.error('Erro ao abrir Ficha Pré-Anestésica', e);
       this.toast('Erro ao abrir Ficha Pré-Anestésica', 'danger');
     }
   }
@@ -1278,7 +1396,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       await this.toast('⚠️ Sem conexão. Registro salvo localmente e será enviado automaticamente.',
         'warning', 4000);
     } finally {
-      setTimeout(() => this.router.navigate(['/pacientes']), 1500);
+      this.encerramentoTimeout = setTimeout(() => this.router.navigate(['/pacientes']), 1500);
     }
   }
 

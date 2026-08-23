@@ -349,4 +349,15 @@ export class PreAnesthesicRecordService extends BaseService<PreAnesthesicRecordP
   hasDraft(anesthesiaRecordId: number, patientId: string): boolean {
     return localStorage.getItem(this.draftKey(anesthesiaRecordId, patientId)) !== null;
   }
+
+  getBestAvailable(anesthesiaRecordId: number, patientId: string): PreAnesthesicRecordDraft | PreAnesthesicRecordPayload | null {
+    const draft = this.getDraft(anesthesiaRecordId, patientId);
+    if (draft) return draft;
+    try {
+      const raw = localStorage.getItem(`preAnesthesiaData_${anesthesiaRecordId}`);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
 }

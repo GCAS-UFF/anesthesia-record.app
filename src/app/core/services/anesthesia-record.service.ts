@@ -391,6 +391,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
 
   mapMonitoringPayloadToApp(api: any): any {
+    const vitalRecords = this.mapVitalRecordsToApp(api.vitalSigns ?? []);
     return {
       anesthesiaRecordId: api.anesthesiaRecordId ?? null,
       surgeryId: api.surgeryId ?? null,
@@ -402,7 +403,8 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       isMonitoringDraft: false,
       monitoringUpdatedAt: api.monitoringUpdatedAt ?? null,
       status: api.status ?? null,
-      vitalRecords: this.mapVitalRecordsToApp(api.vitalSigns ?? []),
+      vitalRecords,
+      customFields: this.deriveCustomFieldDefs(vitalRecords),
       agents: this.mapMonitoringAgentsToApp(api.administeredAgents ?? []),
       events: this.mapMonitoringEventsToApp(api.clinicalEvents ?? []),
       fluidBalance: this.mapFluidBalanceToApp(api.fluidBalances ?? []),
@@ -412,6 +414,14 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         return mapped[mapped.length - 1]?.position ?? null;
       })(),
     };
+  }
+
+  private deriveCustomFieldDefs(vitalRecords: any[]): { key: string; label: string; unit?: string }[] {
+    const keys = new Set<string>();
+    for (const record of vitalRecords) {
+      Object.keys(record?.custom ?? {}).forEach(k => keys.add(k));
+    }
+    return Array.from(keys).map(key => ({ key, label: key, unit: '' }));
   }
 
   getPdfUrl(id: number): string {
@@ -1280,7 +1290,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
     return {
       id: api.id,
-      pacienteId: api.id?.toString(),
+      pacienteId: api.patient?.patientId?.toString() ?? api.externalPatientId ?? '',
       seguranca: {
         identificadoAvaliado: api.patientIdentifiedBeforeInduction ? 'sim' : 'nao',
         consentimentoAssinado: api.anestheticConsentSigned ? 'sim' : 'nao',
@@ -1317,8 +1327,10 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       equipe: {
         cirurgiao: surgeonId,
         cirurgiaoId: api.surgeonId ?? null,
+        cirurgiaoNome: api.surgeonName ?? '',
         assistente: assistantId,
         assistenteId: api.assistantId ?? null,
+        assistenteNome: api.assistantName ?? '',
         diagnosticoPre: api.preOperativeDiagnosis || '',
         horaInicioAnestesia: this.formatTimeForApp(api.anesthesiaStartTime)
       },
@@ -1391,6 +1403,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
       posProcedimento: {
         procedimentos: procedures,
+        cirurgiaRealizada: api.surgeryPerformed || '',
         horaTerminoCirurgia: this.formatTimeForApp(api.surgeryEndTime),
         diagnosticoPos: api.postOperativeDiagnosis || '',
         horaTerminoAnestesia: this.formatTimeForApp(api.anesthesiaEndTime)
@@ -1420,7 +1433,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         primeiroAnestesistaId: api.firstAnesthesiologistId?.toString() ?? null,
         segundoAnestesista: secondAnesthesiologistId,
         segundoAnestesistaId: api.secondAnesthesiologistId ?? null,
-        // ✅ CORREÇÃO AQUI
+        segundoAnestesistaNome: api.secondAnesthesiologistName ?? '',        
         dataAssinatura: this.formatDateForInput(api.signatureDate)
       },
 
@@ -1492,6 +1505,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       return {
         timestamp: fullIsoString,
         time: this.formatTimeForApp(record.time || record.timestamp),
+        name: record.drugName || record.medicationName || null,
         dose: record.dose != null ? `${record.dose}${unitLabel}` : null,
         doseValue: record.dose ?? null,
         unit: record.unit ?? null,

@@ -10,17 +10,19 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <div class="empty-state" *ngIf="!data?.sections?.length">
-    <ion-icon name="document-text-outline"></ion-icon>
-    <p>Nenhum dado disponível nesta ficha.</p>
-  </div>
+  <div class="sheet-body">
+    <div class="empty-state" *ngIf="!data?.sections?.length">
+      <ion-icon name="document-text-outline"></ion-icon>
+      <p>Nenhum dado disponível nesta ficha.</p>
+    </div>
 
-  <div class="section-block" *ngFor="let sec of data?.sections">
-    <div class="section-title">{{ sec.title }}</div>
-    <div class="fields-grid">
-      <div class="field-item" *ngFor="let field of sec.fields">
-        <div class="field-label">{{ field.label }}</div>
-        <div class="field-value">{{ field.value !== null && field.value !== '' ? field.value : '—' }}</div>
+    <div class="section-block" *ngFor="let sec of data?.sections">
+      <div class="section-title">{{ sec.title }}</div>
+      <div class="fields-grid">
+        <div class="field-item" *ngFor="let field of sec.fields">
+          <div class="field-label">{{ field.label }}</div>
+          <div class="field-value">{{ field.value !== null && field.value !== '' ? field.value : '—' }}</div>
+        </div>
       </div>
     </div>
   </div>

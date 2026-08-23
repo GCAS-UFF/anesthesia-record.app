@@ -54,7 +54,7 @@
 
     <button
       type="button"
-      *ngFor="let btn of actionButtons"
+      *ngFor="let btn of actionButtons; trackBy: trackActionButton"
       class="header-icon-btn"
       [class.is-hidden]="menuOpen"
       [disabled]="btn.disabled"

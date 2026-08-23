@@ -16,6 +16,12 @@ ion-content {
   --background: #f8fafc;
 }
 
+.sheet-body {
+  max-width: 960px;
+  margin: 0 auto;
+  padding-bottom: 32px;
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;

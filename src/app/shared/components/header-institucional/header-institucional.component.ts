@@ -207,6 +207,11 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
     btn.action();
   }
 
+
+  trackActionButton(_index: number, btn: HeaderActionButton): string {
+    return btn.id;
+  }
+
   toggleUserMenu(): void {
     this.userMenuOpen = !this.userMenuOpen;
   }
