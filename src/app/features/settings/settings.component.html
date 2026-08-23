@@ -1,8 +1,10 @@
 <div class="cfg-page">
   <app-status-bar></app-status-bar>
-  <app-header-institucional [showBackButton]="true"></app-header-institucional>
+  <app-header-institucional
+    [showBackButton]="true"
+    [actionButtons]="headerActionButtons"
+  ></app-header-institucional>
 
-  <!-- TOPBAR -->
   <div class="cfg-topbar">
     <div class="cfg-topbar__title">
       <ion-icon name="settings-outline"></ion-icon>
@@ -17,16 +19,15 @@
         <ion-icon name="checkmark-circle-outline"></ion-icon>
         Salvo {{ savedAt | date: 'HH:mm' }}
       </span>
-      <button class="btn btn-primary" (click)="abrirAssinatura()" [disabled]="saving">
-        <ion-spinner *ngIf="saving" name="crescent"></ion-spinner>
-        <ion-icon *ngIf="!saving" name="save-outline"></ion-icon>
-        Salvar alterações
-      </button>
     </div>
   </div>
 
-  <div class="cfg-layout" [formGroup]="form">
-    <!-- NAV -->
+  <div class="cfg-loading" *ngIf="loading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Carregando configurações...</p>
+  </div>
+
+  <div class="cfg-layout" [formGroup]="form" *ngIf="!loading">    
     <aside class="cfg-nav">
       <div class="cfg-nav__scroll">
         <button
@@ -43,9 +44,7 @@
       </div>
     </aside>
 
-    <!-- CONTEÚDO -->
     <main class="cfg-content">
-      <!-- 01 · IDIOMA -->
       <section class="card" id="sec-geral">
         <header class="card__head">
           <div class="card__idx">01</div>
@@ -76,7 +75,6 @@
         </div>
       </section>
 
-      <!-- 02 · AFERIÇÃO -->
       <section class="card" id="sec-afericao">
         <header class="card__head">
           <div class="card__idx">02</div>
@@ -135,7 +133,6 @@
         </div>
       </section>
 
-      <!-- 03 · INTEGRAÇÕES (ADMIN) -->
       <section class="card" id="sec-integracoes" *ngIf="isAdmin">
         <header class="card__head">
           <div class="card__idx">03</div>
@@ -189,7 +186,6 @@
         </div>
       </section>
 
-      <!-- 04 · SEGURANÇA (ADMIN) -->
       <section class="card" id="sec-seguranca" *ngIf="isAdmin">
         <header class="card__head">
           <div class="card__idx">04</div>
@@ -229,7 +225,6 @@
         </div>
       </section>
 
-      <!-- 05 · HOSPITAL (ADMIN) -->
       <section class="card" id="sec-hospital" *ngIf="isAdmin">
         <header class="card__head">
           <div class="card__idx">05</div>
@@ -292,7 +287,6 @@
     </main>
   </div>
 
-  <!-- MODAL DE ASSINATURA -->
   <ion-modal [isOpen]="showAssinatura" (didDismiss)="fecharAssinatura()" class="sign-modal">
     <ng-template>
       <div class="sign">

@@ -7,6 +7,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 
 import {
   IonIcon,
@@ -27,8 +28,14 @@ import {
 
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
-
-export type SettingsProfile = 'usuario' | 'admin';
+import { AuthService } from '../../core/services/auth.service';
+import { SettingsService } from '../../core/services/settings.service';
+import { HeaderActionButton } from '../../shared/components/header-institucional/header-action-button.model';
+import {
+  InstitutionSettingsCommand,
+  UserSettingsCommand,
+  UserSettingsDto,
+} from '../../shared/models/settings.model';
 
 interface SettingsSection {
   id: string;
@@ -36,8 +43,6 @@ interface SettingsSection {
   icon: string;
   admin: boolean;
 }
-
-const STORAGE_KEY = 'huap.settings.v1';
 
 @Component({
   selector: 'app-settings',
@@ -57,8 +62,8 @@ const STORAGE_KEY = 'huap.settings.v1';
   styleUrls: ['./settings.component.scss'],
 })
 export class SettingComponent implements OnInit {
-  /** Perfil do usuário logado. Em produção vem do AuthService. */
-  profile: SettingsProfile = 'admin';
+  isAdminUser = false;
+  loading = true;
 
   form!: FormGroup;
   saving = false;
@@ -94,6 +99,8 @@ export class SettingComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private toast: ToastController,
+    private authService: AuthService,
+    private settingsService: SettingsService,
   ) {
     addIcons({
       settingsOutline, saveOutline, languageOutline, timerOutline, serverOutline,
@@ -105,6 +112,8 @@ export class SettingComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.isAdminUser = this.authService.isAdmin();
+
     this.form = this.fb.group({
       idioma: ['pt-BR', Validators.required],
       // Intervalo pessoal (usuário) — herda do institucional
@@ -135,7 +144,7 @@ export class SettingComponent implements OnInit {
       }),
     });
 
-    this.restore();
+    this.loadSettings();
 
     this.form.get('usarIntervaloInstitucional')!.valueChanges.subscribe((v) => {
       if (v) {
@@ -149,11 +158,25 @@ export class SettingComponent implements OnInit {
   // ---------- helpers ----------
 
   get isAdmin(): boolean {
-    return this.profile === 'admin';
+    return this.isAdminUser;
   }
 
   get visibleSections(): SettingsSection[] {
     return this.sections.filter((s) => !s.admin || this.isAdmin);
+  }
+
+  get headerActionButtons(): HeaderActionButton[] {
+    return [
+      {
+        id: 'salvar-config',
+        icon: 'save-outline',
+        color: 'primary',
+        ariaLabel: 'Salvar configurações',
+        label: 'Salvar',
+        disabled: this.saving || this.loading,
+        action: () => this.abrirAssinatura(),
+      },
+    ];
   }
 
   scrollTo(id: string): void {
@@ -213,14 +236,52 @@ export class SettingComponent implements OnInit {
     }
   }
 
-  // ---------- persistência ----------
 
-  private restore(): void {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) this.form.patchValue(JSON.parse(raw));
-    } catch {
-      /* ignore */
+  private loadSettings(): void {
+    this.loading = true;
+    this.settingsService.get().subscribe({
+      next: (dto) => {
+        this.isAdminUser = dto.isAdmin;
+        this.applyDto(dto);
+        this.loading = false;
+      },
+      error: async () => {
+        this.loading = false;
+        await this.toastMsg('Não foi possível carregar as configurações.', 'danger');
+      },
+    });
+  }
+
+  private applyDto(dto: UserSettingsDto): void {
+    this.form.patchValue(
+      {
+        idioma: dto.language,
+        intervaloAfericao: dto.monitoringIntervalMinutes,
+        usarIntervaloInstitucional: dto.useInstitutionalInterval,
+        intervaloInstitucional: dto.institutionalMonitoringIntervalMinutes,
+      },
+      { emitEvent: false },
+    );
+
+    if (dto.institution) {
+      this.form.patchValue(
+        {
+          urlSiga: dto.institution.sigaApiUrl ?? '',
+          urlAghu: dto.institution.aghuApiUrl ?? '',
+          hospital: {
+            nome: dto.institution.hospitalName ?? '',
+            setor: dto.institution.hospitalSector ?? '',
+            cnpj: dto.institution.hospitalCnpj ?? '',
+            cep: dto.institution.hospitalCep ?? '',
+            logradouro: dto.institution.hospitalStreet ?? '',
+            numero: dto.institution.hospitalNumber ?? '',
+            bairro: dto.institution.hospitalNeighborhood ?? '',
+            cidade: dto.institution.hospitalCity ?? '',
+            uf: dto.institution.hospitalState ?? '',
+          },
+        },
+        { emitEvent: false },
+      );
     }
   }
 
@@ -239,61 +300,59 @@ export class SettingComponent implements OnInit {
     this.showAssinatura = false;
   }
 
-  buildPayload() {
-    const v = this.form.getRawValue();
-    return {
-      perfil: this.profile,
-      preferencias: {
-        idioma: v.idioma,
-        intervaloAfericaoMin: v.usarIntervaloInstitucional
-          ? v.intervaloInstitucional
-          : v.intervaloAfericao,
-        usarIntervaloInstitucional: v.usarIntervaloInstitucional,
-      },
-      institucional: this.isAdmin
-        ? {
-            intervaloAfericaoMin: v.intervaloInstitucional,
-            urlApiSiga: (v.urlSiga || '').trim().replace(/\/+$/, ''),
-            urlApiAghu: (v.urlAghu || '').trim().replace(/\/+$/, ''),
-            hospital: {
-              nome: v.hospital.nome,
-              setor: v.hospital.setor,
-              cnpj: (v.hospital.cnpj || '').replace(/\D/g, ''),
-              endereco: {
-                cep: (v.hospital.cep || '').replace(/\D/g, ''),
-                logradouro: v.hospital.logradouro,
-                numero: v.hospital.numero,
-                bairro: v.hospital.bairro,
-                cidade: v.hospital.cidade,
-                uf: v.hospital.uf,
-              },
-            },
-            trocaSenhaAdmin:
-              v.senhaAdmin.atual && v.senhaAdmin.nova
-                ? { senhaAtual: v.senhaAdmin.atual, novaSenha: v.senhaAdmin.nova }
-                : null,
-          }
-        : null,
-    };
-  }
-
   async confirmarSalvar(): Promise<void> {
     if (!this.aceiteAssinatura || this.senhaAssinatura.trim().length < 4) return;
     this.showAssinatura = false;
     this.saving = true;
 
-    const payload = { ...this.buildPayload(), senhaConfirmacao: this.senhaAssinatura };
-    console.log('[Configurações] payload', payload);
+    const v = this.form.getRawValue();
 
     try {
-      // await this.settingsService.save(payload);
-      await new Promise((r) => setTimeout(r, 700));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.form.getRawValue()));
+      const userCommand: UserSettingsCommand = {
+        language: v.idioma,
+        monitoringIntervalMinutes: v.usarIntervaloInstitucional
+          ? v.intervaloInstitucional
+          : v.intervaloAfericao,
+        useInstitutionalInterval: v.usarIntervaloInstitucional,
+      };
+
+      let dto = await firstValueFrom(this.settingsService.updateUserSettings(userCommand));
+
+      if (this.isAdmin) {
+        const institutionCommand: InstitutionSettingsCommand = {
+          monitoringIntervalMinutes: v.intervaloInstitucional,
+          sigaApiUrl: (v.urlSiga || '').trim().replace(/\/+$/, '') || null,
+          aghuApiUrl: (v.urlAghu || '').trim().replace(/\/+$/, '') || null,
+          hospitalName: v.hospital.nome,
+          hospitalSector: v.hospital.setor || null,
+          hospitalCnpj: (v.hospital.cnpj || '').replace(/\D/g, '') || null,
+          hospitalCep: (v.hospital.cep || '').replace(/\D/g, '') || null,
+          hospitalStreet: v.hospital.logradouro || null,
+          hospitalNumber: v.hospital.numero || null,
+          hospitalNeighborhood: v.hospital.bairro || null,
+          hospitalCity: v.hospital.cidade,
+          hospitalState: v.hospital.uf,
+        };
+
+        dto = await firstValueFrom(this.settingsService.updateInstitutionSettings(institutionCommand));
+
+        if (v.senhaAdmin.atual && v.senhaAdmin.nova) {
+          await firstValueFrom(
+            this.settingsService.changeAdminPassword({
+              currentPassword: v.senhaAdmin.atual,
+              newPassword: v.senhaAdmin.nova,
+            }),
+          );
+        }
+      }
+
+      this.applyDto(dto);
       this.form.get('senhaAdmin')!.reset({ atual: '', nova: '', confirmar: '' });
       this.savedAt = new Date();
       await this.toastMsg('Configurações salvas com sucesso.', 'success');
-    } catch {
-      await this.toastMsg('Não foi possível salvar. Tente novamente.', 'danger');
+    } catch (err: any) {
+      const message = err?.error?.message || 'Não foi possível salvar. Tente novamente.';
+      await this.toastMsg(message, 'danger');
     } finally {
       this.saving = false;
       this.senhaAssinatura = '';

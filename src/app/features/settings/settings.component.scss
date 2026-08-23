@@ -27,13 +27,12 @@
 .cfg-page {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
-/* ---------- TOPBAR ---------- */
 .cfg-topbar {
-  position: sticky;
-  top: 64px;
   z-index: 20;
   display: flex;
   align-items: center;
@@ -169,21 +168,37 @@
   }
 }
 
-/* ---------- LAYOUT ---------- */
+.cfg-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex: 1;
+  padding: 64px 24px;
+  color: var(--cfg-muted);
+  font-size: 14px;
+
+  ion-spinner {
+    width: 32px;
+    height: 32px;
+  }
+}
+
 .cfg-layout {
   display: grid;
   grid-template-columns: 260px 1fr;
+  grid-template-rows: minmax(0, 1fr);
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
 .cfg-nav {
   border-right: 1px solid var(--cfg-border);
   background: #fff;
-  position: sticky;
-  top: 128px;
-  align-self: flex-start;
-  height: calc(100dvh - 128px);
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
 
   &__scroll {
@@ -250,13 +265,16 @@
   flex-direction: column;
   gap: 20px;
   min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 .cfg-spacer {
   height: 64px;
 }
 
-/* ---------- CARDS ---------- */
 .card {
   background: var(--cfg-surface);
   border: 1px solid var(--cfg-border);
@@ -264,6 +282,7 @@
   box-shadow: var(--cfg-shadow-sm);
   overflow: hidden;
   scroll-margin-top: 148px;
+  flex-shrink: 0;
 
   &__head {
     display: flex;
