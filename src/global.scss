@@ -36,9 +36,23 @@
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 /* @import '@ionic/angular/css/palettes/dark.system.css'; */
 
-/* ==========================================================================
-   GLOBAL PREMIUM UI STYLES (FA-043 Refinements)
-   ========================================================================== */
+
+:root {
+  --cfg-primary: #3b82f6;
+  --cfg-primary-soft: rgba(59, 130, 246, 0.08);
+  --cfg-text: #0f172a;
+  --cfg-border: #e6e8ee;
+  --cfg-border-strong: #d5d9e2;
+  --cfg-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+
+  --pre-primary: #3b82f6;
+  --pre-text: #0f172a;
+  --pre-border: #e6e8ee;
+
+  --fa-blue: #2563eb;
+  --fa-blue-dark: #1d4ed8;
+}
+
 
 .finalize-alert .alert-btn-danger {
   color: white !important;
@@ -83,7 +97,7 @@ textarea {
   }
 }
 
-/* Fix específico para inputs de tempo/data */
+
 input[type="time"],
 input[type="date"] {
   width: auto;
@@ -108,7 +122,7 @@ input[type="date"] {
   background: #94a3b8;
 }
 
-/* Botões Globais Premium */
+
 ion-button {
   --border-radius: 16px !important;
   font-weight: 700 !important;
@@ -116,7 +130,7 @@ ion-button {
   letter-spacing: 0.3px !important;
 }
 
-/* Checkboxes e Radios Globais */
+
 ion-checkbox {
   --checkbox-background-checked: #60a5fa;
   --border-color-checked: #60a5fa;
@@ -134,7 +148,6 @@ ion-radio {
   gap: 12px;
 }
 
-/* Utilitário para inputs compactos */
 .compact-field {
   width: fit-content !important;
   min-width: 120px;
@@ -153,7 +166,6 @@ ion-radio {
   }
 }
 
-/* Modal Customizado */
 .auto-height-modal {
   --height: fit-content;
   --max-height: 90vh;
@@ -170,9 +182,7 @@ ion-radio {
   }
 }
 
-/* ==========================================================================
-   ESTILOS DE IMPRESSÃO GLOBAIS (FA-075)
-   ========================================================================== */
+
 @media print {
   app-status-bar,
   app-header-institucional,

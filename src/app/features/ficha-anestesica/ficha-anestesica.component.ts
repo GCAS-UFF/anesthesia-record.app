@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { AlertController, ToastController, ModalController, IonContent, IonRefresherContent, IonRefresher } from '@ionic/angular/standalone';
 import { IonButton, IonIcon, IonCheckbox, IonModal } from '@ionic/angular/standalone';
@@ -199,8 +199,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   signatureAgreed = false;
   signatureTypedName = '';
   signaturePassword = '';
-  signatureError = ''; 
-  monitoringFinalizado = false; 
+  signatureError = '';
+  monitoringFinalizado = false;
   fichaFinalizada = false;
   fichaFinalizadaEm: string | null = null;
   fichaFinalizadaPor: string | null = null;
@@ -228,13 +228,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private masterData: MasterDataService,
     private preAnesthesicService: PreAnesthesicRecordService,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private cdr: ChangeDetectorRef
   ) {
     addIcons({ checkmarkCircle, chevronDownOutline, addOutline, trashOutline, returnDownForwardOutline, closeCircleOutline, timeOutline, alertCircleOutline, lockClosedOutline, shieldCheckmarkOutline, syncOutline, printOutline, fitnessOutline, createOutline, medicalSharp, shieldCheckmark, cloudDoneOutline, pencilOutline, saveOutline, arrowBackOutline, closeOutline });
     this.initForm();
-
-    // Chamar isso junto com o carregamento da ficha quando estiver pronto, pois SEMPRE vamos ter a pre anestésica preenchida
-    // this.preAnesthesiaData = response.preAnesthesia ?? null;
   }
 
   ngOnInit() {
@@ -280,7 +278,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     // "Ficha Pré-Anestésica" (ModalController) não é filho do Angular e não fecha
     // sozinho quando a rota muda — se ficar aberto ao navegar para fora daqui, o
     // backdrop trava a tela seguinte inteira. Fecha explicitamente ao sair.
-    this.openRecordModal?.dismiss().catch(() => {});
+    this.openRecordModal?.dismiss().catch(() => { });
     this.conditionalSubs.forEach(sub => sub.unsubscribe());
   }
 
@@ -1049,16 +1047,15 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.isSignModalOpen = false;
   }
 
+  onSignatureAgreedChange(checked: boolean): void {
+    this.signatureAgreed = checked;
+    this.cdr.detectChanges();
+  }
+
   get expectedSignatureName(): string {
     return (this.loggedUser?.name || this.loggedUser?.fullName || '').trim();
   }
 
-  /**
-   * Clique em "Enviar": enquanto o MONITORAMENTO ainda está em andamento, é um salvamento
-   * normal (sem pedir nome/senha, ficha continua editável). Só quando o monitoramento já foi
-   * finalizado (consultado no backend, não em variável local) é que abrimos o modal de
-   * confirmação — esse será o salvamento definitivo da ficha.
-   */
   onEnviarClick() {
     if (this.monitoringFinalizado) {
       this.openSignModal();

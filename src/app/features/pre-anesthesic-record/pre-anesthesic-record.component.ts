@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -203,6 +203,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     private toastCtrl: ToastController,
     private authService: AuthService,
     private preAnesthesicService: PreAnesthesicRecordService,
+    private cdr: ChangeDetectorRef,
   ) {
     addIcons({
       arrowBackOutline,
@@ -997,6 +998,13 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
   closeSignModal(): void {
     this.isSignModalOpen = false;
+  }
+
+  onSignatureAgreedChange(checked: boolean): void {
+    this.signatureAgreed = checked;
+    // ion-modal renderiza o conteúdo com OnPush; forçamos a checagem para refletir
+    // o estado imediatamente, sem depender de outro evento para disparar o CD.
+    this.cdr.detectChanges();
   }
 
   confirmarESalvar(): void {

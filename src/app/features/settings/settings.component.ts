@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -101,6 +101,7 @@ export class SettingComponent implements OnInit {
     private toast: ToastController,
     private authService: AuthService,
     private settingsService: SettingsService,
+    private cdr: ChangeDetectorRef,
   ) {
     addIcons({
       settingsOutline, saveOutline, languageOutline, timerOutline, serverOutline,
@@ -298,6 +299,11 @@ export class SettingComponent implements OnInit {
 
   fecharAssinatura(): void {
     this.showAssinatura = false;
+  }
+
+  onAceiteAssinaturaChange(checked: boolean): void {
+    this.aceiteAssinatura = checked;   
+    this.cdr.detectChanges();
   }
 
   async confirmarSalvar(): Promise<void> {

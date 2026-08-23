@@ -1299,7 +1299,7 @@
         <div class="sign-check-row">
           <ion-checkbox
             [checked]="signatureAgreed"
-            (ionChange)="signatureAgreed = $event.detail.checked"
+            (ionChange)="onSignatureAgreedChange($event.detail.checked)"
             labelPlacement="end"
             class="sign-check"
           >

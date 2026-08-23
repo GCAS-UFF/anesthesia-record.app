@@ -304,7 +304,7 @@
           <label class="sign__check">
             <ion-checkbox
               [checked]="aceiteAssinatura"
-              (ionChange)="aceiteAssinatura = $event.detail.checked"
+              (ionChange)="onAceiteAssinaturaChange($event.detail.checked)"
               labelPlacement="end"
             >
               <span class="sign__check-text">
