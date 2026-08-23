@@ -387,9 +387,14 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
   private startClockTick() {
     clearInterval(this.tickSub);
-    this.tickSub = setInterval(() => {
-      this.anesthesiaTimer = this.formatDuration(this.startTimeAnesthesia, this.isAnesthesiaFinished ? this.anesthesiaEndTime : null);
-      this.surgeryTimer = this.formatDuration(this.startTimeSurgery, null);
+    this.tickSub = setInterval(() => {      
+      this.anesthesiaTimer = this.formatDuration(this.startTimeAnesthesia, this.anesthesiaEndTime);
+      this.surgeryTimer = this.formatDuration(this.startTimeSurgery, this.surgeryEndTime);
+    
+      if (this.anesthesiaEndTime && this.surgeryEndTime) {
+        clearInterval(this.tickSub);
+        this.tickSub = undefined;
+      }
     }, 1000);
   }
 
