@@ -314,42 +314,42 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
           || this.selectedSurgery?.asa;
         if (asaBack) this.patientAsa = `ASA ${asaBack}`;
       }
-
-
-      const finishedVariants = ['concluido', 'concluída', 'concluida', 'completed'];
-      const statusRaw = surgery?.status;
-      const statusIsFinished =
-        statusRaw === SurgeryStatusEnum.Concluido ||
-        (typeof statusRaw === 'string' && finishedVariants.includes(statusRaw.toLowerCase()));
-
-      if (statusIsFinished) {
-        this.isSurgeryFinished = true;
-        this.isAnesthesiaFinished = true;
-        this.loadFinalizedMonitoringRecord(surgery);
-      }
+     
+      await this.loadMonitoringRecordFromApi(!!draft);
     } catch (err) {
       console.error('[Monitorização] loadInitialData falhou', err);
     }
   }
 
+  private async loadMonitoringRecordFromApi(hasLocalDraft: boolean): Promise<void> {
+    if (!this.surgeryId) return;
 
-  private loadFinalizedMonitoringRecord(surgery: any) {
-    const embedded = surgery?.monitoringRecord
-      ?? surgery?.monitoring
-      ?? surgery?.anesthesiaRecord?.monitoringRecord
-      ?? surgery?.anesthesiaRecord?.monitoring
-      ?? null;
+    let record: any = null;
+    try {
+      record = await firstValueFrom(
+        this.anesthesiaRecordService.getMonitoringRecord(Number(this.surgeryId))
+      );
+    } catch (err) {
+      console.warn('[Monitorização] Falha ao buscar registro de monitorização na API.', err);
+    }
+    if (!record) return;
 
+    const isFinished = record.status === SurgeryStatusEnum.Concluido;
 
-    const source = embedded ?? this.anesthesiaRecordService.getFinalizedMonitoringRecord(this.surgeryId);
-    if (!source) return;
-
-    if (embedded) {
-      this.anesthesiaRecordService.saveFinalizedMonitoringRecord(this.surgeryId, embedded);
+    // Uma monitorização finalizada é sempre reconstruída a partir do backend — é a fonte
+    // definitiva e substitui qualquer rascunho local desatualizado. Uma monitorização ainda em
+    // andamento só é usada para hidratar a tela quando não houver rascunho local (ex.: usuário
+    // reabrindo em outro dispositivo/sessão), para não sobrescrever edições locais recentes.
+    if (isFinished || !hasLocalDraft) {
+      const mapped = this.anesthesiaRecordService.mapMonitoringPayloadToApp(record);
+      this.hydrateFromDraft(mapped);
     }
 
-    const mapped = this.anesthesiaRecordService.mapMonitoringPayloadToApp(source);
-    this.hydrateFromDraft(mapped);
+    if (isFinished) {
+      this.isSurgeryFinished = true;
+      this.isAnesthesiaFinished = true;
+      this.anesthesiaRecordService.saveFinalizedMonitoringRecord(this.surgeryId, record);
+    }
   }
 
   private hydrateFromDraft(draft: any) {
@@ -1288,6 +1288,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async clickFinalize() {
+    if (this.isLocked) return;
     if (!this.isSurgeryFinished) {
       this.encerrarCirurgia();
     } else {
@@ -1308,13 +1309,12 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
             if (!this.vitalRecords.length) {
               this.addVitalRecord({ timestamp: this.surgeryEndTime.toISOString(), time: this.formatHM(this.surgeryEndTime) });
-            } else {
-              // Forçar snapshot para marcar a linha no gráfico
+            } else {              
               this.autoSnapshotFromLast();
             }
 
             this.persistDraft();
-            // Aqui no futuro pode mandar um patch pra API pra registrar o fim da cirurgia
+            // Verificar se faz sentido enviar um patch pra API pra registrar o fim da cirurgia
           }
         },
       ],

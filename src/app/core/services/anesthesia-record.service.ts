@@ -390,8 +390,10 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   }
 
 
-  mapMonitoringPayloadToApp(api: any): any {
-    const vitalRecords = this.mapVitalRecordsToApp(api.vitalSigns ?? []);
+  mapMonitoringPayloadToApp(api: any): any {   
+    const fallbackDateIso = api.startedAt ?? api.endedAt ?? null;
+
+    const vitalRecords = this.mapVitalRecordsToApp(api.vitalSigns ?? [], fallbackDateIso);
     return {
       anesthesiaRecordId: api.anesthesiaRecordId ?? null,
       surgeryId: api.surgeryId ?? null,
@@ -405,15 +407,40 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       status: api.status ?? null,
       vitalRecords,
       customFields: this.deriveCustomFieldDefs(vitalRecords),
-      agents: this.mapMonitoringAgentsToApp(api.administeredAgents ?? []),
-      events: this.mapMonitoringEventsToApp(api.clinicalEvents ?? []),
-      fluidBalance: this.mapFluidBalanceToApp(api.fluidBalances ?? []),
-      positions: this.mapPositionsToApp(api.positions ?? []),
+      agents: this.mapMonitoringAgentsToApp(api.administeredAgents ?? [], fallbackDateIso),
+      events: this.mapMonitoringEventsToApp(api.clinicalEvents ?? [], fallbackDateIso),
+      fluidBalance: this.mapFluidBalanceToApp(api.fluidBalances ?? [], fallbackDateIso),
+      positions: this.mapPositionsToApp(api.positions ?? [], fallbackDateIso),
       posicaoAtual: (() => {
-        const mapped = this.mapPositionsToApp(api.positions ?? []);
+        const mapped = this.mapPositionsToApp(api.positions ?? [], fallbackDateIso);
         return mapped[mapped.length - 1]?.position ?? null;
       })(),
     };
+  }
+  
+  private resolveRecordTimestamp(record: any, fallbackDateIso: string | null): string | null {
+    const MIN_VALID_YEAR = 1900;
+    const isPlaceholderDate = (value: string) => {
+      const year = Number(value.slice(0, 4));
+      return !Number.isFinite(year) || year < MIN_VALID_YEAR;
+    };
+
+    const hasUsableDate = typeof record.date === 'string' && !isPlaceholderDate(record.date);
+
+    if (hasUsableDate && record.time) {
+      return `${record.date.split('T')[0]}T${record.time}Z`;
+    }
+    if (fallbackDateIso && record.time) {
+      return `${fallbackDateIso.split('T')[0]}T${record.time}Z`;
+    }
+    return record.timestamp ?? (hasUsableDate ? record.date : null);
+  }
+
+  private formatLocalTimeFromIso(iso: string | null): string {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   }
 
   private deriveCustomFieldDefs(vitalRecords: any[]): { key: string; label: string; unit?: string }[] {
@@ -653,6 +680,13 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   getMonitoringStatus(surgeryId: number): Observable<SurgeryStatusEnum | null> {
     return this.api.get<any>(`MonitoringRecord/${surgeryId}`).pipe(
       map((res: any) => (res?.data?.status ?? res?.status ?? null)),
+      catchError(() => of(null))
+    );
+  }
+  
+  getMonitoringRecord(surgeryId: number): Observable<any | null> {
+    return this.api.get<any>(`MonitoringRecord/${surgeryId}`).pipe(
+      map((res: any) => res?.data ?? null),
       catchError(() => of(null))
     );
   }
@@ -1461,7 +1495,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     };
   }
 
-  private mapVitalRecordsToApp(records: any[]): any[] {
+  private mapVitalRecordsToApp(records: any[], fallbackDateIso: string | null = null): any[] {
     if (!Array.isArray(records)) return [];
     return records.map(record => {
       const custom: any = {};
@@ -1469,13 +1503,11 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         if (cf.name && cf.value) custom[cf.name] = cf.value;
       });
 
-      const fullIsoString = (record.date && record.time)
-        ? `${record.date.split('T')[0]}T${record.time}Z`
-        : record.timestamp;
+      const fullIsoString = this.resolveRecordTimestamp(record, fallbackDateIso);
 
       return {
         timestamp: fullIsoString,
-        time: this.formatTimeForApp(record.time || record.timestamp),
+        time: this.formatLocalTimeFromIso(fullIsoString) || this.formatTimeForApp(record.time || record.timestamp),
         pas: record.systolicBloodPressure,
         pad: record.diastolicBloodPressure,
         pam: record.meanArterialPressure,
@@ -1491,20 +1523,18 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     });
   }
 
-  private mapMonitoringAgentsToApp(records: any[]): any[] {
+  private mapMonitoringAgentsToApp(records: any[], fallbackDateIso: string | null = null): any[] {
     if (!Array.isArray(records)) return [];
 
     return records.map(record => {
-      const fullIsoString = (record.date && record.time)
-        ? `${record.date.split('T')[0]}T${record.time}Z`
-        : record.timestamp;
+      const fullIsoString = this.resolveRecordTimestamp(record, fallbackDateIso);
 
       const unitLabel = MEDICATION_UNIT_LABELS[record.unit as MedicationUnitEnum] ?? '';
       const routeLabel = ADMINISTRATION_ROUTE_LABELS[record.route as AdministrationRouteEnum] ?? null;
 
       return {
         timestamp: fullIsoString,
-        time: this.formatTimeForApp(record.time || record.timestamp),
+        time: this.formatLocalTimeFromIso(fullIsoString) || this.formatTimeForApp(record.time || record.timestamp),
         name: record.drugName || record.medicationName || null,
         dose: record.dose != null ? `${record.dose}${unitLabel}` : null,
         doseValue: record.dose ?? null,
@@ -1517,23 +1547,22 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     });
   }
 
-  private mapMonitoringEventsToApp(records: any[]): any[] {
+  private mapMonitoringEventsToApp(records: any[], fallbackDateIso: string | null = null): any[] {
     if (!Array.isArray(records)) return [];
 
     const idToKey: Record<number, string> = {};
     Object.entries(CLINICAL_EVENT_TYPE_KEY_TO_ID).forEach(([key, id]) => { idToKey[id] = key; });
 
     return records.map(record => {
-      const fullIsoString = (record.date && record.time)
-        ? `${record.date.split('T')[0]}T${record.time}Z`
-        : record.timestamp;
+      const fullIsoString = this.resolveRecordTimestamp(record, fallbackDateIso);
 
+     
       const key = idToKey[record.eventType] ?? 'other';
       const label = CLINICAL_EVENT_TYPE_LABELS[record.eventType as ClinicalEventTypeEnum] ?? 'Evento';
 
       return {
         timestamp: fullIsoString,
-        time: this.formatTimeForApp(record.time || record.timestamp),
+        time: this.formatLocalTimeFromIso(fullIsoString) || this.formatTimeForApp(record.time || record.timestamp),
         type: key,
         category: key,
         categoryId: record.eventType ?? null,
@@ -1545,13 +1574,11 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     });
   }
 
-  private mapFluidBalanceToApp(records: any[]): any[] {
+  private mapFluidBalanceToApp(records: any[], fallbackDateIso: string | null = null): any[] {
     if (!Array.isArray(records)) return [];
 
     return records.map(record => {
-      const fullIsoString = (record.date && record.time)
-        ? `${record.date.split('T')[0]}T${record.time}Z`
-        : record.timestamp;
+      const fullIsoString = this.resolveRecordTimestamp(record, fallbackDateIso);
 
       const catId: FluidCategoryEnum | undefined = record.category ?? record.categoryId;
 
@@ -1562,7 +1589,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
       return {
         timestamp: fullIsoString,
-        time: this.formatTimeForApp(record.time || record.timestamp),
+        time: this.formatLocalTimeFromIso(fullIsoString) || this.formatTimeForApp(record.time || record.timestamp),
         tipo: record.type === FluidBalanceTypeEnum.Loss ? 'loss' : 'gain', // mantendo para legado
         type: record.type === FluidBalanceTypeEnum.Loss ? 'loss' : 'gain', // adicionando o campo correto
         item: itemName,
@@ -1575,18 +1602,19 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     });
   }
 
-  private mapPositionsToApp(records: any[]): any[] {
+  private mapPositionsToApp(records: any[], fallbackDateIso: string | null = null): any[] {
     if (!Array.isArray(records)) return [];
 
     return records.map(record => {
-      const fullIsoString = (record.date && record.time)
-        ? `${record.date.split('T')[0]}T${record.time}Z`
-        : record.timestamp;
+      const fullIsoString = this.resolveRecordTimestamp(record, fallbackDateIso);
+     
+      const positionLabel = SURGICAL_POSITION_LABELS[record.position as SurgicalPositionEnum]
+        ?? 'Não informado';
 
       return {
         timestamp: fullIsoString,
-        time: this.formatTimeForApp(record.time || record.timestamp),       
-        position: SURGICAL_POSITION_LABELS[record.position as SurgicalPositionEnum] || record.position,
+        time: this.formatLocalTimeFromIso(fullIsoString) || this.formatTimeForApp(record.time || record.timestamp),
+        position: positionLabel,
         positionId: record.position ?? null,
       };
     });

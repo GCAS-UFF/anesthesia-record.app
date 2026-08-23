@@ -100,7 +100,7 @@ export class VitalSignsChartComponent implements AfterViewInit, OnChanges, OnDes
   @Output() addVitalRecord = new EventEmitter<void>();
   @Output() addCustomField = new EventEmitter<void>();
   @Output() openHistory = new EventEmitter<void>();
-  @Output() viewBoundsChange = new EventEmitter<{min: number, max: number}>();
+  @Output() viewBoundsChange = new EventEmitter<{ min: number, max: number }>();
 
   @ViewChild('chartCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
   private chart?: Chart;
@@ -125,12 +125,6 @@ export class VitalSignsChartComponent implements AfterViewInit, OnChanges, OnDes
       this.updateChart();
     }
     if (c['vitalRecords']) this.updateSnapshot();
-
-
-    if (c['readonly'] && this.chart) {
-      this.applyReadonlyToZoomConfig();
-      this.chart.update();
-    }
   }
 
   ngOnDestroy(): void { this.resizeObs?.disconnect(); this.chart?.destroy(); }
@@ -149,15 +143,15 @@ export class VitalSignsChartComponent implements AfterViewInit, OnChanges, OnDes
           legend: { display: false },
           zoom: {
             pan: {
-              enabled: !this.readonly,
+              enabled: true,
               mode: 'x',
-              onPan: ({chart}) => this.emitBounds(chart)
+              onPan: ({ chart }) => this.emitBounds(chart)
             },
             zoom: {
-              wheel: { enabled: !this.readonly },
-              pinch: { enabled: !this.readonly },
+              wheel: { enabled: true },
+              pinch: { enabled: true },
               mode: 'x',
-              onZoom: ({chart}) => this.emitBounds(chart)
+              onZoom: ({ chart }) => this.emitBounds(chart)
             }
           },
           tooltip: {
@@ -172,20 +166,20 @@ export class VitalSignsChartComponent implements AfterViewInit, OnChanges, OnDes
           }
         },
         scales: {
-          x: { 
+          x: {
             type: 'time',
-            time: { 
-              displayFormats: { minute: 'HH:mm' }
+            time: {              
+              displayFormats: { second: 'HH:mm:ss', minute: 'HH:mm', hour: 'HH:mm', day: 'dd/MM HH:mm' }
             },
             adapters: {
               date: { locale: ptBR }
             },
-            grid: { color: 'rgba(226,232,240,0.5)' }, 
-            ticks: { 
-              stepSize: 5, 
-              font: { size: 10 }, 
-              color: '#64748b' 
-            } 
+            grid: { color: 'rgba(226,232,240,0.5)' },
+            ticks: {
+              stepSize: 5,
+              font: { size: 10 },
+              color: '#64748b'
+            }
           },
           y: {
             position: 'left', min: 0, max: 240, grid: { color: 'rgba(226,232,240,0.4)' },
@@ -245,10 +239,10 @@ export class VitalSignsChartComponent implements AfterViewInit, OnChanges, OnDes
 
     const styles = ['rect', 'star', 'rectRot', 'crossRot'];
     (this.customFields || []).forEach((cf, i) => {
-       base.push({
-         label: cf.label, data: [], borderColor: '#64748b', backgroundColor: '#64748b',
-         pointRadius: 4, pointStyle: styles[i % 4], tension: 0.2, borderWidth: 2, yAxisID: 'y'
-       });
+      base.push({
+        label: cf.label, data: [], borderColor: '#64748b', backgroundColor: '#64748b',
+        pointRadius: 4, pointStyle: styles[i % 4], tension: 0.2, borderWidth: 2, yAxisID: 'y'
+      });
     });
 
     return base;
@@ -256,10 +250,10 @@ export class VitalSignsChartComponent implements AfterViewInit, OnChanges, OnDes
 
   private updateChart(): void {
     if (!this.chart) return;
-    
+
     this.chart.data.datasets = this.buildDatasets();
     const ds = this.chart.data.datasets as any[];
-    
+
     const mapToPoint = (r: any, key: string) => {
       const ts = new Date(r.timestamp || r.time).getTime();
       const val = (key === 'temp') ? (r.temperatura ?? r.temp ?? null) : (r[key] ?? null);
@@ -288,25 +282,30 @@ export class VitalSignsChartComponent implements AfterViewInit, OnChanges, OnDes
       if (!isZoomed && !this.hasCustomView) {
         delete this.chart.options.scales['x'].min;
         delete this.chart.options.scales['x'].max;
-        
+
         if (this.anesthesiaStartTime) {
           this.chart.options.scales['x'].suggestedMin = new Date(this.anesthesiaStartTime).getTime();
         }
-        
-        let endTime = Date.now();
+       
+        let endTime: number;
         if (this.surgeryEndTime) {
           endTime = new Date(this.surgeryEndTime).getTime();
-        } else if (this.vitalRecords && this.vitalRecords.length > 0) {
-          const lastRec = this.vitalRecords[this.vitalRecords.length - 1];
-          const lastRecTime = new Date(lastRec.timestamp || lastRec.time).getTime();
-          if (lastRecTime > endTime) endTime = lastRecTime;
+        } else if (this.anesthesiaEndTime) {
+          endTime = new Date(this.anesthesiaEndTime).getTime();
+        } else {
+          endTime = Date.now();
+          if (this.vitalRecords && this.vitalRecords.length > 0) {
+            const lastRec = this.vitalRecords[this.vitalRecords.length - 1];
+            const lastRecTime = new Date(lastRec.timestamp || lastRec.time).getTime();
+            if (lastRecTime > endTime) endTime = lastRecTime;
+          }
         }
 
         // Garantir que a janela mínima de tempo exibida no gráfico seja de 2 horas (7200000 ms)
         const MIN_WINDOW_MS = 7200000;
         const suggestedMin = this.chart.options.scales['x'].suggestedMin;
         const startTime = (typeof suggestedMin === 'number') ? suggestedMin : (endTime - MIN_WINDOW_MS);
-        
+
         if (endTime - startTime < MIN_WINDOW_MS) {
           endTime = startTime + MIN_WINDOW_MS;
         }
@@ -324,8 +323,7 @@ export class VitalSignsChartComponent implements AfterViewInit, OnChanges, OnDes
       surgeryEndTime: this.surgeryEndTime
     };
     this.chart.update('none');
-    
-    // Emit initial bounds after first update
+
     setTimeout(() => this.emitBounds(this.chart!), 100);
   }
 
@@ -340,24 +338,15 @@ export class VitalSignsChartComponent implements AfterViewInit, OnChanges, OnDes
   }
 
   panChart(deltaX: number) {
-    if (this.readonly) return; // Cirurgia finalizada: arraste/pan desabilitado (ver ngOnChanges).
+    // Navegação: permanece disponível mesmo com a monitorização finalizada (`readonly`).
     if (this.chart) {
       (this.chart as any).pan({ x: deltaX }, undefined, 'x');
     }
   }
 
-  private applyReadonlyToZoomConfig(): void {
-    if (!this.chart) return;
-    const zoomOpts: any = (this.chart.options.plugins as any)?.zoom;
-    if (!zoomOpts) return;
-    zoomOpts.pan.enabled = !this.readonly;
-    zoomOpts.zoom.wheel.enabled = !this.readonly;
-    zoomOpts.zoom.pinch.enabled = !this.readonly;
-  }
 
-  
-  scrollbarValue = 0; 
-  private readonly MIN_WINDOW_MS = 2 * 60 * 60 * 1000; 
+  scrollbarValue = 0;
+  private readonly MIN_WINDOW_MS = 2 * 60 * 60 * 1000;
   private syncingScrollbar = false;
   private hasCustomView = false;
 
@@ -411,7 +400,6 @@ export class VitalSignsChartComponent implements AfterViewInit, OnChanges, OnDes
     this.syncingScrollbar = false;
   }
 
-  
   resetToLatest(): void {
     this.hasCustomView = false;
     if (this.chart?.options?.scales?.['x']) {
