@@ -119,9 +119,15 @@ export class MyPatientsPage implements OnInit {
       this.currentPage, this.pageSize).subscribe({
         next: (response: any) => {
           const resultData = response.data || response;
+          this.totalItems = resultData.totalItems || 0;
+          this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1;
           this.flattenData(resultData);
           this.applyStatusFilter();
-          this.sortInProgressFirst();
+          
+          if (this.selectedDate) {
+            this.sortInProgressFirst();
+          }
+
           this.isRefreshing = false;
         },
         error: async () => {
