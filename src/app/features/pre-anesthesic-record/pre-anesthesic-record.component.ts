@@ -125,6 +125,13 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   lastSavedAt: Date | null = null;
   
   isFinalized = false;
+  forcedReadOnly = false;
+  isResponsible = true;
+
+  get canEdit(): boolean {
+    return !this.isFinalized && !this.forcedReadOnly && this.isResponsible;
+  }
+
   private isSubmittingSignature = false;
   private pendingFinalizePayload: PreAnesthesicRecordPayload | null = null;
   private syncTimerSub?: Subscription;
@@ -235,6 +242,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     const rawAnesthesiaRecordId = this.route.snapshot.paramMap.get('id');
     this.anesthesiaRecordId = rawAnesthesiaRecordId ? Number(rawAnesthesiaRecordId) : null;
     this.patientId = this.route.snapshot.paramMap.get('patientId');
+    this.forcedReadOnly = this.route.snapshot.queryParamMap.get('readOnly') === 'true';
     this.loggedUser = this.authService.getUser();
     this.buildForm();
     this.loadInitialState();
@@ -395,7 +403,6 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     }
   }
 
-  /* ---------------- cirurgias propostas ---------------- */
 
   get cirurgias(): FormArray {
     return this.form.get('procedimento.cirurgias') as FormArray;
@@ -404,7 +411,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   cirurgiaSelecionada = '';
 
   addCirurgia(nome?: string): void {
-    if (this.isFinalized) return;
+    if (!this.canEdit) return;
     const valor = (nome ?? this.cirurgiaSelecionada ?? '').trim();
     if (!valor) return;
     if (this.cirurgias.value.some((c: any) => c.nome === valor)) return;
@@ -413,12 +420,12 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   removeCirurgia(i: number): void {
-    if (this.isFinalized) return;
+    if (!this.canEdit) return;
     this.cirurgias.removeAt(i);
   }
 
   setCirurgiaPrincipal(i: number): void {
-    if (this.isFinalized) return;
+    if (!this.canEdit) return;
     this.cirurgias.controls.forEach((c, idx) => c.get('principal')?.setValue(idx === i));
   }
 
@@ -431,12 +438,12 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   addMedicacao(): void {
-    if (this.isFinalized) return;
+    if (!this.canEdit) return;
     this.medicacoes.push(this.novaMedicacao());
   }
 
   removeMedicacao(i: number): void {
-    if (this.isFinalized) return;
+    if (!this.canEdit) return;
     if (this.medicacoes.length > 1) this.medicacoes.removeAt(i);
     else this.medicacoes.at(0).reset();
   }
@@ -446,17 +453,17 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   addParecer(): void {
-    if (this.isFinalized) return;
+    if (!this.canEdit) return;
     this.outrosPareceres.push(this.fb.group({ especialidade: [''], descricao: [''] }));
   }
 
   removeParecer(i: number): void {
-    if (this.isFinalized) return;
+    if (!this.canEdit) return;
     this.outrosPareceres.removeAt(i);
   }
 
   setBool(path: string, value: boolean): void {
-    if (this.isFinalized) return;
+    if (!this.canEdit) return;
     this.form.get(path)?.setValue(value);
   }
 
@@ -465,7 +472,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   setValue(path: string, value: any): void {
-    if (this.isFinalized) return;
+    if (!this.canEdit) return;
     this.form.get(path)?.setValue(value);
   }
 
@@ -474,7 +481,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   toggleMulti(path: string, value: string): void {
-    if (this.isFinalized) return;
+    if (!this.canEdit) return;
     const ctrl = this.form.get(path);
     if (!ctrl) return;
     const current: string[] = Array.isArray(ctrl.value) ? [...ctrl.value] : [];
@@ -491,7 +498,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   toggleValue(path: string): void {
-    if (this.isFinalized) return;
+    if (!this.canEdit) return;
     const ctrl = this.form.get(path);
     ctrl?.setValue(!ctrl.value);
   }
@@ -521,12 +528,17 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
       if (record) {
         this.remoteRecordId = record.id ?? null;
         this.isFinalized = !!(record.signedAt && record.signedAt.trim());
+        this.isResponsible = !record.firstAnesthesiologistId ||
+          String(record.firstAnesthesiologistId) === String(this.loggedUser?.id);
       }
 
       if (this.isFinalized && record) {
         // Registro já assinado: o servidor é a fonte autoritativa e a ficha vira somente leitura.
         this.patchFormFromDraft(this.extractDraft(record));
         this.preAnesthesicService.clearDraft(this.anesthesiaRecordId!, this.patientId!);
+        this.form.disable();
+      } else if (!this.canEdit) {        
+        if (record) this.patchFormFromDraft(this.extractDraft(record));
         this.form.disable();
       } else {
         const localDraft = this.preAnesthesicService.getDraft(this.anesthesiaRecordId!, this.patientId!);
@@ -598,13 +610,13 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   private onFormChanged(): void {
-    if (!this.anesthesiaRecordId || !this.patientId || this.isFinalized) return;
+    if (!this.anesthesiaRecordId || !this.patientId || !this.canEdit) return;
     this.preAnesthesicService.saveDraft(this.anesthesiaRecordId, this.patientId, this.toDraft());
     this.lastSavedAt = new Date();
   }
 
   saveDraft(): void {
-    if (!this.anesthesiaRecordId || !this.patientId || this.isFinalized) return;
+    if (!this.anesthesiaRecordId || !this.patientId || !this.canEdit) return;
     this.preAnesthesicService.saveDraft(this.anesthesiaRecordId, this.patientId, this.toDraft());
     this.lastSavedAt = new Date();
   }
@@ -954,7 +966,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   get headerActionButtons(): HeaderActionButton[] {
-    if (this.isFinalized) {
+    if (this.isFinalized || !this.canEdit) {
       return [
         {
           id: 'go-to-anesthesia-record',

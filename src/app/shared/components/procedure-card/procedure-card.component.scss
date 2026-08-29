@@ -17,53 +17,93 @@
   right: 0;
   height: 100%;
   display: flex;
-  align-items: stretch;
-  gap: 2px;
-  padding: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 0 12px;
   z-index: 1;
+
+  /* Enquanto fechado, fica atrás do card (escondido). Assim que o swipe
+     abre, sobe acima do card (z-index 2) — antes mesmo da transição de
+     0.3s terminar — para que um toque logo após abrir acerte o botão em
+     vez do card ainda terminando de se mover. */
+  &.is-active {
+    z-index: 3;
+  }
 
   .slide-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
-    min-width: 80px;
-    padding: 0 16px;
+    gap: 6px;
+    width: 64px;
+    padding: 0;
     border: none;
-    color: white;
-    font-size: 12px;
+    background: transparent;
+    color: #475569;
+    font-size: 11px;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.2s ease;
+    transition: transform 0.15s ease, opacity 0.2s ease;
 
-    ion-icon {
-      font-size: 24px;
+    .slide-btn-circle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #94a3b8;
+      color: white;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+      transition: transform 0.15s ease;
+
+      ion-icon {
+        font-size: 22px;
+      }
     }
 
-    &:hover {
-      opacity: 0.9;
+    .slide-btn-label {
+      max-width: 72px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    &:active {
-      opacity: 0.7;
+    &:hover .slide-btn-circle {
+      transform: scale(1.06);
+    }
+
+    &:active .slide-btn-circle {
+      transform: scale(0.94);
+    }
+
+    &.btn-disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+
+      .slide-btn-circle {
+        box-shadow: none;
+      }
+
+      &:hover .slide-btn-circle,
+      &:active .slide-btn-circle {
+        transform: none;
+      }
     }
   }
 
-  .slide-btn-delete {
+  .slide-btn-delete .slide-btn-circle {
     background: #ef4444;
-
-    &:hover {
-      background: #dc2626;
-    }
   }
 
-  .slide-btn-archive {
+  .slide-btn-archive .slide-btn-circle {
     background: #f59e0b;
+  }
 
-    &:hover {
-      background: #d97706;
-    }
+  .slide-btn-reopen .slide-btn-circle {
+    background: #6366f1;
   }
 }
 
@@ -73,7 +113,7 @@
   position: relative;
   display: flex;
   flex-direction: row;
-  align-items: stretch; /* força os lados a terem a mesma altura */
+  align-items: stretch; 
   overflow: hidden;
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -102,6 +142,36 @@
     border-color: transparent;
     box-shadow: 0 10px 20px -8px rgba(15, 23, 42, 0.12);
   }
+
+  &.is-mine {
+    border-color: #16a34a;
+    border-width: 2px;
+    box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.25), 0 6px 16px -8px rgba(22, 163, 74, 0.35);
+  }
+}
+
+.mine-ribbon {
+  position: absolute;
+  top: 12px;
+  right: -34px;
+  transform: rotate(45deg);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 36px;
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+
+  ion-icon {
+    font-size: 12px;
+  }
 }
 
 .card-side {
@@ -115,7 +185,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  pointer-events: none; /* Impede que eventos de mouse interfiram no slide */
+  pointer-events: none; 
 }
 
 .side-inner {
@@ -229,7 +299,7 @@
   gap: 20px;
   align-items: flex-start;
   justify-content: space-between;
-  pointer-events: none; /* Impede que eventos de mouse interfiram no slide */
+  pointer-events: none; 
 }
 
 .body-details {
@@ -435,7 +505,7 @@
   opacity: 0.8 !important;
   transform: none !important;
   box-shadow: none !important;
-  pointer-events: none !important; /* Previne o ripple e interações extras */
+  pointer-events: none !important; 
 
   ion-icon {
     color: #94a3b8 !important;
@@ -467,12 +537,16 @@
   }
 
   .slide-actions .slide-btn {
-    min-width: 70px;
-    padding: 0 14px;
-    font-size: 11px;
+    width: 58px;
+    font-size: 10px;
 
-    ion-icon {
-      font-size: 22px;
+    .slide-btn-circle {
+      width: 44px;
+      height: 44px;
+
+      ion-icon {
+        font-size: 20px;
+      }
     }
   }
 }
@@ -511,13 +585,22 @@
     flex: 1;
   }
 
-  .slide-actions .slide-btn {
-    min-width: 60px;
+  .slide-actions {
+    gap: 8px;
     padding: 0 12px;
-    font-size: 10px;
+  }
 
-    ion-icon {
-      font-size: 20px;
+  .slide-actions .slide-btn {
+    width: 52px;
+    font-size: 9px;
+
+    .slide-btn-circle {
+      width: 40px;
+      height: 40px;
+
+      ion-icon {
+        font-size: 18px;
+      }
     }
   }
 }

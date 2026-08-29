@@ -195,6 +195,7 @@ export class PreAnesthesicRecordService extends BaseService<PreAnesthesicRecordP
       id: wire.id,
       anesthesiaRecordId: wire.anesthesiaRecordId ?? null,
       patientId: wire.patientId ?? null,
+      firstAnesthesiologistId: wire.firstAnesthesiologistId ?? null,
 
       procedure: {
         surgeries: (wire.surgeries ?? []).map((s: any) => ({ name: s.name, isPrimary: s.isPrimary })),

@@ -1,13 +1,32 @@
 <div class="card-wrapper">
-  <div class="slide-actions" *ngIf="shouldShowAbandonButton">
+  <div
+    class="slide-actions"
+    [class.is-active]="isSwipedLeft"
+    *ngIf="shouldShowAbandonButton || shouldShowReopenButton"
+    [style.width.px]="maxSwipeOffset"
+  >
     <button
+      *ngIf="shouldShowReopenButton"
+      class="slide-btn slide-btn-reopen"
+      (click)="onReopenFicha()"
+    >
+      <span class="slide-btn-circle">
+        <ion-icon name="lock-open-outline"></ion-icon>
+      </span>
+      <span class="slide-btn-label">Reabrir Ficha</span>
+    </button>
+
+    <button
+      *ngIf="shouldShowAbandonButton"
       [class.btn-disabled]="!isAbandonButtonEnabled"
       [disabled]="!isAbandonButtonEnabled"
       class="slide-btn slide-btn-delete"
       (click)="onAbandon()"
     >
-      <ion-icon [name]="abandonButtonIcon"></ion-icon>
-      <span>{{ abandonButtonLabel }}</span>
+      <span class="slide-btn-circle">
+        <ion-icon [name]="abandonButtonIcon"></ion-icon>
+      </span>
+      <span class="slide-btn-label">{{ abandonButtonLabel }}</span>
     </button>
   </div>
 
@@ -15,6 +34,7 @@
     class="procedure-card"
     [class.is-completed]="isCompleted"
     [class.is-in-progress]="isInProgress"
+    [class.is-mine]="isMyActivePatient"
     [class.swiped-left]="isSwipedLeft"
     [style.transform]="slideTransform"
     [style.transition]="
@@ -27,6 +47,11 @@
     (mouseup)="onMouseUp($event)"
     (mouseleave)="onMouseLeave($event)"
   >
+    <div class="mine-ribbon" *ngIf="isMyActivePatient">
+      <ion-icon name="person-outline"></ion-icon>
+      <span>Seu paciente</span>
+    </div>
+
     <aside class="card-side">
       <div class="side-inner">
         <span class="side-label">Sala de Cirurgia</span>
@@ -111,6 +136,16 @@
 
       <div class="body-actions">
         <ng-container *ngIf="shouldShowOnlyViewRecords; else activeActions">
+          <button
+            *ngIf="shouldShowViewPreAnesthesia"
+            class="btn btn-outline ion-activatable ripple-parent"
+            (click)="onViewPreAnesthesia()"
+          >
+            <ion-icon name="clipboard-outline"></ion-icon>
+            Ver Pré Anestesia
+            <ion-ripple-effect></ion-ripple-effect>
+          </button>
+
           <button
             class="btn btn-primary ion-activatable ripple-parent"
             (click)="onViewRegistro()"

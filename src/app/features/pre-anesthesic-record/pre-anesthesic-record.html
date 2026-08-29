@@ -23,6 +23,11 @@
     <span>Esta avaliação pré-anestésica já foi finalizada e não pode mais ser editada.</span>
   </div>
 
+  <div class="finalized-banner" *ngIf="!isFinalized && !canEdit">
+    <ion-icon name="eye-outline"></ion-icon>
+    <span>Você não é o médico responsável por este atendimento. Visualização somente leitura.</span>
+  </div>
+
   <div class="pre-layout">
 
     <aside class="pre-nav">

@@ -11,6 +11,10 @@
   >
   </app-header-institucional>
 
+  <div class="readonly-banner" *ngIf="!isResponsible">
+    Você não é o médico responsável por este atendimento. Monitorização somente leitura.
+  </div>
+
   <div class="main-grid">
     <div class="channels-column" [style.gridTemplateRows]="channelsGridRows">
       <app-vital-signs-chart #vitalSigns
@@ -24,7 +28,7 @@
         [clinicalEvents]="clinicalEvents"
         [agents]="agents"
         [hoverTime]="hoverTime"
-        [readonly]="isAnesthesiaFinished"
+        [readonly]="isAnesthesiaFinished || !canEdit"
         (hoverTimeChange)="hoverTime = $event"
         (viewBoundsChange)="onViewBoundsChange($event)"
         (addVitalRecord)="openVitalModal()"
@@ -46,7 +50,7 @@
         [hoverTime]="sharedHoverTime"
         (hoverTimeChange)="onSharedHover($event)"
         (toggle)="togglePanel('agents')"
-        [readonly]="isAnesthesiaFinished"
+        [readonly]="isAnesthesiaFinished || !canEdit"
         (addAgent)="openAgentModal()"
         (openHistory)="openHistoryDrawer('agents')"
         (pointerdown)="onPointerDown($event)"
@@ -70,7 +74,7 @@
         [hoverTime]="sharedHoverTime"
         (hoverTimeChange)="onSharedHover($event)"
         (toggle)="togglePanel('events')"
-        [readonly]="isAnesthesiaFinished"
+        [readonly]="isAnesthesiaFinished || !canEdit"
         (addEvent)="openEventModal()"
         (pointerdown)="onPointerDown($event)"
         (pointermove)="onPointerMove($event, vitalSigns)"
@@ -92,7 +96,7 @@
         [hoverTime]="sharedHoverTime"
         (hoverTimeChange)="onSharedHover($event)"
         (toggle)="togglePanel('balance')"
-        [readonly]="isAnesthesiaFinished"
+        [readonly]="isAnesthesiaFinished || !canEdit"
         (addBalance)="openBalanceModal()"
         (openHistory)="openHistoryDrawer('balance')"
         (pointerdown)="onPointerDown($event)"

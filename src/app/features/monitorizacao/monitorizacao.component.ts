@@ -8,6 +8,7 @@ import {
 import { finalize, firstValueFrom, Subscription } from 'rxjs';
 
 import { AnesthesiaRecordService } from 'src/app/core/services/anesthesia-record.service';
+import { AuthService } from 'src/app/core/services/auth.service';
 import { OrientationService } from 'src/app/core/services/orientation.service';
 import { SurgeryService } from 'src/app/core/services/surgery.service';
 import { PreAnesthesicRecordService } from 'src/app/core/services/pre-anesthesic-record.service';
@@ -162,6 +163,14 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     return this.isAnesthesiaFinished || this.isSurgeryFinished || this.isCancelled;
   }
 
+  loggedUser: any = null;
+  isResponsible = true;
+  accessDenied = false;
+
+  get canEdit(): boolean {
+    return this.isResponsible && !this.isLocked;
+  }
+
   viewStartTime: number | null = null;
   viewEndTime: number | null = null;
 
@@ -203,6 +212,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     private surgeryService: SurgeryService,
     private preAnesthesicService: PreAnesthesicRecordService,
     private orientationService: OrientationService,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef,
   ) { }
 
@@ -211,6 +221,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     void this.orientationService.lockLandscape();
 
+    this.loggedUser = this.authService.getUser();
     this.surgeryId = this.route.snapshot.paramMap.get('id') || '';
 
     const qp = this.route.snapshot.queryParamMap;
@@ -222,6 +233,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.patientAsa = qp.get('asa') ?? nav?.asa ?? '';
 
     await this.loadInitialData();
+    if (this.accessDenied) return;
     this.startClockTick();
     this.subscribeToPendingSync();
     this.rebuildRecentActivity();
@@ -344,13 +356,28 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       record = await firstValueFrom(
         this.anesthesiaRecordService.getMonitoringRecord(Number(this.surgeryId))
       );
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.status === 403) {
+        this.accessDenied = true;
+        const toast = await this.toastController.create({
+          message: 'Monitorização ainda não concluída. Apenas o médico responsável pode acessá-la neste momento.',
+          duration: 3500,
+          color: 'warning',
+          position: 'top',
+        });
+        await toast.present();
+        this.router.navigate(['/pacientes']);
+        return;
+      }
       console.warn('[Monitorização] Falha ao buscar registro de monitorização na API.', err);
     }
     if (!record) return;
 
+    this.isResponsible = !record.firstAnesthesiologistId ||
+      String(record.firstAnesthesiologistId) === String(this.loggedUser?.id);
+
     const isFinished = record.status === SurgeryStatusEnum.Concluido;
-    
+
     if (isFinished || !hasLocalDraft) {
       const mapped = this.anesthesiaRecordService.mapMonitoringPayloadToApp(record);
       this.hydrateFromDraft(mapped);
@@ -588,7 +615,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   reconfigurarFrequencia() {
-    if (this.isLocked) return;
+    if (!this.canEdit) return;
     this.alertController.create({
       header: 'Frequência de monitorização',
       inputs: [{
@@ -613,7 +640,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async addTimePoint(_auto = false) {
-    if (!this.isAnesthesiaStarted || this.isLocked || this.isVitalModalOpen) return;
+    if (!this.isAnesthesiaStarted || !this.canEdit || this.isVitalModalOpen) return;
     this.isVitalModalOpen = true;
     try {
       const modal = await this.modalController.create({
@@ -649,7 +676,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async addCustomField() {
-    if (this.isLocked) return;
+    if (!this.canEdit) return;
     const alert = await this.alertController.create({
       header: 'Novo campo personalizado',
       inputs: [
@@ -679,7 +706,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   onEditVital(record: VitalRecord) { this.editVitalInline(record); }
 
   async editVitalInline(record: VitalRecord) {
-    if (this.isLocked) return;
+    if (!this.canEdit) return;
     const modal = await this.modalController.create({
       component: QuickVitalInputComponent,
       cssClass: 'quick-vital-modal',
@@ -703,7 +730,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async onDeleteVital(record: VitalRecord) {
-    if (this.isLocked) return;
+    if (!this.canEdit) return;
     const ok = await this.confirmDelete(`Remover lançamento das ${record.time}?`);
     if (!ok) return;
     this.vitalRecords = this.vitalRecords.filter(r => r.clientId !== record.clientId);
@@ -860,7 +887,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
 
   async onEditAgent(a: Agent) {
-    if (this.isLocked) return;
+    if (!this.canEdit) return;
     const alert = await this.alertController.create({
       header: 'Editar agente',
       inputs: [
@@ -887,7 +914,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     await alert.present();
   }
   async onDeleteAgent(a: Agent) {
-    if (this.isLocked) return;
+    if (!this.canEdit) return;
     if (!await this.confirmDelete(`Remover ${a.name}?`)) return;
     this.agents = this.agents.filter(x => x.clientId !== a.clientId);
     this.persistDraft();
@@ -895,7 +922,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async onEditEvent(e: ClinicalEvent) {
-    if (this.isLocked) return;
+    if (!this.canEdit) return;
     const alert = await this.alertController.create({
       header: 'Editar evento',
       inputs: [
@@ -922,7 +949,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async onDeleteEvent(e: ClinicalEvent) {
-    if (this.isLocked) return;
+    if (!this.canEdit) return;
     if (!await this.confirmDelete(`Remover evento "${e.description || e.type}"?`)) return;
     this.clinicalEvents = this.clinicalEvents.filter(x => x.clientId !== e.clientId);
     if ((e.type || '').toLowerCase() === 'position') {
@@ -934,7 +961,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async onEditBalance(b: FluidBalance) {
-    if (this.isLocked) return;
+    if (!this.canEdit) return;
     const alert = await this.alertController.create({
       header: 'Editar balanço',
       inputs: [
@@ -960,7 +987,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     await alert.present();
   }
   async onDeleteBalance(b: FluidBalance) {
-    if (this.isLocked) return;
+    if (!this.canEdit) return;
     if (!await this.confirmDelete(`Remover ${b.item} (${b.volumeMl}ml)?`)) return;
     this.fluidBalance = this.fluidBalance.filter(x => x.clientId !== b.clientId);
     this.persistDraft();
@@ -969,7 +996,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
 
   async openAgentModal() {
-    if (this.isLocked || this.isAgentModalOpen) return;
+    if (!this.canEdit || this.isAgentModalOpen) return;
     this.isAgentModalOpen = true;
     try {
       const modal = await this.modalController.create({
@@ -1003,7 +1030,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async openEventModal() {
-    if (this.isLocked || this.isEventModalOpen) return;
+    if (!this.canEdit || this.isEventModalOpen) return;
     this.isEventModalOpen = true;
     try {
       const modal = await this.modalController.create({
@@ -1060,7 +1087,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async openVitalModal() {
-    if (this.isLocked || this.isVitalModalOpen) return;
+    if (!this.canEdit || this.isVitalModalOpen) return;
     this.isVitalModalOpen = true;
     try {
       const modal = await this.modalController.create({
@@ -1084,7 +1111,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async openBalanceModal() {
-    if (this.isLocked || this.isBalanceModalOpen) return;
+    if (!this.canEdit || this.isBalanceModalOpen) return;
     this.isBalanceModalOpen = true;
     try {
       const modal = await this.modalController.create({
@@ -1118,7 +1145,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   mudarPosicao(pos: string) {
-    if (this.isLocked || !pos || pos === this.posicaoAtual) return;
+    if (!this.canEdit || !pos || pos === this.posicaoAtual) return;
     this.registerPositionChange(pos);
   }
 
@@ -1320,7 +1347,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async clickFinalize() {
-    if (this.isLocked) return;
+    if (!this.canEdit) return;
     if (!this.isSurgeryFinished) {
       this.encerrarCirurgia();
     } else {

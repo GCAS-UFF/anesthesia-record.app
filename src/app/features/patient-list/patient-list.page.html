@@ -119,6 +119,8 @@
           (viewRegistro)="onViewRegistro(p.id, p.patientId)"
           (abandonSurgery)="abandonPatient(p.id, p.patientId)"
           (openPreAnesthesia)="onOpenPreAnesthesia(p.id, p.patientId)"
+          (viewPreAnesthesia)="onViewPreAnesthesia(p.id, p.patientId)"
+          (reopenFicha)="onReopenFicha(p.id)"
         ></app-procedure-card>
 
         <app-empty-state

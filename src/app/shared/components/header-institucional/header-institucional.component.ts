@@ -101,12 +101,12 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
       route: '/admin/relatorios',
       admin: true
     },
-    {
-      icon: 'file-tray-full-outline',
-      label: 'Histórico de Fichas (Admin)',
-      route: '/admin/historico-fichas',
-      admin: true
-    }    
+    // {
+    //   icon: 'file-tray-full-outline',
+    //   label: 'Histórico de Fichas (Admin)',
+    //   route: '/admin/historico-fichas',
+    //   admin: true
+    // }    
   ];
 
   constructor(

@@ -376,6 +376,7 @@ export interface PreAnesthesicRecordPayload extends PreAnesthesicRecordDraft {
   id?: number | null;
   anesthesiaRecordId: number | null;
   patientId: string | null;
+  firstAnesthesiologistId?: number | string | null;
   signedByProfessionalId: number | null;
   signedByName: string;
   signedAt: string;

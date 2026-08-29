@@ -455,6 +455,10 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     return `${this.apiUrlService.getBaseUrl()}/AnesthesiaRecord/${id}/print`;
   }
 
+  reopenAnesthesiaRecord(id: number): Observable<any> {
+    return this.api.patch(`AnesthesiaRecord/${id}/reopen`, {});
+  }
+
   private formatTimeForApi(timeStr: string | undefined | null): string {
     if (!timeStr) return '00:00:00';
     if (timeStr.includes('T')) {
@@ -687,7 +691,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   getMonitoringRecord(surgeryId: number): Observable<any | null> {
     return this.api.get<any>(`MonitoringRecord/${surgeryId}`).pipe(
       map((res: any) => res?.data ?? null),
-      catchError(() => of(null))
+      catchError((err) => err?.status === 403 ? throwError(() => err) : of(null))
     );
   }
 

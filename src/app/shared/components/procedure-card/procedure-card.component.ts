@@ -18,7 +18,8 @@ import {
   returnUpBackOutline,
   exitOutline,
   calendarClearOutline,
-  timeOutline
+  timeOutline,
+  lockOpenOutline
 } from 'ionicons/icons';
 import { SurgeryStatusEnum } from 'src/app/core/models/api-enums.model';
 
@@ -61,10 +62,12 @@ export class ProcedureCardComponent {
   @Input() isAdmin = false;
 
   @Output() openPreAnesthesia = new EventEmitter<void>();
+  @Output() viewPreAnesthesia = new EventEmitter<void>();
   @Output() assume = new EventEmitter<boolean>();
   @Output() openFicha = new EventEmitter<void>();
   @Output() viewRegistro = new EventEmitter<void>();
   @Output() abandonSurgery = new EventEmitter<void>();
+  @Output() reopenFicha = new EventEmitter<void>();
 
   @Input() id!: string | number;
   @Input() isOpen: boolean = false;
@@ -89,6 +92,7 @@ export class ProcedureCardComponent {
       timeOutline,
       fitnessOutline,
       calendarClearOutline,
+      lockOpenOutline,
       medicalOutline,
       documentTextOutline,
       readerOutline,
@@ -119,6 +123,11 @@ export class ProcedureCardComponent {
   get isFinished(): boolean {
     return this.status === SurgeryStatusEnum.Concluido ||
       this.status === SurgeryStatusEnum.Cancelada;
+  }
+
+  
+  get isMyActivePatient(): boolean {
+    return this.isCurrentAnesthesiologist && !this.isFinished;
   }
 
   get hasProcedure(): boolean {
@@ -174,9 +183,24 @@ export class ProcedureCardComponent {
     }
     return this.isCurrentAnesthesiologist;
   }
- 
+
+  
+  get isAssignedToOtherDoctor(): boolean {
+    if (this.isCurrentAnesthesiologist) {
+      return false;
+    }
+    return !!this.anesthesiologist && this.anesthesiologist.trim() !== '';
+  }
+
+  get shouldShowViewPreAnesthesia(): boolean {
+    if (this.isCurrentAnesthesiologist) {
+      return false;
+    }
+    return this.isPreAnesthesiaRecordDone;
+  }
+
   get shouldShowOnlyViewRecords(): boolean {
-    return this.isFinished;
+    return this.isFinished || this.isAssignedToOtherDoctor;
   }
  
   get shouldShowAbandonButton(): boolean {
@@ -185,7 +209,6 @@ export class ProcedureCardComponent {
     }
 
     if (this.isAdmin) {
-      // Admin remove o médico atualmente associado, independente de quem seja
       return !!this.anesthesiologist && this.anesthesiologist.trim() !== '';
     }
 
@@ -213,11 +236,16 @@ export class ProcedureCardComponent {
   }
 
   get abandonButtonLabel(): string {
-    return this.isAdmin ? 'Remover Médico' : 'Abandonar Cirurgia';
+    return this.isAdmin ? 'Remover Médico' : 'Abandonar';
   }
 
   get abandonButtonIcon(): string {
     return this.isAdmin ? 'person-remove-outline' : 'exit-outline';
+  }
+
+  
+  get shouldShowReopenButton(): boolean {
+    return this.isAdmin && this.isCompleted;
   }
 
   get canOpenAnestheticRecord(): boolean {
@@ -377,6 +405,11 @@ export class ProcedureCardComponent {
     this.openPreAnesthesia.emit();
   }
 
+  onViewPreAnesthesia() {
+    this.resetSwipe();
+    this.viewPreAnesthesia.emit();
+  }
+
   onAssume() {
     this.resetSwipe();
     this.assume.emit(this.isCurrentAnesthesiologist);
@@ -395,5 +428,10 @@ export class ProcedureCardComponent {
   onAbandon() {
     this.resetSwipe();
     this.abandonSurgery.emit();
+  }
+
+  onReopenFicha() {
+    this.resetSwipe();
+    this.reopenFicha.emit();
   }
 }

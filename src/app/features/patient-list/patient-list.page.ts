@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, Input } from '@angular/core';
+import { Component, ViewChild, OnInit, Input, NgZone } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular/standalone';
 import { IonContent, IonSpinner, IonSkeletonText, IonIcon } from '@ionic/angular/standalone';
@@ -13,6 +13,7 @@ import {
 import { Router } from '@angular/router';
 import { SurgeryService } from '../../core/services/surgery.service';
 import { AuthService } from '../../core/services/auth.service';
+import { AnesthesiaRecordService } from '../../core/services/anesthesia-record.service';
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
 import { DateFilterComponent } from '../../shared/components/date-filter/date-filter.component';
@@ -51,7 +52,7 @@ export class PatientListPage implements OnInit {
   currentUserId: number | null = null;
   canAssumePatient = true;
   isAdminUser = false;
- 
+
   private userSubscription?: any;
 
   currentPage = 1;
@@ -71,7 +72,9 @@ export class PatientListPage implements OnInit {
     private toastController: ToastController,
     private surgeryService: SurgeryService,
     private authService: AuthService,
-    private masterDataService: MasterDataService
+    private anesthesiaRecordService: AnesthesiaRecordService,
+    private masterDataService: MasterDataService,
+    private ngZone: NgZone
   ) {
     addIcons({
       chevronBackOutline,
@@ -88,7 +91,10 @@ export class PatientListPage implements OnInit {
   }
 
   ionViewWillEnter() {
-    this.loadData();
+    // Ionic dispara este hook fora da NgZone (parte da transição de página),
+    // então sem o run() aqui o resultado do loadData() chega mas a view não
+    // é atualizada até o próximo evento que reentre na zone (ex: um clique).
+    this.ngZone.run(() => this.loadData());
   }
 
   ngOnDestroy() {
@@ -211,7 +217,7 @@ export class PatientListPage implements OnInit {
         procedure:
           primaryProc && primaryProc.description && primaryProc.description !== 'Não informado'
             ? primaryProc.description
-            : 'Procedimento não informado',       
+            : 'Procedimento não informado',
         status: item.status === SurgeryStatusEnum.Agendado ? SurgeryStatusEnum.Agendado : item.status === SurgeryStatusEnum.EmPreparacao ? SurgeryStatusEnum.EmPreparacao : item.status === SurgeryStatusEnum.EmProgresso ? SurgeryStatusEnum.EmProgresso : item.status === SurgeryStatusEnum.Concluido ? SurgeryStatusEnum.Concluido : item.status === SurgeryStatusEnum.Cancelada ? SurgeryStatusEnum.Cancelada : null,
         date: this.datePipe.transform(dt, 'yyyy-MM-dd'),
         time: this.datePipe.transform(dt, 'HH:mm'),
@@ -219,6 +225,17 @@ export class PatientListPage implements OnInit {
         isPreAnesthesiaRecordDone: item.isPreAnesthesiaRecordDone || false,
       });
     });
+
+    this.viewList.sort((a, b) => {
+      const aMine = this.isMyActivePatient(a) ? 1 : 0;
+      const bMine = this.isMyActivePatient(b) ? 1 : 0;
+      return bMine - aMine;
+    });
+  }
+
+  private isMyActivePatient(item: any): boolean {
+    if (item.anesthesiologist?.id !== this.currentUserId) return false;
+    return item.status !== SurgeryStatusEnum.Concluido && item.status !== SurgeryStatusEnum.Cancelada;
   }
 
   onSearchChange(searchTerm: string) {
@@ -392,5 +409,62 @@ export class PatientListPage implements OnInit {
     }
 
     this.router.navigate(['/pre-anesthesia-record', id, patientId]);
+  }
+
+  onViewPreAnesthesia(id: string | number, patientId: string): void {
+    if (!id || !patientId) {
+      console.error('Id da cirurgia/ficha ou Patient ID não encontrado');
+      return;
+    }
+
+    this.router.navigate(['/pre-anesthesia-record', id, patientId], { queryParams: { readOnly: true } });
+  }
+
+  async onReopenFicha(surgeryId: string | number) {
+    if (!this.isAdminUser) return;
+
+    const alert = await this.alertController.create({
+      header: 'Reabrir Ficha',
+      message: 'Deseja reabrir esta ficha finalizada? O médico responsável poderá editar e salvar novamente.',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel', cssClass: 'secondary' },
+        {
+          text: 'Reabrir',
+          handler: async () => {
+            const loading = await this.loadingController.create({
+              message: 'Reabrindo ficha...',
+              duration: 1000,
+              spinner: 'circular',
+            });
+            await loading.present();
+
+            this.anesthesiaRecordService.reopenAnesthesiaRecord(Number(surgeryId)).subscribe({
+              next: async () => {
+                await loading.dismiss();
+                const toast = await this.toastController.create({
+                  message: 'Ficha reaberta com sucesso!',
+                  duration: 2000,
+                  color: 'success',
+                  icon: 'checkmark-circle',
+                });
+                await toast.present();
+                this.loadData();
+              },
+              error: async () => {
+                await loading.dismiss();
+                const toast = await this.toastController.create({
+                  message: 'Falha de comunicação com a API. Não foi possível reabrir a ficha.',
+                  duration: 3000,
+                  color: 'danger',
+                });
+                await toast.present();
+              },
+            });
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 }

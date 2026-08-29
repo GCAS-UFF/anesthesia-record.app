@@ -91,6 +91,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   loggedUser: any;
   isReadOnlyRecord = false;
   forcedReadOnly = false;
+  isResponsible = true;
 
 
   medicationsLista: { id: string; name: string; codigo?: string }[] = [];
@@ -831,8 +832,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
           const firstAnesthesiologistId = surgeryData.firstAnesthesiologistId;
 
-          this.isReadOnlyRecord = this.forcedReadOnly || this.isCancelled ||
-            (!!firstAnesthesiologistId && String(firstAnesthesiologistId) !== String(this.loggedUser?.id));
+          this.isResponsible = !firstAnesthesiologistId || String(firstAnesthesiologistId) === String(this.loggedUser?.id);
+
+          this.isReadOnlyRecord = this.forcedReadOnly || this.isCancelled || !this.isResponsible;
 
           this.fichaFinalizada = surgeryData.status === SurgeryStatusEnum.Concluido;
           this.fichaFinalizadaEm = surgeryData.signatureDate ?? surgeryData.lastUpdate ?? null;
@@ -1048,16 +1050,14 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         action: () => this.onEnviarClick()
       });
     }
-
-    // "Ir para Cirurgia" continua disponível mesmo com a ficha somente leitura
-    // (ficha finalizada ou acesso via "Ver Registros"), mas nunca para paciente cancelado.
+    
     buttons.push({
       id: 'ir-para-cirurgia',
       icon: 'fitness-outline',
       color: 'warning',
       ariaLabel: 'Ir para Cirurgia',
       label: 'Cirurgia',
-      disabled: this.isSaving || this.isCancelled,
+      disabled: this.isSaving || this.isCancelled || !this.canAccessMonitoring,
       action: () => this.irParaCirurgia()
     });
 
@@ -1290,6 +1290,10 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.location.back();
   }
 
+  get canAccessMonitoring(): boolean {
+    return this.isResponsible || this.monitoringFinalizado;
+  }
+
   async irParaCirurgia(): Promise<void> {
     if (!this.selectedSurgery?.id) {
       return;
@@ -1297,6 +1301,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
     if (this.isCancelled) {
       await this.toast('Paciente cancelado. Não é possível acessar a cirurgia.', 'warning');
+      return;
+    }
+
+    if (!this.canAccessMonitoring) {
+      await this.toast('Monitorização ainda não concluída.', 'warning');
       return;
     }
 
