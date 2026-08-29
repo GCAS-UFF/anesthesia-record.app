@@ -27,6 +27,10 @@ export class MasterDataService {
     return this.http.get<any[]>(`${this.apiUrlService.getBaseUrl()}/drugs`);
   }
 
+  getEvents() {
+    return this.http.get<any>(`${this.apiUrlService.getBaseUrl()}/event-types`);
+  }
+
   saveProfessionals(list: any[]) {
     this.storage.set('cache_professionals', list);
   }
@@ -37,6 +41,10 @@ export class MasterDataService {
 
   saveMedications(list: any[]) {
     this.storage.set('cache_medications', list);
+  }
+
+  saveEvents(list: any[]) {
+    this.storage.set('cache_events', list);
   }
 
   getProfessionalsCache() {
@@ -51,17 +59,23 @@ export class MasterDataService {
     return this.storage.get<any[]>('cache_medications') ?? [];
   }
 
+  getEventsCache() {
+    return this.storage.get<any[]>('cache_events') ?? [];
+  }
+
   hasCache(): boolean {
     return this.storage.has('cache_professionals')
       && this.storage.has('cache_procedures')
-      && this.storage.has('cache_medications');
+      && this.storage.has('cache_medications')
+      && this.storage.has('cache_events');
   }
 
   downloadMasterData() {
     return forkJoin({
       professionals: this.getProfessionals(),
       procedures: this.getProcedures(),
-      medications: this.getMedications()
+      medications: this.getMedications(),
+      events: this.getEvents()
     });
   }
 }

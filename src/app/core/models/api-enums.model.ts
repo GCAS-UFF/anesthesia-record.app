@@ -181,6 +181,38 @@ export const SURGICAL_POSITION_LABEL_TO_ID: Record<string, SurgicalPositionEnum>
   'fowler': SurgicalPositionEnum.Fowler,
 };
 
+export enum DrugCategoryEnum {
+  Outros = 0,
+  Medicamento = 1,
+  Antibiotico = 2,
+  Anestesico = 3,
+  Analgesico = 4,
+  Sedativo = 5,
+  BloqueadorNeuromuscular = 6,
+  Vasopressor = 7,
+  Antiemetico = 8,
+  Diluente = 9,
+  Solucao = 10,
+  Material = 11,
+  GasMedicinal = 12,
+}
+
+export const DRUG_CATEGORY_LABELS: Record<DrugCategoryEnum, string> = {
+  [DrugCategoryEnum.Outros]: 'Outros',
+  [DrugCategoryEnum.Medicamento]: 'Medicamento',
+  [DrugCategoryEnum.Antibiotico]: 'Antibiótico',
+  [DrugCategoryEnum.Anestesico]: 'Anestésico',
+  [DrugCategoryEnum.Analgesico]: 'Analgésico',
+  [DrugCategoryEnum.Sedativo]: 'Sedativo',
+  [DrugCategoryEnum.BloqueadorNeuromuscular]: 'Bloqueador Neuromuscular',
+  [DrugCategoryEnum.Vasopressor]: 'Vasopressor',
+  [DrugCategoryEnum.Antiemetico]: 'Antiemético',
+  [DrugCategoryEnum.Diluente]: 'Diluente',
+  [DrugCategoryEnum.Solucao]: 'Solução',
+  [DrugCategoryEnum.Material]: 'Material',
+  [DrugCategoryEnum.GasMedicinal]: 'Gás Medicinal',
+};
+
 export enum SurgeryStatusEnum {
   Agendado = 1,
   EmPreparacao = 2,

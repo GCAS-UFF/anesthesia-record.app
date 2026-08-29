@@ -59,7 +59,6 @@ interface Agent {
   dose?: string | null;
   route?: string | null;
   medicationId?: number | null;
-  // Campos numéricos exigidos pelo contrato do backend (ver api-enums.model.ts).
   doseValue?: number | null;
   unit?: MedicationUnitEnum | null;
   routeId?: AdministrationRouteEnum | null;
@@ -69,10 +68,14 @@ interface ClinicalEvent {
   type: string;
   description?: string;
   category?: string | null;
+  categoryLabel?: string | null;
   itemId?: number | null;
   detail?: string | null;
-  // ID numérico exigido pelo contrato do backend.
+
   eventTypeId?: ClinicalEventTypeEnum | null;
+
+  catalogEventId?: number | null;
+  catalogEventName?: string | null;
 }
 interface FluidBalance {
   clientId?: string; timestamp: string; time: string;
@@ -271,7 +274,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.isLeavingView = true;
 
-    this.openOverlays.forEach(overlay => overlay.dismiss().catch(() => {}));
+    this.openOverlays.forEach(overlay => overlay.dismiss().catch(() => { }));
     this.openOverlays.clear();
 
     this.orientationService.unlock();
@@ -319,7 +322,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
       this.isCancelled = surgery?.status === SurgeryStatusEnum.Cancelada
         || surgery?.patient?.status === SurgeryStatusEnum.Cancelada;
-      if (this.isCancelled) {       
+      if (this.isCancelled) {
         this.isSurgeryFinished = true;
         this.isAnesthesiaFinished = true;
         const toast = await this.toastController.create({
@@ -341,7 +344,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
           || this.selectedSurgery?.asa;
         if (asaBack) this.patientAsa = `ASA ${asaBack}`;
       }
-     
+
       await this.loadMonitoringRecordFromApi(!!draft);
     } catch (err) {
       console.error('[Monitorização] loadInitialData falhou', err);
@@ -425,10 +428,10 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
   private startClockTick() {
     clearInterval(this.tickSub);
-    this.tickSub = setInterval(() => {      
+    this.tickSub = setInterval(() => {
       this.anesthesiaTimer = this.formatDuration(this.startTimeAnesthesia, this.anesthesiaEndTime);
       this.surgeryTimer = this.formatDuration(this.startTimeSurgery, this.surgeryEndTime);
-    
+
       if (this.anesthesiaEndTime && this.surgeryEndTime) {
         clearInterval(this.tickSub);
         this.tickSub = undefined;
@@ -475,7 +478,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
               const iso = this.replaceTimeInIso(oldIso, d.time);
               this.startTimeAnesthesia = new Date(iso);
               this.anesthesiaStartTime = this.startTimeAnesthesia;
-              
+
               if (this.vitalRecords.length > 0) {
                 const first = this.vitalRecords[0];
                 const firstTime = new Date(first.timestamp || 0).getTime();
@@ -535,10 +538,10 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async iniciarCirurgia() {
-    if (await this.blockIfCancelled()) 
+    if (await this.blockIfCancelled())
       return;
-    
-    if (!this.isAnesthesiaStarted) 
+
+    if (!this.isAnesthesiaStarted)
       return;
 
     if (this.isSurgeryStarted) {
@@ -557,7 +560,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
               const iso = this.replaceTimeInIso(oldIso, d.time);
               this.startTimeSurgery = new Date(iso);
               this.surgeryStartTime = this.startTimeSurgery;
-              
+
               if (this.vitalRecords.length > 0) {
                 const first = this.vitalRecords[0];
                 const firstTime = new Date(first.timestamp || 0).getTime();
@@ -739,7 +742,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
 
- 
+
   private async buildFichaAnestesicaRecordData(): Promise<RecordData> {
     const sections: RecordData['sections'] = [
       {
@@ -1048,10 +1051,13 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         timestamp: now.toISOString(), time: this.formatHM(now),
         type: data.type,
         category: data.category ?? null,
+        categoryLabel: data.categoryLabel ?? null,
         itemId: data.itemId ?? null,
         description: data.description ?? data.item ?? '',
         detail: data.detail ?? null,
         eventTypeId: data.eventTypeId ?? null,
+        catalogEventId: data.catalogEventId ?? null,
+        catalogEventName: data.catalogEventName ?? null,
       };
       this.clinicalEvents = [...this.clinicalEvents, entry].sort(this.byTs);
       this.offlineQueue?.enqueue?.('event', entry);
@@ -1368,7 +1374,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
             if (!this.vitalRecords.length) {
               this.addVitalRecord({ timestamp: this.surgeryEndTime.toISOString(), time: this.formatHM(this.surgeryEndTime) });
-            } else {              
+            } else {
               this.autoSnapshotFromLast();
             }
 

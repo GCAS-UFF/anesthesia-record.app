@@ -17,8 +17,7 @@
 
 <ion-content class="ion-padding">
   <div class="modal-shell">
-
-    <!-- ═══════════════════ AGENTES ═══════════════════ -->
+    
     <ng-container *ngIf="type === 'agent'">
 
       <!-- Busca de medicação por nome -->
@@ -102,31 +101,51 @@
         </div>
       </div>
     </ng-container>
-
-    <!-- ═══════════════════ EVENTOS ═══════════════════ -->
+    
     <ng-container *ngIf="type === 'event'">
       <div class="field">
-        <label class="field-label">Categoria *</label>
-        <div class="custom-input-wrap select-wrap">
-          <select class="custom-input" [ngModel]="event.categoryId" (ngModelChange)="onEventCategoryChange($event)">
-            <option value="" disabled selected hidden>Selecione a categoria</option>
-            <option *ngFor="let c of eventCategories" [value]="c.id">
-              {{ c.emoji }} {{ c.label }}
-            </option>
-          </select>
-          <ion-icon name="chevron-down-outline" class="select-icon"></ion-icon>
+        <label class="field-label">Evento *</label>
+
+        <div class="custom-input-wrap event-search-wrap" *ngIf="eventTypes.length > 6">
+          <ion-icon name="search-outline" class="custom-icon"></ion-icon>
+          <input
+            type="text"
+            class="custom-input"
+            placeholder="Buscar evento..."
+            [value]="eventSearchTerm"
+            (input)="onEventSearchInput($any($event.target).value)"
+            autocomplete="off" />
         </div>
+
+        <div class="event-grid" *ngIf="filteredEventTypes.length; else noEvents">
+          <button
+            *ngFor="let e of filteredEventTypes"
+            type="button"
+            class="event-card"
+            [class.active]="event.eventTypeId === e.id"
+            (click)="selectEventType(e)">
+            <span class="event-card-name">{{ e.name }}</span>
+            <ion-icon *ngIf="event.eventTypeId === e.id" name="checkmark-outline" class="event-card-check"></ion-icon>
+          </button>
+        </div>
+
+        <ng-template #noEvents>
+          <ion-note color="warning" class="ion-margin-top">
+            Nenhum evento cadastrado. Peça ao administrador para cadastrar eventos em "Manutenção de Itens".
+          </ion-note>
+        </ng-template>
       </div>
 
       <div class="field">
         <label class="field-label">Descrição *</label>
-        <div class="custom-input-wrap">
-          <input class="custom-input" type="text" [(ngModel)]="event.description" placeholder="Descreva o evento..." />
-        </div>
+        <textarea
+          class="custom-input custom-textarea"
+          rows="4"
+          [(ngModel)]="event.description"
+          placeholder="Descreva o evento..."></textarea>
       </div>
     </ng-container>
-
-    <!-- ═══════════════════ BALANÇO ═══════════════════ -->
+    
     <ng-container *ngIf="type === 'balance'">
       <div class="field">
         <label class="field-label">Tipo *</label>
@@ -173,8 +192,8 @@
 
 <ion-footer class="ion-no-border">
   <div class="modal-footer">
-    <button class="btn-cancel" (click)="cancel()">Cancelar</button>
-    <button class="btn-save" [disabled]="!canSave" (click)="save()">
+    <button type="button" class="btn-cancel" (click)="cancel()">Cancelar</button>
+    <button type="button" class="btn-save" [disabled]="!canSave" (click)="save()">
       <ion-icon name="checkmark-outline"></ion-icon> Salvar
     </button>
   </div>

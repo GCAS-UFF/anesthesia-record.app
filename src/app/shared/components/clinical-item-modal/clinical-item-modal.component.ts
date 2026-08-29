@@ -11,7 +11,6 @@ import {
   AdministrationRouteEnum,
   ADMINISTRATION_ROUTE_LABELS,
   ClinicalEventTypeEnum,
-  CLINICAL_EVENT_TYPE_KEY_TO_ID,
   FluidCategoryEnum,
   FLUID_CATEGORY_KEY_TO_ID,
   FluidBalanceTypeEnum,
@@ -20,7 +19,7 @@ import {
 type ItemType = 'agent' | 'event' | 'balance';
 
 interface Medication { id: number | string; description: string; }
-interface EventCategory { id: string; label: string; emoji: string; enumId: ClinicalEventTypeEnum; }
+interface EventTypeOption { id: number; name: string; description: string; }
 interface RouteOption { id: AdministrationRouteEnum; label: string; }
 interface UnitOption { id: MedicationUnitEnum; label: string; }
 interface BalanceItem { id: string; label: string; needsDetail?: boolean; categoryId: FluidCategoryEnum; }
@@ -62,22 +61,18 @@ export class ClinicalItemModalComponent implements OnInit {
     .filter((id) => !Number.isNaN(id))
     .map((id) => ({ id, label: MEDICATION_UNIT_LABELS[id as MedicationUnitEnum] }));
 
-  event: { categoryId: string | null; categoryLabel: string; description: string } = {
-    categoryId: null, categoryLabel: '', description: '',
+  event: { eventTypeId: number | null; name: string; description: string } = {
+    eventTypeId: null, name: '', description: '',
   };
 
+  eventTypes: EventTypeOption[] = [];
+  eventSearchTerm = '';
 
-  eventCategories: EventCategory[] = [
-    { id: 'intubation',     label: 'Intubação',   emoji: '🫁', enumId: CLINICAL_EVENT_TYPE_KEY_TO_ID['intubation'] },
-    { id: 'extubation',     label: 'Extubação',   emoji: '🫁', enumId: CLINICAL_EVENT_TYPE_KEY_TO_ID['extubation'] },
-    { id: 'incision',       label: 'Incisão',     emoji: '🔪', enumId: CLINICAL_EVENT_TYPE_KEY_TO_ID['incision'] },
-    { id: 'block',          label: 'Bloqueio',    emoji: '💉', enumId: CLINICAL_EVENT_TYPE_KEY_TO_ID['block'] },
-    { id: 'tourniquet_on',  label: 'Garrote ON',  emoji: '🛑', enumId: CLINICAL_EVENT_TYPE_KEY_TO_ID['tourniquet_on'] },
-    { id: 'tourniquet_off', label: 'Garrote OFF', emoji: '✅', enumId: CLINICAL_EVENT_TYPE_KEY_TO_ID['tourniquet_off'] },
-    { id: 'position',       label: 'Posição',     emoji: '🔄', enumId: CLINICAL_EVENT_TYPE_KEY_TO_ID['position'] },
-    { id: 'complication',   label: 'Complicação', emoji: '⚠️', enumId: CLINICAL_EVENT_TYPE_KEY_TO_ID['complication'] },
-    { id: 'other',          label: 'Outro',       emoji: '📝', enumId: CLINICAL_EVENT_TYPE_KEY_TO_ID['other'] },
-  ];
+  get filteredEventTypes(): EventTypeOption[] {
+    const q = this.normalize(this.eventSearchTerm);
+    if (!q) return this.eventTypes;
+    return this.eventTypes.filter(e => this.normalize(e.name).includes(q));
+  }
 
   balance: {
     type: 'gain' | 'loss';
@@ -122,6 +117,7 @@ export class ClinicalItemModalComponent implements OnInit {
 
   async ngOnInit() {
     await this.loadMedications();
+    await this.loadEventTypes();
     this.hydrateInitial();
   }
 
@@ -150,6 +146,25 @@ export class ClinicalItemModalComponent implements OnInit {
     }
   }
 
+  private async loadEventTypes() {
+    try {
+      const raw = await this.masterData.getEventsCache();
+      this.eventTypes = this.asArray(raw)
+        .map((e: any) => ({
+          id: e.id,
+          name: e.name ?? e.nome ?? '',
+          description: e.description ?? e.descricao ?? '',
+          active: e.active !== false,
+        }))
+        .filter((e: any) => e.id != null && !!e.name && e.active)
+        .map(({ id, name, description }) => ({ id, name, description }))
+        .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+    } catch (e) {
+      console.error('[ClinicalItemModal] Falha ao carregar eventos', e);
+      this.eventTypes = [];
+    }
+  }
+
   private hydrateInitial() {
     if (!this.initial) return;
     if (this.type === 'agent') {
@@ -163,8 +178,8 @@ export class ClinicalItemModalComponent implements OnInit {
       this.medSearchTerm = this.agent.medicationName || '';
     } else if (this.type === 'event') {
       this.event = {
-        categoryId: this.initial.categoryId ?? this.initial.category ?? null,
-        categoryLabel: this.initial.categoryLabel ?? '',
+        eventTypeId: this.initial.catalogEventId ?? null,
+        name: this.initial.catalogEventName ?? this.initial.categoryLabel ?? '',
         description: this.initial.description ?? this.initial.observations ?? '',
       };
     } else if (this.type === 'balance') {
@@ -252,10 +267,14 @@ export class ClinicalItemModalComponent implements OnInit {
   }
 
 
-  onEventCategoryChange(id: string) {
-    const c = this.eventCategories.find(x => x.id === id);
-    this.event.categoryId = id;
-    this.event.categoryLabel = c?.label ?? '';
+  onEventSearchInput(term: string) {
+    this.eventSearchTerm = term ?? '';
+  }
+
+  selectEventType(e: EventTypeOption) {
+    this.event.eventTypeId = e.id;
+    this.event.name = e.name;
+    this.event.description = e.description ?? '';
   }
 
 
@@ -279,7 +298,7 @@ export class ClinicalItemModalComponent implements OnInit {
       return !!this.agent.medicationId && this.agent.doseValue != null && Number(this.agent.doseValue) > 0 && !!this.agent.routeId;
     }
     if (this.type === 'event') {
-      return !!this.event.categoryId && !!this.event.description?.trim();
+      return !!this.event.eventTypeId && !!this.event.description?.trim();
     }
     if (this.type === 'balance') {
       const okItem = !!this.balance.itemId;
@@ -315,13 +334,12 @@ export class ClinicalItemModalComponent implements OnInit {
         timestamp: new Date().toISOString(),
       };
     } else if (this.type === 'event') {
-      const category = this.eventCategories.find(c => c.id === this.event.categoryId);
       payload = {
         type: 'event',
-        category: this.event.categoryId,
-        categoryId: this.event.categoryId,
-        categoryLabel: this.event.categoryLabel,        
-        eventTypeId: category?.enumId ?? CLINICAL_EVENT_TYPE_KEY_TO_ID['other'],
+        catalogEventId: this.event.eventTypeId,
+        catalogEventName: this.event.name,
+        categoryLabel: this.event.name,
+        eventTypeId: ClinicalEventTypeEnum.Other,
         description: this.event.description.trim(),
         timestamp: new Date().toISOString(),
       };

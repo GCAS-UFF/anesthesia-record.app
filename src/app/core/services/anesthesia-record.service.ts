@@ -597,7 +597,9 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         time: dt.toISOString().split('T')[1].substring(0, 8),
         date: dt.toISOString().split('T')[0] + 'T00:00:00.000Z',
         eventType: mapEventType(record),
-        observations: record.description ?? record.observation ?? record.observacao ?? ''
+        observations: record.description ?? record.observation ?? record.observacao ?? '',
+        catalogEventId: record.catalogEventId ?? null,
+        catalogEventName: record.catalogEventName ?? null,
       };
     });
   }
@@ -1562,7 +1564,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
      
       const key = idToKey[record.eventType] ?? 'other';
-      const label = CLINICAL_EVENT_TYPE_LABELS[record.eventType as ClinicalEventTypeEnum] ?? 'Evento';
+      const label = record.catalogEventName || CLINICAL_EVENT_TYPE_LABELS[record.eventType as ClinicalEventTypeEnum] || 'Evento';
 
       return {
         timestamp: fullIsoString,
@@ -1571,6 +1573,8 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         category: key,
         categoryId: record.eventType ?? null,
         categoryLabel: label,
+        catalogEventId: record.catalogEventId ?? null,
+        catalogEventName: record.catalogEventName ?? null,
         observacao: record.observations,
         descricao: record.observations,
         description: record.observations,

@@ -44,6 +44,8 @@ export interface MonitoringEventPayload {
   date: string;
   eventType: ClinicalEventTypeEnum;
   observations: string | null;
+  catalogEventId?: number | null;
+  catalogEventName?: string | null;
 }
 
 export interface MonitoringFluidBalancePayload {

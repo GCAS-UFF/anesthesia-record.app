@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { notAdminGuard } from './core/guards/not-admin.guard';
+import { adminGuard } from './core/guards/admin.guard';
 import { serverConfiguredGuard } from './core/guards/server-configured.guard';
 
 export const routes: Routes = [
@@ -40,6 +41,11 @@ export const routes: Routes = [
       {
         path: 'admin/integracoes',
         loadComponent: () => import('./features/aghu-integration/aghu-integration.page').then(m => m.AghuIntegrationPage)
+      },
+      {
+        path: 'admin/manutencao-itens',
+        canActivate: [adminGuard],
+        loadComponent: () => import('./features/item-maintenance/item-maintenance.page').then(m => m.ItemMaintenancePage)
       },
       {
         path: 'pre-anesthesia-record/:id/:patientId',

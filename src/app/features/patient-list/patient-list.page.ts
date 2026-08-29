@@ -122,6 +122,7 @@ export class PatientListPage implements OnInit {
       this.masterDataService.saveProfessionals(result.professionals);
       this.masterDataService.saveProcedures(result.procedures);
       this.masterDataService.saveMedications(result.medications);
+      this.masterDataService.saveEvents(result.events);
 
     } finally {
       await loading.dismiss();

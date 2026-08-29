@@ -1459,6 +1459,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
           this.masterData.saveProfessionals(res.professionals || []);
           this.masterData.saveProcedures(res.procedures || []);
           this.masterData.saveMedications(res.medications || []);
+          this.masterData.saveEvents(res.events || []);
           this.loadDropdownLists();
         },
         error: () => this.toast('Não foi possível carregar as listas do AGHU.', 'warning')

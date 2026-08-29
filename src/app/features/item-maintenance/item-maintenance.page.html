@@ -1,0 +1,182 @@
+<div class="app-container">
+  <app-status-bar></app-status-bar>
+
+  <app-header-institucional></app-header-institucional>
+
+  <main class="page-main">
+    <section class="page-header">
+      <div class="header-text">
+        <span class="eyebrow">
+          <ion-icon name="layers-outline" aria-hidden="true"></ion-icon>
+          Administração
+        </span>
+        <h1 class="page-title">Manutenção de Itens</h1>
+        <p class="page-subtitle">
+          Classifique os itens sincronizados do AGHU e mantenha o catálogo de eventos clínicos utilizados na Monitorização.
+        </p>
+      </div>
+    </section>
+
+    <nav class="tabs">
+      <button class="tab-btn" [class.active]="activeTab === 'drugs'" (click)="selectTab('drugs')">
+        <ion-icon name="pricetag-outline" aria-hidden="true"></ion-icon>
+        Manutenção de Itens
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'events'" (click)="selectTab('events')">
+        <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>
+        Manutenção de Eventos
+      </button>
+    </nav>
+
+    <!-- DRUGS TAB -->
+    <section class="tab-panel" *ngIf="activeTab === 'drugs'">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <ion-icon name="search-outline" class="search-icon" aria-hidden="true"></ion-icon>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar por nome do item"
+            [ngModel]="drugsTerm"
+            (ngModelChange)="onDrugsSearchChange($event)"
+          />
+        </div>
+
+        <select class="category-filter" [ngModel]="drugsCategoryFilter" (ngModelChange)="drugsCategoryFilter = $event; onDrugsCategoryFilterChange()">
+          <option [ngValue]="null">Todas as categorias</option>
+          <option *ngFor="let c of categoryOptions" [ngValue]="c.id">{{ c.label }}</option>
+        </select>
+      </div>
+
+      <div class="list-card">
+        <div class="list-header">
+          <span class="col-name">Nome</span>
+          <span class="col-unit">Unidade</span>
+          <span class="col-category">Categoria</span>
+          <span class="col-actions">Ações</span>
+        </div>
+
+        <p class="empty-state" *ngIf="!drugsLoading && drugs.length === 0">Nenhum item encontrado.</p>
+        <p class="loading-state" *ngIf="drugsLoading">Carregando...</p>
+
+        <div class="list-row" *ngFor="let drug of drugs">
+          <span class="col-name">
+            {{ drug.description }}
+            <span class="inactive-badge" *ngIf="!drug.active">Inativo</span>
+          </span>
+          <span class="col-unit">{{ drug.defaultUnit }}</span>
+
+          <span class="col-category" *ngIf="editingDrugId !== drug.id">
+            <span class="category-chip">{{ drug.categoryLabel }}</span>
+          </span>
+          <span class="col-category" *ngIf="editingDrugId === drug.id">
+            <select class="category-select" [(ngModel)]="editingDrugCategory">
+              <option *ngFor="let c of categoryOptions" [ngValue]="c.id">{{ c.label }}</option>
+            </select>
+          </span>
+
+          <span class="col-actions">
+            <ng-container *ngIf="editingDrugId !== drug.id">
+              <button class="icon-btn" (click)="startEditDrug(drug)" title="Alterar categoria">
+                <ion-icon name="create-outline"></ion-icon>
+              </button>
+            </ng-container>
+            <ng-container *ngIf="editingDrugId === drug.id">
+              <button class="icon-btn confirm" [disabled]="savingDrugId === drug.id" (click)="saveDrugCategory(drug)" title="Salvar">
+                <ion-icon name="checkmark-outline"></ion-icon>
+              </button>
+              <button class="icon-btn" [disabled]="savingDrugId === drug.id" (click)="cancelEditDrug()" title="Cancelar">
+                <ion-icon name="close-outline"></ion-icon>
+              </button>
+            </ng-container>
+          </span>
+        </div>
+      </div>
+
+      <div class="pagination-container" *ngIf="drugsTotalItems > drugsPageSize">
+        <button (click)="drugsPrevPage()" [disabled]="drugsPage === 1" class="page-btn">
+          <ion-icon name="chevron-back-outline"></ion-icon> Anterior
+        </button>
+        <span class="page-info">Página <strong>{{ drugsPage }}</strong> de {{ drugsTotalPages }}</span>
+        <button (click)="drugsNextPage()" [disabled]="drugsPage === drugsTotalPages" class="page-btn">
+          Próximo <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
+      </div>
+    </section>
+
+    <!-- EVENTS TAB -->
+    <section class="tab-panel" *ngIf="activeTab === 'events'">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <ion-icon name="search-outline" class="search-icon" aria-hidden="true"></ion-icon>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar por nome do evento"
+            [ngModel]="eventsTerm"
+            (ngModelChange)="onEventsSearchChange($event)"
+          />
+        </div>
+
+        <button class="btn btn-primary" (click)="startCreateEvent()">
+          <ion-icon name="add-outline"></ion-icon>
+          Novo evento
+        </button>
+      </div>
+
+      <div class="event-form" *ngIf="eventForm">
+        <h3>{{ eventForm.id ? 'Editar evento' : 'Novo evento' }}</h3>
+
+        <label class="field-label">Nome</label>
+        <input type="text" class="form-input" [(ngModel)]="eventForm.name" placeholder="Ex: Intubação orotraqueal" />
+
+        <label class="field-label">Descrição</label>
+        <textarea class="form-input" rows="3" [(ngModel)]="eventForm.description" placeholder="Ex: Realizada intubação orotraqueal sem intercorrências."></textarea>
+
+        <label class="field-label toggle-label" *ngIf="eventForm.id">
+          <input type="checkbox" [(ngModel)]="eventForm.active" />
+          Evento ativo
+        </label>
+
+        <div class="form-actions">
+          <button class="btn btn-secondary" [disabled]="savingEvent" (click)="cancelEventForm()">Cancelar</button>
+          <button class="btn btn-primary" [disabled]="savingEvent" (click)="saveEvent()">Salvar</button>
+        </div>
+      </div>
+
+      <div class="list-card">
+        <div class="list-header events-header">
+          <span class="col-name">Nome</span>
+          <span class="col-description">Descrição</span>
+          <span class="col-actions">Ações</span>
+        </div>
+
+        <p class="empty-state" *ngIf="!eventsLoading && events.length === 0">Nenhum evento cadastrado.</p>
+        <p class="loading-state" *ngIf="eventsLoading">Carregando...</p>
+
+        <div class="list-row events-row" *ngFor="let event of events">
+          <span class="col-name">
+            {{ event.name }}
+            <span class="inactive-badge" *ngIf="!event.active">Inativo</span>
+          </span>
+          <span class="col-description">{{ event.description }}</span>
+          <span class="col-actions">
+            <button class="icon-btn" (click)="startEditEvent(event)" title="Editar evento">
+              <ion-icon name="create-outline"></ion-icon>
+            </button>
+          </span>
+        </div>
+      </div>
+
+      <div class="pagination-container" *ngIf="eventsTotalItems > eventsPageSize">
+        <button (click)="eventsPrevPage()" [disabled]="eventsPage === 1" class="page-btn">
+          <ion-icon name="chevron-back-outline"></ion-icon> Anterior
+        </button>
+        <span class="page-info">Página <strong>{{ eventsPage }}</strong> de {{ eventsTotalPages }}</span>
+        <button (click)="eventsNextPage()" [disabled]="eventsPage === eventsTotalPages" class="page-btn">
+          Próximo <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
+      </div>
+    </section>
+  </main>
+</div>
