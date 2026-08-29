@@ -211,6 +211,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       .pipe(
         concatMap(draft =>
           this.saveRecord(draft).pipe(
+            map(result => ({ ...result, isMonitoringDraft: !!draft.isMonitoringDraft })),
             catchError(error => {
               console.error('Erro ao sincronizar ficha', draft, error);
               return of(null);
@@ -226,13 +227,20 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         if (!result)
           return;
 
-        this.clearDraft(result.surgeryId.toString());
+        if (result.isMonitoringDraft) {
+          localStorage.removeItem(`draft_monitoring_${result.surgeryId}`);         
+          localStorage.removeItem(`preAnesthesiaData_${result.surgeryId}`);
+          localStorage.removeItem(`cache_ficha_anestesica_${result.surgeryId}`);
+          this.updatePendingStatus();
+        } else {
+          this.clearDraft(result.surgeryId.toString());
+        }
       });
   }
 
   private getPendingDrafts(): any[] {
     return Object.keys(localStorage)
-      .filter(key => key.startsWith(this.DRAFT_PREFIX) || key.startsWith('monitoring_draft_'))
+      .filter(key => key.startsWith(this.DRAFT_PREFIX) || key.startsWith('draft_monitoring_'))
       .map(key => this.safeJsonParse(localStorage.getItem(key)))
       .filter((draft): draft is any => !!draft);
   }
@@ -313,8 +321,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     const count = Object.keys(localStorage)
       .filter(key =>
         key.startsWith(this.DRAFT_PREFIX) ||
-        key.startsWith('draft_monitoring_') ||
-        key.startsWith('monitoring_draft_')
+        key.startsWith('draft_monitoring_')
       ).length;
     this.pendingDraftsCountSubject.next(count);
   }
@@ -333,7 +340,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
   getPendingDraftsCount(): number {
     return Object.keys(localStorage)
-      .filter(key => key.startsWith(this.DRAFT_PREFIX) || key.startsWith('monitoring_draft_')).length;
+      .filter(key => key.startsWith(this.DRAFT_PREFIX) || key.startsWith('draft_monitoring_')).length;
   }
 
   createBlankRecord(surgeryId: number): Observable<any> {

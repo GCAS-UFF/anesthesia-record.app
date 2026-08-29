@@ -351,6 +351,23 @@ export class PreAnesthesicRecordService extends BaseService<PreAnesthesicRecordP
     return localStorage.getItem(this.draftKey(anesthesiaRecordId, patientId)) !== null;
   }
 
+  listDraftKeys(): { anesthesiaRecordId: number; patientId: string }[] {
+    return Object.keys(localStorage)
+      .filter((key) => key.startsWith(DRAFT_PREFIX))
+      .map((key) => {
+        const suffix = key.slice(DRAFT_PREFIX.length);
+        const separatorIndex = suffix.indexOf('_');
+        if (separatorIndex < 0) return null;
+
+        const anesthesiaRecordId = Number(suffix.slice(0, separatorIndex));
+        const patientId = suffix.slice(separatorIndex + 1);
+        if (!Number.isFinite(anesthesiaRecordId) || !patientId) return null;
+
+        return { anesthesiaRecordId, patientId };
+      })
+      .filter((entry): entry is { anesthesiaRecordId: number; patientId: string } => !!entry);
+  }
+
   getBestAvailable(anesthesiaRecordId: number, patientId: string): PreAnesthesicRecordDraft | PreAnesthesicRecordPayload | null {
     const draft = this.getDraft(anesthesiaRecordId, patientId);
     if (draft) return draft;

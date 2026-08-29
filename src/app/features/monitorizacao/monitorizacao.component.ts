@@ -1444,6 +1444,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       await loading.dismiss();
       localStorage.removeItem(MONITORING_DRAFT_KEY(this.surgeryId));
       localStorage.removeItem(`preAnesthesiaData_${this.surgeryId}`);
+      localStorage.removeItem(`${this.FICHA_ANESTESICA_CACHE_KEY}${this.surgeryId}`);
 
 
       this.anesthesiaRecordService.saveFinalizedMonitoringRecord(

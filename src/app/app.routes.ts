@@ -54,6 +54,10 @@ export const routes: Routes = [
       {
         path: 'settings',
         loadComponent: () => import('./features/settings/settings.component').then(m => m.SettingComponent)
+      },
+      {
+        path: 'integracoes/fichas',
+        loadComponent: () => import('./features/integracoes-fichas/integracoes-fichas.page').then(m => m.IntegracoesFichasPage)
       }
     ]
   }

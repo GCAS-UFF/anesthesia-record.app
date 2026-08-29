@@ -1,0 +1,208 @@
+<div class="app-container">
+  <app-status-bar></app-status-bar>
+
+  <app-header-institucional></app-header-institucional>
+
+  <main class="page-main">
+    <section class="page-header">
+      <div class="header-text">
+        <span class="eyebrow">
+          <ion-icon name="cloud-outline" aria-hidden="true"></ion-icon>
+          Sincronização local
+        </span>
+        <h1 class="page-title">Acompanhamento de Integrações</h1>
+        <p class="page-subtitle">
+          Dados registrados neste dispositivo que ainda não foram integrados ao servidor.
+        </p>
+      </div>
+
+      <button
+        class="btn btn-primary run-all"
+        [disabled]="isSendingAll || sendableCount === 0"
+        (click)="sendAll()"
+      >
+        <ion-spinner *ngIf="isSendingAll" name="crescent"></ion-spinner>
+        <ion-icon *ngIf="!isSendingAll" name="cloud-upload-outline" aria-hidden="true"></ion-icon>
+        Enviar todos
+      </button>
+    </section>
+
+    <section class="summary-row">
+      <div class="summary-card">
+        <span class="summary-value">{{ pendingCount }}</span>
+        <span class="summary-label">Pendentes</span>
+      </div>
+      <div class="summary-card" [class.has-error]="errorCount > 0">
+        <span class="summary-value">{{ errorCount }}</span>
+        <span class="summary-label">Com erro</span>
+      </div>
+      <div class="summary-card" title="Contabiliza os envios feitos manualmente a partir desta tela">
+        <span class="summary-value">{{ sentCount }}</span>
+        <span class="summary-label">Enviados</span>
+      </div>
+    </section>
+
+    <section class="filters-row">
+      <div class="chip-group">
+        <button
+          *ngFor="let f of statusFilters"
+          class="chip"
+          [class.active]="statusFilter === f.value"
+          (click)="statusFilter = f.value; applyFilters()"
+        >{{ f.label }}</button>
+      </div>
+
+      <div class="chip-group">
+        <button
+          *ngFor="let f of typeFilters"
+          class="chip"
+          [class.active]="typeFilter === f.value"
+          (click)="typeFilter = f.value; applyFilters()"
+        >{{ f.label }}</button>
+      </div>
+
+      <div class="search-box">
+        <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
+        <input
+          type="text"
+          placeholder="Buscar por paciente ou prontuário"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="applyFilters()"
+        />
+      </div>
+    </section>
+
+    <section class="errors-banner" *ngIf="errorCount > 0">
+      <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+      <span>
+        {{ errorCount }}
+        {{ errorCount === 1 ? 'integração apresentou erro e precisa de atenção.' : 'integrações apresentaram erro e precisam de atenção.' }}
+      </span>
+    </section>
+
+    <section class="sent-log" *ngIf="statusFilter === 'integrated'">
+      <div class="empty-state" *ngIf="!sentLog.length">
+        <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+        <h2>Nenhum envio registrado ainda</h2>
+        <p>Os envios feitos manualmente por esta tela aparecerão aqui.</p>
+      </div>
+
+      <div class="sent-row" *ngFor="let s of sentLog">
+        <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+        <span class="sent-type">{{ typeLabel(s.type) }}</span>
+        <span class="sent-patient">{{ s.patientName || 'Paciente não identificado' }}</span>
+        <span class="sent-date">{{ formatDate(s.sentAt) }}</span>
+      </div>
+    </section>
+
+    <section class="empty-state" *ngIf="statusFilter !== 'integrated' && !isLoading && filteredItems.length === 0">
+      <ion-icon name="checkmark-done-circle-outline" aria-hidden="true"></ion-icon>
+      <h2>Tudo sincronizado</h2>
+      <p>Não existem registros aguardando integração neste dispositivo.</p>
+    </section>
+
+    <section class="cards-grid" *ngIf="statusFilter !== 'integrated' && filteredItems.length">
+      <article
+        *ngFor="let item of filteredItems"
+        class="integration-card"
+        [class.is-error]="item.status === 'error'"
+        [class.is-blocked]="!item.canSendNow && !item.requiresNavigation"
+      >
+        <header class="card-head">
+          <div class="card-icon" aria-hidden="true">
+            <ion-icon [name]="typeIcon(item.type)"></ion-icon>
+          </div>
+          <div class="card-title-wrap">
+            <h2 class="card-title">{{ typeLabel(item.type) }}</h2>
+            <p class="card-desc">{{ patientLabel(item) }}</p>
+            <p class="card-sub" *ngIf="item.patient.medicalRecordNumber">
+              Prontuário: {{ item.patient.medicalRecordNumber }}
+            </p>
+            <p class="card-sub" *ngIf="item.surgeryId && item.patient.name">
+              Cirurgia: {{ item.surgeryId }}
+            </p>
+          </div>
+          <span class="status-chip" [attr.data-status]="item.status">
+            <ng-container [ngSwitch]="item.status">
+              <ng-container *ngSwitchCase="'pending'">
+                <ion-icon name="time-outline"></ion-icon> Aguardando envio
+              </ng-container>
+              <ng-container *ngSwitchCase="'error'">
+                <ion-icon name="alert-circle-outline"></ion-icon> Erro
+              </ng-container>
+            </ng-container>
+          </span>
+        </header>
+
+        <div class="card-body">
+          <dl class="meta-grid">
+            <div>
+              <dt>Última tentativa</dt>
+              <dd>{{ formatDate(item.updatedAt || item.error?.lastAttemptAt) }}</dd>
+            </div>
+            <div *ngIf="item.error?.attempts">
+              <dt>Tentativas</dt>
+              <dd>{{ item.error?.attempts }}</dd>
+            </div>
+          </dl>
+
+          <p class="error-msg" *ngIf="item.status === 'error' && item.error?.message">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            {{ item.error?.message }}
+          </p>
+
+          <p class="blocked-msg" *ngIf="item.blockedReason">
+            <ion-icon name="information-circle-outline"></ion-icon>
+            {{ item.blockedReason }}
+          </p>
+
+          <ion-accordion-group>
+            <ion-accordion value="data">
+              <ion-item slot="header" lines="none">
+                <ion-label>Ver dados / Dados que serão enviados</ion-label>
+              </ion-item>
+              <div slot="content" class="json-viewer">
+                <pre>{{ jsonFor(item) }}</pre>
+              </div>
+            </ion-accordion>
+          </ion-accordion-group>
+        </div>
+
+        <footer class="card-actions">
+          <button
+            class="btn btn-secondary"
+            *ngIf="item.status === 'error'"
+            (click)="viewDetails(item)"
+          >
+            <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
+            Ver detalhes técnicos
+          </button>
+
+          <button
+            class="btn btn-primary"
+            *ngIf="item.requiresNavigation"
+            (click)="openForm(item)"
+          >
+            <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
+            Assinar e enviar
+          </button>
+
+          <button
+            class="btn btn-primary"
+            *ngIf="!item.requiresNavigation"
+            [disabled]="!item.canSendNow || sendingId === item.id"
+            (click)="sendItem(item)"
+          >
+            <ion-spinner *ngIf="sendingId === item.id" name="crescent"></ion-spinner>
+            <ion-icon
+              *ngIf="sendingId !== item.id"
+              [name]="item.status === 'error' ? 'refresh-outline' : 'cloud-upload-outline'"
+              aria-hidden="true"
+            ></ion-icon>
+            <span>{{ item.status === 'error' ? 'Tentar novamente' : 'Enviar' }}</span>
+          </button>
+        </footer>
+      </article>
+    </section>
+  </main>
+</div>
