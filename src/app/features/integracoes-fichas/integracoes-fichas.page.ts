@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -94,6 +94,7 @@ export class IntegracoesFichasPage implements OnInit, OnDestroy {
   ];
 
   private sub = new Subscription();
+  private subscribedToUpdates = false;
 
   constructor(
     private pendingIntegrationsService: PendingIntegrationsService,
@@ -103,6 +104,7 @@ export class IntegracoesFichasPage implements OnInit, OnDestroy {
     private modalController: ModalController,
     private router: Router,
     private datePipe: DatePipe,
+    private ngZone: NgZone,
   ) {
     addIcons({
       cloudOutline,
@@ -121,7 +123,25 @@ export class IntegracoesFichasPage implements OnInit, OnDestroy {
     });
   }
 
-  async ngOnInit(): Promise<void> {
+  ngOnInit(): void {
+
+    if (this.subscribedToUpdates) return;
+    this.subscribedToUpdates = true;
+
+    this.sub.add(
+      merge(this.anesthesiaRecordService.pendingDraftsCount$, this.anesthesiaRecordService.syncing$)
+        .pipe(debounceTime(300))
+        .subscribe(() => this.reload()),
+    );
+
+    this.sub.add(this.pendingIntegrationsService.changed$.pipe(debounceTime(300)).subscribe(() => this.reload()));
+  }
+
+  ionViewWillEnter(): void {
+    this.ngZone.run(() => this.refreshWithLoading());
+  }
+
+  private async refreshWithLoading(): Promise<void> {
     const loading = await this.loadingController.create({
       spinner: 'crescent',
       message: 'Carregando integrações pendentes...',
@@ -136,14 +156,6 @@ export class IntegracoesFichasPage implements OnInit, OnDestroy {
       this.isLoading = false;
       await loading.dismiss();
     }
-
-    this.sub.add(
-      merge(this.anesthesiaRecordService.pendingDraftsCount$, this.anesthesiaRecordService.syncing$)
-        .pipe(debounceTime(300))
-        .subscribe(() => this.reload()),
-    );
-
-    this.sub.add(this.pendingIntegrationsService.changed$.pipe(debounceTime(300)).subscribe(() => this.reload()));
   }
 
   ngOnDestroy(): void {
