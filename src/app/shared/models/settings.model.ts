@@ -19,6 +19,7 @@ export interface UserSettingsDto {
   monitoringIntervalMinutes: number;
   useInstitutionalInterval: boolean;
   institutionalMonitoringIntervalMinutes: number;
+  hospitalName: string;
   institution: InstitutionSettingsDto | null;
 }
 

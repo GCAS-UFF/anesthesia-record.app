@@ -58,8 +58,10 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
 
   doctorId = 0;
   isAdmin = false;
+  hospitalName = '';
   private isLoggingOut = false;
   private userSubscription = new Subscription();
+  private hospitalNameSubscription = new Subscription();
 
   menuOpen = false;
   userMenuOpen = false;
@@ -137,6 +139,7 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadUserData();
+    this.hospitalName = this.authService.getHospitalName();
 
     this.userSubscription = this.authService.user$.subscribe(user => {
       if (!user) {
@@ -146,10 +149,15 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
 
       this.updateUserData(user);
     });
+
+    this.hospitalNameSubscription = this.authService.hospitalName$.subscribe(hospitalName => {
+      this.hospitalName = hospitalName;
+    });
   }
 
   ngOnDestroy(): void {
     this.userSubscription.unsubscribe();
+    this.hospitalNameSubscription.unsubscribe();
   }
 
   loadUserData(): void {

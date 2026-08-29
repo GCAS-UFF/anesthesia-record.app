@@ -115,13 +115,13 @@
   aria-label="Menu principal"
 >
   <div class="drawer-header">
-    <div class="drawer-logos">
-      <img src="assets/Logo.png" alt="UFF" class="logo uff" />
-      <span class="drawer-title">HUAP · UFF</span>
-    </div>
     <button class="close-btn" (click)="closeMenu()" aria-label="Fechar menu">
       <ion-icon name="close-outline"></ion-icon>
     </button>
+    <div class="drawer-logos">
+      <img src="assets/Logo.png" alt="Logo" class="logo uff" />
+      <span class="drawer-title">{{ hospitalName }}</span>
+    </div>
   </div>
 
   <nav class="drawer-nav">

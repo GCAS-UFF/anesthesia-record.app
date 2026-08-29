@@ -5,6 +5,9 @@ import { map, catchError, tap } from 'rxjs/operators';
 import { LoginCredentials } from '../../features/login/login.model';
 import { StorageService } from './storage.service';
 import { ApiUrlService } from './api-url.service';
+import { SettingsService } from './settings.service';
+
+const DEFAULT_HOSPITAL_NAME = 'HOSPITAL NÂO IDENTIFICADO';
 
 interface UserData {
   username: string;
@@ -57,23 +60,30 @@ export class AuthService {
     USER_ROLE: 'userRole',
     IS_ADMIN: 'isAdmin',
     USER_EMAIL: 'userEmail',
+    HOSPITAL_NAME: 'hospitalName',
     LAST_SAVED_CRM: 'lastSavedCRM',
     REMEMBER_ME: 'rememberMePreference',
     CACHE_PROFESSIONALS: 'cache_professionals',
     CACHE_PROCEDURES: 'cache_procedures',
-    CACHE_medications: 'cache_medications'
+    CACHE_MEDICATIONS: 'cache_medications',
+    CACHE_EVENTS: 'cache_events'
   } as const;
 
   private loggedInUser: UserData | null = null;
   private userSubject = new BehaviorSubject<UserData | null>(null);
   public user$ = this.userSubject.asObservable();
 
+  private hospitalNameSubject = new BehaviorSubject<string>(DEFAULT_HOSPITAL_NAME);
+  public hospitalName$ = this.hospitalNameSubject.asObservable();
+
   constructor(
     private http: HttpClient,
     private storageService: StorageService,
-    private apiUrlService: ApiUrlService
+    private apiUrlService: ApiUrlService,
+    private settingsService: SettingsService
   ) {
     this.checkSavedSession();
+    this.restoreHospitalName();
   }
 
   login(credentials: LoginCredentials): Observable<boolean> {
@@ -96,6 +106,7 @@ export class AuthService {
   logout(): void {
     this.loggedInUser = null;
     this.userSubject.next(null);
+    this.hospitalNameSubject.next(DEFAULT_HOSPITAL_NAME);
 
     Object.values(this.SESSION_KEYS).forEach(key => {
       this.storageService.remove(key);
@@ -138,6 +149,10 @@ export class AuthService {
     return localStorage.getItem(this.SESSION_KEYS.REMEMBER_ME) === 'true';
   }
 
+  getHospitalName(): string {
+    return this.hospitalNameSubject.value;
+  }
+
   private handleLoginResponse(response: AuthResponse, credentials: LoginCredentials): void {
     const token = this.extractToken(response);
     const userData = this.extractUserData(response, credentials);
@@ -160,6 +175,32 @@ export class AuthService {
     Object.entries(session).forEach(([key, value]) => {
       this.storageService.set(key, value);
     });
+
+    this.loadHospitalName();
+  }
+
+  private loadHospitalName(): void {
+    this.settingsService.get().subscribe({
+      next: (settings) => {
+        const hospitalName = settings.hospitalName;
+        if (hospitalName) {
+          this.setHospitalName(hospitalName);
+        }
+      },
+      error: (err) => console.error('Erro ao carregar dados institucionais:', err)
+    });
+  }
+
+  private setHospitalName(hospitalName: string): void {
+    this.hospitalNameSubject.next(hospitalName);
+    this.storageService.set(this.SESSION_KEYS.HOSPITAL_NAME, hospitalName);
+  }
+
+  private restoreHospitalName(): void {
+    const stored = this.storageService.get<string>(this.SESSION_KEYS.HOSPITAL_NAME);
+    if (stored) {
+      this.hospitalNameSubject.next(stored);
+    }
   }
 
   private extractToken(response: AuthResponse): string {
@@ -190,6 +231,7 @@ export class AuthService {
     if (userData) {
       this.loggedInUser = userData;
       this.userSubject.next(userData);
+      this.loadHospitalName();
     }
   }
 

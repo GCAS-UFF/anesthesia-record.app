@@ -91,9 +91,6 @@ export class PatientListPage implements OnInit {
   }
 
   ionViewWillEnter() {
-    // Ionic dispara este hook fora da NgZone (parte da transição de página),
-    // então sem o run() aqui o resultado do loadData() chega mas a view não
-    // é atualizada até o próximo evento que reentre na zone (ex: um clique).
     this.ngZone.run(() => this.loadData());
   }
 
