@@ -140,7 +140,7 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
 
     this.userSubscription = this.authService.user$.subscribe(user => {
       if (!user) {
-        this.handleLogout();
+        this.redirectToLogin();
         return;
       }
 
@@ -244,15 +244,20 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
           role: 'destructive',
           handler: () => {
             this.isLoggingOut = true;
-            this.closeUserMenu();
             this.authService.logout();
-            this.router.navigate(['/login'], { replaceUrl: true });
+            this.redirectToLogin();
           }
         }
       ]
     });
 
     await alert.present();
+  }
+
+  private redirectToLogin(): void {
+    this.isLoggingOut = true;
+    this.closeUserMenu();
+    this.router.navigate(['/login'], { replaceUrl: true });
   }
 
   navigate(item: NavItem): void {
