@@ -27,7 +27,7 @@
     <p>Carregando configurações...</p>
   </div>
 
-  <div class="cfg-layout" [formGroup]="form" *ngIf="!loading">    
+  <div class="cfg-layout" [formGroup]="form" *ngIf="!loading">
     <aside class="cfg-nav">
       <div class="cfg-nav__scroll">
         <button
@@ -133,124 +133,151 @@
         </div>
       </section>
 
-      <section class="card" id="sec-servidor" *ngIf="isAdmin">
+      <section class="card" id="sec-integracoes" *ngIf="isAdmin">
         <header class="card__head">
           <div class="card__idx">03</div>
           <div>
-            <h2>Servidor SIGA (dispositivo)</h2>
-            <p>Endereço da API SIGA usado por este tablet para autenticação e todas as demais requisições. Configuração local do dispositivo — não é enviada ao AGHU.</p>
-          </div>
-          <ion-icon name="globe-outline" class="card__icon"></ion-icon>
-        </header>
-
-        <div class="card__body">
-          <div class="field">
-            <label>Endereço configurado</label>
-            <div class="input-with-action">
-              <span class="input-icon"><ion-icon name="link-outline"></ion-icon></span>
-              <input type="text" [value]="servidorSigaAtual" readonly />
-              <button type="button" class="btn btn-ghost" (click)="alterarServidor()">
-                <ion-icon name="refresh-outline"></ion-icon>
-                Alterar servidor
-              </button>
-            </div>
-            <p class="hint">
-              <ion-icon name="information-circle-outline"></ion-icon>
-              Alterar o servidor exige validar a nova conexão antes de substituir o endereço atual.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section class="card" id="sec-integracoes" *ngIf="isAdmin">
-        <header class="card__head">
-          <div class="card__idx">04</div>
-          <div>
-            <h2>Integrações e APIs</h2>
-            <p>Endpoints usados para autenticação (SIGA) e para os dados hospitalares (AGHU / PHP).</p>
+            <h2>API SIGA</h2>
+            <p>Endereço da API SIGA usado por este dispositivo para login e demais requisições. Configuração local do tablet.</p>
           </div>
           <ion-icon name="server-outline" class="card__icon"></ion-icon>
         </header>
 
         <div class="card__body">
           <div class="field">
-            <label>URL da API do SIGA</label>
+            <label>URL</label>
             <div class="input-with-action">
               <span class="input-icon"><ion-icon name="link-outline"></ion-icon></span>
               <input
                 type="url"
                 inputmode="url"
-                formControlName="urlSiga"
-                placeholder="https://siga.huap.uff.br/api"
+                [(ngModel)]="sigaUrl"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="https://siga.hospital.local"
+                [readonly]="testing.siga === 'running'"
               />
-              <button type="button" class="btn btn-ghost" (click)="testarConexao('siga')">
-                <ion-spinner *ngIf="testing['siga'] === 'running'" name="crescent"></ion-spinner>
-                <ion-icon *ngIf="testing['siga'] !== 'running'" name="refresh-outline"></ion-icon>
-                Testar
+              <button type="button" class="btn btn-ghost" [disabled]="testing.siga === 'running'" (click)="testarConexao('siga')">
+                <ion-spinner *ngIf="testing.siga === 'running'" name="crescent"></ion-spinner>
+                <ion-icon *ngIf="testing.siga !== 'running'" name="refresh-outline"></ion-icon>
+                Testar conexão
               </button>
             </div>
-            <p class="status-line ok" *ngIf="testing['siga'] === 'ok'">Conexão bem-sucedida.</p>
-            <p class="status-line fail" *ngIf="testing['siga'] === 'fail'">Falha ao conectar. Verifique a URL.</p>
-          </div>
-
-          <div class="field">
-            <label>URL da API do Servidor do Hospital (PHP → AGHU)</label>
-            <div class="input-with-action">
-              <span class="input-icon"><ion-icon name="cloud-outline"></ion-icon></span>
-              <input
-                type="url"
-                inputmode="url"
-                formControlName="urlAghu"
-                placeholder="https://servidor.huap.local/aghu/api"
-              />
-              <button type="button" class="btn btn-ghost" (click)="testarConexao('aghu')">
-                <ion-spinner *ngIf="testing['aghu'] === 'running'" name="crescent"></ion-spinner>
-                <ion-icon *ngIf="testing['aghu'] !== 'running'" name="refresh-outline"></ion-icon>
-                Testar
-              </button>
-            </div>
-            <p class="status-line ok" *ngIf="testing['aghu'] === 'ok'">Conexão bem-sucedida.</p>
-            <p class="status-line fail" *ngIf="testing['aghu'] === 'fail'">Falha ao conectar. Verifique a URL.</p>
+            <p class="status-line ok" *ngIf="sigaStatusLabel === 'ok'">
+              <ion-icon name="checkmark-circle-outline"></ion-icon> Conectado
+            </p>
+            <p class="status-line fail" *ngIf="sigaStatusLabel === 'fail'">
+              <ion-icon name="close-circle-outline"></ion-icon> Não conectado
+            </p>
           </div>
         </div>
       </section>
 
-      <section class="card" id="sec-seguranca" *ngIf="isAdmin">
+      <section class="card" *ngIf="isAdmin">
+        <header class="card__head">
+          <div class="card__idx">04</div>
+          <div>
+            <h2>API AGHU</h2>
+            <p>Integração com o sistema hospitalar AGHU. Configuração da instalação — armazenada no servidor.</p>
+          </div>
+          <ion-icon name="cloud-outline" class="card__icon"></ion-icon>
+        </header>
+
+        <div class="card__body">
+          <div class="field">
+            <label>URL</label>
+            <div class="input-with-action">
+              <span class="input-icon"><ion-icon name="link-outline"></ion-icon></span>
+              <input
+                type="url"
+                inputmode="url"
+                [(ngModel)]="aghuUrl"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="https://aghu.hospital.local"
+                [readonly]="testing.aghu === 'running'"
+              />
+              <button type="button" class="btn btn-ghost" [disabled]="testing.aghu === 'running'" (click)="testarConexao('aghu')">
+                <ion-spinner *ngIf="testing.aghu === 'running'" name="crescent"></ion-spinner>
+                <ion-icon *ngIf="testing.aghu !== 'running'" name="refresh-outline"></ion-icon>
+                Testar conexão
+              </button>
+            </div>
+            <p class="status-line ok" *ngIf="aghuStatusLabel === 'ok'">
+              <ion-icon name="checkmark-circle-outline"></ion-icon> Conectado
+            </p>
+            <p class="status-line fail" *ngIf="aghuStatusLabel === 'fail'">
+              <ion-icon name="close-circle-outline"></ion-icon> Não conectado
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="sec-admin-conta" *ngIf="isAdmin">
         <header class="card__head">
           <div class="card__idx">05</div>
           <div>
-            <h2>Segurança — senha administrativa (SIGA)</h2>
-            <p>Altere a senha da conta administrativa usada na integração com o SIGA.</p>
+            <h2>Conta ADMIN</h2>
+            <p>Informações da conta administrativa autenticada e alteração de senha.</p>
           </div>
-          <ion-icon name="lock-closed-outline" class="card__icon"></ion-icon>
+          <ion-icon name="person-circle-outline" class="card__icon"></ion-icon>
         </header>
 
-        <div class="card__body" formGroupName="senhaAdmin">
-          <div class="grid-3">
+        <div class="card__body">
+          <div class="grid-2" *ngIf="adminAccount as acc">
             <div class="field">
-              <label>Senha atual</label>
-              <div class="input-with-action">
-                <span class="input-icon"><ion-icon name="key-outline"></ion-icon></span>
-                <input [type]="mostrarSenha ? 'text' : 'password'" formControlName="atual" placeholder="••••••••" />
-                <button type="button" class="icon-btn" (click)="mostrarSenha = !mostrarSenha">
-                  <ion-icon [name]="mostrarSenha ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
-                </button>
-              </div>
+              <label>Nome</label>
+              <input type="text" [value]="acc.name" readonly />
             </div>
             <div class="field">
-              <label>Nova senha</label>
-              <input [type]="mostrarSenha ? 'text' : 'password'" formControlName="nova" placeholder="Mínimo 6 caracteres" />
+              <label>Usuário (login)</label>
+              <input type="text" [value]="acc.username" readonly />
+            </div>
+            <div class="field" *ngIf="acc.email">
+              <label>E-mail</label>
+              <input type="text" [value]="acc.email" readonly />
             </div>
             <div class="field">
-              <label>Confirmar nova senha</label>
-              <input [type]="mostrarSenha ? 'text' : 'password'" formControlName="confirmar" placeholder="Repita a nova senha" />
+              <label>Setor</label>
+              <input type="text" [value]="acc.sector" readonly />
             </div>
           </div>
-          <p class="status-line fail" *ngIf="senhaMensagem">{{ senhaMensagem }}</p>
-          <p class="hint">
-            <ion-icon name="shield-checkmark-outline"></ion-icon>
-            Deixe os campos em branco para manter a senha atual.
-          </p>
+
+          <hr class="divider" />
+
+          <form [formGroup]="passwordForm" (ngSubmit)="alterarSenha()">
+            <h3 class="subtitle">Alterar senha</h3>
+            <div class="grid-3">
+              <div class="field">
+                <label>Senha atual</label>
+                <div class="input-with-action">
+                  <span class="input-icon"><ion-icon name="key-outline"></ion-icon></span>
+                  <input [type]="mostrarSenhaConta ? 'text' : 'password'" formControlName="atual" placeholder="••••••••" />
+                  <button type="button" class="icon-btn" (click)="mostrarSenhaConta = !mostrarSenhaConta">
+                    <ion-icon [name]="mostrarSenhaConta ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+                  </button>
+                </div>
+              </div>
+              <div class="field">
+                <label>Nova senha</label>
+                <input [type]="mostrarSenhaConta ? 'text' : 'password'" formControlName="nova" placeholder="Mínimo 6 caracteres" />
+              </div>
+              <div class="field">
+                <label>Confirmar nova senha</label>
+                <input [type]="mostrarSenhaConta ? 'text' : 'password'" formControlName="confirmar" placeholder="Repita a nova senha" />
+              </div>
+            </div>
+            <p class="status-line fail" *ngIf="passwordMismatch">A confirmação não confere com a nova senha.</p>
+            <div class="form-actions">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="changingPassword || passwordForm.invalid || passwordMismatch"
+              >
+                <ion-spinner *ngIf="changingPassword" name="crescent"></ion-spinner>
+                <ion-icon *ngIf="!changingPassword" name="key-outline"></ion-icon>
+                {{ changingPassword ? 'Alterando...' : 'Alterar senha' }}
+              </button>
+            </div>
+          </form>
         </div>
       </section>
 

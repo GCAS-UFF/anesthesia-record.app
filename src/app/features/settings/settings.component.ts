@@ -7,8 +7,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Router } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom, of } from 'rxjs';
 
 import {
   IonIcon,
@@ -21,10 +20,10 @@ import {
 import { addIcons } from 'ionicons';
 import {
   settingsOutline, saveOutline, languageOutline, timerOutline, serverOutline,
-  cloudOutline, businessOutline, lockClosedOutline, shieldCheckmarkOutline,
-  refreshOutline, checkmarkCircleOutline, eyeOutline, eyeOffOutline,
+  cloudOutline, businessOutline, shieldCheckmarkOutline,
+  refreshOutline, checkmarkCircleOutline, closeCircleOutline, eyeOutline, eyeOffOutline,
   personCircleOutline, keyOutline, closeOutline, informationCircleOutline,
-  linkOutline, globeOutline,
+  linkOutline,
 } from 'ionicons/icons';
 
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
@@ -32,9 +31,11 @@ import { StatusBarComponent } from '../../shared/components/status-bar/status-ba
 import { AuthService } from '../../core/services/auth.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { ApiUrlService } from '../../core/services/api-url.service';
+import { HealthService } from '../../core/services/health.service';
 import { HeaderActionButton } from '../../shared/components/header-institucional/header-action-button.model';
 import {
   InstitutionSettingsCommand,
+  InstitutionSettingsDto,
   UserSettingsCommand,
   UserSettingsDto,
 } from '../../shared/models/settings.model';
@@ -45,6 +46,16 @@ interface SettingsSection {
   icon: string;
   admin: boolean;
 }
+
+interface AdminAccount {
+  name: string;
+  username: string;
+  email: string;
+  sector: string;
+  role: string;
+}
+
+type ConnectionState = 'idle' | 'running' | 'ok' | 'fail';
 
 @Component({
   selector: 'app-settings',
@@ -76,11 +87,20 @@ export class SettingComponent implements OnInit {
   aceiteAssinatura = false;
   senhaAssinatura = '';
   mostrarSenha = false;
+  mostrarSenhaConta = false;
 
-  testing: Record<string, 'idle' | 'running' | 'ok' | 'fail'> = {
+  sigaUrl = '';
+  aghuUrl = '';
+  testing: Record<'siga' | 'aghu', ConnectionState> = {
     siga: 'idle',
     aghu: 'idle',
   };
+  healthStatus: { database: boolean; aghu: boolean } | null = null;
+  institution: InstitutionSettingsDto | null = null;
+
+  adminAccount: AdminAccount | null = null;
+  passwordForm!: FormGroup;
+  changingPassword = false;
 
   readonly idiomas = [
     { value: 'pt-BR', label: 'Português (Brasil)', flag: '🇧🇷' },
@@ -93,9 +113,8 @@ export class SettingComponent implements OnInit {
   readonly sections: SettingsSection[] = [
     { id: 'geral', title: 'Preferências gerais', icon: 'language-outline', admin: false },
     { id: 'afericao', title: 'Aferição automática', icon: 'timer-outline', admin: false },
-    { id: 'servidor', title: 'Servidor SIGA (dispositivo)', icon: 'globe-outline', admin: true },
     { id: 'integracoes', title: 'Integrações e APIs', icon: 'server-outline', admin: true },
-    { id: 'seguranca', title: 'Segurança (SIGA)', icon: 'lock-closed-outline', admin: true },
+    { id: 'admin-conta', title: 'Conta ADMIN', icon: 'person-circle-outline', admin: true },
     { id: 'hospital', title: 'Dados do hospital', icon: 'business-outline', admin: true },
   ];
 
@@ -105,20 +124,22 @@ export class SettingComponent implements OnInit {
     private authService: AuthService,
     private settingsService: SettingsService,
     private apiUrlService: ApiUrlService,
-    private router: Router,
+    private healthService: HealthService,
     private cdr: ChangeDetectorRef,
   ) {
     addIcons({
       settingsOutline, saveOutline, languageOutline, timerOutline, serverOutline,
-      cloudOutline, businessOutline, lockClosedOutline, shieldCheckmarkOutline,
-      refreshOutline, checkmarkCircleOutline, eyeOutline, eyeOffOutline,
+      cloudOutline, businessOutline, shieldCheckmarkOutline,
+      refreshOutline, checkmarkCircleOutline, closeCircleOutline, eyeOutline, eyeOffOutline,
       personCircleOutline, keyOutline, closeOutline, informationCircleOutline,
-      linkOutline, globeOutline,
+      linkOutline,
     });
   }
 
   ngOnInit(): void {
     this.isAdminUser = this.authService.isAdmin();
+    this.sigaUrl = this.apiUrlService.getRawUrl() ?? '';
+    this.loadAdminAccount();
 
     this.form = this.fb.group({
       idioma: ['pt-BR', Validators.required],
@@ -128,8 +149,6 @@ export class SettingComponent implements OnInit {
 
       // ADMIN
       intervaloInstitucional: [5, [Validators.min(1), Validators.max(60)]],
-      urlSiga: ['', [Validators.pattern(/^https?:\/\/.+/)]],
-      urlAghu: ['', [Validators.pattern(/^https?:\/\/.+/)]],
 
       hospital: this.fb.group({
         nome: ['Hospital Universitário Antônio Pedro'],
@@ -142,15 +161,16 @@ export class SettingComponent implements OnInit {
         cidade: ['Niterói'],
         uf: ['RJ'],
       }),
+    });
 
-      senhaAdmin: this.fb.group({
-        atual: [''],
-        nova: [''],
-        confirmar: [''],
-      }),
+    this.passwordForm = this.fb.group({
+      atual: ['', Validators.required],
+      nova: ['', [Validators.required, Validators.minLength(6)]],
+      confirmar: ['', Validators.required],
     });
 
     this.loadSettings();
+    this.refreshHealthStatus();
 
     this.form.get('usarIntervaloInstitucional')!.valueChanges.subscribe((v) => {
       if (v) {
@@ -165,14 +185,6 @@ export class SettingComponent implements OnInit {
 
   get isAdmin(): boolean {
     return this.isAdminUser;
-  }
-
-  get servidorSigaAtual(): string {
-    return this.apiUrlService.getRawUrl() ?? 'Não configurado';
-  }
-
-  alterarServidor(): void {
-    this.router.navigate(['/configurar-servidor'], { queryParams: { redirect: '/settings' } });
   }
 
   get visibleSections(): SettingsSection[] {
@@ -206,21 +218,6 @@ export class SettingComponent implements OnInit {
     this.form.get(control)!.setValue(v);
   }
 
-  get senhaValida(): boolean {
-    const g = this.form.get('senhaAdmin')!.value;
-    if (!g.atual && !g.nova && !g.confirmar) return true; // não está trocando
-    return !!g.atual && !!g.nova && g.nova.length >= 6 && g.nova === g.confirmar;
-  }
-
-  get senhaMensagem(): string | null {
-    const g = this.form.get('senhaAdmin')!.value;
-    if (!g.atual && !g.nova && !g.confirmar) return null;
-    if (!g.atual) return 'Informe a senha atual.';
-    if (!g.nova || g.nova.length < 6) return 'A nova senha deve ter ao menos 6 caracteres.';
-    if (g.nova !== g.confirmar) return 'A confirmação não confere com a nova senha.';
-    return null;
-  }
-
   formatCnpj(): void {
     const c = this.form.get('hospital.cnpj')!;
     const d = String(c.value ?? '').replace(/\D/g, '').slice(0, 14);
@@ -232,21 +229,137 @@ export class SettingComponent implements OnInit {
     c.setValue(out, { emitEvent: false });
   }
 
-  // ---------- conexão ----------
+
+  get sigaStatusLabel(): 'ok' | 'fail' | 'unknown' {
+    if (this.testing.siga === 'ok') return 'ok';
+    if (this.testing.siga === 'fail') return 'fail';
+    if (this.healthStatus) return this.healthStatus.database ? 'ok' : 'fail';
+    return 'unknown';
+  }
+
+  get aghuStatusLabel(): 'ok' | 'fail' | 'unknown' {
+    if (this.testing.aghu === 'ok') return 'ok';
+    if (this.testing.aghu === 'fail') return 'fail';
+    if (this.healthStatus) return this.healthStatus.aghu ? 'ok' : 'fail';
+    return 'unknown';
+  }
 
   async testarConexao(alvo: 'siga' | 'aghu'): Promise<void> {
-    const url = alvo === 'siga' ? this.form.value.urlSiga : this.form.value.urlAghu;
-    if (!url) {
+    const raw = (alvo === 'siga' ? this.sigaUrl : this.aghuUrl || '').trim();
+
+    if (!raw) {
       this.testing[alvo] = 'fail';
       return;
     }
+
     this.testing[alvo] = 'running';
+
     try {
-      // Substituir pelo endpoint real de health-check do backend
-      await new Promise((r) => setTimeout(r, 900));
-      this.testing[alvo] = 'ok';
+      if (alvo === 'siga') {
+        await firstValueFrom(this.healthService.checkHealthAt(raw));
+        this.apiUrlService.setUrl(raw);
+        this.sigaUrl = this.apiUrlService.getRawUrl() ?? raw;
+        this.testing.siga = 'ok';
+        await this.toastMsg('Conexão com a API SIGA validada e salva neste dispositivo.', 'success');
+      } else {
+        const result = await firstValueFrom(this.settingsService.testAghuConnection({ aghuBaseUrl: raw }));
+
+        if (!result.connected) {
+          this.testing.aghu = 'fail';
+          return;
+        }
+
+        const command = this.buildInstitutionCommand({ aghuApiUrl: raw.replace(/\/+$/, '') });
+        const dto = await firstValueFrom(this.settingsService.updateInstitutionSettings(command));
+
+        this.institution = dto.institution;
+        this.aghuUrl = dto.institution?.aghuApiUrl ?? raw;
+        this.testing.aghu = 'ok';
+        await this.toastMsg('Conexão com o AGHU validada e salva.', 'success');
+      }
     } catch {
       this.testing[alvo] = 'fail';
+      if (alvo === 'aghu') {
+        await this.toastMsg('Não foi possível conectar ao AGHU. A configuração anterior foi mantida.', 'danger');
+      }
+    }
+  }
+
+  private buildInstitutionCommand(overrides: Partial<InstitutionSettingsCommand>): InstitutionSettingsCommand {
+    const base = this.institution;
+
+    return {
+      monitoringIntervalMinutes: base?.monitoringIntervalMinutes ?? this.form?.value.intervaloInstitucional ?? 5,
+      sigaApiUrl: base?.sigaApiUrl ?? null,
+      aghuApiUrl: base?.aghuApiUrl ?? null,
+      hospitalName: base?.hospitalName ?? 'Hospital Universitário Antônio Pedro',
+      hospitalSector: base?.hospitalSector ?? null,
+      hospitalCnpj: base?.hospitalCnpj ?? null,
+      hospitalCep: base?.hospitalCep ?? null,
+      hospitalStreet: base?.hospitalStreet ?? null,
+      hospitalNumber: base?.hospitalNumber ?? null,
+      hospitalNeighborhood: base?.hospitalNeighborhood ?? null,
+      hospitalCity: base?.hospitalCity ?? 'Niterói',
+      hospitalState: base?.hospitalState ?? 'RJ',
+      ...overrides,
+    };
+  }
+
+  private refreshHealthStatus(): void {
+    this.healthService
+      .checkHealth()
+      .pipe(catchError(() => of(null)))
+      .subscribe((res) => {
+        this.healthStatus = res?.data
+          ? { database: !!res.data.database, aghu: !!res.data.aghu }
+          : null;
+      });
+  }
+
+
+  private loadAdminAccount(): void {
+    const user = this.authService.getUser();
+
+    if (!user) return;
+
+    this.adminAccount = {
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      sector: user.sector,
+      role: user.role,
+    };
+  }
+
+  get passwordMismatch(): boolean {
+    const v = this.passwordForm?.value ?? {};
+    return !!v.nova && !!v.confirmar && v.nova !== v.confirmar;
+  }
+
+  async alterarSenha(): Promise<void> {
+    if (this.passwordForm.invalid || this.passwordMismatch) {
+      this.passwordForm.markAllAsTouched();
+      return;
+    }
+
+    this.changingPassword = true;
+    const v = this.passwordForm.value;
+
+    try {
+      await firstValueFrom(
+        this.settingsService.changeAdminPassword({
+          currentPassword: v.atual,
+          newPassword: v.nova,
+        }),
+      );
+
+      this.passwordForm.reset();
+      await this.toastMsg('Senha atualizada com sucesso.', 'success');
+    } catch (err: any) {
+      const message = err?.error?.message || 'Não foi possível alterar a senha. Verifique a senha atual.';
+      await this.toastMsg(message, 'danger');
+    } finally {
+      this.changingPassword = false;
     }
   }
 
@@ -277,11 +390,13 @@ export class SettingComponent implements OnInit {
       { emitEvent: false },
     );
 
+    this.institution = dto.institution;
+
     if (dto.institution) {
+      this.aghuUrl = dto.institution.aghuApiUrl ?? '';
+
       this.form.patchValue(
         {
-          urlSiga: dto.institution.sigaApiUrl ?? '',
-          urlAghu: dto.institution.aghuApiUrl ?? '',
           hospital: {
             nome: dto.institution.hospitalName ?? '',
             setor: dto.institution.hospitalSector ?? '',
@@ -300,11 +415,6 @@ export class SettingComponent implements OnInit {
   }
 
   abrirAssinatura(): void {
-    if (!this.senhaValida) {
-      this.toastMsg('Revise os campos de senha antes de salvar.', 'danger');
-      this.scrollTo('seguranca');
-      return;
-    }
     this.aceiteAssinatura = false;
     this.senhaAssinatura = '';
     this.showAssinatura = true;
@@ -315,7 +425,7 @@ export class SettingComponent implements OnInit {
   }
 
   onAceiteAssinaturaChange(checked: boolean): void {
-    this.aceiteAssinatura = checked;   
+    this.aceiteAssinatura = checked;
     this.cdr.detectChanges();
   }
 
@@ -338,10 +448,8 @@ export class SettingComponent implements OnInit {
       let dto = await firstValueFrom(this.settingsService.updateUserSettings(userCommand));
 
       if (this.isAdmin) {
-        const institutionCommand: InstitutionSettingsCommand = {
+        const institutionCommand = this.buildInstitutionCommand({
           monitoringIntervalMinutes: v.intervaloInstitucional,
-          sigaApiUrl: (v.urlSiga || '').trim().replace(/\/+$/, '') || null,
-          aghuApiUrl: (v.urlAghu || '').trim().replace(/\/+$/, '') || null,
           hospitalName: v.hospital.nome,
           hospitalSector: v.hospital.setor || null,
           hospitalCnpj: (v.hospital.cnpj || '').replace(/\D/g, '') || null,
@@ -351,22 +459,12 @@ export class SettingComponent implements OnInit {
           hospitalNeighborhood: v.hospital.bairro || null,
           hospitalCity: v.hospital.cidade,
           hospitalState: v.hospital.uf,
-        };
+        });
 
         dto = await firstValueFrom(this.settingsService.updateInstitutionSettings(institutionCommand));
-
-        if (v.senhaAdmin.atual && v.senhaAdmin.nova) {
-          await firstValueFrom(
-            this.settingsService.changeAdminPassword({
-              currentPassword: v.senhaAdmin.atual,
-              newPassword: v.senhaAdmin.nova,
-            }),
-          );
-        }
       }
 
       this.applyDto(dto);
-      this.form.get('senhaAdmin')!.reset({ atual: '', nova: '', confirmar: '' });
       this.savedAt = new Date();
       await this.toastMsg('Configurações salvas com sucesso.', 'success');
     } catch (err: any) {

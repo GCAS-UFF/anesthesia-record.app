@@ -13,6 +13,7 @@ interface UserData {
   sector: string;
   role: string;
   isAdmin: boolean;
+  email: string;
 }
 
 interface AuthResponse {
@@ -21,7 +22,7 @@ interface AuthResponse {
     usuario?: {
       id: number;
       nome: string;
-      emai: string;
+      email: string;
       login: string;
       sector: string;
       role: string;
@@ -39,6 +40,7 @@ interface StoredSession {
   userSector: string;
   userRole: string;
   isAdmin: boolean;
+  userEmail: string;
 }
 
 @Injectable({
@@ -54,6 +56,7 @@ export class AuthService {
     USER_SECTOR: 'userSector',
     USER_ROLE: 'userRole',
     IS_ADMIN: 'isAdmin',
+    USER_EMAIL: 'userEmail',
     LAST_SAVED_CRM: 'lastSavedCRM',
     REMEMBER_ME: 'rememberMePreference',
     CACHE_PROFESSIONALS: 'cache_professionals',
@@ -150,7 +153,8 @@ export class AuthService {
       name: userData.name,
       userSector: userData.sector,
       userRole: userData.role,
-      isAdmin: userData.isAdmin
+      isAdmin: userData.isAdmin,
+      userEmail: userData.email
     };
 
     Object.entries(session).forEach(([key, value]) => {
@@ -174,7 +178,8 @@ export class AuthService {
       id: response.data?.usuario?.id || 0,
       sector: response.data?.usuario?.sector || '',
       role: response.data?.usuario?.role || '',
-      isAdmin: response.data?.usuario?.isAdmin === true
+      isAdmin: response.data?.usuario?.isAdmin === true,
+      email: response.data?.usuario?.email || ''
     };
   }
 
@@ -230,7 +235,8 @@ export class AuthService {
       name: getString(this.SESSION_KEYS.NAME) || 'Usuário',
       role: getString(this.SESSION_KEYS.USER_ROLE) || 'Médico',
       sector: getString(this.SESSION_KEYS.USER_SECTOR) || 'Setor Desconhecido',
-      isAdmin: getIsAdmin()
+      isAdmin: getIsAdmin(),
+      email: getString(this.SESSION_KEYS.USER_EMAIL)
     };
   }
 }

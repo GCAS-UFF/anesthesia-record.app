@@ -5,6 +5,8 @@ import { ApiService } from './base/api.service';
 import {
   ChangeAdminPasswordCommand,
   InstitutionSettingsCommand,
+  TestAghuConnectionCommand,
+  TestConnectionResult,
   UserSettingsCommand,
   UserSettingsDto,
 } from '../../shared/models/settings.model';
@@ -45,5 +47,11 @@ export class SettingsService {
     return this.api
       .put<CommandResult<void>>(`${SETTINGS_ENDPOINT}/admin-password`, command)
       .pipe(map(() => undefined));
+  }
+
+  testAghuConnection(command: TestAghuConnectionCommand): Observable<TestConnectionResult> {
+    return this.api
+      .post<CommandResult<TestConnectionResult>>(`${SETTINGS_ENDPOINT}/institution/aghu/test-connection`, command)
+      .pipe(map((res) => res.data));
   }
 }

@@ -47,3 +47,11 @@ export interface ChangeAdminPasswordCommand {
   currentPassword: string;
   newPassword: string;
 }
+
+export interface TestAghuConnectionCommand {
+  aghuBaseUrl: string;
+}
+
+export interface TestConnectionResult {
+  connected: boolean;
+}
