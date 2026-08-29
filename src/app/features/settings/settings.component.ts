@@ -7,6 +7,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import {
@@ -23,13 +24,14 @@ import {
   cloudOutline, businessOutline, lockClosedOutline, shieldCheckmarkOutline,
   refreshOutline, checkmarkCircleOutline, eyeOutline, eyeOffOutline,
   personCircleOutline, keyOutline, closeOutline, informationCircleOutline,
-  linkOutline,
+  linkOutline, globeOutline,
 } from 'ionicons/icons';
 
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { AuthService } from '../../core/services/auth.service';
 import { SettingsService } from '../../core/services/settings.service';
+import { ApiUrlService } from '../../core/services/api-url.service';
 import { HeaderActionButton } from '../../shared/components/header-institucional/header-action-button.model';
 import {
   InstitutionSettingsCommand,
@@ -91,6 +93,7 @@ export class SettingComponent implements OnInit {
   readonly sections: SettingsSection[] = [
     { id: 'geral', title: 'Preferências gerais', icon: 'language-outline', admin: false },
     { id: 'afericao', title: 'Aferição automática', icon: 'timer-outline', admin: false },
+    { id: 'servidor', title: 'Servidor SIGA (dispositivo)', icon: 'globe-outline', admin: true },
     { id: 'integracoes', title: 'Integrações e APIs', icon: 'server-outline', admin: true },
     { id: 'seguranca', title: 'Segurança (SIGA)', icon: 'lock-closed-outline', admin: true },
     { id: 'hospital', title: 'Dados do hospital', icon: 'business-outline', admin: true },
@@ -101,6 +104,8 @@ export class SettingComponent implements OnInit {
     private toast: ToastController,
     private authService: AuthService,
     private settingsService: SettingsService,
+    private apiUrlService: ApiUrlService,
+    private router: Router,
     private cdr: ChangeDetectorRef,
   ) {
     addIcons({
@@ -108,7 +113,7 @@ export class SettingComponent implements OnInit {
       cloudOutline, businessOutline, lockClosedOutline, shieldCheckmarkOutline,
       refreshOutline, checkmarkCircleOutline, eyeOutline, eyeOffOutline,
       personCircleOutline, keyOutline, closeOutline, informationCircleOutline,
-      linkOutline,
+      linkOutline, globeOutline,
     });
   }
 
@@ -160,6 +165,14 @@ export class SettingComponent implements OnInit {
 
   get isAdmin(): boolean {
     return this.isAdminUser;
+  }
+
+  get servidorSigaAtual(): string {
+    return this.apiUrlService.getRawUrl() ?? 'Não configurado';
+  }
+
+  alterarServidor(): void {
+    this.router.navigate(['/configurar-servidor'], { queryParams: { redirect: '/settings' } });
   }
 
   get visibleSections(): SettingsSection[] {

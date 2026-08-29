@@ -1,15 +1,17 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { environment } from "src/environments/environment";
+import { ApiUrlService } from "../api-url.service";
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
 
-  private baseUrl = environment.apiUrl;
+  private get baseUrl(): string {
+    return this.apiUrlService.getBaseUrl();
+  }
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private apiUrlService: ApiUrlService) {}
 
   get<T>(url: string, params?: any) {
     return this.http.get<T>(`${this.baseUrl}/${url}`, { params });

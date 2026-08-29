@@ -3,16 +3,18 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MonitoringPayload } from '../models/monitoring-payload.model';
-import { environment } from 'src/environments/environment';
+import { ApiUrlService } from './api-url.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MonitoringService {
-  
-  private baseUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  private get baseUrl(): string {
+    return this.apiUrlService.getBaseUrl();
+  }
+
+  constructor(private http: HttpClient, private apiUrlService: ApiUrlService) {}
 
   /**
    * Busca os dados de monitorização da API

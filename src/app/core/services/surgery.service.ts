@@ -2,16 +2,18 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { PatientResponse } from '../../shared/models/patient.model';
 import { Observable } from 'rxjs';
-import { environment } from 'src/environments/environment';
+import { ApiUrlService } from './api-url.service';
 import { SurgeryStatusEnum } from '../models/api-enums.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SurgeryService {
-  private baseUrl = environment.apiUrl;
+  private get baseUrl(): string {
+    return this.apiUrlService.getBaseUrl();
+  }
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private apiUrlService: ApiUrlService) { }
 
 
   getSurgeries(doctorId: number, date?: string, searchQuery?: string, status?: SurgeryStatusEnum, page: number = 1, size: number = 10): Observable<PatientResponse> {

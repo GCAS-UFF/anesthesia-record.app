@@ -1,0 +1,66 @@
+<div class="cfg-boot">
+  <div class="cfg-boot__card">
+    <div class="cfg-boot__brand">
+      <img src="assets/Logo.png" alt="Logo do Sistema" class="cfg-boot__logo" />
+    </div>
+
+    <header class="cfg-boot__head">
+      <div class="cfg-boot__idx">
+        <ion-icon name="server-outline"></ion-icon>
+      </div>
+      <div>
+        <h1>Configuração do servidor</h1>
+        <p *ngIf="!isReconfiguring">Para começar, informe o endereço da API SIGA deste hospital.</p>
+        <p *ngIf="isReconfiguring">Informe o novo endereço da API SIGA deste hospital.</p>
+      </div>
+    </header>
+
+    <form [formGroup]="form" (ngSubmit)="testarConexao()" *ngIf="state !== 'success'" autocomplete="off">
+      <div class="field">
+        <label>Endereço do servidor</label>
+        <div class="input-with-action">
+          <span class="input-icon"><ion-icon name="link-outline"></ion-icon></span>
+          <input
+            type="url"
+            inputmode="url"
+            formControlName="serverUrl"
+            placeholder="https://192.168.0.100:5000"
+            [readonly]="state === 'testing'"
+          />
+        </div>
+        <p class="status-line fail" *ngIf="form.get('serverUrl')?.touched && form.get('serverUrl')?.invalid">
+          Informe um endereço válido, iniciando com http:// ou https://.
+        </p>
+      </div>
+
+      <p class="status-line fail cfg-boot__banner" *ngIf="state === 'error'">
+        <ion-icon name="close-circle-outline"></ion-icon>
+        <span>
+          Não foi possível conectar ao servidor SIGA.<br />
+          Verifique o endereço informado, a porta e a conexão com a rede do hospital.
+        </span>
+      </p>
+
+      <div class="cfg-boot__actions">
+        <button type="button" class="btn btn-ghost" *ngIf="canCancel" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="state === 'testing'">
+          <ion-spinner *ngIf="state === 'testing'" name="crescent"></ion-spinner>
+          <ion-icon *ngIf="state !== 'testing'" name="refresh-outline"></ion-icon>
+          {{ state === 'testing' ? 'Testando conexão...' : (state === 'error' ? 'Tentar novamente' : 'Testar conexão') }}
+        </button>
+      </div>
+    </form>
+
+    <div class="cfg-boot__success" *ngIf="state === 'success'">
+      <ion-icon name="checkmark-circle-outline" class="cfg-boot__success-icon"></ion-icon>
+      <h2>Servidor conectado</h2>
+      <p>API SIGA disponível em <strong>{{ form.value.serverUrl }}</strong>.</p>
+      <button type="button" class="btn btn-primary" (click)="continuar()">Continuar</button>
+    </div>
+  </div>
+
+  <div class="cfg-boot__footer">
+    Sistema de Gerenciamento Anestésico - v1 <br />
+    UFF - Universidade Federal Fluminense
+  </div>
+</div>

@@ -133,9 +133,38 @@
         </div>
       </section>
 
-      <section class="card" id="sec-integracoes" *ngIf="isAdmin">
+      <section class="card" id="sec-servidor" *ngIf="isAdmin">
         <header class="card__head">
           <div class="card__idx">03</div>
+          <div>
+            <h2>Servidor SIGA (dispositivo)</h2>
+            <p>Endereço da API SIGA usado por este tablet para autenticação e todas as demais requisições. Configuração local do dispositivo — não é enviada ao AGHU.</p>
+          </div>
+          <ion-icon name="globe-outline" class="card__icon"></ion-icon>
+        </header>
+
+        <div class="card__body">
+          <div class="field">
+            <label>Endereço configurado</label>
+            <div class="input-with-action">
+              <span class="input-icon"><ion-icon name="link-outline"></ion-icon></span>
+              <input type="text" [value]="servidorSigaAtual" readonly />
+              <button type="button" class="btn btn-ghost" (click)="alterarServidor()">
+                <ion-icon name="refresh-outline"></ion-icon>
+                Alterar servidor
+              </button>
+            </div>
+            <p class="hint">
+              <ion-icon name="information-circle-outline"></ion-icon>
+              Alterar o servidor exige validar a nova conexão antes de substituir o endereço atual.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="sec-integracoes" *ngIf="isAdmin">
+        <header class="card__head">
+          <div class="card__idx">04</div>
           <div>
             <h2>Integrações e APIs</h2>
             <p>Endpoints usados para autenticação (SIGA) e para os dados hospitalares (AGHU / PHP).</p>
@@ -188,7 +217,7 @@
 
       <section class="card" id="sec-seguranca" *ngIf="isAdmin">
         <header class="card__head">
-          <div class="card__idx">04</div>
+          <div class="card__idx">05</div>
           <div>
             <h2>Segurança — senha administrativa (SIGA)</h2>
             <p>Altere a senha da conta administrativa usada na integração com o SIGA.</p>
@@ -227,7 +256,7 @@
 
       <section class="card" id="sec-hospital" *ngIf="isAdmin">
         <header class="card__head">
-          <div class="card__idx">05</div>
+          <div class="card__idx">06</div>
           <div>
             <h2>Dados do hospital</h2>
             <p>Informações institucionais impressas nas fichas anestésicas e relatórios.</p>

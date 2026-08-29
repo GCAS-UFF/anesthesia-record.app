@@ -3,8 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { LoginCredentials } from '../../features/login/login.model';
-import { environment } from 'src/environments/environment';
 import { StorageService } from './storage.service';
+import { ApiUrlService } from './api-url.service';
 
 interface UserData {
   username: string;
@@ -67,13 +67,14 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private apiUrlService: ApiUrlService
   ) {
     this.checkSavedSession();
   }
 
   login(credentials: LoginCredentials): Observable<boolean> {
-    const url = `${environment.apiUrl}/Auth/login`;
+    const url = `${this.apiUrlService.getBaseUrl()}/Auth/login`;
     const payload = {
       login: credentials.username,
       password: credentials.password

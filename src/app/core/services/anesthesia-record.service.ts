@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { environment } from "src/environments/environment";
+import { ApiUrlService } from "./api-url.service";
 import { ApiService } from "./base/api.service";
 import { BaseService } from "./base/base.service";
 import { AnesthesiaRecordModel } from "../../shared/models/anesthesia-record.model";
@@ -168,7 +168,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     'Outros': 5
   };
 
-  constructor(api: ApiService, private authService: AuthService) {
+  constructor(api: ApiService, private authService: AuthService, private apiUrlService: ApiUrlService) {
     super(api, 'anesthesiarecord');
     this.updatePendingStatus();
   }
@@ -452,7 +452,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   }
 
   getPdfUrl(id: number): string {
-    return `${environment.apiUrl}/AnesthesiaRecord/${id}/print`;
+    return `${this.apiUrlService.getBaseUrl()}/AnesthesiaRecord/${id}/print`;
   }
 
   private formatTimeForApi(timeStr: string | undefined | null): string {

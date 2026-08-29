@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
-import { environment } from 'src/environments/environment';
 import { StorageService } from './storage.service';
+import { ApiUrlService } from './api-url.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,19 +11,20 @@ export class MasterDataService {
 
   constructor(
     private http: HttpClient,
-    private storage: StorageService
+    private storage: StorageService,
+    private apiUrlService: ApiUrlService
   ) { }
 
   getProfessionals() {
-    return this.http.get<any[]>(`${environment.apiUrl}/professionals`);
+    return this.http.get<any[]>(`${this.apiUrlService.getBaseUrl()}/professionals`);
   }
 
   getProcedures() {
-    return this.http.get<any[]>(`${environment.apiUrl}/procedures`);
+    return this.http.get<any[]>(`${this.apiUrlService.getBaseUrl()}/procedures`);
   }
 
   getMedications() {
-    return this.http.get<any[]>(`${environment.apiUrl}/drugs`);
+    return this.http.get<any[]>(`${this.apiUrlService.getBaseUrl()}/drugs`);
   }
 
   saveProfessionals(list: any[]) {

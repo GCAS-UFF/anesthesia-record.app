@@ -1,0 +1,272 @@
+:host {
+  --cfg-bg: #fafbfc;
+  --cfg-surface: #ffffff;
+  --cfg-border: #e6e8ee;
+  --cfg-border-strong: #d5d9e2;
+  --cfg-text: #0f172a;
+  --cfg-muted: #64748b;
+  --cfg-primary: #3b82f6;
+  --cfg-primary-soft: rgba(59, 130, 246, 0.08);
+  --cfg-success: #16a34a;
+  --cfg-success-soft: rgba(22, 163, 74, 0.1);
+  --cfg-danger: #ef4444;
+  --cfg-danger-soft: rgba(239, 68, 68, 0.08);
+  --cfg-radius: 16px;
+  --cfg-shadow-md: 0 12px 32px -8px rgba(15, 23, 42, 0.12);
+
+  display: block;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+}
+
+.cfg-boot {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--cfg-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 24px;
+  gap: 24px;
+
+  &__card {
+    width: 100%;
+    max-width: 460px;
+    background: var(--cfg-surface);
+    border: 1px solid var(--cfg-border);
+    border-radius: var(--cfg-radius);
+    box-shadow: var(--cfg-shadow-md);
+    padding: 32px 36px;
+  }
+
+  &__brand {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  &__logo {
+    max-width: 100%;
+    max-height: 56px;
+    object-fit: contain;
+  }
+
+  &__head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 24px;
+
+    h1 {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--cfg-text);
+    }
+    p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: var(--cfg-muted);
+      line-height: 1.45;
+    }
+  }
+
+  &__idx {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: var(--cfg-primary-soft);
+    color: var(--cfg-primary);
+
+    ion-icon {
+      font-size: 20px;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  &__banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--cfg-danger-soft);
+
+    ion-icon {
+      font-size: 16px;
+      margin-top: 1px;
+      flex-shrink: 0;
+    }
+  }
+
+  &__success {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+    padding: 12px 0 4px;
+
+    h2 {
+      margin: 8px 0 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--cfg-text);
+    }
+    p {
+      margin: 0 0 12px;
+      font-size: 13.5px;
+      color: var(--cfg-muted);
+    }
+
+    .btn {
+      width: 100%;
+    }
+  }
+
+  &__success-icon {
+    font-size: 44px;
+    color: var(--cfg-success);
+  }
+
+  &__footer {
+    font-size: 12px;
+    color: #94a3b8;
+    text-align: center;
+  }
+}
+
+/* ---------- CAMPOS (mesmo padrão de features/settings) ---------- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+
+  > label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--cfg-muted);
+  }
+
+  input {
+    width: 100%;
+    height: 46px;
+    padding: 0 14px;
+    border: 1px solid var(--cfg-border-strong);
+    border-radius: 12px;
+    background: #fff;
+    font-size: 15px;
+    color: var(--cfg-text);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &::placeholder {
+      color: #a5aebd;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--cfg-primary);
+      box-shadow: 0 0 0 3px var(--cfg-primary-soft);
+    }
+  }
+}
+
+.input-with-action {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input {
+    padding-left: 40px;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 13px;
+    display: inline-flex;
+    color: #94a3b8;
+    pointer-events: none;
+    ion-icon {
+      font-size: 18px;
+    }
+  }
+}
+
+.status-line {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  &.ok {
+    color: var(--cfg-success);
+  }
+  &.fail {
+    color: var(--cfg-danger);
+  }
+}
+
+/* ---------- BOTÕES (mesmo padrão de features/settings) ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 20px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.16s ease;
+
+  ion-icon {
+    font-size: 18px;
+  }
+  ion-spinner {
+    width: 16px;
+    height: 16px;
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-primary {
+  background: var(--cfg-primary);
+  color: #fff;
+  &:hover:not(:disabled) {
+    background: #2563eb;
+  }
+}
+
+.btn-ghost {
+  background: #fff;
+  border-color: var(--cfg-border-strong);
+  color: var(--cfg-text);
+  &:hover:not(:disabled) {
+    background: #f4f6fa;
+  }
+}
+
+@media (max-width: 480px) {
+  .cfg-boot__card {
+    padding: 24px 22px;
+  }
+}
