@@ -90,7 +90,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   canEdit = true;
   loggedUser: any;
   isReadOnlyRecord = false;
-  /** Acesso via "Ver Registros" (cirurgia finalizada/cancelada): força somente leitura total. */
   forcedReadOnly = false;
 
 
@@ -101,13 +100,15 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   @HostListener('document:ionDidOpen', ['$event'])
   onSideMenuOpen(ev: Event) {
     const tag = (ev.target as HTMLElement | null)?.tagName?.toLowerCase();
-    if (tag === 'ion-menu') this.isMenuOpen = true;
+    if (tag === 'ion-menu') 
+      this.isMenuOpen = true;
   }
 
   @HostListener('document:ionDidClose', ['$event'])
   onSideMenuClose(ev: Event) {
     const tag = (ev.target as HTMLElement | null)?.tagName?.toLowerCase();
-    if (tag === 'ion-menu') this.isMenuOpen = false;
+    if (tag === 'ion-menu') 
+      this.isMenuOpen = false;
   }
 
   @HostListener('document:click', ['$event'])
@@ -245,9 +246,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     if (this.cirurgiaId && this.patientId) {
       this.tentarReenviarRascunho();
 
-      // Não confiar em nada guardado no front: sempre buscar no backend o status atual do
-      // monitoramento. Só quando ele estiver FINALIZADO é que o próximo salvamento da ficha
-      // deve pedir nome/senha e virar o salvamento definitivo.
       this.anesthesiaService.getMonitoringStatus(Number(this.cirurgiaId)).pipe(
         timeout(NETWORK_TIMEOUT_MS),
         catchError(() => of(null)),
@@ -274,17 +272,10 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // Ver o mesmo comentário/correção em monitorizacao.component.ts: o modal rápido
-    // "Ficha Pré-Anestésica" (ModalController) não é filho do Angular e não fecha
-    // sozinho quando a rota muda — se ficar aberto ao navegar para fora daqui, o
-    // backdrop trava a tela seguinte inteira. Fecha explicitamente ao sair.
     this.openRecordModal?.dismiss().catch(() => { });
     this.conditionalSubs.forEach(sub => sub.unsubscribe());
   }
 
-  // Modal rápido "Ficha Pré-Anestésica" (ModalController) — não é filho do Angular e
-  // não fecha sozinho quando a rota muda. Guardamos a referência ao abrir para poder
-  // fechar direto no ngOnDestroy, sem depender da pilha de overlays do Ionic.
   private openRecordModal?: HTMLIonModalElement;
 
   private startAutoSave() {
@@ -543,8 +534,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       );
 
     if (!shouldShow) return false;
-    if (dorControl?.invalid) return true;
-    if (!this.isDorPresente()) return false;
+    if (dorControl?.invalid)
+      return true;
+
+    if (!this.isDorPresente())
+      return false;
 
     return !!aldGroup.errors?.['dorScaleRequired'] ||
       !!aldGroup.errors?.['dorScaleInvalid'] ||
@@ -715,7 +709,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     return !!(g && g.invalid && (g.touched || this.showValidationErrors));
   }
 
-
   private persistDraft(data?: any) {
     if (this.isReadOnlyRecord)
       return;
@@ -740,9 +733,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         ...draftData.assinaturas,
         primeiroAnestesistaId: this.loggedUser?.id ? String(this.loggedUser.id) : draftData.assinaturas?.primeiroAnestesistaId || null,
         segundoAnestesistaId: draftData.assinaturas?.segundoAnestesistaId || null,
-        // Resolve o nome no momento do save (mesma lista/mesma função que o template
-        // usa para exibir o rótulo do dropdown) para o draft local também carregar o
-        // nome, não só o ID — necessário para o modal rápido de somente-leitura.
         segundoAnestesistaNome: draftData.assinaturas?.segundoAnestesista
           ? this.getSelectedLabel(this.anestesistasLista, draftData.assinaturas.segundoAnestesista)
           : draftData.assinaturas?.segundoAnestesistaNome || ''
@@ -841,11 +831,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
           const firstAnesthesiologistId = surgeryData.firstAnesthesiologistId;
 
-          this.isReadOnlyRecord = this.forcedReadOnly ||
+          this.isReadOnlyRecord = this.forcedReadOnly || this.isCancelled ||
             (!!firstAnesthesiologistId && String(firstAnesthesiologistId) !== String(this.loggedUser?.id));
 
-          // Salvamento definitivo já ocorreu (Status = Concluído no backend): a ficha vira
-          // somente leitura, independentemente de quem está logado.
           this.fichaFinalizada = surgeryData.status === SurgeryStatusEnum.Concluido;
           this.fichaFinalizadaEm = surgeryData.signatureDate ?? surgeryData.lastUpdate ?? null;
           this.fichaFinalizadaPor = surgeryData.firstAnesthesiologistName ?? this.expectedSignatureName ?? null;
@@ -883,22 +871,19 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
                 this.form.get('dadosVitais.peso')?.patchValue(this.pesoFromPreAnestesicaOuAghu());
               }
 
-              if (this.fichaFinalizada || this.forcedReadOnly)
+              if (this.fichaFinalizada || this.forcedReadOnly || this.isCancelled)
                 this.form.disable({ emitEvent: false });
 
               this.isLoading = false;
               resolve();
             },
             error: (err) => {
-              // API indisponível/lenta (ou timeout): se já existe rascunho local, não descarta
-              // o que o médico já preencheu — aplica o draft e segue offline em vez de travar
-              // a tela no carregamento.
               console.warn('[FichaAnestesica] Falha ao buscar ficha na API, usando rascunho local se houver', err);
               if (draft) {
                 this.hydrateProcedimentos((draft as any)?.posProcedimento?.procedimentos);
                 this.form.patchValue(draft);
                 if (draft.antibioticsList) this.antibioticsList = draft.antibioticsList;
-                if (this.fichaFinalizada || this.forcedReadOnly)
+                if (this.fichaFinalizada || this.forcedReadOnly || this.isCancelled)
                   this.form.disable({ emitEvent: false });
                 this.isLoading = false;
                 resolve();
@@ -917,25 +902,10 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Chamado quando `loadPatientData` rejeita sem nenhum rascunho local para usar como
-  // fallback (ver bloco `error` de `getLatestByPatient` acima). `isLoading` já foi zerado
-  // ali, então o formulário aparece vazio em vez de ficar preso no skeleton — o usuário só
-  // precisa ser avisado do motivo.
   private onLoadPatientDataFailed() {
     this.toast('Não foi possível carregar a ficha (sem conexão com o servidor e sem rascunho local). Tente novamente.', 'danger');
   }
 
-  /**
-   * O peso corrigido pelo médico na Ficha Pré-Anestésica prevalece sobre o valor original do
-   * AGHU (ex.: AGHU manda 80kg, médico corrige para 85kg na pré-anestésica — a ficha anestésica
-   * deve carregar 85kg). Só cai para o valor do AGHU se não houver pré-anestésica preenchida.
-   *
-   * Obs.: o mesmo princípio não foi aplicado ao campo "cirurgia/procedimento" porque a
-   * pré-anestésica guarda o nome do procedimento como texto livre, enquanto a ficha anestésica
-   * referencia o procedimento por ID vindo do catálogo sincronizado do AGHU — não há uma
-   * correspondência segura entre os dois para reconciliar automaticamente sem risco de
-   * selecionar o procedimento errado.
-   */
   private pesoFromPreAnestesicaOuAghu(): number | string {
     try {
       const raw = localStorage.getItem(`preAnesthesiaData_${this.cirurgiaId}`);
@@ -1080,14 +1050,14 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }
 
     // "Ir para Cirurgia" continua disponível mesmo com a ficha somente leitura
-    // (ficha finalizada/cancelada ou acesso via "Ver Registros").
+    // (ficha finalizada ou acesso via "Ver Registros"), mas nunca para paciente cancelado.
     buttons.push({
       id: 'ir-para-cirurgia',
       icon: 'fitness-outline',
       color: 'warning',
       ariaLabel: 'Ir para Cirurgia',
       label: 'Cirurgia',
-      disabled: this.isSaving,
+      disabled: this.isSaving || this.isCancelled,
       action: () => this.irParaCirurgia()
     });
 
@@ -1322,6 +1292,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   async irParaCirurgia(): Promise<void> {
     if (!this.selectedSurgery?.id) {
+      return;
+    }
+
+    if (this.isCancelled) {
+      await this.toast('Paciente cancelado. Não é possível acessar a cirurgia.', 'warning');
       return;
     }
 

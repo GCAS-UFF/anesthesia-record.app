@@ -146,6 +146,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   isAnesthesiaStarted = false;
   isSurgeryStarted = false;
   isSurgeryFinished = false;
+  isCancelled = false;
   startTimeAnesthesia: Date | null = null;
   startTimeSurgery: Date | null = null;
   anesthesiaStartTime: Date | null = null;
@@ -158,7 +159,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   private tickSub?: any;
 
   get isLocked(): boolean {
-    return this.isAnesthesiaFinished || this.isSurgeryFinished;
+    return this.isAnesthesiaFinished || this.isSurgeryFinished || this.isCancelled;
   }
 
   viewStartTime: number | null = null;
@@ -304,6 +305,20 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       this.patient = surgery?.patient
         ?? (this.patientService?.getById?.(surgery?.patientId)?.toPromise?.() ?? null);
 
+      this.isCancelled = surgery?.status === SurgeryStatusEnum.Cancelada
+        || surgery?.patient?.status === SurgeryStatusEnum.Cancelada;
+      if (this.isCancelled) {       
+        this.isSurgeryFinished = true;
+        this.isAnesthesiaFinished = true;
+        const toast = await this.toastController.create({
+          message: 'Este paciente está cancelado. Não é possível iniciar ou alterar a cirurgia.',
+          duration: 3000,
+          color: 'warning',
+          position: 'top',
+        });
+        await toast.present();
+      }
+
       if (!this.patientAge && this.patient?.age)
         this.patientAge = String(this.patient.age);
       if ((this.patientWeight === '--' || !this.patientWeight) && this.patient?.weightKg)
@@ -335,11 +350,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     if (!record) return;
 
     const isFinished = record.status === SurgeryStatusEnum.Concluido;
-
-    // Uma monitorização finalizada é sempre reconstruída a partir do backend — é a fonte
-    // definitiva e substitui qualquer rascunho local desatualizado. Uma monitorização ainda em
-    // andamento só é usada para hidratar a tela quando não houver rascunho local (ex.: usuário
-    // reabrindo em outro dispositivo/sessão), para não sobrescrever edições locais recentes.
+    
     if (isFinished || !hasLocalDraft) {
       const mapped = this.anesthesiaRecordService.mapMonitoringPayloadToApp(record);
       this.hydrateFromDraft(mapped);
@@ -407,7 +418,20 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }
 
+  private async blockIfCancelled(): Promise<boolean> {
+    if (!this.isCancelled) return false;
+    const toast = await this.toastController.create({
+      message: 'Este paciente está cancelado. Não é possível iniciar ou alterar a cirurgia.',
+      duration: 2500,
+      color: 'warning',
+      position: 'top',
+    });
+    await toast.present();
+    return true;
+  }
+
   async iniciarAnestesia() {
+    if (await this.blockIfCancelled()) return;
     if (this.isAnesthesiaStarted) {
       if (this.isAnesthesiaFinished) return;
       const alert = await this.alertController.create({
@@ -424,8 +448,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
               const iso = this.replaceTimeInIso(oldIso, d.time);
               this.startTimeAnesthesia = new Date(iso);
               this.anesthesiaStartTime = this.startTimeAnesthesia;
-
-              // Se o primeiro registro vital estiver com o mesmo horário antigo, arrasta ele junto
+              
               if (this.vitalRecords.length > 0) {
                 const first = this.vitalRecords[0];
                 const firstTime = new Date(first.timestamp || 0).getTime();
@@ -485,7 +508,12 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async iniciarCirurgia() {
-    if (!this.isAnesthesiaStarted) return;
+    if (await this.blockIfCancelled()) 
+      return;
+    
+    if (!this.isAnesthesiaStarted) 
+      return;
+
     if (this.isSurgeryStarted) {
       if (this.isAnesthesiaFinished || this.isSurgeryFinished) return;
       const alert = await this.alertController.create({
@@ -502,8 +530,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
               const iso = this.replaceTimeInIso(oldIso, d.time);
               this.startTimeSurgery = new Date(iso);
               this.surgeryStartTime = this.startTimeSurgery;
-
-              // Se o primeiro registro vital estiver com o mesmo horário antigo, arrasta ele junto
+              
               if (this.vitalRecords.length > 0) {
                 const first = this.vitalRecords[0];
                 const firstTime = new Date(first.timestamp || 0).getTime();
