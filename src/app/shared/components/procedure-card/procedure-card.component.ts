@@ -200,7 +200,7 @@ export class ProcedureCardComponent {
   }
 
   get shouldShowOnlyViewRecords(): boolean {
-    return this.isFinished || this.isAssignedToOtherDoctor;
+    return this.isFinished || this.isAssignedToOtherDoctor || this.shouldShowViewPreAnesthesia;
   }
  
   get shouldShowAbandonButton(): boolean {

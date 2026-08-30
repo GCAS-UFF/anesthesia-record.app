@@ -528,7 +528,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
       if (record) {
         this.remoteRecordId = record.id ?? null;
         this.isFinalized = !!(record.signedAt && record.signedAt.trim());
-        this.isResponsible = !record.firstAnesthesiologistId ||
+        this.isResponsible = !!record.firstAnesthesiologistId &&
           String(record.firstAnesthesiologistId) === String(this.loggedUser?.id);
       }
 

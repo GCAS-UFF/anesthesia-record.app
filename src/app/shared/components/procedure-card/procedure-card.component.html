@@ -135,7 +135,7 @@
       </div>
 
       <div class="body-actions">
-        <ng-container *ngIf="shouldShowOnlyViewRecords; else activeActions">
+        <ng-container *ngIf="shouldShowOnlyViewRecords">
           <button
             *ngIf="shouldShowViewPreAnesthesia"
             class="btn btn-outline ion-activatable ripple-parent"
@@ -156,8 +156,7 @@
           </button>
         </ng-container>
 
-        <ng-template #activeActions>
-          <ng-container *ngIf="!isAdmin">
+        <ng-container *ngIf="!shouldShowOnlyViewRecords && !isAdmin">
           <button
             class="btn btn-pre-anesthesia ion-activatable ripple-parent"
             [class.btn-pre-anesthesia-done]="isPreAnesthesiaRecordDone"
@@ -189,7 +188,9 @@
             Ficha Anestésica
             <ion-ripple-effect></ion-ripple-effect>
           </button>
+        </ng-container>
 
+        <ng-container *ngIf="!isAdmin">
           <button
             *ngIf="shouldShowAssumeButton"
             class="btn btn-primary ion-activatable ripple-parent"
@@ -213,8 +214,7 @@
             Ir para Cirurgia
             <ion-ripple-effect></ion-ripple-effect>
           </button>
-          </ng-container>
-        </ng-template>
+        </ng-container>
       </div>
     </div>
   </article>
