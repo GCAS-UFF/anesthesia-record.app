@@ -1,0 +1,10 @@
+<div class="report-actions">
+  <button type="button" class="action-btn" [disabled]="generating" (click)="generatePdf()">
+    <ion-icon name="document-text-outline"></ion-icon>
+    {{ generating ? 'Gerando...' : 'Gerar PDF' }}
+  </button>
+  <button type="button" class="action-btn" [disabled]="printing" (click)="print()">
+    <ion-icon name="print-outline"></ion-icon>
+    {{ printing ? 'Preparando...' : 'Imprimir' }}
+  </button>
+</div>

@@ -48,6 +48,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/item-maintenance/item-maintenance.page').then(m => m.ItemMaintenancePage)
       },
       {
+        path: 'admin/relatorios',
+        canActivate: [adminGuard],
+        loadComponent: () => import('./features/relatorios/relatorios.page').then(m => m.RelatoriosPage)
+      },
+      {
         path: 'pre-anesthesia-record/:id/:patientId',
         loadComponent: () => import('./features/pre-anesthesic-record/pre-anesthesic-record.component').then(m => m.FichaPreAnestesicaComponent)
       },

@@ -1,0 +1,153 @@
+<div class="app-container">
+  <app-status-bar></app-status-bar>
+
+  <app-header-institucional></app-header-institucional>
+
+  <main class="page-main">
+    <section class="page-header">
+      <div class="header-text">
+        <span class="eyebrow">
+          <ion-icon name="analytics-outline" aria-hidden="true"></ion-icon>
+          Administração
+        </span>
+        <h1 class="page-title">Relatórios</h1>
+        <p class="page-subtitle">
+          Indicadores consolidados do centro cirúrgico e da operação anestésica,
+          com base nos dados registrados no SIGA.
+        </p>
+      </div>
+    </section>
+
+    <app-report-filters
+      [filters]="filters"
+      [anesthetistOptions]="anesthetistOptions"
+      (filtersChange)="onFiltersChange($event)"
+      (refresh)="onRefresh()"
+    ></app-report-filters>
+
+    <section class="summary-section">
+      <app-report-state
+        [loading]="summaryLoading"
+        [error]="summaryError"
+        (retry)="loadSummary()"
+      >
+        <div class="summary-grid" *ngIf="summary as s">
+          <div class="summary-card">
+            <ion-icon name="calendar-outline"></ion-icon>
+            <div>
+              <span class="value">{{ s.totalSurgeries }}</span>
+              <span class="label">Cirurgias no período</span>
+            </div>
+          </div>
+          <div class="summary-card">
+            <ion-icon
+              name="checkmark-circle-outline"
+              class="success"
+            ></ion-icon>
+            <div>
+              <span class="value"
+                >{{ s.completedSurgeries }}
+                <small>({{ s.completedPercentage }}%)</small></span
+              >
+              <span class="label">Concluídas</span>
+            </div>
+          </div>
+          <div class="summary-card">
+            <ion-icon name="close-circle-outline" class="danger"></ion-icon>
+            <div>
+              <span class="value"
+                >{{ s.canceledSurgeries }}
+                <small>({{ s.canceledPercentage }}%)</small></span
+              >
+              <span class="label">Canceladas</span>
+            </div>
+          </div>
+          <div class="summary-card">
+            <ion-icon name="document-text-outline"></ion-icon>
+            <div>
+              <span class="value">{{ s.signedAnesthesiaRecords }}</span>
+              <span class="label">Fichas assinadas</span>
+            </div>
+          </div>
+          <div class="summary-card">
+            <ion-icon name="pulse-outline"></ion-icon>
+            <div>
+              <span class="value">{{ s.clinicalEventsCount }}</span>
+              <span class="label">Eventos clínicos</span>
+            </div>
+          </div>
+          <div class="summary-card">
+            <ion-icon name="medkit-outline"></ion-icon>
+            <div>
+              <span class="value">{{ s.administeredAgentsCount }}</span>
+              <span class="label">Medicamentos administrados</span>
+            </div>
+          </div>
+        </div>
+      </app-report-state>
+    </section>
+
+    <nav class="tabs">
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'operacional'"
+        (click)="selectTab('operacional')"
+      >
+        <ion-icon name="calendar-outline"></ion-icon>
+        Operacional
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'clinico'"
+        (click)="selectTab('clinico')"
+      >
+        <ion-icon name="pulse-outline"></ion-icon>
+        Clínico
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'medicamentos'"
+        (click)="selectTab('medicamentos')"
+      >
+        <ion-icon name="flask-outline"></ion-icon>
+        Medicamentos
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'integracoes'"
+        (click)="selectTab('integracoes')"
+      >
+        <ion-icon name="sync-outline"></ion-icon>
+        Integrações
+      </button>
+    </nav>
+
+    <section class="tab-panel" *ngIf="activeTab === 'operacional'">
+      <app-surgeries-report [filters]="filters"></app-surgeries-report>
+      <app-anesthetists-report [filters]="filters"></app-anesthetists-report>
+      <app-cancellations-report [filters]="filters"></app-cancellations-report>
+    </section>
+
+    <section class="tab-panel" *ngIf="activeTab === 'clinico'">
+      <app-clinical-events-report
+        [filters]="filters"
+      ></app-clinical-events-report>
+      <app-asa-report [filters]="filters"></app-asa-report>
+      <app-recovery-report [filters]="filters"></app-recovery-report>
+      <app-antibiotic-prophylaxis-report
+        [filters]="filters"
+      ></app-antibiotic-prophylaxis-report>
+      <app-fluid-balance-report [filters]="filters"></app-fluid-balance-report>
+    </section>
+
+    <section class="tab-panel" *ngIf="activeTab === 'medicamentos'">
+      <app-drug-consumption-report
+        [filters]="filters"
+      ></app-drug-consumption-report>
+    </section>
+
+    <section class="tab-panel" *ngIf="activeTab === 'integracoes'">
+      <app-integration-status-report></app-integration-status-report>
+    </section>
+  </main>
+</div>

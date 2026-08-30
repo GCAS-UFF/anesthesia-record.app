@@ -1,0 +1,57 @@
+<div class="report-card">
+  <div class="report-card-header">
+    <div>
+      <h3 class="report-title">Recuperação / Aldrete</h3>
+      <p class="report-subtitle">Não há registro de horário de entrada/alta da RPA no sistema. O tempo abaixo é entre o fim da anestesia e a avaliação de Aldrete.</p>
+    </div>
+    <app-report-pdf-actions reportKey="recovery" [filters]="filters"></app-report-pdf-actions>
+  </div>
+
+  <app-report-state [loading]="loading" [error]="error" [empty]="isEmpty" (retry)="load()">
+    <ng-container *ngIf="report as r">
+      <div class="kpi-row">
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.patientsEvaluated }}</span>
+          <span class="kpi-label">Pacientes avaliados</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.averageMinutesToAldreteEvaluation != null ? (r.averageMinutesToAldreteEvaluation + ' min') : '—' }}</span>
+          <span class="kpi-label">Tempo médio até avaliação de Aldrete</span>
+        </div>
+      </div>
+      <p class="report-subtitle">(n = {{ r.evaluationsConsideredForTiming }})</p>
+
+      <div class="charts-grid">
+        <div class="chart-block">
+          <h4>Distribuição do score de Aldrete</h4>
+          <app-bar-chart [labels]="scoreLabels" [data]="scoreCounts" datasetLabel="Pacientes"></app-bar-chart>
+        </div>
+        <div class="chart-block">
+          <h4>Destino do paciente</h4>
+          <app-donut-chart [labels]="destinationLabels" [data]="destinationCounts"></app-donut-chart>
+        </div>
+        <div class="chart-block">
+          <h4>Condição de alta</h4>
+          <app-donut-chart [labels]="dischargeConditionLabels" [data]="dischargeConditionCounts"></app-donut-chart>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Score</th>
+              <th class="num">Quantidade</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of r.scoreDistribution">
+              <td>{{ s.score }}</td>
+              <td class="num">{{ s.count }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </app-report-state>
+</div>

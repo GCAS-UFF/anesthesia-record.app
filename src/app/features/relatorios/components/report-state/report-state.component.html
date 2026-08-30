@@ -1,0 +1,20 @@
+<div class="state-box loading" *ngIf="loading">
+  <ion-spinner name="crescent"></ion-spinner>
+  <p>Carregando relatório...</p>
+</div>
+
+<div class="state-box error" *ngIf="!loading && error">
+  <ion-icon name="alert-circle-outline"></ion-icon>
+  <p>{{ error }}</p>
+  <button class="retry-btn" (click)="retry.emit()">
+    <ion-icon name="refresh-outline"></ion-icon>
+    Atualizar
+  </button>
+</div>
+
+<div class="state-box empty" *ngIf="!loading && !error && empty">
+  <ion-icon name="document-outline"></ion-icon>
+  <p>{{ emptyMessage }}</p>
+</div>
+
+<ng-content *ngIf="!loading && !error && !empty"></ng-content>

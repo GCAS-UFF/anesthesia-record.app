@@ -1,0 +1,54 @@
+<div class="report-card">
+  <div class="report-card-header">
+    <div>
+      <h3 class="report-title">Classificação ASA</h3>
+      <p class="report-subtitle">Distribuição de risco anestésico das cirurgias avaliadas.</p>
+    </div>
+    <app-report-pdf-actions reportKey="asa" [filters]="filters"></app-report-pdf-actions>
+  </div>
+
+  <app-report-state [loading]="loading" [error]="error" [empty]="isEmpty" (retry)="load()">
+    <ng-container *ngIf="report as r">
+      <div class="kpi-row">
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.totalEvaluated }}</span>
+          <span class="kpi-label">Total avaliado</span>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-block">
+          <h4>Distribuição ASA</h4>
+          <app-donut-chart [labels]="distributionLabels" [data]="distributionCounts"></app-donut-chart>
+        </div>
+        <div class="chart-block">
+          <h4>Por anestesista</h4>
+          <app-bar-chart [labels]="anesthetistLabels" [data]="anesthetistCounts" datasetLabel="Avaliações" [horizontal]="true"></app-bar-chart>
+        </div>
+        <div class="chart-block" *ngIf="weekLabels.length">
+          <h4>Evolução por semana</h4>
+          <app-line-chart [labels]="weekLabels" [data]="weekCounts" datasetLabel="Avaliações"></app-line-chart>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Classificação</th>
+              <th class="num">Quantidade</th>
+              <th class="num">Percentual</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of r.distribution">
+              <td>{{ d.label }}</td>
+              <td class="num">{{ d.count }}</td>
+              <td class="num">{{ d.percentage }}%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </app-report-state>
+</div>

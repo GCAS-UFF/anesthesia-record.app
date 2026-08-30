@@ -1,0 +1,64 @@
+<div class="report-card">
+  <div class="report-card-header">
+    <div>
+      <h3 class="report-title">Balanço Hídrico</h3>
+      <p class="report-subtitle">Ganhos e perdas de volume registrados durante as cirurgias.</p>
+    </div>
+    <app-report-pdf-actions reportKey="fluid-balance" [filters]="filters"></app-report-pdf-actions>
+  </div>
+
+  <app-report-state [loading]="loading" [error]="error" [empty]="isEmpty" (retry)="load()">
+    <ng-container *ngIf="report as r">
+      <div class="kpi-row">
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.totalGainMl }} mL</span>
+          <span class="kpi-label">Volume ganho</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.totalLossMl }} mL</span>
+          <span class="kpi-label">Volume perdido</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.balance }} mL</span>
+          <span class="kpi-label">Balanço</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.bleedingMl }} mL</span>
+          <span class="kpi-label">Sangramento</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.bloodProductMl }} mL</span>
+          <span class="kpi-label">Hemocomponentes</span>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-block">
+          <h4>Por categoria</h4>
+          <app-donut-chart [labels]="categoryLabels" [data]="categoryVolumes"></app-donut-chart>
+        </div>
+        <div class="chart-block">
+          <h4>Por tipo de procedimento</h4>
+          <app-bar-chart [labels]="procedureLabels" [data]="procedureVolumes" datasetLabel="Volume (mL)" [horizontal]="true"></app-bar-chart>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Categoria</th>
+              <th class="num">Volume (mL)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of r.byCategory">
+              <td>{{ c.name }}</td>
+              <td class="num">{{ c.totalMl }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </app-report-state>
+</div>

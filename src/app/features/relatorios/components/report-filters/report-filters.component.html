@@ -1,0 +1,44 @@
+<div class="filters-bar">
+  <div class="field date-field">
+    <label>De</label>
+    <input type="date" [ngModel]="filters.startDate" (ngModelChange)="onStartDateChange($event)" />
+  </div>
+
+  <div class="field date-field">
+    <label>Até</label>
+    <input type="date" [ngModel]="filters.endDate" (ngModelChange)="onEndDateChange($event)" />
+  </div>
+
+  <div class="quick-ranges">
+    <button type="button" (click)="setQuickRange('today')">Hoje</button>
+    <button type="button" (click)="setQuickRange('last7')">7 dias</button>
+    <button type="button" (click)="setQuickRange('thisMonth')">Este mês</button>
+  </div>
+
+  <div class="field" *ngIf="showAnesthetistFilter">
+    <label>Anestesista</label>
+    <select
+      [ngModel]="filters.anesthesiologistId"
+      (ngModelChange)="onAnesthesiologistChange($event)"
+    >
+      <option [ngValue]="null">Todos</option>
+      <option *ngFor="let a of anesthetistOptions" [ngValue]="a.id">{{ a.name }}</option>
+    </select>
+  </div>
+
+  <div class="field" *ngIf="showStatusFilter">
+    <label>Status</label>
+    <select
+      [ngModel]="filters.status"
+      (ngModelChange)="onStatusChange($event)"
+    >
+      <option [ngValue]="null">Todos</option>
+      <option *ngFor="let s of statusOptions" [ngValue]="s.id">{{ s.label }}</option>
+    </select>
+  </div>
+
+  <button type="button" class="refresh-btn" (click)="refresh.emit()">
+    <ion-icon name="refresh-outline"></ion-icon>
+    Atualizar
+  </button>
+</div>

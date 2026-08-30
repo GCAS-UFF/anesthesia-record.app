@@ -1,0 +1,43 @@
+<div class="report-card">
+  <div class="report-card-header">
+    <div>
+      <h3 class="report-title">Saúde da Integração AGHU/SIGA</h3>
+      <p class="report-subtitle">Estado atual da sincronização com o AGHU. Não há histórico armazenado — apenas o instante mais recente de cada sincronização.</p>
+    </div>
+    <div class="report-actions">
+      <button type="button" class="action-btn" (click)="load()">Verificar agora</button>
+      <app-report-pdf-actions reportKey="integration-status"></app-report-pdf-actions>
+    </div>
+  </div>
+
+  <app-report-state [loading]="loading" [error]="error" [empty]="false" (retry)="load()">
+    <ng-container *ngIf="report as r">
+      <div class="kpi-row">
+        <div class="kpi-tile">
+          <span class="badge" [class.badge-ok]="r.databaseHealthy" [class.badge-danger]="!r.databaseHealthy">Banco de dados</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="badge" [class.badge-ok]="r.aghuHealthy" [class.badge-danger]="!r.aghuHealthy">AGHU</span>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ formatDate(r.medicines.lastSyncAt) }}</span>
+          <span class="kpi-label">Medicamentos</span>
+          <span class="badge" [class.badge-ok]="!r.medicines.isStale" [class.badge-warn]="r.medicines.isStale">{{ r.medicines.isStale ? 'Desatualizado' : 'Atualizado' }}</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ formatDate(r.procedures.lastSyncAt) }}</span>
+          <span class="kpi-label">Procedimentos</span>
+          <span class="badge" [class.badge-ok]="!r.procedures.isStale" [class.badge-warn]="r.procedures.isStale">{{ r.procedures.isStale ? 'Desatualizado' : 'Atualizado' }}</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ formatDate(r.professionals.lastSyncAt) }}</span>
+          <span class="kpi-label">Profissionais</span>
+          <span class="badge" [class.badge-ok]="!r.professionals.isStale" [class.badge-warn]="r.professionals.isStale">{{ r.professionals.isStale ? 'Desatualizado' : 'Atualizado' }}</span>
+        </div>
+      </div>
+    </ng-container>
+  </app-report-state>
+</div>

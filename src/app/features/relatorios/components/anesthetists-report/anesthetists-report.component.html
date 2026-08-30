@@ -1,0 +1,48 @@
+<div class="report-card">
+  <div class="report-card-header">
+    <div>
+      <h3 class="report-title">Produtividade por Anestesista</h3>
+      <p class="report-subtitle">Indicador operacional de volume de trabalho — não representa avaliação de desempenho individual.</p>
+    </div>
+    <app-report-pdf-actions reportKey="anesthetists" [filters]="filters"></app-report-pdf-actions>
+  </div>
+
+  <app-report-state [loading]="loading" [error]="error" [empty]="isEmpty" (retry)="load()">
+    <ng-container *ngIf="report as r">
+      <div class="kpi-row">
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.anesthetists.length }}</span>
+          <span class="kpi-label">Anestesistas no período</span>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-block">
+          <h4>Cirurgias por anestesista</h4>
+          <app-bar-chart [labels]="anesthetistLabels" [data]="anesthetistCounts" datasetLabel="Cirurgias" [horizontal]="true"></app-bar-chart>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Anestesista</th>
+              <th class="num">Cirurgias</th>
+              <th class="num">Fichas assinadas</th>
+              <th class="num">Duração média (min)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let a of r.anesthetists">
+              <td>{{ a.name }}</td>
+              <td class="num">{{ a.surgeriesCount }}</td>
+              <td class="num">{{ a.signedRecordsCount }}</td>
+              <td class="num">{{ a.averageDurationMinutes ?? '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </app-report-state>
+</div>

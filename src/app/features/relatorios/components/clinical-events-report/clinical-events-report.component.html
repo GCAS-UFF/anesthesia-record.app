@@ -1,0 +1,62 @@
+<div class="report-card">
+  <div class="report-card-header">
+    <div>
+      <h3 class="report-title">Eventos Clínicos</h3>
+      <p class="report-subtitle">Eventos registrados durante a monitorização intraoperatória.</p>
+    </div>
+    <app-report-pdf-actions reportKey="clinical-events" [filters]="filters"></app-report-pdf-actions>
+  </div>
+
+  <app-report-state [loading]="loading" [error]="error" [empty]="isEmpty" (retry)="load()">
+    <ng-container *ngIf="report as r">
+      <div class="kpi-row">
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.totalEvents }}</span>
+          <span class="kpi-label">Total de eventos</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.distinctEventTypes }}</span>
+          <span class="kpi-label">Tipos diferentes</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.surgeriesWithEvents }}</span>
+          <span class="kpi-label">Cirurgias com evento</span>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-block">
+          <h4>Eventos por tipo</h4>
+          <app-bar-chart [labels]="typeLabels" [data]="typeCounts" datasetLabel="Eventos"></app-bar-chart>
+        </div>
+        <div class="chart-block" *ngIf="anesthetistLabels.length">
+          <h4>Eventos por anestesista</h4>
+          <app-donut-chart [labels]="anesthetistLabels" [data]="anesthetistCounts"></app-donut-chart>
+        </div>
+        <div class="chart-block" *ngIf="dayLabels.length">
+          <h4>Eventos ao longo do tempo</h4>
+          <app-line-chart [labels]="dayLabels" [data]="dayCounts" datasetLabel="Eventos"></app-line-chart>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Tipo do evento</th>
+              <th class="num">Quantidade</th>
+              <th class="num">Percentual</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of r.byType">
+              <td>{{ t.eventTypeLabel }}</td>
+              <td class="num">{{ t.count }}</td>
+              <td class="num">{{ t.percentage }}%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </app-report-state>
+</div>

@@ -1,0 +1,56 @@
+<div class="report-card">
+  <div class="report-card-header">
+    <div>
+      <h3 class="report-title">Antibioticoprofilaxia</h3>
+      <p class="report-subtitle">Considera todas as fichas do período — o sistema não registra critério de elegibilidade nem horário de incisão cirúrgica.</p>
+    </div>
+    <app-report-pdf-actions reportKey="antibiotic-prophylaxis" [filters]="filters"></app-report-pdf-actions>
+  </div>
+
+  <app-report-state [loading]="loading" [error]="error" [empty]="isEmpty" (retry)="load()">
+    <ng-container *ngIf="report as r">
+      <div class="kpi-row">
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.totalSurgeries }}</span>
+          <span class="kpi-label">Total de cirurgias</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.surgeriesWithProphylaxis }}</span>
+          <span class="kpi-label">Com profilaxia registrada</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.surgeriesWithoutProphylaxis }}</span>
+          <span class="kpi-label">Sem registro</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.adherencePercentage }}%</span>
+          <span class="kpi-label">Adesão</span>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-block">
+          <h4>Medicamentos mais usados</h4>
+          <app-bar-chart [labels]="medicationLabels" [data]="medicationCounts" datasetLabel="Administrações" [horizontal]="true"></app-bar-chart>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Medicamento</th>
+              <th class="num">Quantidade</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of r.topMedications">
+              <td>{{ m.name }}</td>
+              <td class="num">{{ m.count }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </app-report-state>
+</div>

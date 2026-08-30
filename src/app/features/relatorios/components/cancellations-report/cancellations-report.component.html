@@ -1,0 +1,52 @@
+<div class="report-card">
+  <div class="report-card-header">
+    <div>
+      <h3 class="report-title">Cancelamentos</h3>
+      <p class="report-subtitle">Cirurgias canceladas no período.</p>
+    </div>
+    <app-report-pdf-actions reportKey="cancellations" [filters]="filters"></app-report-pdf-actions>
+  </div>
+
+  <app-report-state [loading]="loading" [error]="error" [empty]="isEmpty" (retry)="load()">
+    <ng-container *ngIf="report as r">
+      <div class="kpi-row">
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.totalSurgeries }}</span>
+          <span class="kpi-label">Total de cirurgias</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-value">{{ r.canceledSurgeries }} <small>({{ r.canceledPercentage }}%)</small></span>
+          <span class="kpi-label">Canceladas</span>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-block">
+          <h4>Cancelamentos por anestesista</h4>
+          <app-bar-chart [labels]="anesthetistLabels" [data]="anesthetistCounts" datasetLabel="Cancelamentos" [horizontal]="true"></app-bar-chart>
+        </div>
+        <div class="chart-block">
+          <h4>Cancelamentos por dia da semana</h4>
+          <app-bar-chart [labels]="weekdayLabels" [data]="weekdayCounts" datasetLabel="Cancelamentos"></app-bar-chart>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Anestesista</th>
+              <th class="num">Cancelamentos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let a of r.byAnesthetist">
+              <td>{{ a.name }}</td>
+              <td class="num">{{ a.count }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </app-report-state>
+</div>
