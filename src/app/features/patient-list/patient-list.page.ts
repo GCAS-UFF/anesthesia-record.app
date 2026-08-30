@@ -151,6 +151,9 @@ export class PatientListPage implements OnInit {
           this.totalItems = resultData.totalItems || 0;
           this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1;
           this.flattenData(resultData);
+          this.anesthesiaRecordService.cleanupStalePreAnesthesiaData(
+            this.viewList.map(v => ({ id: v.id, status: v.status }))
+          );
           this.canAssumePatient = this.isAdminUser ? false : resultData.canAssumePatient;
           this.isRefreshing = false;
           this.isLoading = false;

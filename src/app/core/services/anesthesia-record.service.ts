@@ -317,6 +317,27 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     });
   }
 
+  private readonly PRE_ANESTHESIA_DATA_PREFIX = 'preAnesthesiaData_';
+  
+  cleanupStalePreAnesthesiaData(knownSurgeries: { id: number | string; status: SurgeryStatusEnum | null }[]): void {
+    const statusById = new Map<string, SurgeryStatusEnum | null>();
+    knownSurgeries.forEach(s => statusById.set(String(s.id), s.status));
+
+    Object.keys(localStorage)
+      .filter(key => key.startsWith(this.PRE_ANESTHESIA_DATA_PREFIX))
+      .forEach(key => {
+        const surgeryId = key.slice(this.PRE_ANESTHESIA_DATA_PREFIX.length);
+
+        if (localStorage.getItem(`draft_monitoring_${surgeryId}`))
+          return;
+
+        const status = statusById.get(surgeryId);
+        if (status === SurgeryStatusEnum.Agendado || status === SurgeryStatusEnum.Cancelada) {
+          localStorage.removeItem(key);
+        }
+      });
+  }
+
   public updatePendingStatus(): void {
     const count = Object.keys(localStorage)
       .filter(key =>
