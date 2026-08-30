@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Gerador de hash de senha - Ficha Anestésica</title>
+<style>
+  body {
+    font-family: system-ui, Arial, sans-serif;
+    background: #1e1e2e;
+    color: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    padding: 40px 16px;
+  }
+  .card {
+    background: #2a2a3d;
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 560px;
+    width: 100%;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  h1 { font-size: 1.3rem; margin-top: 0; }
+  label { display: block; margin: 16px 0 6px; font-size: 0.9rem; color: #b0b0c0; }
+  input[type=text], input[type=password] {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #1e1e2e;
+    color: #fff;
+    font-size: 1rem;
+  }
+  button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background: #6c5ce7;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  button:hover { background: #5a4bd6; }
+  .toggle {
+    margin-top: 6px;
+    font-size: 0.8rem;
+    color: #9a9ab0;
+    cursor: pointer;
+    user-select: none;
+  }
+  .result {
+    margin-top: 24px;
+    padding: 16px;
+    background: #1e1e2e;
+    border-radius: 8px;
+    border: 1px solid #444;
+    display: none;
+  }
+  .result.show { display: block; }
+  .result label { color: #9a9ab0; }
+  .result-box {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  textarea {
+    width: 100%;
+    background: #111120;
+    color: #7CFC9A;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 10px;
+    font-family: Consolas, monospace;
+    font-size: 0.85rem;
+    resize: vertical;
+    box-sizing: border-box;
+  }
+  .copy-btn {
+    margin-top: 8px;
+    width: auto;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    background: #3a3a52;
+  }
+  .copy-btn:hover { background: #48486a; }
+  .hint {
+    font-size: 0.78rem;
+    color: #9a9ab0;
+    margin-top: 4px;
+  }
+  .copied { color: #7CFC9A; margin-left: 8px; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Gerador de hash de senha (admin)</h1>
+  <p class="hint">Gera a senha no mesmo formato usado pelo PasswordHasher da API (PBKDF2-SHA256, 100.000 iterações, salt de 16 bytes). Tudo roda localmente no navegador — nada é enviado para lugar nenhum.</p>
+
+  <label for="login">Login do usuário (opcional, só para montar o SQL)</label>
+  <input type="text" id="login" placeholder="admin" value="admin">
+
+  <label for="password">Nova senha</label>
+  <input type="password" id="password" placeholder="Digite a senha">
+  <div class="toggle" onclick="togglePassword()">👁 mostrar/ocultar senha</div>
+
+  <button onclick="gerar()">Gerar hash</button>
+
+  <div class="result" id="result">
+    <label>Valor para a coluna <code>password</code></label>
+    <div class="result-box">
+      <textarea id="hashOutput" rows="2" readonly></textarea>
+    </div>
+    <button class="copy-btn" onclick="copiar('hashOutput')">Copiar hash</button>
+    <span class="copied" id="copiedHash"></span>
+
+    <label style="margin-top:16px">SQL pronto para colar</label>
+    <textarea id="sqlOutput" rows="6" readonly></textarea>
+    <button class="copy-btn" onclick="copiar('sqlOutput')">Copiar SQL</button>
+    <span class="copied" id="copiedSql"></span>
+  </div>
+</div>
+
+<script>
+function togglePassword() {
+  const el = document.getElementById('password');
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+function toBase64(bytes) {
+  let binary = '';
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  return btoa(binary);
+}
+
+async function gerar() {
+  const password = document.getElementById('password').value;
+  const login = document.getElementById('login').value.trim() || 'admin';
+
+  if (!password) {
+    alert('Digite uma senha.');
+    return;
+  }
+
+  const iterations = 100000;
+  const saltBytes = crypto.getRandomValues(new Uint8Array(16));
+
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveBits']
+  );
+
+  const derivedBits = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      salt: saltBytes,
+      iterations: iterations,
+      hash: 'SHA-256'
+    },
+    keyMaterial,
+    32 * 8 // 32 bytes
+  );
+
+  const hashBytes = new Uint8Array(derivedBits);
+  const saltB64 = toBase64(saltBytes);
+  const hashB64 = toBase64(hashBytes);
+
+  const stored = `v1.${iterations}.${saltB64}.${hashB64}`;
+
+  document.getElementById('hashOutput').value = stored;
+
+  const sql =
+`UPDATE siga_db.users
+SET password = '${stored}',
+    is_admin = true,
+    can_login = true,
+    status = 1
+WHERE lower(login) = '${login.toLowerCase()}';`;
+
+  document.getElementById('sqlOutput').value = sql;
+  document.getElementById('result').classList.add('show');
+}
+
+function copiar(id) {
+  const el = document.getElementById(id);
+  el.select();
+  el.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(el.value).then(() => {
+    const label = id === 'hashOutput' ? 'copiedHash' : 'copiedSql';
+    const span = document.getElementById(label);
+    span.textContent = '✓ copiado!';
+    setTimeout(() => span.textContent = '', 1500);
+  });
+}
+</script>
+</body>
+</html>
