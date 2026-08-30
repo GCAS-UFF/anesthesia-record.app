@@ -332,7 +332,11 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
           return;
 
         const status = statusById.get(surgeryId);
-        if (status === SurgeryStatusEnum.Agendado || status === SurgeryStatusEnum.Cancelada) {
+        if (
+          status === SurgeryStatusEnum.Agendado ||
+          status === SurgeryStatusEnum.Cancelada ||
+          status === SurgeryStatusEnum.Concluido
+        ) {
           localStorage.removeItem(key);
         }
       });
