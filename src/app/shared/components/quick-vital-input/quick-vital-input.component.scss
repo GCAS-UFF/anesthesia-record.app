@@ -82,6 +82,29 @@
   }
 }
 
+.time-banner-edit {
+  .time-edit-field {
+    display: grid;
+    gap: 4px;
+    flex: 1;
+  }
+  .field-label {
+    color: var(--vital-text-1);
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .custom-input {
+    min-height: 38px;
+    color: var(--vital-text-0);
+    font-size: 18px;
+    font-weight: 700;
+    border: 1px solid var(--vital-border);
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 0 8px;
+  }
+}
+
 .vital-group {
   border: 1px solid var(--vital-border);
   border-radius: 14px;

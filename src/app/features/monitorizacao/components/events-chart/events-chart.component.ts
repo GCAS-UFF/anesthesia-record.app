@@ -74,6 +74,17 @@ export class EventsChartComponent {
     return (this.events?.length || 0) + (this.positionHistory?.length || 0);
   }
 
+  
+  get sortedItems(): Array<{ item: AnyEvent; lane: EventLane }> {
+    const all: Array<{ item: AnyEvent; lane: EventLane }> = [];
+    for (const lane of this.lanes) {
+      for (const item of this.itemsForLane(lane.key)) {
+        all.push({ item, lane });
+      }
+    }
+    return all.sort((a, b) => this.itemTime(b.item) - this.itemTime(a.item));
+  }
+
   onHeaderClick(event?: MouseEvent): void {
     event?.stopPropagation();
     this.toggle();
@@ -88,12 +99,6 @@ export class EventsChartComponent {
   openHistoryClick(event: MouseEvent): void {
     event.stopPropagation();
     this.openHistory.emit();
-  }
-
-  addEventClick(event: MouseEvent): void {
-    event.stopPropagation();
-    if (this.readonly) return;
-    this.addEvent.emit();
   }
 
   desc(item: AnyEvent): string {
@@ -138,19 +143,6 @@ export class EventsChartComponent {
     return (this.events || [])
       .filter((item) => this.classify(item) === key)
       .sort((a, b) => this.itemTime(a) - this.itemTime(b));
-  }
-
-  posX(item: AnyEvent): number {
-    const start = this.viewStartTime ?? this.toDate(this.anesthesiaStartTime)?.getTime();
-    const itemTime = this.itemTime(item);
-
-    if (!start || !Number.isFinite(itemTime)) return 50;
-
-    const end = this.viewEndTime ?? (this.toDate(this.surgeryEndTime)?.getTime() || Date.now());
-    const total = Math.max(end - start, 1);
-    const raw = ((itemTime - start) / total) * 100;
-
-    return raw;
   }
 
   onMarkerEnter(item: AnyEvent): void {

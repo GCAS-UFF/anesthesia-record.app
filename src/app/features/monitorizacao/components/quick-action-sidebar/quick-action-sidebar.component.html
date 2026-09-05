@@ -124,7 +124,7 @@
 
     <button
       class="btn-freq"
-      *ngIf="isSurgeryStarted && !isSurgeryFinished"
+      *ngIf="isSurgeryStarted && !isAnesthesiaFinished"
       (click)="reconfigurarFrequencia.emit()"
     >
       <ion-icon name="time-outline"></ion-icon>

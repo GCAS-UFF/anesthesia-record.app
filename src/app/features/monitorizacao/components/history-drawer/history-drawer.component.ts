@@ -28,7 +28,8 @@ export class HistoryDrawerComponent implements OnInit {
   @Input() agents: any[] = [];
   @Input() events: any[] = [];
   @Input() balance: any[] = [];
-  @Input() isSurgeryFinished = false;
+  
+  @Input() isAnesthesiaFinished = false;
 
   @Output() close = new EventEmitter<void>();
   // Vitals

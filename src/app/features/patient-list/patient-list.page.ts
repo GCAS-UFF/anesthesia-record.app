@@ -281,7 +281,7 @@ export class PatientListPage implements OnInit {
     }
 
     if (isAlreadyAssigned) {
-      this.onOpenMonitorizacao(surgeryId);
+      this.onOpenMonitorizacao(surgeryId, patientId);
       return;
     }
 
@@ -332,8 +332,8 @@ export class PatientListPage implements OnInit {
     await alert.present();
   }
 
-  onOpenMonitorizacao(id: string | number) {
-    this.router.navigate(['/monitorizacao', id]);
+  onOpenMonitorizacao(id: string | number, patientId?: string) {
+    this.router.navigate(['/monitorizacao', id], patientId ? { queryParams: { patientId } } : undefined);
   }
 
   onOpenFicha(id: string | number, patientId: string) {

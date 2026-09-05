@@ -16,12 +16,25 @@
 
 <ion-content class="vital-modal-content">
   <div class="modal-shell">
-    <section class="time-banner">
+    <section class="time-banner" *ngIf="!isEdit">
       <ion-icon name="time-outline"></ion-icon>
       <div>
         <strong>{{ isAuto ? 'Coleta automática' : 'Registro manual' }}</strong>
         <span>Preencha os sinais disponíveis neste momento.</span>
       </div>
+    </section>
+
+    <section class="time-banner time-banner-edit" *ngIf="isEdit">
+      <ion-icon name="time-outline"></ion-icon>
+      <label class="time-edit-field">
+        <span class="field-label">Horário do lançamento</span>
+        <input
+          class="custom-input"
+          type="time"
+          aria-label="Horário do lançamento"
+          [value]="form.time"
+          (input)="setTime($any($event.target).value)">
+      </label>
     </section>
 
     <section class="vital-group" *ngFor="let group of vitalGroups">

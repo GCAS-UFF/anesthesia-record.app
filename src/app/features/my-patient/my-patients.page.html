@@ -105,7 +105,7 @@
           [anesthesiologist]="p.anesthesiologist?.fullName || 'Você'"
           [isCurrentAnesthesiologist]="true"
           [canAssumePatient]="false"
-          (assume)="onOpenMonitorizacao(p.id)"
+          (assume)="onOpenMonitorizacao(p.id, p.patientId)"
           (openFicha)="onOpenFicha(p.id, p.patientId)"
           (viewRegistro)="onViewRegistro(p.id, p.patientId)"
           (abandonSurgery)="abandonPatient(p.id, p.patientId)"

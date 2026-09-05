@@ -183,6 +183,22 @@ ion-radio {
 }
 
 
+.clinical-item-modal {
+  --height: 90vh;
+  --max-height: 640px;
+  --width: 92%;
+  --max-width: 480px;
+  --border-radius: 20px;
+  align-items: center;
+  justify-content: center;
+
+  &::part(content) {
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+}
+
+
 @media print {
   app-status-bar,
   app-header-institucional,

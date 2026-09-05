@@ -3,7 +3,7 @@ import { ApiUrlService } from "./api-url.service";
 import { ApiService } from "./base/api.service";
 import { BaseService } from "./base/base.service";
 import { AnesthesiaRecordModel } from "../../shared/models/anesthesia-record.model";
-import { from, interval, Observable, of, Subscription, throwError } from "rxjs";
+import { from, interval, Observable, of, Subject, Subscription, throwError } from "rxjs";
 import { catchError, concatMap, delay, map, startWith } from "rxjs/operators";
 import { BehaviorSubject } from 'rxjs';
 import { finalize } from 'rxjs/operators';
@@ -41,6 +41,10 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   private autoSyncSubscription?: Subscription;
   private syncing = false;
   private serverOnline = true;
+
+  
+  private autoMonitoringTimers = new Map<string, { sub: Subscription; intervalMinutes: number }>();
+  readonly autoSnapshotAdded$ = new Subject<{ surgeryId: string; record: any }>();
 
   private readonly DRAFT_PREFIX = 'draft_anesthesia_';
 
@@ -181,8 +185,13 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     }
 
     if (record.isMonitoringDraft) {
-      return this.submitMonitoringRecord(record, surgeryId).pipe(
-        map(response => ({ response, surgeryId }))
+      const isProgressSave = !record.finalized;
+      const send$ = isProgressSave
+        ? this.saveMonitoringProgress(record, surgeryId)
+        : this.submitMonitoringRecord(record, surgeryId);
+
+      return send$.pipe(
+        map(response => ({ response, surgeryId, isProgressSave }))
       );
     }
 
@@ -228,14 +237,40 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
           return;
 
         if (result.isMonitoringDraft) {
-          localStorage.removeItem(`draft_monitoring_${result.surgeryId}`);         
-          localStorage.removeItem(`preAnesthesiaData_${result.surgeryId}`);
-          localStorage.removeItem(`cache_ficha_anestesica_${result.surgeryId}`);
+          if (result.isProgressSave) {
+            // Só um PUT de progresso: o rascunho local continua sendo o buffer de trabalho
+            // até a cirurgia ser finalizada — só é removido no PATCH de finalização, abaixo.
+            this.markMonitoringDraftSynced(result.surgeryId);
+          } else {
+            localStorage.removeItem(`draft_monitoring_${result.surgeryId}`);
+            localStorage.removeItem(`preAnesthesiaData_${result.surgeryId}`);
+            localStorage.removeItem(`cache_ficha_anestesica_${result.surgeryId}`);
+          }
           this.updatePendingStatus();
         } else {
           this.clearDraft(result.surgeryId.toString());
         }
       });
+  }
+
+  /** Limpa marcas de erro de um rascunho de monitorização após um PUT de progresso bem-sucedido. */
+  private markMonitoringDraftSynced(surgeryId: string | number): void {
+    try {
+      const key = `draft_monitoring_${surgeryId}`;
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+
+      const draft = JSON.parse(raw);
+      delete draft._isErrorDraft;
+      delete draft._error;
+      delete draft._lastError;
+      delete draft._retryCount;
+      delete draft._httpStatus;
+      draft._lastSyncedAt = new Date().toISOString();
+      localStorage.setItem(key, JSON.stringify(draft));
+    } catch {
+      // melhor esforço: não perder o rascunho se a marcação falhar
+    }
   }
 
   private getPendingDrafts(): any[] {
@@ -262,8 +297,12 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     const surgeryId = Number(this.pick(draft.cirurgiaId, draft.surgeryId, draft.id));
     if (!Number.isFinite(surgeryId) || surgeryId <= 0) return false;
 
-
-    if (draft.isMonitoringDraft && !draft.readyForApiSync && !draft.finalized) {
+    
+    if (
+      draft.isMonitoringDraft && !draft.finalized &&
+      draft._lastSyncedAt && draft.monitoringUpdatedAt &&
+      draft._lastSyncedAt >= draft.monitoringUpdatedAt
+    ) {
       return false;
     }
 
@@ -294,6 +333,79 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   stopAutoSync(): void {
     this.autoSyncSubscription?.unsubscribe();
     this.autoSyncSubscription = undefined;
+  }
+
+  
+  startAutoMonitoring(surgeryId: string, intervalMinutes: number): void {
+    if (!surgeryId) return;
+    const existing = this.autoMonitoringTimers.get(surgeryId);
+    if (existing) {
+      if (existing.intervalMinutes !== intervalMinutes) {
+        this.updateAutoMonitoringInterval(surgeryId, intervalMinutes);
+      }
+      return;
+    }
+    const ms = Math.max(1, intervalMinutes) * 60 * 1000;
+    const sub = interval(ms).subscribe(() => this.autoMonitoringTick(surgeryId));
+    this.autoMonitoringTimers.set(surgeryId, { sub, intervalMinutes });
+  }
+ 
+  updateAutoMonitoringInterval(surgeryId: string, intervalMinutes: number): void {
+    if (!surgeryId) return;
+    const existing = this.autoMonitoringTimers.get(surgeryId);
+    if (!existing) {
+      this.startAutoMonitoring(surgeryId, intervalMinutes);
+      return;
+    }
+    existing.sub.unsubscribe();
+    const ms = Math.max(1, intervalMinutes) * 60 * 1000;
+    existing.sub = interval(ms).subscribe(() => this.autoMonitoringTick(surgeryId));
+    existing.intervalMinutes = intervalMinutes;
+  }
+  
+  stopAutoMonitoring(surgeryId: string): void {
+    if (!surgeryId) return;
+    this.autoMonitoringTimers.get(surgeryId)?.sub.unsubscribe();
+    this.autoMonitoringTimers.delete(surgeryId);
+  }
+
+  private autoMonitoringTick(surgeryId: string): void {
+    try {
+      const key = `draft_monitoring_${surgeryId}`;
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+
+      const draft = JSON.parse(raw);
+      if (draft.finalized) {
+        this.stopAutoMonitoring(surgeryId);
+        return;
+      }
+
+      const records: any[] = Array.isArray(draft.vitalRecords) ? draft.vitalRecords : [];
+      const last = records[records.length - 1];
+      if (!last) return;
+
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      const snapshot = {
+        ...last,
+        clientId: `local-${now.getTime()}-${Math.random().toString(16).slice(2)}`,
+        timestamp: now.toISOString(),
+        time: `${hh}:${mm}`,
+        isAuto: true,
+      };
+
+      draft.vitalRecords = [...records, snapshot].sort(
+        (a: any, b: any) => new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime()
+      );
+      draft.monitoringUpdatedAt = now.toISOString();
+      localStorage.setItem(key, JSON.stringify(draft));
+      this.updatePendingStatus();
+      this.autoSnapshotAdded$.next({ surgeryId, record: snapshot });
+    } catch (err) {
+      console.warn('[AnesthesiaRecordService] falha no auto-snapshot de monitorização', err);
+    }
   }
 
   getLatestByPatient(id: string, patientId: string): Observable<any | null> {
@@ -366,11 +478,6 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   getPendingDraftsCount(): number {
     return Object.keys(localStorage)
       .filter(key => key.startsWith(this.DRAFT_PREFIX) || key.startsWith('draft_monitoring_')).length;
-  }
-
-  createBlankRecord(surgeryId: number): Observable<any> {
-    const apiPayload = this.mapToApiFormat({}, surgeryId);
-    return this.create(apiPayload);
   }
 
   clearLatestRecord(pacienteId: string): Observable<boolean> {
@@ -685,7 +792,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   }
 
 
-  private buildMonitoringRecordPayload(app: any, surgeryId: number): MonitoringPayload {
+  private buildMonitoringRecordPayload(app: any, surgeryId: number, finalize: boolean = true): MonitoringPayload {
     const recordedByProfessionalId = Number(
       this.pick(app.recordedByProfessionalId, this.authService.getCurrentUserId(), 0)
     ) || 0;
@@ -706,13 +813,20 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       clinicalEvents: this.mapMonitoringEvents(app.events ?? app.clinicalEvents),
       fluidBalances: this.mapFluidBalance(app.fluidBalance),
       positions: this.mapPositions(app.positions ?? app.positionHistory),
-      status: SurgeryStatusEnum.Concluido,
+      status: finalize ? SurgeryStatusEnum.Concluido : SurgeryStatusEnum.EmProgresso,
     };
   }
 
+  /** Finaliza a monitorização (ação explícita "Finalizar Anestesia") — PATCH, mapeia pro FinalizePatientAsync do backend. */
   submitMonitoringRecord(app: any, surgeryId: number): Observable<any> {
-    const payload = this.buildMonitoringRecordPayload(app, surgeryId);   
+    const payload = this.buildMonitoringRecordPayload(app, surgeryId, true);
     return this.api.patch(`MonitoringRecord/${surgeryId}`, payload);
+  }
+
+  
+  saveMonitoringProgress(app: any, surgeryId: number): Observable<any> {
+    const payload = this.buildMonitoringRecordPayload(app, surgeryId, false);
+    return this.api.put(`MonitoringRecord/${surgeryId}`, payload);
   }
 
   getMonitoringStatus(surgeryId: number): Observable<SurgeryStatusEnum | null> {

@@ -30,10 +30,10 @@
     <!-- SINAIS VITAIS -->
     <div class="tab-panel" *ngIf="activeTab === 'vitals'">
       <div class="tab-actions">
-        <ion-button size="small" fill="outline" (click)="addCustomField.emit()" [disabled]="isSurgeryFinished">
+        <ion-button size="small" fill="outline" (click)="addCustomField.emit()" [disabled]="isAnesthesiaFinished">
           <ion-icon name="settings-outline" slot="start"></ion-icon> Campo personalizado
         </ion-button>
-        <ion-button size="small" fill="solid" color="primary" (click)="addTimePoint.emit()" [disabled]="isSurgeryFinished">
+        <ion-button size="small" fill="solid" color="primary" (click)="addTimePoint.emit()" [disabled]="isAnesthesiaFinished">
           <ion-icon name="add-outline" slot="start"></ion-icon> Novo registro
         </ion-button>
       </div>
@@ -65,9 +65,9 @@
               <td>{{ temp(r) }}</td>
               <td *ngFor="let f of customFields">{{ custom(r, f.key) }}</td>
               <td class="col-actions">
-                <ion-icon name="create-outline" *ngIf="!isSurgeryFinished"
+                <ion-icon name="create-outline" *ngIf="!isAnesthesiaFinished"
                           (click)="editRecord.emit(r)"></ion-icon>
-                <ion-icon name="trash-outline" *ngIf="!isSurgeryFinished"
+                <ion-icon name="trash-outline" *ngIf="!isAnesthesiaFinished"
                           (click)="deleteRecord.emit(r)"></ion-icon>
               </td>
             </tr>
@@ -89,8 +89,8 @@
             <td>{{ a.route }}</td>
             <td>{{ a.presentation }}</td>
             <td class="col-actions">
-              <ion-icon name="create-outline" *ngIf="!isSurgeryFinished" (click)="editAgent.emit(a)"></ion-icon>
-              <ion-icon name="trash-outline" *ngIf="!isSurgeryFinished" (click)="deleteAgent.emit(a)"></ion-icon>
+              <ion-icon name="create-outline" *ngIf="!isAnesthesiaFinished" (click)="editAgent.emit(a)"></ion-icon>
+              <ion-icon name="trash-outline" *ngIf="!isAnesthesiaFinished" (click)="deleteAgent.emit(a)"></ion-icon>
             </td>
           </tr>
           <tr *ngIf="!agents.length"><td colspan="6" class="empty">Sem agentes</td></tr>
@@ -108,8 +108,8 @@
             <td>{{ eventLabel(e) }}</td>
             <td>{{ desc(e) }}</td>
             <td class="col-actions">
-              <ion-icon name="create-outline" *ngIf="!isSurgeryFinished" (click)="editEvent.emit(e)"></ion-icon>
-              <ion-icon name="trash-outline" *ngIf="!isSurgeryFinished" (click)="deleteEvent.emit(e)"></ion-icon>
+              <ion-icon name="create-outline" *ngIf="!isAnesthesiaFinished" (click)="editEvent.emit(e)"></ion-icon>
+              <ion-icon name="trash-outline" *ngIf="!isAnesthesiaFinished" (click)="deleteEvent.emit(e)"></ion-icon>
             </td>
           </tr>
           <tr *ngIf="!events.length"><td colspan="4" class="empty">Sem eventos</td></tr>
@@ -130,8 +130,8 @@
             <td>{{ itemName(b) }}</td>
             <td>{{ vol(b) }}</td>
             <td class="col-actions">
-              <ion-icon name="create-outline" *ngIf="!isSurgeryFinished" (click)="editBalance.emit(b)"></ion-icon>
-              <ion-icon name="trash-outline" *ngIf="!isSurgeryFinished" (click)="deleteBalance.emit(b)"></ion-icon>
+              <ion-icon name="create-outline" *ngIf="!isAnesthesiaFinished" (click)="editBalance.emit(b)"></ion-icon>
+              <ion-icon name="trash-outline" *ngIf="!isAnesthesiaFinished" (click)="deleteBalance.emit(b)"></ion-icon>
             </td>
           </tr>
           <tr *ngIf="!balance.length"><td colspan="5" class="empty">Sem lançamentos</td></tr>

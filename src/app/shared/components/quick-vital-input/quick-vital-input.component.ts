@@ -48,10 +48,15 @@ export class QuickVitalInputComponent implements OnInit {
     pas: null, pad: null, pam: null,
     fc: null, spo2: null, etco2: null,
     bis: null, pvc: null, pcap: null, temp: null,
+    time: null as string | null,
     custom: {} as Record<string, number | null>,
   };
 
   touched = false;
+
+  get isEdit(): boolean {
+    return !!this.initialValue;
+  }
 
   readonly vitalGroups = [
     {
@@ -98,6 +103,7 @@ export class QuickVitalInputComponent implements OnInit {
         ...this.form,
         ...this.initialValue,
         temp: this.initialValue.temp ?? this.initialValue.temperatura ?? null,
+        time: this.initialValue.time ?? null,
         custom: initCustom,
       };
     }
@@ -106,6 +112,10 @@ export class QuickVitalInputComponent implements OnInit {
   setValue(key: string, value: unknown): void {
     this.form[key] = this.toNumber(value);
     if (key === 'pas' || key === 'pad') this.recalculatePam();
+  }
+
+  setTime(value: string): void {
+    this.form.time = value || null;
   }
 
   setCustomValue(key: string, value: unknown): void {
@@ -148,8 +158,12 @@ export class QuickVitalInputComponent implements OnInit {
           payload[k] = v;
       }
     }
-    if (Object.keys(custom).length > 0) 
+    if (Object.keys(custom).length > 0)
       payload.custom = custom;
+
+    if (this.isEdit && this.form.time) {
+      payload.time = this.form.time;
+    }
 
     await this.modalController.dismiss(payload, 'confirm');
   }

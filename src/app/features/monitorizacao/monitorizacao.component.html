@@ -2,12 +2,10 @@
   <app-status-bar></app-status-bar>
   <app-header-institucional
     [showBackButton]="true"
-    [showPreAnestesicaButton]="true"
     [showAnestesicaButton]="true"
-    [preAnestesicaButtonLabel]="'Pre Anest.'"
     [anestesicaButtonLabel]="'Anestésica'"
-    (openPreAnestesica)="openAnestesicaRecord()"
     (openAnestesica)="openFichaAnestesicaModal()"
+    (backClick)="goToFichaAnestesica()"
   >
   </app-header-institucional>
 
@@ -156,7 +154,7 @@
     [agents]="agents"
     [events]="clinicalEvents"
     [balance]="fluidBalance"
-    [isSurgeryFinished]="isAnesthesiaFinished"
+    [isAnesthesiaFinished]="isAnesthesiaFinished"
     (close)="historyDrawerOpen = false"
     (editRecord)="onEditVital($event)"
     (deleteRecord)="onDeleteVital($event)"

@@ -12,11 +12,6 @@
         <ion-icon name="list-outline" slot="icon-only"></ion-icon>
       </ion-button>
 
-      <ion-button size="small" fill="solid" (click)="addEventClick($event)" [disabled]="readonly">
-        <ion-icon name="add-outline" slot="start"></ion-icon>
-        Evento
-      </ion-button>
-
       <ion-button
         size="small"
         fill="clear"
@@ -28,33 +23,19 @@
     </div>
   </header>
 
-  <div class="lanes-area" *ngIf="!collapsed">
-    <div class="lane" *ngFor="let lane of lanes">
-      <div class="lane-label" [style.color]="lane.color" [style.borderLeftColor]="lane.color">
-        <span class="lane-icon">{{ lane.icon }}</span>
-        <span class="lane-name">{{ lane.label }}</span>
-        <span class="lane-count">{{ itemsForLane(lane.key).length }}</span>
-      </div>
-
-      <div class="lane-track">
-        <div class="lane-baseline"></div>
-
-        <ng-container *ngFor="let item of itemsForLane(lane.key)">
-          <div
-            class="marker-wrap"
-            [style.left.%]="posX(item)"
-            (mouseenter)="onMarkerEnter(item)"
-            (mouseleave)="onMarkerLeave()"
-          >
-            <span
-              class="marker"
-              [style.background]="lane.color"
-              [title]="itemHM(item) + ' · ' + desc(item)"
-            ></span>
-            <span class="marker-time">{{ itemHM(item) }}</span>
-          </div>
-        </ng-container>
-      </div>
+  <div class="events-list" *ngIf="!collapsed">
+    <div
+      class="event-row"
+      *ngFor="let row of sortedItems"
+      (mouseenter)="onMarkerEnter(row.item)"
+      (mouseleave)="onMarkerLeave()"
+      [title]="itemHM(row.item) + ' · ' + desc(row.item)"
+    >
+      <span class="ev-icon" [style.color]="row.lane.color">{{ row.lane.icon }}</span>
+      <span class="ev-time">{{ itemHM(row.item) }}</span>
+      <span class="ev-desc">{{ desc(row.item) }}</span>
     </div>
+
+    <div class="events-empty" *ngIf="!sortedItems.length">Nenhum evento registrado</div>
   </div>
 </div>

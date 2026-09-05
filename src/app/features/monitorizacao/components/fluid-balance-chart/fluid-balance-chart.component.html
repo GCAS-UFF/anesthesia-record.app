@@ -18,10 +18,6 @@
       <ion-button size="small" fill="clear" (click)="openHistory.emit()">
         <ion-icon name="list-outline" slot="icon-only"></ion-icon>
       </ion-button>
-      <ion-button size="small" fill="solid" (click)="addBalance.emit()" [disabled]="readonly">
-        <ion-icon name="add-outline" slot="start"></ion-icon>
-        Balanço
-      </ion-button>
       <ion-button size="small" fill="clear" (click)="toggle.emit()"
                   [title]="collapsed ? 'Expandir' : 'Recolher'">
         <ion-icon [name]="collapsed ? 'chevron-down-outline' : 'chevron-up-outline'" slot="icon-only"></ion-icon>

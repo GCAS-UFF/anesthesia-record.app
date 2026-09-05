@@ -55,6 +55,8 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
 
   @Output() openPreAnestesica = new EventEmitter<void>();
   @Output() openAnestesica = new EventEmitter<void>();
+  
+  @Output() backClick = new EventEmitter<void>();
 
   doctorId = 0;
   isAdmin = false;
@@ -207,6 +209,10 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   }
 
   voltar(): void {
+    if (this.backClick.observed) {
+      this.backClick.emit();
+      return;
+    }
     this.location.back();
   }
 

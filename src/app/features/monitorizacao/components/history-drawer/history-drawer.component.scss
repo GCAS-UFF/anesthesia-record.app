@@ -170,11 +170,23 @@
     font-family: $font-mono;
   }
   .col-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+
     ion-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: $touch-min;
+      min-height: $touch-min;
+      border-radius: $r-sm;
       color: $text-3;
       cursor: pointer;
       font-size: 18px;
       &:hover {
+        background: rgba(15, 23, 42, 0.05);
         color: $c-loss;
       }
     }

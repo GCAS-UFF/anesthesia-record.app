@@ -3,7 +3,7 @@
     <ion-title>
       <ng-container [ngSwitch]="type">
         <span *ngSwitchCase="'agent'">Adicionar Agente</span>
-        <span *ngSwitchCase="'event'">Adicionar Evento</span>
+        <span *ngSwitchCase="'event'">{{ isEditMode ? 'Editar Evento' : 'Adicionar Evento' }}</span>
         <span *ngSwitchCase="'balance'">Adicionar Balanço</span>
       </ng-container>
     </ion-title>
@@ -103,6 +103,13 @@
     </ng-container>
     
     <ng-container *ngIf="type === 'event'">
+      <div class="field" *ngIf="isEditMode">
+        <label class="field-label">Horário</label>
+        <div class="custom-input-wrap">
+          <input class="custom-input" type="time" [(ngModel)]="event.time" aria-label="Horário do evento" placeholder="HH:mm" />
+        </div>
+      </div>
+
       <div class="field">
         <label class="field-label">Evento *</label>
 

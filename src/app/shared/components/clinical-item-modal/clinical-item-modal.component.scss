@@ -120,8 +120,9 @@ select.custom-input {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 10px;
-  max-height: 320px;
+  max-height: 240px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 2px;
 }
 
@@ -198,8 +199,9 @@ select.custom-input {
   }
   
   .custom-dropdown {
-    max-height: 280px;
+    max-height: 220px;
     overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 4px;
   }
 

@@ -12,7 +12,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
 import { OrientationService } from 'src/app/core/services/orientation.service';
 import { SurgeryService } from 'src/app/core/services/surgery.service';
 import { PreAnesthesicRecordService } from 'src/app/core/services/pre-anesthesic-record.service';
-import { mapPreAnesthesiaToRecordData } from 'src/app/shared/models/pre-anesthesic.mapper';
+import { SettingsService } from 'src/app/core/services/settings.service';
 import { mapAnesthesiaRecordToRecordData } from 'src/app/shared/models/anesthesia-record.mapper';
 import {
   SurgeryStatusEnum,
@@ -163,7 +163,8 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   private tickSub?: any;
 
   get isLocked(): boolean {
-    return this.isAnesthesiaFinished || this.isSurgeryFinished || this.isCancelled;
+    // "Cirurgia finalizada" não bloqueia lançamentos — só "Anestesia finalizada" bloqueia.
+    return this.isAnesthesiaFinished || this.isCancelled;
   }
 
   loggedUser: any = null;
@@ -185,7 +186,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   ];
 
   autoMonitoringIntervalMinutes = 5;
-  private autoMonitoringSub?: any;
+  private autoSnapshotSub?: Subscription;
 
   lastDraftSavedAt: Date | null = null;
   pendingSyncCount = 0;
@@ -216,6 +217,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     private preAnesthesicService: PreAnesthesicRecordService,
     private orientationService: OrientationService,
     private authService: AuthService,
+    private settingsService: SettingsService,
     private cdr: ChangeDetectorRef,
   ) { }
 
@@ -234,6 +236,14 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.patientAge = qp.get('age') ?? nav?.age ?? '';
     this.patientWeight = qp.get('weight') ?? nav?.weight ?? '--';
     this.patientAsa = qp.get('asa') ?? nav?.asa ?? '';
+
+    const patientIdFromNav = qp.get('patientId') ?? nav?.patientId ?? null;
+    if (patientIdFromNav) {
+      this.resolvedPatientId = String(patientIdFromNav);
+    }
+
+    this.autoMonitoringIntervalMinutes = await this.resolveAutoMonitoringInterval();
+    this.subscribeToAutoSnapshots();
 
     await this.loadInitialData();
     if (this.accessDenied) return;
@@ -280,9 +290,9 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.orientationService.unlock();
 
     clearInterval(this.tickSub);
-    clearInterval(this.autoMonitoringSub);
     clearTimeout(this.encerramentoTimeout);
     this.pendingSub?.unsubscribe();
+    this.autoSnapshotSub?.unsubscribe();
 
     if (this.surgeryId) {
       this.anesthesiaRecordService.clearFinalizedMonitoringRecord(this.surgeryId);
@@ -294,18 +304,25 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       const draft = this.loadMonitoringDraft();
       if (draft) this.hydrateFromDraft(draft);
 
-      const svc: any = this.surgeryService;
-      let surgery = null;
-      try {
-        surgery = await (svc.getById?.(this.surgeryId)?.toPromise?.()
-          ?? svc.getSurgery?.(this.surgeryId)?.toPromise?.()
-          ?? svc.get?.(this.surgeryId)?.toPromise?.()
-          ?? Promise.resolve(null));
+      let surgery: any = null;
+      const patientId = this.resolvePatientId();
+
+      if (!patientId) {
+        console.warn('[Monitorização] patientId não resolvido — não é possível buscar/assumir a cirurgia na API. Abrindo a tela a partir da listagem de pacientes garante esse dado.');
+      }
+
+      if (patientId) {
+        try {
+          const res: any = await firstValueFrom(this.surgeryService.getPatientDate(Number(this.surgeryId), patientId));
+          surgery = res?.data ?? null;
+        } catch (err) {
+          console.warn('Falha ao buscar cirurgia na API. Tentando carregar cache local...', err);
+        }
+
         if (surgery) {
           localStorage.setItem(`surgery_cache_${this.surgeryId}`, JSON.stringify(surgery));
+          surgery = await this.ensureSurgeryAssumedIfNeeded(surgery, patientId) ?? surgery;
         }
-      } catch (err) {
-        console.warn('Falha ao buscar cirurgia na API. Tentando carregar cache local...');
       }
 
       if (!surgery) {
@@ -316,9 +333,9 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       }
 
       this.selectedSurgery = surgery;
-      this.selectedProcedure = surgery?.procedures?.find((p: any) => p.isPrimary) || surgery?.procedures?.[0];
-      this.patient = surgery?.patient
-        ?? (this.patientService?.getById?.(surgery?.patientId)?.toPromise?.() ?? null);
+      this.selectedProcedure = surgery?.surgeries?.[0]?.procedures?.find((p: any) => p.isPrimary)
+        ?? surgery?.surgeries?.[0]?.procedures?.[0];
+      this.patient = surgery?.patient ?? null;
 
       this.isCancelled = surgery?.status === SurgeryStatusEnum.Cancelada
         || surgery?.patient?.status === SurgeryStatusEnum.Cancelada;
@@ -348,6 +365,70 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       await this.loadMonitoringRecordFromApi(!!draft);
     } catch (err) {
       console.error('[Monitorização] loadInitialData falhou', err);
+    }
+  }
+
+  /**
+   * A Ficha Anestésica/MonitoringRecord só existem no backend depois que alguém "assume" a
+   * cirurgia (endpoint que cria os dois em cascata). Checar isso pelo status ("ainda
+   * Agendada?") não é confiável: existem cirurgias já "Em Preparo" (assumidas antes de este
+   * fluxo existir, ou por um caminho antigo) que nunca tiveram o MonitoringRecord criado —
+   * e ficam presas nisso pra sempre, com o PATCH de finalização sempre voltando "Registro de
+   * monitoramento não encontrado". Por isso o gate real é: o MonitoringRecord existe? Só
+   * chama assumir quando é seguro: ninguém responsável (ou já sou eu) e a cirurgia não está
+   * concluída/cancelada — nunca sobrescreve um médico responsável diferente nem mexe em
+   * cirurgia já encerrada.
+   */
+  private async ensureSurgeryAssumedIfNeeded(surgery: any, patientId: string): Promise<any | null> {
+    const currentDoctorId = this.authService.getCurrentUserId();
+    if (!currentDoctorId) {
+      console.warn('[Monitorização] ensureSurgeryAssumedIfNeeded: currentDoctorId não resolvido, abortando.');
+      return null;
+    }
+
+    const noOneResponsible = surgery?.firstAnesthesiologistId == null;
+    const isMine = !noOneResponsible && String(surgery.firstAnesthesiologistId) === String(currentDoctorId);
+    const isClosed = surgery?.status === SurgeryStatusEnum.Concluido || surgery?.status === SurgeryStatusEnum.Cancelada;
+
+    if (isClosed) {
+      console.info('[Monitorização] cirurgia já concluída/cancelada — não tenta assumir.', { status: surgery?.status });
+      return null;
+    }
+    if (!(noOneResponsible || isMine)) {
+      console.info('[Monitorização] cirurgia responsável por outro médico — não assume automaticamente.', {
+        firstAnesthesiologistId: surgery?.firstAnesthesiologistId, currentDoctorId,
+      });
+      return null;
+    }
+
+    try {
+      const existingMonitoring = await firstValueFrom(
+        this.anesthesiaRecordService.getMonitoringRecord(Number(this.surgeryId))
+      );
+      if (existingMonitoring) {
+        return null;
+      }
+      console.info('[Monitorização] MonitoringRecord ainda não existe — vai assumir a cirurgia para criá-lo.');
+    } catch (err) {
+      
+      console.warn('[Monitorização] getMonitoringRecord falhou ao checar existência — não vai tentar assumir.', err);
+      return null;
+    }
+
+    try {
+      await firstValueFrom(this.surgeryService.assumePatient(patientId, Number(this.surgeryId), currentDoctorId));
+      const refreshed: any = await firstValueFrom(
+        this.surgeryService.getPatientDate(Number(this.surgeryId), patientId)
+      );
+      const updated = refreshed?.data ?? null;
+      if (updated) {
+        localStorage.setItem(`surgery_cache_${this.surgeryId}`, JSON.stringify(updated));
+      }
+      console.info('[Monitorização] cirurgia assumida automaticamente com sucesso.');
+      return updated;
+    } catch (err) {
+      console.warn('[Monitorização] Falha ao assumir a cirurgia automaticamente.', err);
+      return null;
     }
   }
 
@@ -590,13 +671,45 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.persistDraft();
   }
 
+  /**
+   * O timer recorrente vive em AnesthesiaRecordService (singleton providedIn:'root'),
+   * para sobreviver à navegação para outras telas. Chamada é idempotente por surgeryId.
+   */
   private startAutoMonitoring() {
-    clearInterval(this.autoMonitoringSub);
-    const ms = Math.max(1, this.autoMonitoringIntervalMinutes) * 60 * 1000;
-    this.autoMonitoringSub = setInterval(() => {
-      if (this.isAnesthesiaFinished) return;
-      this.autoSnapshotFromLast();
-    }, ms);
+    if (!this.surgeryId) return;
+    this.anesthesiaRecordService.startAutoMonitoring(this.surgeryId, this.autoMonitoringIntervalMinutes);
+  }
+
+  
+  private subscribeToAutoSnapshots() {
+    this.autoSnapshotSub = this.anesthesiaRecordService.autoSnapshotAdded$.subscribe(({ surgeryId, record }) => {
+      if (surgeryId !== this.surgeryId) return;
+      this.vitalRecords = [...this.vitalRecords, record].sort(this.byTs);
+      this.rebuildRecentActivity();
+      this.cdr.markForCheck();
+    });
+  }
+
+  
+  private async resolveAutoMonitoringInterval(): Promise<number> {
+    const FALLBACK_MINUTES = 5;
+    try {
+      const settings = await firstValueFrom(this.settingsService.get());
+      if (!settings) return FALLBACK_MINUTES;
+      if (!settings.useInstitutionalInterval && settings.monitoringIntervalMinutes > 0) {
+        return settings.monitoringIntervalMinutes;
+      }
+      if (settings.institutionalMonitoringIntervalMinutes > 0) {
+        return settings.institutionalMonitoringIntervalMinutes;
+      }
+      if (settings.monitoringIntervalMinutes > 0) {
+        return settings.monitoringIntervalMinutes;
+      }
+      return FALLBACK_MINUTES;
+    } catch (err) {
+      console.warn('[Monitorização] falha ao carregar configuração de intervalo, usando fallback', err);
+      return FALLBACK_MINUTES;
+    }
   }
 
   private autoSnapshotFromLast() {
@@ -721,9 +834,9 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     const { data, role } = await modal.onDidDismiss();
     if (role !== 'confirm' || !data) return;
     const updated: VitalRecord = { ...record, ...data };
-    if (data.timestamp) {
-      updated.timestamp = new Date(data.timestamp).toISOString();
-      updated.time = this.formatHM(new Date(updated.timestamp));
+    if (data.time) {
+      updated.timestamp = this.replaceTimeInIso(record.timestamp, data.time);
+      updated.time = data.time;
     }
     this.vitalRecords = this.vitalRecords
       .map(r => r.clientId === record.clientId ? updated : r)
@@ -925,30 +1038,37 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async onEditEvent(e: ClinicalEvent) {
-    if (!this.canEdit) return;
-    const alert = await this.alertController.create({
-      header: 'Editar evento',
-      inputs: [
-        { name: 'time', type: 'time', value: e.time, placeholder: 'HH:mm' },
-        { name: 'type', type: 'text', value: e.type, placeholder: 'Tipo' },
-        { name: 'description', type: 'textarea', value: e.description || '', placeholder: 'Descrição' },
-      ],
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Salvar',
-          handler: (d) => {
-            const ts = this.replaceTimeInIso(e.timestamp, d.time);
-            this.clinicalEvents = this.clinicalEvents.map(x => x.clientId === e.clientId
-              ? { ...x, ...d, timestamp: ts, time: d.time || x.time }
-              : x).sort(this.byTs);
-            this.persistDraft();
-            this.rebuildRecentActivity();
-          },
-        },
-      ],
-    });
-    await alert.present();
+    if (!this.canEdit || this.isEventModalOpen) return;
+    this.isEventModalOpen = true;
+    try {
+      const modal = await this.modalController.create({
+        component: ClinicalItemModalComponent,
+        componentProps: { type: 'event', initial: { ...e, time: e.time } },
+        cssClass: 'clinical-item-modal',
+      });
+      this.trackOverlay(modal);
+      await modal.present();
+      const { data } = await modal.onDidDismiss();
+      if (!data) return;
+
+      const ts = data.time ? this.replaceTimeInIso(e.timestamp, data.time) : e.timestamp;
+      this.clinicalEvents = this.clinicalEvents.map(x => x.clientId === e.clientId
+        ? {
+          ...x,
+          catalogEventId: data.catalogEventId ?? null,
+          catalogEventName: data.catalogEventName ?? null,
+          categoryLabel: data.categoryLabel ?? x.categoryLabel,
+          eventTypeId: data.eventTypeId ?? x.eventTypeId,
+          description: data.description ?? '',
+          timestamp: ts,
+          time: data.time || x.time,
+        }
+        : x).sort(this.byTs);
+      this.persistDraft();
+      this.rebuildRecentActivity();
+    } finally {
+      this.isEventModalOpen = false;
+    }
   }
 
   async onDeleteEvent(e: ClinicalEvent) {
@@ -1269,28 +1389,13 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  async openAnestesicaRecord() {
-    const patientId = this.resolvePatientId() ?? '';
-    const payload = this.preAnesthesicService.getBestAvailable(Number(this.surgeryId), patientId);
-    if (!payload) {
-      this.toast('Ficha Pré-Anestésica não encontrada (ou offline).', 'warning');
-      return;
-    }
-
-    try {
-      const data: RecordData = mapPreAnesthesiaToRecordData(payload);
-
-      const modal = await this.modalController.create({
-        component: RecordViewerModalComponent,
-        componentProps: { data },
-        cssClass: 'fa-sheet-modal',
-        backdropDismiss: false,
-      });
-      this.trackOverlay(modal);
-      await modal.present();
-    } catch (e) {
-      console.error('Erro ao abrir Ficha Pré-Anestésica', e);
-      this.toast('Erro ao abrir Ficha Pré-Anestésica', 'danger');
+  /** Voltar da Monitorização deve sempre levar para a Ficha Anestésica, independente da origem da navegação. */
+  goToFichaAnestesica(): void {
+    const patientId = this.resolvePatientId();
+    if (patientId) {
+      this.router.navigate(['/ficha-anestesica', this.surgeryId, patientId]);
+    } else {
+      this.router.navigate(['/pacientes']);
     }
   }
 
@@ -1417,7 +1522,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.isAnesthesiaFinished = true;
     this.anesthesiaEndTime = now;
 
-    clearInterval(this.autoMonitoringSub);
+    if (this.surgeryId) this.anesthesiaRecordService.stopAutoMonitoring(this.surgeryId);
     clearInterval(this.tickSub);
     this.tickSub = undefined;
 
@@ -1455,12 +1560,19 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       this.anesthesiaRecordService.updatePendingStatus();
 
       await this.toast('✅ Anestesia encerrada e enviada com sucesso.', 'success', 3000);
-    } catch (err) {
+    } catch (err: any) {
       console.error('[Encerramento] falha ao enviar, mantendo rascunho local', err);
       await loading.dismiss();
 
-      await this.toast('⚠️ Sem conexão. Registro salvo localmente e será enviado automaticamente.',
-        'warning', 4000);
+      const isNetworkError = !navigator.onLine || err?.status === 0 || !err?.status;
+      if (isNetworkError) {
+        await this.toast('⚠️ Sem conexão. Registro salvo localmente e será enviado automaticamente.',
+          'warning', 4000);
+      } else {
+        const msg = err?.error?.message || err?.message || 'Erro ao enviar o registro final.';
+        await this.toast(`⚠️ ${msg} O registro permanece salvo localmente e será reenviado automaticamente.`,
+          'danger', 5000);
+      }
     } finally {
       this.encerramentoTimeout = setTimeout(() => this.router.navigate(['/pacientes']), 1500);
     }

@@ -61,9 +61,13 @@ export class ClinicalItemModalComponent implements OnInit {
     .filter((id) => !Number.isNaN(id))
     .map((id) => ({ id, label: MEDICATION_UNIT_LABELS[id as MedicationUnitEnum] }));
 
-  event: { eventTypeId: number | null; name: string; description: string } = {
-    eventTypeId: null, name: '', description: '',
+  event: { eventTypeId: number | null; name: string; description: string; time: string } = {
+    eventTypeId: null, name: '', description: '', time: '',
   };
+
+  get isEditMode(): boolean {
+    return !!this.initial;
+  }
 
   eventTypes: EventTypeOption[] = [];
   eventSearchTerm = '';
@@ -82,21 +86,12 @@ export class ClinicalItemModalComponent implements OnInit {
     volumeMl: number | null;
   } = { type: 'gain', itemId: null, itemLabel: '', detail: '', volumeMl: null };
 
-  gainItems: BalanceItem[] = [
-    { id: 'crystalloid', label: 'Cristaloide (SF/RL)', categoryId: FLUID_CATEGORY_KEY_TO_ID['crystalloid'] },
-    { id: 'colloid',     label: 'Coloide',              categoryId: FLUID_CATEGORY_KEY_TO_ID['colloid'] },
-    { id: 'blood',       label: 'Hemocomponente',       categoryId: FLUID_CATEGORY_KEY_TO_ID['blood'] },
-    { id: 'albumin',     label: 'Albumina',              categoryId: FLUID_CATEGORY_KEY_TO_ID['albumin'] },
-    { id: 'other_gain',  label: 'Outro', needsDetail: true, categoryId: FLUID_CATEGORY_KEY_TO_ID['other_gain'] },
-  ];
+  // Ganho: preenchido dinamicamente a partir do cache de medicamentos do AGHU (ver loadMedications/buildGainItemsFromMedications) — mesma fonte já usada pelo tipo "agent".
+  gainItems: BalanceItem[] = [];
 
   lossItems: BalanceItem[] = [
-    { id: 'bleeding',    label: 'Sangramento',       categoryId: FLUID_CATEGORY_KEY_TO_ID['bleeding'] },
-    { id: 'urine',       label: 'Diurese',            categoryId: FLUID_CATEGORY_KEY_TO_ID['urine'] },
-    { id: 'drain',       label: 'Dreno',              categoryId: FLUID_CATEGORY_KEY_TO_ID['drain'] },
-    { id: 'aspirate',    label: 'Aspirado gástrico',  categoryId: FLUID_CATEGORY_KEY_TO_ID['aspirate'] },
-    { id: 'insensible',  label: 'Perda insensível',   categoryId: FLUID_CATEGORY_KEY_TO_ID['insensible'] },
-    { id: 'other_loss',  label: 'Outro', needsDetail: true, categoryId: FLUID_CATEGORY_KEY_TO_ID['other_loss'] },
+    { id: 'urine', label: 'Diurese', categoryId: FLUID_CATEGORY_KEY_TO_ID['urine'] },
+    { id: 'bleeding', label: 'Sangue', categoryId: FLUID_CATEGORY_KEY_TO_ID['bleeding'] },
   ];
 
   get balanceItems(): BalanceItem[] {
@@ -117,6 +112,7 @@ export class ClinicalItemModalComponent implements OnInit {
 
   async ngOnInit() {
     await this.loadMedications();
+    this.buildGainItemsFromMedications();
     await this.loadEventTypes();
     this.hydrateInitial();
   }
@@ -144,6 +140,21 @@ export class ClinicalItemModalComponent implements OnInit {
       console.error('[ClinicalItemModal] Falha ao carregar medicações', e);
       this.medications = [];
     }
+  }
+
+  /**
+   * Ganho do Balanço = medicamentos provenientes do AGHU, reaproveitando o mesmo
+   * cache/serviço já usado para o campo "Medicação" da tela de Agentes (MasterDataService.getMedicationsCache()).
+   * O backend (FluidCategoryEnum) ainda não tem uma categoria dedicada para "medicamento",
+   * então usamos FluidCategoryEnum.Other — o nome específico do medicamento continua
+   * preservado no itemLabel/description do lançamento.
+   */
+  private buildGainItemsFromMedications() {
+    this.gainItems = this.medications.map((m) => ({
+      id: `aghu_${m.id}`,
+      label: m.description,
+      categoryId: FluidCategoryEnum.Other,
+    }));
   }
 
   private async loadEventTypes() {
@@ -181,6 +192,7 @@ export class ClinicalItemModalComponent implements OnInit {
         eventTypeId: this.initial.catalogEventId ?? null,
         name: this.initial.catalogEventName ?? this.initial.categoryLabel ?? '',
         description: this.initial.description ?? this.initial.observations ?? '',
+        time: this.initial.time ?? '',
       };
     } else if (this.type === 'balance') {
       this.balance = {
@@ -260,7 +272,7 @@ export class ClinicalItemModalComponent implements OnInit {
     this.medDropdownOpen = true;
   }
 
-  
+
   onMedicationChange(id: number | string) {
     const m = this.medications.find(x => x.id === id);
     if (m) this.selectMedication(m);
@@ -325,8 +337,8 @@ export class ClinicalItemModalComponent implements OnInit {
         type: 'agent',
         medicationId: this.agent.medicationId,
         medicationName: this.agent.medicationName,
-        name: this.agent.medicationName,        
-        dose: `${this.agent.doseValue}${unitLabel}`,        
+        name: this.agent.medicationName,
+        dose: `${this.agent.doseValue}${unitLabel}`,
         doseValue: Number(this.agent.doseValue),
         unit: this.agent.doseUnit,
         routeId: this.agent.routeId,
@@ -341,6 +353,7 @@ export class ClinicalItemModalComponent implements OnInit {
         categoryLabel: this.event.name,
         eventTypeId: ClinicalEventTypeEnum.Other,
         description: this.event.description.trim(),
+        time: this.isEditMode ? (this.event.time || null) : null,
         timestamp: new Date().toISOString(),
       };
     } else {
@@ -352,7 +365,7 @@ export class ClinicalItemModalComponent implements OnInit {
         itemLabel: this.balance.itemLabel,
         label: this.balance.itemLabel,
         detail: this.balance.detail?.trim() || null,
-        volumeMl: Number(this.balance.volumeMl),        
+        volumeMl: Number(this.balance.volumeMl),
         categoryId: item?.categoryId ?? FluidCategoryEnum.Other,
         balanceTypeId: this.balance.type === 'gain' ? FluidBalanceTypeEnum.Gain : FluidBalanceTypeEnum.Loss,
         timestamp: new Date().toISOString(),
