@@ -1242,8 +1242,8 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       firstAnesthesiologistId: firstAnesthesiologistId ?? 0,
       firstAnesthesiologistName: firstAnesthesiologistName ?? '',
       secondAnesthesiologistId: secondAnesthesiologistIdValue,
-      secondAnesthesiologistName: secondAnesthesiologistName ?? null,
-      signatureDate: app.assinaturas?.dataAssinatura || todayDate,
+      secondAnesthesiologistName: secondAnesthesiologistName ?? null,     
+      signatureDate: app.finalize ? new Date().toISOString() : (app.assinaturas?.dataAssinatura || todayDate),
 
       // Monitorização intraoperatória
       vitalSigns: monitoringVitalRecords,
