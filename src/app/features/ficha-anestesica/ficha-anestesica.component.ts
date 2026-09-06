@@ -826,7 +826,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
           this.selectedSurgery = surgeryData.surgeries?.find((x: any) => String(x.id) === String(surgeryData.surgeryId))
             ?? surgeryData.surgeries?.[0]
             ?? surgeryData.patient.surgeries?.find((x: any) => String(x.id) === String(surgeryData.surgeryId))
-            ?? surgeryData.patient.surgeries?.[0];
+            ?? surgeryData.patient.surgeries?.[0]           
+            ?? (surgeryData.surgeryId ? { id: surgeryData.surgeryId, surgeryDate: surgeryData.surgeryDate } : null);
 
           this.isCancelled = surgeryData.patient.status === SurgeryStatusEnum.Cancelada;
 
@@ -1283,6 +1284,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   imprimir() {
     if (this.selectedSurgery?.id) {
       window.open(this.anesthesiaService.getPdfUrl(this.selectedSurgery.id), '_blank');
+    } else {
+      this.toast('Não foi possível identificar a cirurgia para impressão. Recarregue a página e tente novamente.', 'warning');
     }
   }
 
@@ -1296,6 +1299,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   async irParaCirurgia(): Promise<void> {
     if (!this.selectedSurgery?.id) {
+      await this.toast('Não foi possível identificar a cirurgia. Recarregue a página e tente novamente.', 'warning');
       return;
     }
 
