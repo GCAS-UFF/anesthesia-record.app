@@ -95,9 +95,9 @@ export class ReportsService {
     return this.api.get<ApiEnvelope<AnesthetistOption[]>>('reports/filters/anesthetists');
   }
 
-  getReportPdf(reportKey: string, filters: ReportFilters, category?: DrugCategoryEnum | null) {
+  getReportPrintHtml(reportKey: string, filters: ReportFilters, category?: DrugCategoryEnum | null) {
     const params = this.toParams(filters, category !== null && category !== undefined ? { category } : undefined);
-    const url = `${this.apiUrlService.getBaseUrl()}/reports/${reportKey}/pdf`;
+    const url = `${this.apiUrlService.getBaseUrl()}/reports/${reportKey}/print`;
     return this.http.get(url, { params, responseType: 'blob' });
   }
 }

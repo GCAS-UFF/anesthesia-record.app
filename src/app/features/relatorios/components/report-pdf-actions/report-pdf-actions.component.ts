@@ -2,10 +2,9 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonIcon, ToastController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { documentTextOutline, printOutline } from 'ionicons/icons';
+import { printOutline } from 'ionicons/icons';
 import { firstValueFrom } from 'rxjs';
 import { ReportsService } from 'src/app/core/services/reports.service';
-import { PrintingService } from 'src/app/core/services/printing.service';
 import { ReportFilters } from 'src/app/core/models/reports.model';
 import { DrugCategoryEnum } from 'src/app/core/models/api-enums.model';
 
@@ -32,50 +31,28 @@ export class ReportPdfActionsComponent {
   @Input() category: DrugCategoryEnum | null = null;
 
   generating = false;
-  printing = false;
 
   constructor(
     private reportsService: ReportsService,
-    private printingService: PrintingService,
     private toastController: ToastController
   ) {
-    addIcons({ documentTextOutline, printOutline });
+    addIcons({ printOutline });
   }
 
-  async generatePdf() {
+  async visualizar() {
     if (this.generating) return;
     this.generating = true;
     try {
-      const blob = await firstValueFrom(this.reportsService.getReportPdf(this.reportKey, this.filters, this.category));
-      await this.printingService.openPdf(blob, this.fileName());
+      const blob = await firstValueFrom(this.reportsService.getReportPrintHtml(this.reportKey, this.filters, this.category));
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (error) {
-      console.error('Erro ao gerar PDF', error);
-      await this.showToast('Não foi possível gerar o PDF. Tente novamente.', 'danger');
+      console.error('Erro ao gerar relatório', error);
+      await this.showToast('Não foi possível gerar o relatório. Tente novamente.', 'danger');
     } finally {
       this.generating = false;
     }
-  }
-
-  async print() {
-    if (this.printing) return;
-    this.printing = true;
-    try {
-      const blob = await firstValueFrom(this.reportsService.getReportPdf(this.reportKey, this.filters, this.category));
-      const result = await this.printingService.printPdf(blob, this.fileName());
-      if (!result.ok) {
-        await this.showToast(result.message || 'Não foi possível imprimir o relatório.', 'medium');
-      }
-    } catch (error) {
-      console.error('Erro ao preparar impressão', error);
-      await this.showToast('Não foi possível gerar o PDF para impressão. Tente novamente.', 'danger');
-    } finally {
-      this.printing = false;
-    }
-  }
-
-  private fileName(): string {
-    const stamp = new Date().toISOString().slice(0, 10);
-    return `relatorio-${this.reportKey}-${stamp}.pdf`;
   }
 
   private async showToast(message: string, color: 'success' | 'danger' | 'medium' = 'medium') {
