@@ -179,6 +179,15 @@
           </button>
 
           <button
+            class="btn btn-danger"
+            [disabled]="sendingId === item.id"
+            (click)="removeItem(item)"
+          >
+            <ion-icon name="trash-outline" aria-hidden="true"></ion-icon>
+            Remover
+          </button>
+
+          <button
             class="btn btn-primary"
             *ngIf="item.requiresNavigation"
             (click)="openForm(item)"

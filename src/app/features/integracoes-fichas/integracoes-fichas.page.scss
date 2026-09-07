@@ -100,6 +100,14 @@
   &:not(:disabled):hover { background: #e2e8f0; }
 }
 
+.btn-danger {
+  background: #fef2f2;
+  color: #b91c1c;
+
+  ion-icon { color: #dc2626; }
+  &:not(:disabled):hover { background: #fee2e2; }
+}
+
 .run-all { min-width: 200px; }
 
 .summary-row {

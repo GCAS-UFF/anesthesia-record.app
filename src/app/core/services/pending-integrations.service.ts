@@ -118,6 +118,16 @@ export class PendingIntegrationsService {
     }
   }
 
+  removeItem(item: PendingIntegration): void {
+    localStorage.removeItem(item.id);
+
+    if (item.type === 'anesthesia' || item.type === 'monitoring') {
+      this.anesthesiaRecordService.updatePendingStatus();
+    }
+
+    this.changedSubject.next();
+  }
+
   async sendAll(items: PendingIntegration[]): Promise<{ success: number; failed: number }> {
     let success = 0;
     let failed = 0;
