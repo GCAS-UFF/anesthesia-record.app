@@ -115,6 +115,8 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   selectedSurgery: any = null;
   selectedProcedure: any = null;
 
+  private monitoringRecordConfirmed = false;
+
   hoverTime: number | null = null;
   sharedHoverTime: number | null = null;
 
@@ -394,6 +396,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         this.anesthesiaRecordService.getMonitoringRecord(Number(this.surgeryId))
       );
       if (existingMonitoring) {
+        this.monitoringRecordConfirmed = true;
         return null;
       }
       console.info('[Monitorização] MonitoringRecord ainda não existe — vai assumir a cirurgia para criá-lo.');
@@ -412,6 +415,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       if (updated) {
         localStorage.setItem(`surgery_cache_${this.surgeryId}`, JSON.stringify(updated));
       }
+      this.monitoringRecordConfirmed = true;
       console.info('[Monitorização] cirurgia assumida automaticamente com sucesso.');
       return updated;
     } catch (err) {
@@ -443,7 +447,10 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       }
       console.warn('[Monitorização] Falha ao buscar registro de monitorização na API.', err);
     }
-    if (!record) return;
+    if (!record) 
+      return;
+    
+    this.monitoringRecordConfirmed = true;
 
     this.isResponsible = !record.firstAnesthesiologistId ||
       String(record.firstAnesthesiologistId) === String(this.loggedUser?.id);
@@ -1406,6 +1413,11 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     const sid = Number(this.surgeryId);
     return {
       id: sid, cirurgiaId: sid, surgeryId: sid,
+      // Necessários para a sincronização retomar/criar o MonitoringRecord no backend caso o
+      // início da anestesia tenha acontecido sem conexão (ver ensureMonitoringRecordAssumed$
+      // em AnesthesiaRecordService).
+      patientId: this.resolvePatientId(),
+      recordedByProfessionalId: this.authService.getCurrentUserId(),
       anesthesiaStartTime: this.anesthesiaStartTime?.toISOString?.() ?? null,
       surgeryStartTime: this.surgeryStartTime?.toISOString?.() ?? null,
       surgeryEndTime: this.surgeryEndTime?.toISOString?.() ?? null,
@@ -1425,7 +1437,20 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
   private persistDraft() {
     try {
-      const draft = this.buildDraftPayload();
+      const draft: any = this.buildDraftPayload();
+      
+      const existingRaw = localStorage.getItem(MONITORING_DRAFT_KEY(this.surgeryId));
+      if (existingRaw) {
+        try {
+          if (JSON.parse(existingRaw)?._assumedConfirmed) {
+            this.monitoringRecordConfirmed = true;
+          }
+        } catch {
+          // rascunho anterior corrompido — ignora e segue com o estado atual do componente
+        }
+      }
+      draft._assumedConfirmed = this.monitoringRecordConfirmed;
+
       localStorage.setItem(MONITORING_DRAFT_KEY(this.surgeryId), JSON.stringify(draft));
       this.lastDraftSavedAt = new Date();
 

@@ -4,7 +4,7 @@ import { ApiService } from "./base/api.service";
 import { BaseService } from "./base/base.service";
 import { AnesthesiaRecordModel } from "../../shared/models/anesthesia-record.model";
 import { from, interval, Observable, of, Subject, Subscription, throwError } from "rxjs";
-import { catchError, concatMap, delay, map, startWith } from "rxjs/operators";
+import { catchError, concatMap, delay, map, startWith, switchMap } from "rxjs/operators";
 import { BehaviorSubject } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import {
@@ -26,6 +26,7 @@ import {
 } from "../models/api-enums.model";
 import { MonitoringPayload } from "../models/monitoring-payload.model";
 import { AuthService } from "./auth.service";
+import { SurgeryService } from "./surgery.service";
 
 @Injectable({
   providedIn: 'root'
@@ -172,7 +173,12 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     'Outros': 5
   };
 
-  constructor(api: ApiService, private authService: AuthService, private apiUrlService: ApiUrlService) {
+  constructor(
+    api: ApiService,
+    private authService: AuthService,
+    private apiUrlService: ApiUrlService,
+    private surgeryService: SurgeryService,
+  ) {
     super(api, 'anesthesiarecord');
     this.updatePendingStatus();
   }
@@ -190,7 +196,8 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         ? this.saveMonitoringProgress(record, surgeryId)
         : this.submitMonitoringRecord(record, surgeryId);
 
-      return send$.pipe(
+      return this.ensureMonitoringRecordAssumed$(record, surgeryId).pipe(
+        switchMap(() => send$),
         map(response => ({ response, surgeryId, isProgressSave }))
       );
     }
@@ -199,6 +206,65 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     return this.update(surgeryId, apiPayload).pipe(
       map(response => ({ response, surgeryId }))
     );
+  }
+
+  /**
+   * PUT (progresso) e PATCH (finalização) do MonitoringRecord exigem que o registro já
+   * exista no backend — falham com "registro não encontrado" se "Iniciar anestesia" tiver
+   * acontecido sem conexão (nesse caso, o assumir automático no clique também falha e nunca
+   * chega a criar o registro). Reexecuta "assumir a cirurgia" (idempotente no backend, cria
+   * o AnesthesiaRecord/MonitoringRecord em cascata se ainda não existirem) a cada tentativa
+   * de sincronização até confirmar sucesso, e só então segue para o PUT/PATCH.
+   */
+  private ensureMonitoringRecordAssumed$(record: any, surgeryId: number): Observable<void> {
+    if (record._assumedConfirmed) {
+      return of(undefined);
+    }
+
+    const patientId = this.resolveDraftPatientId(record, surgeryId);
+    const responsibleId = Number(this.pick(record.recordedByProfessionalId, this.authService.getCurrentUserId(), 0)) || 0;
+
+    if (!patientId || !responsibleId) {
+      // Sem esses dados não há como assumir a cirurgia — segue para o PUT/PATCH normal, que
+      // vai falhar de forma explícita caso o registro realmente não exista no backend.
+      return of(undefined);
+    }
+
+    return this.surgeryService.assumePatient(patientId, surgeryId, responsibleId).pipe(
+      map(() => {
+        this.markMonitoringDraftAssumed(surgeryId);
+      })
+    );
+  }
+
+  private resolveDraftPatientId(record: any, surgeryId: number): string | null {
+    if (record?.patientId) return String(record.patientId);
+
+    for (const key of [`surgery_cache_${surgeryId}`, `preAnesthesiaData_${surgeryId}`]) {
+      try {
+        const raw = localStorage.getItem(key);
+        const parsed = raw ? JSON.parse(raw) : null;
+        if (parsed?.patientId) return String(parsed.patientId);
+      } catch {
+        // ignora — tenta a próxima fonte
+      }
+    }
+    return null;
+  }
+
+  private markMonitoringDraftAssumed(surgeryId: string | number): void {
+    try {
+      const key = `draft_monitoring_${surgeryId}`;
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+
+      const draft = JSON.parse(raw);
+      draft._assumedConfirmed = true;
+      localStorage.setItem(key, JSON.stringify(draft));
+    } catch {
+      // melhor esforço: se a marcação falhar, a próxima sincronização apenas reexecuta o
+      // assumir (idempotente no backend) — não perde o rascunho.
+    }
   }
 
   syncPendingDrafts(): void {
