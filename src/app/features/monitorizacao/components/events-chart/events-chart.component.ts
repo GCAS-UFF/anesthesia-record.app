@@ -11,7 +11,6 @@ import { addIcons } from 'ionicons';
 import {
   warningOutline,
   addOutline,
-  listOutline,
   chevronDownOutline,
   chevronUpOutline,
 } from 'ionicons/icons';
@@ -48,7 +47,6 @@ export class EventsChartComponent {
 
   @Output() hoverTimeChange = new EventEmitter<number | null>();
   @Output() addEvent = new EventEmitter<void>();
-  @Output() openHistory = new EventEmitter<void>();
 
   @Output('toggle') toggleRequested = new EventEmitter<void>();
   @Output() collapsedChange = new EventEmitter<boolean>();
@@ -64,7 +62,6 @@ export class EventsChartComponent {
     addIcons({
       warningOutline,
       addOutline,
-      listOutline,
       chevronDownOutline,
       chevronUpOutline,
     });
@@ -96,11 +93,6 @@ export class EventsChartComponent {
     this.toggleRequested.emit();
   }
 
-  openHistoryClick(event: MouseEvent): void {
-    event.stopPropagation();
-    this.openHistory.emit();
-  }
-
   desc(item: AnyEvent): string {
     return String(
       item?.description ||
@@ -129,14 +121,17 @@ export class EventsChartComponent {
 
   itemsForLane(key: EventLaneKey): AnyEvent[] {
     if (key === 'position') {
-      const positionsFromHistory = (this.positionHistory || []).map((positionItem) => ({
-        ...positionItem,
-        category: 'position',
-        type: positionItem?.type || 'position',
-        description: positionItem?.description || positionItem?.position || positionItem?.label || 'Mudança de posição',
-      }));
-
       const positionsFromEvents = (this.events || []).filter((item) => this.classify(item) === 'position');
+      const eventClientIds = new Set(positionsFromEvents.map((item) => item?.clientId).filter(Boolean));
+      const positionsFromHistory = (this.positionHistory || [])
+        .filter((positionItem) => !eventClientIds.has(positionItem?.clientId))
+        .map((positionItem) => ({
+          ...positionItem,
+          category: 'position',
+          type: positionItem?.type || 'position',
+          description: positionItem?.description || positionItem?.position || positionItem?.label || 'Mudança de posição',
+        }));
+
       return [...positionsFromHistory, ...positionsFromEvents].sort((a, b) => this.itemTime(a) - this.itemTime(b));
     }
 

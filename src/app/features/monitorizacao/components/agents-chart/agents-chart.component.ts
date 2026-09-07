@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
-  medkitOutline, addOutline, listOutline,
+  medkitOutline, addOutline,
   chevronUpOutline, chevronDownOutline,
 } from 'ionicons/icons';
 
@@ -31,11 +31,10 @@ export class AgentsChartComponent {
 
   @Output() hoverTimeChange = new EventEmitter<number | null>();
   @Output() addAgent = new EventEmitter<void>();
-  @Output() openHistory = new EventEmitter<void>();
   @Output() toggle = new EventEmitter<void>();
 
   constructor() {
-    addIcons({ medkitOutline, addOutline, listOutline, chevronUpOutline, chevronDownOutline });
+    addIcons({ medkitOutline, addOutline, chevronUpOutline, chevronDownOutline });
   }
 
   onHeaderClick(_e: MouseEvent) { this.toggle.emit(); }

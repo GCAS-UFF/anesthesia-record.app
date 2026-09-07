@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
-  waterOutline, addOutline, listOutline,
+  waterOutline, addOutline,
   chevronUpOutline, chevronDownOutline,
 } from 'ionicons/icons';
 import { FLUID_CATEGORY_LABELS, FluidCategoryEnum } from 'src/app/core/models/api-enums.model';
@@ -35,11 +35,10 @@ export class FluidBalanceChartComponent {
 
   @Output() hoverTimeChange = new EventEmitter<number | null>();
   @Output() addBalance = new EventEmitter<void>();
-  @Output() openHistory = new EventEmitter<void>();
   @Output() toggle = new EventEmitter<void>();
 
   constructor() {
-    addIcons({ waterOutline, addOutline, listOutline, chevronUpOutline, chevronDownOutline });
+    addIcons({ waterOutline, addOutline, chevronUpOutline, chevronDownOutline });
   }
 
   onHeaderClick(_e: MouseEvent) { this.toggle.emit(); }

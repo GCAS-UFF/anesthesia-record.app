@@ -478,6 +478,10 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.positionHistory = draft.positions || [];
     this.posicaoAtual = this.positionHistory[this.positionHistory.length - 1]?.position || '';
 
+    if (Number.isFinite(draft.autoMonitoringIntervalMinutes) && draft.autoMonitoringIntervalMinutes > 0) {
+      this.autoMonitoringIntervalMinutes = draft.autoMonitoringIntervalMinutes;
+    }
+
     if (this.isValidTimestamp(draft.anesthesiaStartTime)) {
       this.startTimeAnesthesia = new Date(draft.anesthesiaStartTime);
       this.anesthesiaStartTime = this.startTimeAnesthesia;
@@ -757,6 +761,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
             const n = Number(data.minutes);
             if (n >= 1 && n <= 60) {
               this.autoMonitoringIntervalMinutes = n;
+              this.persistDraft();
               if (this.isAnesthesiaStarted) this.startAutoMonitoring();
             }
           },
@@ -1432,6 +1437,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       fluidBalance: this.fluidBalance,
       positions: this.positionHistory,
       posicaoAtual: this.posicaoAtual,
+      autoMonitoringIntervalMinutes: this.autoMonitoringIntervalMinutes,
     };
   }
 
