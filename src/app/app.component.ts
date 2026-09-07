@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
+import { Capacitor, SystemBars, SystemBarType } from '@capacitor/core';
 import { AnesthesiaRecordService } from './core/services/anesthesia-record.service';
 
 @Component({
@@ -13,5 +14,9 @@ export class AppComponent {
 
   ngOnInit(): void {
     this.anesthesiaRecordService.startAutoSync();
+
+    if (Capacitor.isNativePlatform()) {
+      SystemBars.hide({ bar: SystemBarType.StatusBar });
+    }
   }
 }
