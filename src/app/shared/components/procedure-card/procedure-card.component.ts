@@ -193,6 +193,9 @@ export class ProcedureCardComponent {
   }
 
   get shouldShowViewPreAnesthesia(): boolean {
+    if (this.isFinished) {
+      return this.isPreAnesthesiaRecordDone;
+    }
     if (this.isCurrentAnesthesiologist) {
       return false;
     }
