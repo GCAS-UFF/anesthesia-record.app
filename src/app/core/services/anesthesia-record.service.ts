@@ -43,7 +43,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   private syncing = false;
   private serverOnline = true;
 
-  
+
   private autoMonitoringTimers = new Map<string, { sub: Subscription; intervalMinutes: number }>();
   readonly autoSnapshotAdded$ = new Subject<{ surgeryId: string; record: any }>();
 
@@ -363,7 +363,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     const surgeryId = Number(this.pick(draft.cirurgiaId, draft.surgeryId, draft.id));
     if (!Number.isFinite(surgeryId) || surgeryId <= 0) return false;
 
-    
+
     if (
       draft.isMonitoringDraft && !draft.finalized &&
       draft._lastSyncedAt && draft.monitoringUpdatedAt &&
@@ -404,7 +404,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     this.autoSyncSubscription = undefined;
   }
 
-  
+
   startAutoMonitoring(surgeryId: string, intervalMinutes: number): void {
     if (!surgeryId) return;
     const existing = this.autoMonitoringTimers.get(surgeryId);
@@ -418,7 +418,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     const sub = interval(ms).subscribe(() => this.autoMonitoringTick(surgeryId));
     this.autoMonitoringTimers.set(surgeryId, { sub, intervalMinutes });
   }
- 
+
   updateAutoMonitoringInterval(surgeryId: string, intervalMinutes: number): void {
     if (!surgeryId) return;
     const existing = this.autoMonitoringTimers.get(surgeryId);
@@ -431,7 +431,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     existing.sub = interval(ms).subscribe(() => this.autoMonitoringTick(surgeryId));
     existing.intervalMinutes = intervalMinutes;
   }
-  
+
   stopAutoMonitoring(surgeryId: string): void {
     if (!surgeryId) return;
     this.autoMonitoringTimers.get(surgeryId)?.sub.unsubscribe();
@@ -499,7 +499,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   }
 
   private readonly PRE_ANESTHESIA_DATA_PREFIX = 'preAnesthesiaData_';
-  
+
   cleanupStalePreAnesthesiaData(knownSurgeries: { id: number | string; status: SurgeryStatusEnum | null }[]): void {
     const statusById = new Map<string, SurgeryStatusEnum | null>();
     knownSurgeries.forEach(s => statusById.set(String(s.id), s.status));
@@ -598,7 +598,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   }
 
 
-  mapMonitoringPayloadToApp(api: any): any {   
+  mapMonitoringPayloadToApp(api: any): any {
     const fallbackDateIso = api.startedAt ?? api.endedAt ?? null;
 
     const vitalRecords = this.mapVitalRecordsToApp(api.vitalSigns ?? [], fallbackDateIso);
@@ -625,7 +625,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       })(),
     };
   }
-  
+
   private resolveRecordTimestamp(record: any, fallbackDateIso: string | null): string | null {
     const MIN_VALID_YEAR = 1900;
     const isPlaceholderDate = (value: string) => {
@@ -656,7 +656,18 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     for (const record of vitalRecords) {
       Object.keys(record?.custom ?? {}).forEach(k => keys.add(k));
     }
-    return Array.from(keys).map(key => ({ key, label: key, unit: '' }));
+    return Array.from(keys).map(key => ({ key, label: this.humanizeCustomFieldName(key), unit: '' }));
+  }
+
+
+  private humanizeCustomFieldName(name: string): string {
+    const match = /^custom_\d+_(.+)$/i.exec(name ?? '');
+    if (!match) return name;
+    return match[1]
+      .split('_')
+      .filter(Boolean)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
   }
 
   getPdfUrl(id: number): string {
@@ -725,12 +736,14 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     return date.toISOString();
   }
 
-  private mapVitalRecords(records: any[]): any[] {
+  private mapVitalRecords(records: any[], customFieldDefs: { key: string; label: string }[] = []): any[] {
     if (!Array.isArray(records)) return [];
+
+    const labelByKey = new Map(customFieldDefs.map(f => [f.key, f.label]));
 
     return records.map(record => {
       const customFields = Object.keys(record.custom ?? {}).map(key => ({
-        name: key,
+        name: labelByKey.get(key) ?? key,
         value: String(record.custom[key])
       }));
 
@@ -877,7 +890,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
       isMonitoringDraft: false,
       monitoringUpdatedAt: new Date().toISOString(),
-      vitalSigns: this.mapVitalRecords(app.vitalRecords),
+      vitalSigns: this.mapVitalRecords(app.vitalRecords, app.customFields),
       administeredAgents: this.mapMonitoringAgents(app.agents),
       clinicalEvents: this.mapMonitoringEvents(app.events ?? app.clinicalEvents),
       fluidBalances: this.mapFluidBalance(app.fluidBalance),
@@ -892,7 +905,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     return this.api.patch(`MonitoringRecord/${surgeryId}`, payload);
   }
 
-  
+
   saveMonitoringProgress(app: any, surgeryId: number): Observable<any> {
     const payload = this.buildMonitoringRecordPayload(app, surgeryId, false);
     return this.api.put(`MonitoringRecord/${surgeryId}`, payload);
@@ -904,7 +917,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       catchError(() => of(null))
     );
   }
-  
+
   getMonitoringRecord(surgeryId: number): Observable<any | null> {
     return this.api.get<any>(`MonitoringRecord/${surgeryId}`).pipe(
       map((res: any) => res?.data ?? null),
@@ -1151,7 +1164,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         : app.secondAnesthesiologistId;
     }
 
-    const monitoringVitalRecords = this.mapVitalRecords(app.vitalRecords);
+    const monitoringVitalRecords = this.mapVitalRecords(app.vitalRecords, app.customFields);
     const monitoringAgents = this.mapMonitoringAgents(app.agents);
     const monitoringEvents = this.mapMonitoringEvents(app.events ?? app.clinicalEvents);
     const monitoringFluidBalance = this.mapFluidBalance(app.fluidBalance);
@@ -1311,7 +1324,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       firstAnesthesiologistId: firstAnesthesiologistId ?? 0,
       firstAnesthesiologistName: firstAnesthesiologistName ?? '',
       secondAnesthesiologistId: secondAnesthesiologistIdValue,
-      secondAnesthesiologistName: secondAnesthesiologistName ?? null,     
+      secondAnesthesiologistName: secondAnesthesiologistName ?? null,
       signatureDate: app.finalize ? new Date().toISOString() : (app.assinaturas?.dataAssinatura || todayDate),
 
       // Monitorização intraoperatória
@@ -1688,7 +1701,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         primeiroAnestesistaId: api.firstAnesthesiologistId?.toString() ?? null,
         segundoAnestesista: secondAnesthesiologistId,
         segundoAnestesistaId: api.secondAnesthesiologistId ?? null,
-        segundoAnestesistaNome: api.secondAnesthesiologistName ?? '',        
+        segundoAnestesistaNome: api.secondAnesthesiologistName ?? '',
         dataAssinatura: this.formatDateForInput(api.signatureDate)
       },
 
@@ -1777,7 +1790,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     return records.map(record => {
       const fullIsoString = this.resolveRecordTimestamp(record, fallbackDateIso);
 
-     
+
       const key = idToKey[record.eventType] ?? 'other';
       const label = record.catalogEventName || CLINICAL_EVENT_TYPE_LABELS[record.eventType as ClinicalEventTypeEnum] || 'Evento';
 
@@ -1830,7 +1843,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
     return records.map(record => {
       const fullIsoString = this.resolveRecordTimestamp(record, fallbackDateIso);
-     
+
       const positionLabel = SURGICAL_POSITION_LABELS[record.position as SurgicalPositionEnum]
         ?? 'Não informado';
 
