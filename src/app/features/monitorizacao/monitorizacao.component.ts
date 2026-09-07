@@ -321,7 +321,6 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
         if (surgery) {
           localStorage.setItem(`surgery_cache_${this.surgeryId}`, JSON.stringify(surgery));
-          surgery = await this.ensureSurgeryAssumedIfNeeded(surgery, patientId) ?? surgery;
         }
       }
 
@@ -367,18 +366,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       console.error('[Monitorização] loadInitialData falhou', err);
     }
   }
-
-  /**
-   * A Ficha Anestésica/MonitoringRecord só existem no backend depois que alguém "assume" a
-   * cirurgia (endpoint que cria os dois em cascata). Checar isso pelo status ("ainda
-   * Agendada?") não é confiável: existem cirurgias já "Em Preparo" (assumidas antes de este
-   * fluxo existir, ou por um caminho antigo) que nunca tiveram o MonitoringRecord criado —
-   * e ficam presas nisso pra sempre, com o PATCH de finalização sempre voltando "Registro de
-   * monitoramento não encontrado". Por isso o gate real é: o MonitoringRecord existe? Só
-   * chama assumir quando é seguro: ninguém responsável (ou já sou eu) e a cirurgia não está
-   * concluída/cancelada — nunca sobrescreve um médico responsável diferente nem mexe em
-   * cirurgia já encerrada.
-   */
+ 
   private async ensureSurgeryAssumedIfNeeded(surgery: any, patientId: string): Promise<any | null> {
     const currentDoctorId = this.authService.getCurrentUserId();
     if (!currentDoctorId) {
@@ -483,21 +471,21 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.positionHistory = draft.positions || [];
     this.posicaoAtual = this.positionHistory[this.positionHistory.length - 1]?.position || '';
 
-    if (draft.anesthesiaStartTime) {
+    if (this.isValidTimestamp(draft.anesthesiaStartTime)) {
       this.startTimeAnesthesia = new Date(draft.anesthesiaStartTime);
       this.anesthesiaStartTime = this.startTimeAnesthesia;
       this.isAnesthesiaStarted = true;
     }
-    if (draft.surgeryStartTime) {
+    if (this.isValidTimestamp(draft.surgeryStartTime)) {
       this.startTimeSurgery = new Date(draft.surgeryStartTime);
       this.surgeryStartTime = this.startTimeSurgery;
       this.isSurgeryStarted = true;
     }
-    if (draft.surgeryEndTime) {
+    if (this.isValidTimestamp(draft.surgeryEndTime)) {
       this.surgeryEndTime = new Date(draft.surgeryEndTime);
       this.isSurgeryFinished = true;
     }
-    if (draft.anesthesiaEndTime) {
+    if (this.isValidTimestamp(draft.anesthesiaEndTime)) {
       this.anesthesiaEndTime = new Date(draft.anesthesiaEndTime);
       this.isAnesthesiaFinished = true;
     }
@@ -505,6 +493,12 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     if (this.isAnesthesiaStarted && !this.isAnesthesiaFinished) {
       this.startAutoMonitoring();
     }
+  }
+
+  private isValidTimestamp(value: any): boolean {
+    if (!value) return false;
+    const time = new Date(value).getTime();
+    return Number.isFinite(time) && time > 0;
   }
 
   private startClockTick() {
@@ -577,6 +571,15 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       await alert.present();
       return;
     }
+   
+    const patientId = this.resolvePatientId();
+    if (patientId) {
+      const updatedSurgery = await this.ensureSurgeryAssumedIfNeeded(this.selectedSurgery, patientId);
+      if (updatedSurgery) {
+        this.selectedSurgery = updatedSurgery;
+      }
+    }
+
     const now = new Date();
     this.startTimeAnesthesia = now;
     this.anesthesiaStartTime = now;
