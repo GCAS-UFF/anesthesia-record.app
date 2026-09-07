@@ -14,57 +14,32 @@
       </div>
     </section>
 
-    <section class="toolbar">
-      <div class="search-wrap">
+    <div class="filters-wrapper" #filtersContainer>
+    <section class="filters-bar">
+      <button
+        type="button"
+        class="filters-toggle"
+        (click)="toggleFilters()"
+        [attr.aria-expanded]="filtersOpen"
+        aria-controls="my-patients-filters-panel"
+      >
+        <ion-icon name="options-outline" class="filters-toggle-icon"></ion-icon>
+        <span class="filters-toggle-label">Filtros</span>
+
+        <span class="filters-chips" *ngIf="!filtersOpen">
+          <span class="chip" [class.chip-active]="selectedStatus !== 'all'">{{ statusLabel }}</span>
+          <span class="chip" [class.chip-active]="dateLabel !== 'Hoje'">{{ dateLabel }}</span>
+          <span class="chip chip-search" *ngIf="searchQuery">"{{ searchQuery }}"</span>
+        </span>
+
         <ion-icon
-          name="search-outline"
-          class="search-icon"
-          aria-hidden="true"
+          name="chevron-down-outline"
+          class="filters-chevron"
+          [class.open]="filtersOpen"
         ></ion-icon>
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Buscar por paciente ou prontuário"
-          [value]="searchQuery"
-          (input)="onSearchChange($any($event.target).value)"
-        />
-      </div>
+      </button>
 
-      <div class="segmented" role="tablist" aria-label="Filtro de status">
-        <button
-          role="tab"
-          [attr.aria-selected]="selectedStatus === 'all'"
-          [class.active]="selectedStatus === 'all'"
-          (click)="changeStatus('all')"
-        >
-          Todos
-        </button>
-        <button
-          role="tab"
-          [attr.aria-selected]="selectedStatus === 'inProgress'"
-          [class.active]="selectedStatus === 'inProgress'"
-          (click)="changeStatus('inProgress')"
-        >
-          Em Atendimento
-        </button>
-        <button
-          role="tab"
-          [attr.aria-selected]="selectedStatus === 'completed'"
-          [class.active]="selectedStatus === 'completed'"
-          (click)="changeStatus('completed')"
-        >
-          Realizados
-        </button>
-      </div>
-    </section>
-
-    <section class="meta-bar">
-      <div class="meta-left">
-        <app-date-filter
-          [date]="selectedDate"
-          (dateChange)="onDateChange($event)"
-        ></app-date-filter>
-
+      <div class="filters-meta">
         <button
           class="refresh-btn"
           (click)="handleRefresh()"
@@ -75,12 +50,90 @@
           <ion-spinner *ngIf="isRefreshing" name="crescent"></ion-spinner>
           <ion-icon *ngIf="!isRefreshing" name="refresh-outline"></ion-icon>
         </button>
-      </div>
 
-      <span class="count-pill"> {{ totalItems }} paciente(s) seu(s) </span>
+        <span class="count-pill"> {{ totalItems }} paciente(s) seu(s) </span>
+      </div>
     </section>
 
-    <section class="procedures-list">
+    <section
+      id="my-patients-filters-panel"
+      class="filters-panel"
+      [class.open]="filtersOpen"
+    >
+      <div class="toolbar">
+        <div class="search-wrap">
+          <ion-icon
+            name="search-outline"
+            class="search-icon"
+            aria-hidden="true"
+          ></ion-icon>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar por paciente ou prontuário"
+            [value]="searchQuery"
+            (input)="onSearchChange($any($event.target).value)"
+          />
+        </div>
+
+        <div class="segmented" role="tablist" aria-label="Filtro de status">
+          <button
+            role="tab"
+            [attr.aria-selected]="selectedStatus === 'all'"
+            [class.active]="selectedStatus === 'all'"
+            (click)="changeStatus('all')"
+          >
+            Todos
+          </button>
+          <button
+            role="tab"
+            [attr.aria-selected]="selectedStatus === 'inProgress'"
+            [class.active]="selectedStatus === 'inProgress'"
+            (click)="changeStatus('inProgress')"
+          >
+            Em Atendimento
+          </button>
+          <button
+            role="tab"
+            [attr.aria-selected]="selectedStatus === 'completed'"
+            [class.active]="selectedStatus === 'completed'"
+            (click)="changeStatus('completed')"
+          >
+            Realizados
+          </button>
+        </div>
+      </div>
+
+      <div class="date-row">
+        <app-date-filter
+          [date]="selectedDate"
+          (dateChange)="onDateChange($event)"
+        ></app-date-filter>
+      </div>
+    </section>
+    </div>
+
+    <section
+      class="procedures-list"
+      (scroll)="onListScroll()"
+      (touchstart)="onListTouchStart($event)"
+      (touchmove)="onListTouchMove($event)"
+      (touchend)="onListTouchEnd()"
+      (touchcancel)="onListTouchEnd()"
+    >
+      <div
+        class="pull-refresher"
+        [class.active]="isRefreshing || pullDistance >= pullThreshold"
+        [style.height.px]="isRefreshing ? pullThreshold : pullDistance"
+      >
+        <ion-spinner *ngIf="isRefreshing" name="crescent"></ion-spinner>
+        <ion-icon
+          *ngIf="!isRefreshing"
+          name="arrow-down-outline"
+          [style.transform]="pullDistance >= pullThreshold ? 'rotate(180deg)' : 'rotate(0deg)'"
+        ></ion-icon>
+      </div>
+
       <ng-container *ngIf="!isRefreshing">
         <app-procedure-card
           *ngFor="let p of viewList"

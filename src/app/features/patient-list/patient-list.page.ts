@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, Input, NgZone } from '@angular/core';
+import { Component, ViewChild, ElementRef, OnInit, Input, NgZone, HostListener } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular/standalone';
 import { IonContent, IonSpinner, IonSkeletonText, IonIcon } from '@ionic/angular/standalone';
@@ -6,9 +6,12 @@ import { addIcons } from 'ionicons';
 import {
   chevronBackOutline,
   chevronForwardOutline,
+  chevronDownOutline,
   checkmarkCircle,
   searchOutline,
   refreshOutline,
+  optionsOutline,
+  arrowDownOutline,
 } from 'ionicons/icons';
 import { Router } from '@angular/router';
 import { SurgeryService } from '../../core/services/surgery.service';
@@ -61,8 +64,17 @@ export class PatientListPage implements OnInit {
   totalPages = 1;
 
   openCardId: string | number | null = null;
+  filtersOpen = false;
+
+  pullDistance = 0;
+  readonly pullThreshold = 70;
+  private readonly pullMax = 110;
+  private isPulling = false;
+  private pullStartY = 0;
+  private pullTouchId: number | null = null;
 
   @ViewChild(IonContent, { static: false }) content!: IonContent;
+  @ViewChild('filtersContainer') filtersContainerRef?: ElementRef<HTMLElement>;
 
   constructor(
     private datePipe: DatePipe,
@@ -79,10 +91,98 @@ export class PatientListPage implements OnInit {
     addIcons({
       chevronBackOutline,
       chevronForwardOutline,
+      chevronDownOutline,
       checkmarkCircle,
       searchOutline,
       refreshOutline,
+      optionsOutline,
+      arrowDownOutline,
     });
+  }
+
+  get statusLabel(): string {
+    switch (this.selectedStatus) {
+      case SurgeryStatusEnum.Agendado:
+        return 'Agendados';
+      case SurgeryStatusEnum.Concluido:
+        return 'Realizados';
+      case SurgeryStatusEnum.Cancelada:
+        return 'Cancelados';
+      default:
+        return 'Todos';
+    }
+  }
+
+  get dateLabel(): string {
+    if (!this.selectedDate) return 'Todas as datas';
+    const today = new Date().toISOString().split('T')[0];
+    if (this.selectedDate === today) return 'Hoje';
+    const [year, month, day] = this.selectedDate.split('-');
+    return `${day}/${month}`;
+  }
+
+  toggleFilters() {
+    this.filtersOpen = !this.filtersOpen;
+  }
+
+  onListScroll() {
+    if (this.filtersOpen) {
+      this.filtersOpen = false;
+    }
+  }
+
+  onListTouchStart(event: TouchEvent) {
+    const list = event.currentTarget as HTMLElement;
+    if (list.scrollTop > 0 || this.isRefreshing) return;
+
+    const touch = event.touches[0];
+    if (!touch) return;
+
+    this.pullTouchId = touch.identifier;
+    this.pullStartY = touch.clientY;
+    this.isPulling = true;
+  }
+
+  onListTouchMove(event: TouchEvent) {
+    if (!this.isPulling) return;
+
+    const list = event.currentTarget as HTMLElement;
+    const touch = Array.from(event.touches).find(t => t.identifier === this.pullTouchId);
+    if (!touch) return;
+
+    const deltaY = touch.clientY - this.pullStartY;
+
+    if (list.scrollTop > 0 || deltaY <= 0) {
+      this.pullDistance = 0;
+      return;
+    }
+
+    this.pullDistance = Math.min(this.pullMax, deltaY * 0.5);
+  }
+
+  onListTouchEnd() {
+    if (!this.isPulling) return;
+
+    this.isPulling = false;
+    this.pullTouchId = null;
+
+    if (this.pullDistance >= this.pullThreshold) {
+      this.pullDistance = 0;
+      this.handleRefresh();
+    } else {
+      this.pullDistance = 0;
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (!this.filtersOpen || !this.filtersContainerRef) 
+      return;
+   
+    const path = event.composedPath();
+    if (!path.includes(this.filtersContainerRef.nativeElement)) {
+      this.filtersOpen = false;
+    }
   }
 
   ngOnInit() {
