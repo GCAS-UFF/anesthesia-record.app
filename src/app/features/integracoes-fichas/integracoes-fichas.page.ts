@@ -2,7 +2,7 @@ import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ToastController, LoadingController, ModalController } from '@ionic/angular/standalone';
+import { ToastController, LoadingController, ModalController, AlertController } from '@ionic/angular/standalone';
 import {
   IonSpinner,
   IonIcon,
@@ -26,6 +26,7 @@ import {
   medkitOutline,
   pulseOutline,
   checkmarkCircleOutline,
+  trashOutline,
 } from 'ionicons/icons';
 import { merge, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -102,6 +103,7 @@ export class IntegracoesFichasPage implements OnInit, OnDestroy {
     private toastController: ToastController,
     private loadingController: LoadingController,
     private modalController: ModalController,
+    private alertController: AlertController,
     private router: Router,
     private datePipe: DatePipe,
     private ngZone: NgZone,
@@ -120,6 +122,7 @@ export class IntegracoesFichasPage implements OnInit, OnDestroy {
       medkitOutline,
       pulseOutline,
       checkmarkCircleOutline,
+      trashOutline,
     });
   }
 
@@ -261,6 +264,26 @@ export class IntegracoesFichasPage implements OnInit, OnDestroy {
     );
 
     await this.reload();
+  }
+
+  async removeItem(item: PendingIntegration): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Remover Registro',
+      message: `Deseja realmente remover este registro (${this.typeLabel(item.type)} - ${this.patientLabel(item)}) da fila de integrações? Os dados serão apagados deste dispositivo e não poderão ser recuperados.`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel', cssClass: 'secondary' },
+        {
+          text: 'Remover',
+          role: 'destructive',
+          handler: async () => {
+            this.pendingIntegrationsService.removeItem(item);
+            await this.toast('Registro removido.', 'warning');
+            await this.reload();
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 
   openForm(item: PendingIntegration): void {
