@@ -311,6 +311,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
             localStorage.removeItem(`draft_monitoring_${result.surgeryId}`);
             localStorage.removeItem(`preAnesthesiaData_${result.surgeryId}`);
             localStorage.removeItem(`cache_ficha_anestesica_${result.surgeryId}`);
+            localStorage.removeItem(`surgery_cache_${result.surgeryId}`);
           }
           this.updatePendingStatus();
         } else {

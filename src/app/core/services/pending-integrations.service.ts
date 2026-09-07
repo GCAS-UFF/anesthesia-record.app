@@ -262,12 +262,10 @@ export class PendingIntegrationsService {
     localStorage.removeItem(item.id);
 
     if (item.type === 'monitoring' && item.surgeryId) {
-      // Caches de referência somente-leitura (usados pela tela de Monitorização para
-      // mostrar a Ficha Pré-Anestésica e a Ficha Anestésica offline) só fazem sentido
-      // enquanto a cirurgia está em andamento — uma vez que a monitorização é
-      // efetivamente integrada, a cirurgia terminou e eles podem ser descartados.
+      
       localStorage.removeItem(`preAnesthesiaData_${item.surgeryId}`);
       localStorage.removeItem(`cache_ficha_anestesica_${item.surgeryId}`);
+      localStorage.removeItem(`surgery_cache_${item.surgeryId}`);
     }
 
     this.anesthesiaRecordService.updatePendingStatus();
