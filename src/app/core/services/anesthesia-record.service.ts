@@ -324,6 +324,9 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         if (!this.serverOnline)
           return;
 
+        if (!this.authService.isAuthenticated())
+          return;
+
         if (this.getPendingDraftsCount() === 0)
           return;
         this.syncPendingDrafts();
