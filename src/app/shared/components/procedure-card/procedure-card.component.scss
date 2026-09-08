@@ -119,8 +119,8 @@
   border: 1px solid #e2e8f0;
   z-index: 2;
   background: #ffffff;
-  min-height: 120px;
-  border-radius: 16px;
+  min-height: 96px;
+  border-radius: 14px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   transition:
     box-shadow 0.2s ease,
@@ -175,17 +175,17 @@
 }
 
 .card-side {
-  width: 180px;
+  width: 148px;
   flex-shrink: 0;
-  padding: 20px 16px;
+  padding: 12px 14px;
   background: rgba(232, 236, 241, 0.4);
   border-right: 1px solid #f1f5f9;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  pointer-events: none; 
+  gap: 6px;
+  pointer-events: none;
 }
 
 .side-inner {
@@ -204,7 +204,7 @@
 
 .side-room {
   font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
-  font-size: 28px;
+  font-size: 22px;
   line-height: 1.1;
   font-weight: 700;
   color: #3b82f6;
@@ -295,11 +295,11 @@
   display: flex;
   flex: 1;
   min-width: 0;
-  padding: 20px 24px;
-  gap: 20px;
-  align-items: flex-start;
+  padding: 12px 18px;
+  gap: 16px;
+  align-items: center;
   justify-content: space-between;
-  pointer-events: none; 
+  pointer-events: none;
 }
 
 .body-details {
@@ -350,7 +350,7 @@
 
 .patient-name {
   font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.01em;
   text-transform: uppercase;
@@ -360,8 +360,8 @@
 }
 
 .patient-sub {
-  margin: 4px 0 0;
-  font-size: 14px;
+  margin: 2px 0 0;
+  font-size: 12px;
   font-weight: 500;
   color: #64748b;
 }
@@ -370,14 +370,14 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 8px;
   color: #334155;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: -0.005em;
 
   ion-icon {
-    font-size: 20px;
+    font-size: 18px;
     flex-shrink: 0;
   }
 
@@ -404,11 +404,11 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 48px;
-  padding: 12px 18px;
+  min-height: 44px;
+  padding: 9px 16px;
   border-radius: 12px;
   border: 2px solid transparent;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: -0.005em;
   cursor: pointer;
@@ -419,7 +419,7 @@
   white-space: nowrap;
 
   ion-icon {
-    font-size: 18px;
+    font-size: 17px;
   }
 
   &:active {
@@ -515,25 +515,25 @@
 @media (max-width: 900px) {
   .card-wrapper,
   .procedure-card {
-    min-height: 110px;
+    min-height: 88px;
   }
 
   .side-room {
-    font-size: 26px;
-  }
-
-  .card-body {
-    padding: 18px 20px;
-    gap: 16px;
-  }
-
-  .patient-name {
     font-size: 20px;
   }
 
+  .card-body {
+    padding: 10px 16px;
+    gap: 12px;
+  }
+
+  .patient-name {
+    font-size: 17px;
+  }
+
   .btn {
-    padding: 12px 18px;
-    font-size: 13px;
+    padding: 8px 14px;
+    font-size: 12px;
   }
 
   .slide-actions .slide-btn {
@@ -648,8 +648,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin: 8px 0 4px;
-  padding: 4px 10px;
+  margin: 4px 0 2px;
+  padding: 3px 10px;
   border-radius: 999px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
@@ -749,10 +749,10 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  gap: 10px;
+  gap: 8px;
   align-self: center;
   align-items: stretch;
-  width: 240px;
+  width: 208px;
   pointer-events: auto;
 }
 

@@ -1,15 +1,16 @@
 .status-bar {
   background: white;
-  padding: 8px calc(24px + var(--ion-safe-area-right, 0px)) 6px
-    calc(24px + var(--ion-safe-area-left, 0px));
+  padding: 4px calc(16px + var(--ion-safe-area-right, 0px)) 4px
+    calc(16px + var(--ion-safe-area-left, 0px));
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #e9eef3;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   color: #0f172a;
   gap: 16px;
+  flex-shrink: 0;
 }
 
 .status-left {
@@ -21,13 +22,13 @@
 
 .time {
   font-weight: 900;
-  font-size: 16px;
-  letter-spacing: 0.8px;
+  font-size: 13px;
+  letter-spacing: 0.6px;
 }
 
 @media (max-width: 768px) {
   .status-bar {
-    padding: 6px calc(16px + var(--ion-safe-area-right, 0px)) 4px
+    padding: 3px calc(16px + var(--ion-safe-area-right, 0px)) 3px
       calc(16px + var(--ion-safe-area-left, 0px));
     font-size: 10px;
   }

@@ -18,33 +18,33 @@
   overflow: hidden;
 }
 
-.page-header {
-  padding: 20px 24px 4px;
-}
 .page-title {
   font-family: 'Space Grotesk', 'DM Sans', sans-serif;
-  font-size: 24px;
+  font-size: 19px;
   font-weight: 700;
   color: #0f172a;
   letter-spacing: -0.01em;
   margin: 0;
-}
-.page-subtitle {
-  margin: 4px 0 0;
-  font-size: 14px;
-  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .filters-wrapper {
   display: contents;
 }
 
+.page-title-block {
+  margin-right: auto;
+  min-width: 0;
+}
+
 .filters-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 16px 24px;
+  justify-content: flex-start;
+  gap: 16px;
+  padding: 12px 24px;
   flex-wrap: wrap;
 }
 
@@ -257,10 +257,10 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior-y: contain;
-  padding: 4px 24px 24px;
+  padding: 2px 24px 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 
   .procedure-card {
     opacity: 0;
@@ -529,7 +529,7 @@
 }
 
 @media (max-width: 900px) {
-  .page-header, .filters-bar, .filters-panel.open { padding-left: 16px; padding-right: 16px; }
+  .filters-bar, .filters-panel.open { padding-left: 16px; padding-right: 16px; }
   .procedures-list { padding-left: 16px; padding-right: 16px; }
   .segmented button { padding: 10px 14px; }
 
