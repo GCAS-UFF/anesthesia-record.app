@@ -86,6 +86,11 @@ export class ClinicalItemModalComponent implements OnInit {
     volumeMl: number | null;
   } = { type: 'gain', itemId: null, itemLabel: '', detail: '', volumeMl: null };
 
+  balanceSearchTerm = '';
+  balanceSuggestions: BalanceItem[] = [];
+  balanceDropdownOpen = false;
+  balanceHighlightIndex = -1;
+
   // Ganho: preenchido dinamicamente a partir do cache de medicamentos do AGHU (ver loadMedications/buildGainItemsFromMedications) — mesma fonte já usada pelo tipo "agent".
   gainItems: BalanceItem[] = [];
 
@@ -202,6 +207,7 @@ export class ClinicalItemModalComponent implements OnInit {
         detail: this.initial.detail ?? '',
         volumeMl: this.initial.volumeMl ?? this.initial.volume ?? null,
       };
+      this.balanceSearchTerm = this.balance.itemLabel || '';
     }
   }
 
@@ -295,6 +301,9 @@ export class ClinicalItemModalComponent implements OnInit {
     this.balance.itemId = null;
     this.balance.itemLabel = '';
     this.balance.detail = '';
+    this.balanceSearchTerm = '';
+    this.balanceSuggestions = this.balanceItems.slice(0, 30);
+    this.balanceDropdownOpen = false;
   }
 
   onBalanceItemChange(id: string) {
@@ -302,6 +311,65 @@ export class ClinicalItemModalComponent implements OnInit {
     this.balance.itemId = id;
     this.balance.itemLabel = item?.label ?? '';
     if (!item?.needsDetail) this.balance.detail = '';
+  }
+
+  onBalanceSearchInput(term: string) {
+    this.balanceSearchTerm = term ?? '';
+    const q = this.normalize(this.balanceSearchTerm);
+    this.balanceSuggestions = q
+      ? this.balanceItems.filter(i => this.normalize(i.label).includes(q)).slice(0, 30)
+      : this.balanceItems.slice(0, 30);
+    this.balanceDropdownOpen = true;
+    this.balanceHighlightIndex = this.balanceSuggestions.length ? 0 : -1;
+
+    if (this.balance.itemLabel && this.balanceSearchTerm !== this.balance.itemLabel) {
+      this.balance.itemId = null;
+      this.balance.itemLabel = '';
+      this.balance.detail = '';
+    }
+  }
+
+  onBalanceFocus() {
+    this.balanceSuggestions = this.balanceSearchTerm
+      ? this.balanceItems.filter(i => this.normalize(i.label).includes(this.normalize(this.balanceSearchTerm))).slice(0, 30)
+      : this.balanceItems.slice(0, 30);
+    this.balanceDropdownOpen = true;
+  }
+
+  onBalanceBlur() {
+    setTimeout(() => (this.balanceDropdownOpen = false), 150);
+  }
+
+  onBalanceKeydown(ev: KeyboardEvent) {
+    if (!this.balanceDropdownOpen || !this.balanceSuggestions.length) return;
+    if (ev.key === 'ArrowDown') {
+      ev.preventDefault();
+      this.balanceHighlightIndex = (this.balanceHighlightIndex + 1) % this.balanceSuggestions.length;
+    } else if (ev.key === 'ArrowUp') {
+      ev.preventDefault();
+      this.balanceHighlightIndex = (this.balanceHighlightIndex - 1 + this.balanceSuggestions.length) % this.balanceSuggestions.length;
+    } else if (ev.key === 'Enter') {
+      ev.preventDefault();
+      const pick = this.balanceSuggestions[this.balanceHighlightIndex] ?? this.balanceSuggestions[0];
+      if (pick) this.selectBalanceItem(pick);
+    } else if (ev.key === 'Escape') {
+      this.balanceDropdownOpen = false;
+    }
+  }
+
+  selectBalanceItem(item: BalanceItem) {
+    this.onBalanceItemChange(item.id);
+    this.balanceSearchTerm = item.label;
+    this.balanceDropdownOpen = false;
+  }
+
+  clearBalanceItem() {
+    this.balance.itemId = null;
+    this.balance.itemLabel = '';
+    this.balance.detail = '';
+    this.balanceSearchTerm = '';
+    this.balanceSuggestions = this.balanceItems.slice(0, 30);
+    this.balanceDropdownOpen = true;
   }
 
 

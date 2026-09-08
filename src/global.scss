@@ -60,14 +60,12 @@
   font-weight: 800 !important;
 }
 
-/* Inputs, Selects, Textareas (Nativos e Ionic) */
+
 ion-input,
 ion-select,
 ion-textarea,
 input[type="text"],
 input[type="number"],
-input[type="date"],
-input[type="time"],
 input[type="email"],
 select,
 textarea {
@@ -100,10 +98,26 @@ textarea {
 
 input[type="time"],
 input[type="date"] {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
   width: auto;
   text-align: center;
   color: #1e293b;
   font-weight: 700;
+
+  &:focus,
+  &.has-focus {
+    border-color: #cbd5e1;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
 }
 
 ::-webkit-scrollbar {

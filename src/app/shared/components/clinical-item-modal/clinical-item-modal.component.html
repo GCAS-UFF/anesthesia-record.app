@@ -40,6 +40,7 @@
               *ngIf="medSearchTerm"
               type="button"
               class="custom-clear"
+              aria-label="Limpar seleção"
               (mousedown)="$event.preventDefault()"
               (click)="clearMedication()">
               <ion-icon name="close-circle"></ion-icon>
@@ -170,12 +171,50 @@
 
       <div class="field">
         <label class="field-label">Item *</label>
-        <div class="custom-input-wrap select-wrap">
-          <select class="custom-input" [ngModel]="balance.itemId" (ngModelChange)="onBalanceItemChange($event)">
-            <option value="" disabled selected hidden>Selecione</option>
-            <option *ngFor="let i of balanceItems" [value]="i.id">{{ i.label }}</option>
-          </select>
-          <ion-icon name="chevron-down-outline" class="select-icon"></ion-icon>
+        <div class="custom-search" [class.open]="balanceDropdownOpen">
+          <div class="custom-input-wrap">
+            <ion-icon name="search-outline" class="custom-icon"></ion-icon>
+            <input
+              type="text"
+              class="custom-input"
+              placeholder="Digite para buscar..."
+              [value]="balanceSearchTerm"
+              (input)="onBalanceSearchInput($any($event.target).value)"
+              (focus)="onBalanceFocus()"
+              (blur)="onBalanceBlur()"
+              (keydown)="onBalanceKeydown($event)"
+              autocomplete="off" />
+            <button
+              *ngIf="balanceSearchTerm"
+              type="button"
+              class="custom-clear"
+              aria-label="Limpar seleção"
+              (mousedown)="$event.preventDefault()"
+              (click)="clearBalanceItem()">
+              <ion-icon name="close-circle"></ion-icon>
+            </button>
+          </div>
+
+          <div class="custom-dropdown" *ngIf="balanceDropdownOpen && balanceSuggestions.length">
+            <button
+              *ngFor="let i of balanceSuggestions; let idx = index"
+              type="button"
+              class="custom-option"
+              [class.active]="idx === balanceHighlightIndex"
+              (mousedown)="$event.preventDefault()"
+              (click)="selectBalanceItem(i)">
+              <span class="custom-name">{{ i.label }}</span>
+              <ion-icon
+                *ngIf="balance.itemId === i.id"
+                name="checkmark-outline"
+                class="custom-check"></ion-icon>
+            </button>
+          </div>
+
+          <div class="custom-empty"
+               *ngIf="balanceDropdownOpen && !balanceSuggestions.length && balanceSearchTerm">
+            Nenhum item encontrado.
+          </div>
         </div>
       </div>
 

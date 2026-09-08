@@ -705,7 +705,8 @@
       font-weight: 700;
       color: var(--fa-ink);
       outline: none;
-      width: 70px;
+      min-width: 96px;
+      width: auto;
       padding: 0;
     }
   }

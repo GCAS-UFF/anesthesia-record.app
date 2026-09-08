@@ -1504,10 +1504,13 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   @HostListener('window:scroll')
   @HostListener('window:resize')
   onWindowChange() {
-    if (this.openDdl) {
-      this.openDdl = null;
-      this.ddlPos = null;
-    }
+    if (!this.openDdl) 
+      return;
+    
+    const active = document.activeElement as HTMLElement | null;
+    if (active && active.closest('.ddl')) return;
+    this.openDdl = null;
+    this.ddlPos = null;
   }
 
   closeDdl(): void {

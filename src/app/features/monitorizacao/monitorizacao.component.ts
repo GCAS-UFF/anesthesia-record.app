@@ -849,15 +849,63 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     const { data, role } = await modal.onDidDismiss();
     if (role !== 'confirm' || !data) return;
     const updated: VitalRecord = { ...record, ...data };
+
+    let deltaMinutes = 0;
     if (data.time) {
+      const oldMinuteEpoch = Math.floor(new Date(record.timestamp).getTime() / 60000);
       updated.timestamp = this.replaceTimeInIso(record.timestamp, data.time);
       updated.time = data.time;
+      const newMinuteEpoch = Math.floor(new Date(updated.timestamp).getTime() / 60000);
+      deltaMinutes = newMinuteEpoch - oldMinuteEpoch;
     }
-    this.vitalRecords = this.vitalRecords
-      .map(r => r.clientId === record.clientId ? updated : r)
-      .sort(this.byTs);
+
+    this.vitalRecords = deltaMinutes !== 0
+      ? this.cascadeVitalTimeShift(record.clientId!, updated, deltaMinutes)
+      : this.vitalRecords.map(r => r.clientId === record.clientId ? updated : r).sort(this.byTs);
+
     this.persistDraft();
     this.rebuildRecentActivity();
+  }
+
+  private cascadeVitalTimeShift(editedClientId: string, updatedRecord: VitalRecord, deltaMinutes: number): VitalRecord[] {
+    const deltaMs = deltaMinutes * 60000;
+    const originalSorted = [...this.vitalRecords].sort(this.byTs);
+    const editedIndex = originalSorted.findIndex(r => r.clientId === editedClientId);
+    if (editedIndex === -1) {
+      return this.vitalRecords
+        .map(r => r.clientId === editedClientId ? updatedRecord : r)
+        .sort(this.byTs);
+    }
+
+    const shiftedByClientId = new Map<string, VitalRecord>();
+    shiftedByClientId.set(editedClientId, updatedRecord);
+
+    for (let i = editedIndex + 1; i < originalSorted.length; i++) {
+      const entry = originalSorted[i];
+      const newDate = new Date(new Date(entry.timestamp).getTime() + deltaMs);
+      shiftedByClientId.set(entry.clientId!, {
+        ...entry,
+        timestamp: newDate.toISOString(),
+        time: this.formatHM(newDate),
+      });
+    }
+
+    const occupiedMinuteEpochs = new Set<number>();
+    shiftedByClientId.forEach(r => occupiedMinuteEpochs.add(Math.floor(new Date(r.timestamp).getTime() / 60000)));
+
+    const result: VitalRecord[] = [];
+    for (const entry of originalSorted) {
+      const shifted = shiftedByClientId.get(entry.clientId!);
+      if (shifted) {
+        result.push(shifted);
+        continue;
+      }
+      const minuteEpoch = Math.floor(new Date(entry.timestamp).getTime() / 60000);
+      if (occupiedMinuteEpochs.has(minuteEpoch)) continue;
+      result.push(entry);
+    }
+
+    return result.sort(this.byTs);
   }
 
   async onDeleteVital(record: VitalRecord) {
