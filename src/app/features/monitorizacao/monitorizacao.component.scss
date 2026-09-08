@@ -48,8 +48,6 @@ $r-lg: 16px;
   min-height: 0;
 }
 
-// grid-template-rows agora vem via [style.gridTemplateRows] do TS,
-// para acomodar o accordion (só um painel expandido por vez).
 .channels-column {
   display: grid;
   gap: 10px;
@@ -81,4 +79,30 @@ $r-lg: 16px;
 
 @media (max-width: 1200px) {
   .main-grid { grid-template-columns: 1fr 220px; gap: 10px; padding: 10px; }
+}
+
+
+@media (max-width: 767px), (max-height: 500px) {
+  .channels-column {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  app-vital-signs-chart {
+    flex: none;   
+    height: 340px;
+    min-height: 340px;
+  }
+
+  .channel {
+    flex: none;    
+    height: auto;    
+    touch-action: pan-y;
+
+    &.is-expanded {
+      height: 220px;
+    }
+  }
 }

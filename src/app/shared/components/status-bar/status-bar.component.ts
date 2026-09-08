@@ -22,7 +22,6 @@ import { AnesthesiaRecordService } from 'src/app/core/services/anesthesia-record
 })
 export class StatusBarComponent implements OnInit, OnDestroy {
   timeStr = '';
-  dateStr = '';
   private timer: any;
 
   serverConnected = false;
@@ -78,8 +77,6 @@ export class StatusBarComponent implements OnInit, OnDestroy {
   private updateClock() {
     const now = new Date();
     this.timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    let dateStrRaw = now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
-    this.dateStr = dateStrRaw.charAt(0).toUpperCase() + dateStrRaw.slice(1);
   }
 
   private startHealthCheck(): void {

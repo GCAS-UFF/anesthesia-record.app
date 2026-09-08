@@ -1320,7 +1320,8 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   private isLeavingView = false;
 
   ionViewWillLeave(): void {
-    this.isLeavingView = true;
+    this.isLeavingView = true;   
+    this.orientationService.unlock();
   }
 
   onViewBoundsChange(bounds: { min: number, max: number }) {

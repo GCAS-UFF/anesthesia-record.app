@@ -274,3 +274,10 @@
     &:hover { background: #f1f5f9; }
   }
 }
+
+
+@media (max-width: 767px), (max-height: 500px) {
+  canvas {
+    touch-action: pan-y !important;
+  }
+}
