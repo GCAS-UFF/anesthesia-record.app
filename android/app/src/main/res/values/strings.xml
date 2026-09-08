@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Registro Anestésico HUAP</string>
-    <string name="title_activity_main">Registro Anestésico HUAP</string>
+    <string name="app_name">Siga</string>
+    <string name="title_activity_main">Siga</string>
     <string name="package_name">br.uff.huap.anesthesia</string>
     <string name="custom_url_scheme">br.uff.huap.anesthesia</string>
 </resources>
