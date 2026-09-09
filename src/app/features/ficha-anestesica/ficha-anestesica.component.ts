@@ -101,14 +101,14 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   @HostListener('document:ionDidOpen', ['$event'])
   onSideMenuOpen(ev: Event) {
     const tag = (ev.target as HTMLElement | null)?.tagName?.toLowerCase();
-    if (tag === 'ion-menu') 
+    if (tag === 'ion-menu')
       this.isMenuOpen = true;
   }
 
   @HostListener('document:ionDidClose', ['$event'])
   onSideMenuClose(ev: Event) {
     const tag = (ev.target as HTMLElement | null)?.tagName?.toLowerCase();
-    if (tag === 'ion-menu') 
+    if (tag === 'ion-menu')
       this.isMenuOpen = false;
   }
 
@@ -270,11 +270,16 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
     this.setupConditionalLogic();
     this.startAutoSave();
+
+    window.visualViewport?.addEventListener('resize', this.onViewportChange);
+    window.visualViewport?.addEventListener('scroll', this.onViewportChange);
   }
 
   ngOnDestroy() {
     this.openRecordModal?.dismiss().catch(() => { });
     this.conditionalSubs.forEach(sub => sub.unsubscribe());
+    window.visualViewport?.removeEventListener('resize', this.onViewportChange);
+    window.visualViewport?.removeEventListener('scroll', this.onViewportChange);
   }
 
   private openRecordModal?: HTMLIonModalElement;
@@ -826,7 +831,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
           this.selectedSurgery = surgeryData.surgeries?.find((x: any) => String(x.id) === String(surgeryData.surgeryId))
             ?? surgeryData.surgeries?.[0]
             ?? surgeryData.patient.surgeries?.find((x: any) => String(x.id) === String(surgeryData.surgeryId))
-            ?? surgeryData.patient.surgeries?.[0]           
+            ?? surgeryData.patient.surgeries?.[0]
             ?? (surgeryData.surgeryId ? { id: surgeryData.surgeryId, surgeryDate: surgeryData.surgeryDate } : null);
 
           this.isCancelled = surgeryData.patient.status === SurgeryStatusEnum.Cancelada;
@@ -1051,7 +1056,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         action: () => this.onEnviarClick()
       });
     }
-    
+
     buttons.push({
       id: 'ir-para-cirurgia',
       icon: 'fitness-outline',
@@ -1472,6 +1477,20 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   ddlPos: { top: number; left: number; width: number } | null = null;
+  private ddlTriggerEl: HTMLElement | null = null;
+  private readonly onViewportChange = () => this.onWindowChange();
+
+  private computeDdlPos(trigger: HTMLElement): { top: number; left: number; width: number } {
+    const r = trigger.getBoundingClientRect();
+    const MAX_W = Math.min(420, window.innerWidth - 32);
+    const MIN_W = Math.min(220, MAX_W);
+    const width = Math.max(MIN_W, Math.min(r.width, MAX_W));
+    let left = r.left;
+    if (left + width > window.innerWidth - 16) {
+      left = Math.max(16, window.innerWidth - 16 - width);
+    }
+    return { top: r.bottom + 6, left, width };
+  }
 
   toggleDdl(key: string, ev?: Event): void {
     if (!this.canEdit) return;
@@ -1486,31 +1505,29 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       const btn = (ev.currentTarget as HTMLElement) || (ev.target as HTMLElement);
       const trigger = btn?.closest('.ddl-trigger') as HTMLElement | null;
       if (trigger) {
-        const r = trigger.getBoundingClientRect();
-        const MAX_W = Math.min(420, window.innerWidth - 32);
-        const MIN_W = Math.min(220, MAX_W);
-        const width = Math.max(MIN_W, Math.min(r.width, MAX_W));
-        let left = r.left;
-        if (left + width > window.innerWidth - 16) {
-          left = Math.max(16, window.innerWidth - 16 - width);
-        }
-        this.ddlPos = { top: r.bottom + 6, left, width };
+        this.ddlTriggerEl = trigger;
+        this.ddlPos = this.computeDdlPos(trigger);
       }
     } else {
+      this.ddlTriggerEl = null;
       this.ddlPos = null;
     }
   }
 
+
   @HostListener('window:scroll')
   @HostListener('window:resize')
   onWindowChange() {
-    if (!this.openDdl) 
+    if (!this.openDdl || !this.ddlTriggerEl) return;
+
+    if (!document.body.contains(this.ddlTriggerEl)) {
+      this.openDdl = null;
+      this.ddlPos = null;
+      this.ddlTriggerEl = null;
       return;
-    
-    const active = document.activeElement as HTMLElement | null;
-    if (active && active.closest('.ddl')) return;
-    this.openDdl = null;
-    this.ddlPos = null;
+    }
+
+    this.ddlPos = this.computeDdlPos(this.ddlTriggerEl);
   }
 
   closeDdl(): void {
