@@ -19,7 +19,7 @@ import {
   IonModal,
   IonCheckbox,
 } from '@ionic/angular/standalone';
-import { ToastController } from '@ionic/angular/standalone';
+import { AlertController, LoadingController, ToastController } from '@ionic/angular/standalone';
 
 import { addIcons } from 'ionicons';
 import {
@@ -43,6 +43,7 @@ import {
   createOutline,
   closeCircleOutline,
   lockClosedOutline,
+  lockOpenOutline,
   readerOutline,
   printOutline,
 } from 'ionicons/icons';
@@ -128,6 +129,8 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   isFinalized = false;
   forcedReadOnly = false;
   isResponsible = true;
+  isAdminUser = false;
+  isReopening = false;
 
   get canEdit(): boolean {
     return !this.isFinalized && !this.forcedReadOnly && this.isResponsible;
@@ -209,6 +212,8 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     private router: Router,
     private location: Location,
     private toastCtrl: ToastController,
+    private alertCtrl: AlertController,
+    private loadingCtrl: LoadingController,
     private authService: AuthService,
     private preAnesthesicService: PreAnesthesicRecordService,
     private cdr: ChangeDetectorRef,
@@ -234,6 +239,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
       createOutline,
       closeCircleOutline,
       lockClosedOutline,
+      lockOpenOutline,
       readerOutline,
       printOutline,
     });
@@ -246,6 +252,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     this.patientId = this.route.snapshot.paramMap.get('patientId');
     this.forcedReadOnly = this.route.snapshot.queryParamMap.get('readOnly') === 'true';
     this.loggedUser = this.authService.getUser();
+    this.isAdminUser = this.authService.isAdmin();
     this.buildForm();
     this.loadInitialState();
     this.setupScrollSpy();
@@ -284,7 +291,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
     this.form = this.fb.group({
       procedimento: this.fb.group({
-        cirurgias: this.fb.array([] as any[]),
+        cirurgias: this.fb.array([] as any[], Validators.required),
         lateralidade: [''],
         diagnosticoPreOperatorio: [''],
         dataConsulta: [new Date().toISOString().slice(0, 16)],
@@ -529,7 +536,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
       if (record) {
         this.remoteRecordId = record.id ?? null;
-        this.isFinalized = !!(record.signedAt && record.signedAt.trim());
+        this.isFinalized = !!record.isFinalized;
         this.isResponsible = !!record.firstAnesthesiologistId &&
           String(record.firstAnesthesiologistId) === String(this.loggedUser?.id);
       }
@@ -978,7 +985,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     };
 
     if (this.isFinalized || !this.canEdit) {
-      return [
+      const buttons: HeaderActionButton[] = [
         {
           id: 'go-to-anesthesia-record',
           icon: 'reader-outline',
@@ -989,6 +996,20 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
         },
         printButton,
       ];
+
+      if (this.isFinalized && this.isAdminUser) {
+        buttons.push({
+          id: 'reopen-pre-anesthesia',
+          icon: 'lock-open-outline',
+          color: 'danger',
+          ariaLabel: 'Liberar ficha pré-anestésica para edição',
+          label: 'Liberar Edição',
+          disabled: this.isReopening,
+          action: () => this.reopenPreAnesthesia(),
+        });
+      }
+
+      return buttons;
     }
     return [
       { id: 'save-draft', icon: 'save-outline', color: 'muted', ariaLabel: 'Salvar rascunho', label: 'Salvar Rasc.', action: () => this.saveDraft() },
@@ -1016,8 +1037,15 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     this.saveDraft();
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+
+      const pendencias: string[] = [];
+      if (this.cirurgias.invalid) pendencias.push('Cirurgia(s) proposta(s)');
+      if (this.form.get('conduta.asa')?.invalid) pendencias.push('Classificação ASA');
+
       const t = await this.toastCtrl.create({
-        message: 'Preencha os campos obrigatórios (Classificação ASA).',
+        message: pendencias.length
+          ? `Preencha os campos obrigatórios (${pendencias.join(', ')}).`
+          : 'Preencha os campos obrigatórios.',
         duration: 2500,
         color: 'danger',
         position: 'top',
@@ -1111,5 +1139,66 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     if (this.anesthesiaRecordId && this.patientId) {
       this.router.navigate(['/ficha-anestesica', this.anesthesiaRecordId, this.patientId]);
     }
+  }
+
+  async reopenPreAnesthesia(): Promise<void> {
+    if (!this.isAdminUser || !this.anesthesiaRecordId || this.isReopening) return;
+
+    const alert = await this.alertCtrl.create({
+      header: 'Liberar para edição',
+      message: 'Tem certeza que deseja liberar esta avaliação pré-anestésica finalizada para edição novamente?',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel', cssClass: 'secondary' },
+        {
+          text: 'Liberar para edição',
+          handler: () => this.confirmReopenPreAnesthesia(),
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  private async confirmReopenPreAnesthesia(): Promise<void> {
+    if (!this.anesthesiaRecordId) return;
+
+    this.isReopening = true;
+    const loading = await this.loadingCtrl.create({
+      message: 'Liberando ficha pré-anestésica...',
+      spinner: 'circular',
+    });
+    await loading.present();
+
+    this.preAnesthesicService.reopen(this.anesthesiaRecordId).subscribe({
+      next: async () => {
+        this.isReopening = false;
+        await loading.dismiss();
+        // Só o médico responsável edita a ficha — o formulário desta tela (do ADMIN,
+        // que está em modo leitura) permanece desabilitado; `isFinalized = false` apenas
+        // atualiza o rótulo/ações do cabeçalho. O médico responsável vê os campos
+        // liberados na próxima vez que abrir esta mesma tela.
+        this.isFinalized = false;
+
+        const t = await this.toastCtrl.create({
+          message: 'Ficha pré-anestésica liberada para edição.',
+          duration: 2200,
+          color: 'success',
+          position: 'top',
+        });
+        await t.present();
+      },
+      error: async (err) => {
+        this.isReopening = false;
+        await loading.dismiss();
+
+        const t = await this.toastCtrl.create({
+          message: err?.error?.message || 'Não foi possível liberar a ficha pré-anestésica para edição.',
+          duration: 3000,
+          color: 'danger',
+          position: 'top',
+        });
+        await t.present();
+      },
+    });
   }
 }

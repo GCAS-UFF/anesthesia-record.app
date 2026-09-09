@@ -89,6 +89,11 @@ export class PreAnesthesicRecordService extends BaseService<PreAnesthesicRecordP
     return this.api.post<any>(PRE_ANESTHESIA_ENDPOINT, wireBody);
   }
 
+  /** Reabre (libera para edição) uma avaliação pré-anestésica finalizada — restrito a ADMIN no backend. */
+  reopen(anesthesiaRecordId: number): Observable<any> {
+    return this.api.patch<any>(`${PRE_ANESTHESIA_ENDPOINT}/by-anesthesia-record/${anesthesiaRecordId}/reopen`, {});
+  }
+
   private toWire(payload: PreAnesthesicRecordPayload): any {
     return {
       anesthesiaRecordId: payload.anesthesiaRecordId,
@@ -309,6 +314,7 @@ export class PreAnesthesicRecordService extends BaseService<PreAnesthesicRecordP
       signedByProfessionalId: wire.signedByProfessionalId ?? null,
       signedByName: wire.signedByName ?? '',
       signedAt: wire.signedAt ?? '',
+      isFinalized: !!wire.isFinalized,
     } as PreAnesthesicRecordPayload;
   }
 

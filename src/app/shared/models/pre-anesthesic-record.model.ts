@@ -380,4 +380,5 @@ export interface PreAnesthesicRecordPayload extends PreAnesthesicRecordDraft {
   signedByProfessionalId: number | null;
   signedByName: string;
   signedAt: string;
+  isFinalized?: boolean;
 }
