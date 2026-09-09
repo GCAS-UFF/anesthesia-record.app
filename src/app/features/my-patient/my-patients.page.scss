@@ -262,12 +262,14 @@
   flex-direction: column;
   gap: 10px;
 
-  .procedure-card {
+  app-procedure-card {
+    display: block;
     opacity: 0;
+    flex-shrink: 0;
     animation: fadeInUp .4s cubic-bezier(.4,0,.2,1) forwards;
   }
   @for $i from 1 through 20 {
-    .procedure-card:nth-child(#{$i}) { animation-delay: #{$i * 0.05}s; }
+    app-procedure-card:nth-child(#{$i}) { animation-delay: #{$i * 0.05}s; }
   }
 
   &::-webkit-scrollbar { width: 8px; }

@@ -44,6 +44,7 @@ import {
   closeCircleOutline,
   lockClosedOutline,
   readerOutline,
+  printOutline,
 } from 'ionicons/icons';
 
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
@@ -234,6 +235,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
       closeCircleOutline,
       lockClosedOutline,
       readerOutline,
+      printOutline,
     });
   }
 
@@ -966,6 +968,15 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   get headerActionButtons(): HeaderActionButton[] {
+    const printButton: HeaderActionButton = {
+      id: 'print-pre-anesthesic',
+      icon: 'print-outline',
+      color: 'muted',
+      ariaLabel: 'Imprimir',
+      label: 'Imprimir',
+      action: () => this.imprimir(),
+    };
+
     if (this.isFinalized || !this.canEdit) {
       return [
         {
@@ -976,12 +987,28 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
           label: 'Ficha Anest.',
           action: () => this.irParaFichaAnestesica(),
         },
+        printButton,
       ];
     }
     return [
       { id: 'save-draft', icon: 'save-outline', color: 'muted', ariaLabel: 'Salvar rascunho', label: 'Salvar Rasc.', action: () => this.saveDraft() },
       { id: 'finalize', icon: 'shield-checkmark-outline', color: 'primary', ariaLabel: 'Finalizar avaliação', label: 'Concluir', action: () => this.salvar() },
+      printButton,
     ];
+  }
+
+  async imprimir(): Promise<void> {
+    if (!this.anesthesiaRecordId) {
+      const t = await this.toastCtrl.create({
+        message: 'Não foi possível identificar a avaliação para impressão. Recarregue a página e tente novamente.',
+        duration: 2500,
+        color: 'warning',
+        position: 'top',
+      });
+      await t.present();
+      return;
+    }
+    window.open(this.preAnesthesicService.getPdfUrl(this.anesthesiaRecordId), '_blank');
   }
 
 
