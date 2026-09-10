@@ -23,7 +23,15 @@
             </ion-select>
         </app-form-field>
         <app-form-field label="Entrada na Sala" [required]="true">
-            <input type="time" formControlName="entradaSala">
+            <input
+                type="text"
+                inputmode="numeric"
+                maxlength="5"
+                placeholder="HH:mm"
+                formControlName="entradaSala"
+                (input)="onTimeInput($event, 'entradaSala')"
+                (blur)="onTimeBlur($event, 'entradaSala')"
+            >
         </app-form-field>
     </div>
 </app-form-section>

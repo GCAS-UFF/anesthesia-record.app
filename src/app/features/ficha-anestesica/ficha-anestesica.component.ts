@@ -52,6 +52,7 @@ import { SurgeryStatusEnum } from 'src/app/core/models/api-enums.model';
 import { PreAnesthesicRecordService } from 'src/app/core/services/pre-anesthesic-record.service';
 import { RecordViewerModalComponent, RecordData } from 'src/app/shared/components/record-viewer-modal/record-viewer-modal.component';
 import { mapPreAnesthesiaToRecordData } from 'src/app/shared/models/pre-anesthesic.mapper';
+import { maskTimeInput, normalizeTimeInput } from 'src/app/shared/utils/time-input.util';
 
 
 @Component({
@@ -1319,6 +1320,33 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }
 
     this.router.navigate(['/monitorizacao', this.selectedSurgery.id]);
+  }
+
+
+  onTimeInput(event: Event, control: AbstractControl | null): void {
+    const input = event.target as HTMLInputElement;
+    const masked = maskTimeInput(input.value);
+    input.value = masked;
+    control?.setValue(masked, { emitEvent: false });
+  }
+
+  onTimeBlur(event: Event, control: AbstractControl | null): void {
+    const input = event.target as HTMLInputElement;
+    const normalized = normalizeTimeInput(input.value);
+    input.value = normalized;
+    control?.setValue(normalized);
+  }
+
+  onAtbTimeInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.newAtb.hora = maskTimeInput(input.value);
+    input.value = this.newAtb.hora;
+  }
+
+  onAtbTimeBlur(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.newAtb.hora = normalizeTimeInput(input.value);
+    input.value = this.newAtb.hora;
   }
 
   get procedimentosArray(): FormArray {

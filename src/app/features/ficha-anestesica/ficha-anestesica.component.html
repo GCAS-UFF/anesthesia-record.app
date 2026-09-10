@@ -131,7 +131,16 @@
             <div class="grid-hora-farmaco">
               <div class="field-block">
                 <label class="field-label">Hora</label>
-                <input type="time" formControlName="hora" class="text-input" />
+                <input
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="5"
+                  placeholder="HH:mm"
+                  formControlName="hora"
+                  class="text-input"
+                  (input)="onTimeInput($event, form.get('preInducao.hora'))"
+                  (blur)="onTimeBlur($event, form.get('preInducao.hora'))"
+                />
               </div>
               <div class="field-block">
                 <label class="field-label">Fármaco</label>
@@ -418,10 +427,15 @@
               <div class="field-block">
                 <label class="field-label">Hora</label>
                 <input
-                  type="time"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="5"
+                  placeholder="HH:mm"
                   [(ngModel)]="newAtb.hora"
                   [ngModelOptions]="{ standalone: true }"
                   class="text-input"
+                  (input)="onAtbTimeInput($event)"
+                  (blur)="onAtbTimeBlur($event)"
                 />
               </div>
             </div>
@@ -604,9 +618,14 @@
           <div class="field-block">
             <label class="field-label">Hora início da anestesia *</label>
             <input
-              type="time"
+              type="text"
+              inputmode="numeric"
+              maxlength="5"
+              placeholder="HH:mm"
               formControlName="horaInicioAnestesia"
               class="text-input"
+              (input)="onTimeInput($event, form.get('equipe.horaInicioAnestesia'))"
+              (blur)="onTimeBlur($event, form.get('equipe.horaInicioAnestesia'))"
             />
           </div>
         </div>
@@ -794,7 +813,16 @@
             </div>
             <div class="field-block proc-hora">
               <label class="field-label">Hora *</label>
-              <input type="time" formControlName="hora" class="text-input" />
+              <input
+                type="text"
+                inputmode="numeric"
+                maxlength="5"
+                placeholder="HH:mm"
+                formControlName="hora"
+                class="text-input"
+                (input)="onTimeInput($event, row.get('hora'))"
+                (blur)="onTimeBlur($event, row.get('hora'))"
+              />
             </div>
             <div class="proc-principal">
               <label class="proc-principal-check">
@@ -832,9 +860,14 @@
           <div class="field-block">
             <label class="field-label">Hora término cirurgia *</label>
             <input
-              type="time"
+              type="text"
+              inputmode="numeric"
+              maxlength="5"
+              placeholder="HH:mm"
               formControlName="horaTerminoCirurgia"
               class="text-input"
+              (input)="onTimeInput($event, form.get('posProcedimento.horaTerminoCirurgia'))"
+              (blur)="onTimeBlur($event, form.get('posProcedimento.horaTerminoCirurgia'))"
             />
           </div>
           <div class="field-block">
@@ -848,9 +881,14 @@
           <div class="field-block">
             <label class="field-label">Hora término anestesia *</label>
             <input
-              type="time"
+              type="text"
+              inputmode="numeric"
+              maxlength="5"
+              placeholder="HH:mm"
               formControlName="horaTerminoAnestesia"
               class="text-input"
+              (input)="onTimeInput($event, form.get('posProcedimento.horaTerminoAnestesia'))"
+              (blur)="onTimeBlur($event, form.get('posProcedimento.horaTerminoAnestesia'))"
             />
           </div>
         </div>
@@ -914,7 +952,15 @@
               </div>
               <div class="eval-time">
                 <ion-icon name="time-outline"></ion-icon>
-                <input type="time" formControlName="horaAvaliacao" />
+                <input
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="5"
+                  placeholder="HH:mm"
+                  formControlName="horaAvaliacao"
+                  (input)="onTimeInput($event, form.get('alderete.horaAvaliacao'))"
+                  (blur)="onTimeBlur($event, form.get('alderete.horaAvaliacao'))"
+                />
               </div>
             </div>
           </div>
