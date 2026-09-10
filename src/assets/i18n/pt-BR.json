@@ -1,0 +1,142 @@
+{
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "connected": "Conectado",
+    "disconnected": "Não conectado",
+    "wait": "Aguarde..."
+  },
+  "header": {
+    "openMenu": "Abrir menu",
+    "back": "Voltar",
+    "mainMenu": "Menu principal",
+    "closeMenu": "Fechar menu",
+    "settings": "Configurações",
+    "logout": "Sair",
+    "logoutConfirmTitle": "Sair",
+    "logoutConfirmMessage": "Deseja realmente sair da aplicação?",
+    "nav": {
+      "allPatients": "Todos os Pacientes",
+      "myPatients": "Meus Pacientes",
+      "integrationsTracking": "Acompanhamento de Integrações",
+      "itemMaintenanceAdmin": "Manutenção de Itens (Admin)",
+      "fetchAghuDataAdmin": "Obter dados AGHU (Admin)",
+      "reportsAdmin": "Relatórios (Admin)"
+    }
+  },
+  "statusBar": {
+    "syncTitle": "Sincronização das fichas",
+    "networkTitle": "Conexão com a rede",
+    "aghuTitle": "Integração AGHU",
+    "records": "FICHAS",
+    "network": "REDE",
+    "aghu": "AGHU"
+  },
+  "connectionStatus": {
+    "connected": "Servidor: Conectado",
+    "disconnected": "Servidor: Desconectado"
+  },
+  "login": {
+    "systemName": "Sistema de Gerenciamento Anestésico",
+    "networkLabel": "Rede",
+    "networkTitle": "Conexão com a rede",
+    "aghuLabel": "AGHU",
+    "aghuTitle": "Integração AGHU",
+    "usernameLabel": "Usuário",
+    "usernamePlaceholder": "Digite seu usuário",
+    "passwordLabel": "Senha",
+    "passwordPlaceholder": "Digite sua senha",
+    "forgotPassword": "Esqueceu a senha?",
+    "submit": "ENTRAR",
+    "notice": "Utilize o mesmo usuário e senha do sistema AGHU para acessar.",
+    "forgotTitle": "Esqueceu a senha?",
+    "forgotMessage": "O acesso utiliza o mesmo usuário e senha do sistema AGHU. Para redefinir sua senha, entre em contato com a equipe de TI responsável pelo AGHU.",
+    "understood": "Entendi",
+    "footerLine1": "Sistema de Gerenciamento Anestésico - v1",
+    "footerLine2": "UFF - Universidade Federal Fluminense",
+    "invalidCredentials": "Usuário ou senha inválidos, ou API indisponível."
+  },
+  "settings": {
+    "title": "Configurações",
+    "roleAdmin": "Administrador",
+    "roleUser": "Usuário",
+    "savedAt": "Salvo",
+    "loading": "Carregando configurações...",
+    "loadError": "Não foi possível carregar as configurações.",
+    "saveError": "Não foi possível salvar. Tente novamente.",
+    "saveSuccess": "Configurações salvas com sucesso.",
+    "adminBadge": "admin",
+    "sections": {
+      "general": "Preferências gerais",
+      "measurement": "Aferição automática",
+      "integrations": "Integrações e APIs",
+      "adminAccount": "Conta ADMIN",
+      "hospital": "Dados do hospital"
+    },
+    "general": {
+      "description": "Idioma da interface do sistema anestésico.",
+      "language": "Idioma"
+    },
+    "measurement": {
+      "description": "Frequência com que os sinais vitais são registrados automaticamente na monitorização.",
+      "useInstitutional": "Usar o intervalo institucional",
+      "myInterval": "Meu intervalo de aferição",
+      "minutesUnit": "min",
+      "minutesHint": "Intervalos menores geram mais registros no gráfico de tendências.",
+      "institutionalDefault": "Intervalo padrão institucional",
+      "institutionalHint": "Valor aplicado a todos os anestesistas. O usuário pode alterar o próprio intervalo."
+    },
+    "siga": {
+      "heading": "API SIGA",
+      "description": "Endereço da API SIGA usado por este dispositivo para login e demais requisições. Configuração local do tablet.",
+      "url": "URL",
+      "testConnection": "Testar conexão"
+    },
+    "aghu": {
+      "heading": "API AGHU",
+      "description": "Integração com o sistema hospitalar AGHU. Configuração da instalação — armazenada no servidor.",
+      "url": "URL",
+      "testConnection": "Testar conexão",
+      "connectSuccess": "Conexão com o AGHU validada e salva.",
+      "connectFail": "Não foi possível conectar ao AGHU. A configuração anterior foi mantida."
+    },
+    "sigaConnectSuccess": "Conexão com a API SIGA validada e salva neste dispositivo.",
+    "adminAccount": {
+      "description": "Informações da conta administrativa autenticada e alteração de senha.",
+      "name": "Nome",
+      "username": "Usuário (login)",
+      "email": "E-mail",
+      "sector": "Setor",
+      "changePassword": "Alterar senha",
+      "currentPassword": "Senha atual",
+      "newPassword": "Nova senha",
+      "newPasswordPlaceholder": "Mínimo 6 caracteres",
+      "confirmPassword": "Confirmar nova senha",
+      "confirmPasswordPlaceholder": "Repita a nova senha",
+      "passwordMismatch": "A confirmação não confere com a nova senha.",
+      "changing": "Alterando...",
+      "changeSuccess": "Senha atualizada com sucesso.",
+      "changeError": "Não foi possível alterar a senha. Verifique a senha atual."
+    },
+    "hospital": {
+      "description": "Informações institucionais impressas nas fichas anestésicas e relatórios.",
+      "name": "Nome do hospital",
+      "sector": "Setor / Unidade",
+      "cnpj": "CNPJ",
+      "cep": "CEP",
+      "neighborhood": "Bairro",
+      "street": "Logradouro",
+      "number": "Número",
+      "city": "Cidade",
+      "state": "UF"
+    },
+    "signature": {
+      "title": "Confirmar alterações",
+      "declaration": "Declaro estar ciente de que estas configurações afetam o funcionamento do sistema anestésico e confirmo as alterações.",
+      "passwordLabel": "Senha de acesso",
+      "passwordPlaceholder": "Digite sua senha para assinar",
+      "confirm": "Assinar e salvar"
+    }
+  }
+}

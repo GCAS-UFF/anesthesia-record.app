@@ -3,14 +3,14 @@
   <app-header-institucional
     [showBackButton]="true"
     [showAnestesicaButton]="true"
-    [anestesicaButtonLabel]="'Anestésica'"
+    [anestesicaButtonLabel]="'monitorizacao.page.anestesicaButtonLabel' | translate"
     (openAnestesica)="openFichaAnestesicaModal()"
     (backClick)="goToFichaAnestesica()"
   >
   </app-header-institucional>
 
   <div class="readonly-banner" *ngIf="!isResponsible">
-    Você não é o médico responsável por este atendimento. Monitorização somente leitura.
+    {{ 'monitorizacao.page.readonlyBanner' | translate }}
   </div>
 
   <div class="main-grid">

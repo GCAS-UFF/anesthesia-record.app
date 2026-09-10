@@ -9,13 +9,14 @@ import {
   chevronUpOutline, chevronDownOutline,
 } from 'ionicons/icons';
 import { FLUID_CATEGORY_LABELS, FluidCategoryEnum } from 'src/app/core/models/api-enums.model';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 type AnyBalance = any;
 
 @Component({
   selector: 'app-fluid-balance-chart',
   standalone: true,
-  imports: [CommonModule, IonButton, IonIcon],
+  imports: [CommonModule, IonButton, IonIcon, TranslatePipe],
   templateUrl: './fluid-balance-chart.component.html',
   styleUrls: ['./fluid-balance-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -37,7 +38,7 @@ export class FluidBalanceChartComponent {
   @Output() addBalance = new EventEmitter<void>();
   @Output() toggle = new EventEmitter<void>();
 
-  constructor() {
+  constructor(private translate: TranslateService) {
     addIcons({ waterOutline, addOutline, chevronUpOutline, chevronDownOutline });
   }
 
@@ -45,11 +46,11 @@ export class FluidBalanceChartComponent {
 
   vol(b: AnyBalance): number { return Number(b?.volumeMl ?? b?.volume ?? 0) || 0; }
   itemName(b: AnyBalance): string {
-   
+    const otherLabel = this.translate.instant('monitorizacao.common.otherItem');
     const categoryId: FluidCategoryEnum | undefined = b?.categoryId ?? b?.category;
     const categoryLabel = categoryId != null ? FLUID_CATEGORY_LABELS[categoryId as FluidCategoryEnum] : null;
-    let displayName = b?.item ?? b?.name ?? b?.description ?? categoryLabel ?? 'Outro';
-    if (displayName === 'Outro' && b?.detail) {
+    let displayName = b?.item ?? b?.name ?? b?.description ?? categoryLabel ?? otherLabel;
+    if (displayName === otherLabel && b?.detail) {
       displayName = b.detail;
     } else if (b?.detail) {
       displayName = `${displayName} (${b.detail})`;

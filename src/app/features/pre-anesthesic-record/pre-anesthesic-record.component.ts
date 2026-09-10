@@ -20,6 +20,7 @@ import {
   IonCheckbox,
 } from '@ionic/angular/standalone';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular/standalone';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { addIcons } from 'ionicons';
 import {
@@ -85,7 +86,7 @@ import {
 interface PreAnesthesiaSection {
   id: string;
   index: number;
-  title: string;
+  titleKey: string;
   icon: string;
 }
 
@@ -103,6 +104,7 @@ interface PreAnesthesiaSection {
     IonCheckbox,
     HeaderInstitucionalComponent,
     StatusBarComponent,
+    TranslatePipe,
   ],
   templateUrl: './pre-anesthesic-record.html',
   styleUrls: ['./pre-anesthesic-record.component.scss'],
@@ -161,31 +163,31 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   readonly normalAnormalOptions = NORMAL_ABNORMAL_OPTIONS;
   readonly especialidadesHuap = HUAP_SPECIALTY_OPTIONS;
 
-  readonly cirurgiasAghu: string[] = [
-    'Colecistectomia videolaparoscópica',
-    'Herniorrafia inguinal',
-    'Herniorrafia umbilical',
-    'Apendicectomia',
-    'Histerectomia total abdominal',
-    'Cesariana',
-    'Curetagem uterina',
-    'Artroplastia total de quadril',
-    'Artroplastia total de joelho',
-    'Osteossíntese de fêmur',
-    'Prostatectomia',
-    'Ressecção transuretral de próstata (RTU)',
-    'Nefrolitotripsia',
-    'Tireoidectomia',
-    'Mastectomia',
-    'Facectomia com implante de LIO',
-    'Amigdalectomia',
-    'Septoplastia',
-    'Laparotomia exploradora',
-    'Gastrectomia',
-    'Colectomia',
-    'Craniotomia',
-    'Laminectomia / Artrodese de coluna',
-    'Safenectomia / Varizes de MMII',
+  readonly cirurgiasAghu: { value: string; labelKey: string }[] = [
+    { value: 'Colecistectomia videolaparoscópica', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.colecistectomiaVideolaparoscopica' },
+    { value: 'Herniorrafia inguinal', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.herniorrafiaInguinal' },
+    { value: 'Herniorrafia umbilical', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.herniorrafiaUmbilical' },
+    { value: 'Apendicectomia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.apendicectomia' },
+    { value: 'Histerectomia total abdominal', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.histerectomiaTotalAbdominal' },
+    { value: 'Cesariana', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.cesariana' },
+    { value: 'Curetagem uterina', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.curetagemUterina' },
+    { value: 'Artroplastia total de quadril', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.artroplastiaTotalQuadril' },
+    { value: 'Artroplastia total de joelho', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.artroplastiaTotalJoelho' },
+    { value: 'Osteossíntese de fêmur', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.osteossinteseFemur' },
+    { value: 'Prostatectomia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.prostatectomia' },
+    { value: 'Ressecção transuretral de próstata (RTU)', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.ressecaoTransuretralProstata' },
+    { value: 'Nefrolitotripsia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.nefrolitotripsia' },
+    { value: 'Tireoidectomia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.tireoidectomia' },
+    { value: 'Mastectomia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.mastectomia' },
+    { value: 'Facectomia com implante de LIO', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.facectomiaComImplanteLio' },
+    { value: 'Amigdalectomia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.amigdalectomia' },
+    { value: 'Septoplastia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.septoplastia' },
+    { value: 'Laparotomia exploradora', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.laparotomiaExploradora' },
+    { value: 'Gastrectomia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.gastrectomia' },
+    { value: 'Colectomia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.colectomia' },
+    { value: 'Craniotomia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.craniotomia' },
+    { value: 'Laminectomia / Artrodese de coluna', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.laminectomiaArtrodeseColuna' },
+    { value: 'Safenectomia / Varizes de MMII', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.safenectomiaVarizesMmii' },
   ];
 
   readonly comorbidadeGroups: ChecklistGroupDef[] = COMORBIDITY_GROUPS;
@@ -195,15 +197,15 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   readonly condutaOptions: ChecklistOption[] = CONDUCT_OPTIONS;
 
   readonly sections: PreAnesthesiaSection[] = [
-    { id: 'procedimento', index: 1, title: 'Procedimento', icon: 'medkit-outline' },
-    { id: 'antropometria', index: 2, title: 'Antropometria e Sinais Vitais', icon: 'fitness-outline' },
-    { id: 'comorbidades', index: 3, title: 'Comorbidades', icon: 'heart-outline' },
-    { id: 'habitos', index: 4, title: 'Hábitos', icon: 'warning-outline' },
-    { id: 'alergias', index: 5, title: 'Alergias e Reações Adversas', icon: 'alert-circle-outline' },
-    { id: 'medicacoes', index: 6, title: 'Medicações em uso', icon: 'medical-outline' },
-    { id: 'exame-fisico', index: 7, title: 'Exame Físico', icon: 'body-outline' },
-    { id: 'exames', index: 8, title: 'Exames Complementares e Pareceres', icon: 'document-text-outline' },
-    { id: 'conduta', index: 9, title: 'Classificação e Conduta', icon: 'checkmark-circle-outline' },
+    { id: 'procedimento', index: 1, titleKey: 'preAnestesica.sections.procedimento.title', icon: 'medkit-outline' },
+    { id: 'antropometria', index: 2, titleKey: 'preAnestesica.sections.antropometria.title', icon: 'fitness-outline' },
+    { id: 'comorbidades', index: 3, titleKey: 'preAnestesica.sections.comorbidades.title', icon: 'heart-outline' },
+    { id: 'habitos', index: 4, titleKey: 'preAnestesica.sections.habitos.title', icon: 'warning-outline' },
+    { id: 'alergias', index: 5, titleKey: 'preAnestesica.sections.alergias.title', icon: 'alert-circle-outline' },
+    { id: 'medicacoes', index: 6, titleKey: 'preAnestesica.sections.medicacoes.title', icon: 'medical-outline' },
+    { id: 'exame-fisico', index: 7, titleKey: 'preAnestesica.sections.exameFisico.title', icon: 'body-outline' },
+    { id: 'exames', index: 8, titleKey: 'preAnestesica.sections.exames.title', icon: 'document-text-outline' },
+    { id: 'conduta', index: 9, titleKey: 'preAnestesica.sections.conduta.title', icon: 'checkmark-circle-outline' },
   ];
 
   constructor(
@@ -217,6 +219,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private preAnesthesicService: PreAnesthesicRecordService,
     private cdr: ChangeDetectorRef,
+    private translate: TranslateService,
   ) {
     addIcons({
       arrowBackOutline,
@@ -573,7 +576,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     this.submitPayload(this.pendingFinalizePayload, {
       onSuccess: async () => {
         const t = await this.toastCtrl.create({
-          message: 'Avaliação pré-anestésica assinada e salva com sucesso.',
+          message: this.translate.instant('preAnestesica.toasts.signedSuccess'),
           duration: 2200,
           color: 'success',
           position: 'top',
@@ -979,8 +982,8 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
       id: 'print-pre-anesthesic',
       icon: 'print-outline',
       color: 'muted',
-      ariaLabel: 'Imprimir',
-      label: 'Imprimir',
+      ariaLabel: this.translate.instant('preAnestesica.headerButtons.print'),
+      label: this.translate.instant('preAnestesica.headerButtons.print'),
       action: () => this.imprimir(),
     };
 
@@ -990,8 +993,8 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
           id: 'go-to-anesthesia-record',
           icon: 'reader-outline',
           color: 'warning',
-          ariaLabel: 'Ir para Ficha Anestésica',
-          label: 'Ficha Anest.',
+          ariaLabel: this.translate.instant('preAnestesica.headerButtons.goToAnesthesiaRecord'),
+          label: this.translate.instant('preAnestesica.headerButtons.goToAnesthesiaRecordShort'),
           action: () => this.irParaFichaAnestesica(),
         },
         printButton,
@@ -1002,8 +1005,8 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
           id: 'reopen-pre-anesthesia',
           icon: 'lock-open-outline',
           color: 'danger',
-          ariaLabel: 'Liberar ficha pré-anestésica para edição',
-          label: 'Liberar Edição',
+          ariaLabel: this.translate.instant('preAnestesica.headerButtons.reopen'),
+          label: this.translate.instant('preAnestesica.headerButtons.reopenShort'),
           disabled: this.isReopening,
           action: () => this.reopenPreAnesthesia(),
         });
@@ -1012,8 +1015,22 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
       return buttons;
     }
     return [
-      { id: 'save-draft', icon: 'save-outline', color: 'muted', ariaLabel: 'Salvar rascunho', label: 'Salvar Rasc.', action: () => this.saveDraft() },
-      { id: 'finalize', icon: 'shield-checkmark-outline', color: 'primary', ariaLabel: 'Finalizar avaliação', label: 'Concluir', action: () => this.salvar() },
+      {
+        id: 'save-draft',
+        icon: 'save-outline',
+        color: 'muted',
+        ariaLabel: this.translate.instant('preAnestesica.headerButtons.saveDraft'),
+        label: this.translate.instant('preAnestesica.headerButtons.saveDraftShort'),
+        action: () => this.saveDraft(),
+      },
+      {
+        id: 'finalize',
+        icon: 'shield-checkmark-outline',
+        color: 'primary',
+        ariaLabel: this.translate.instant('preAnestesica.headerButtons.finalize'),
+        label: this.translate.instant('preAnestesica.headerButtons.finalizeShort'),
+        action: () => this.salvar(),
+      },
       printButton,
     ];
   }
@@ -1021,7 +1038,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   async imprimir(): Promise<void> {
     if (!this.anesthesiaRecordId) {
       const t = await this.toastCtrl.create({
-        message: 'Não foi possível identificar a avaliação para impressão. Recarregue a página e tente novamente.',
+        message: this.translate.instant('preAnestesica.toasts.printIdMissing'),
         duration: 2500,
         color: 'warning',
         position: 'top',
@@ -1039,13 +1056,13 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
       this.form.markAllAsTouched();
 
       const pendencias: string[] = [];
-      if (this.cirurgias.invalid) pendencias.push('Cirurgia(s) proposta(s)');
-      if (this.form.get('conduta.asa')?.invalid) pendencias.push('Classificação ASA');
+      if (this.cirurgias.invalid) pendencias.push(this.translate.instant('preAnestesica.validation.surgeryRequired'));
+      if (this.form.get('conduta.asa')?.invalid) pendencias.push(this.translate.instant('preAnestesica.validation.asaRequired'));
 
       const t = await this.toastCtrl.create({
         message: pendencias.length
-          ? `Preencha os campos obrigatórios (${pendencias.join(', ')}).`
-          : 'Preencha os campos obrigatórios.',
+          ? this.translate.instant('preAnestesica.toasts.requiredFieldsWithList', { fields: pendencias.join(', ') })
+          : this.translate.instant('preAnestesica.toasts.requiredFields'),
         duration: 2500,
         color: 'danger',
         position: 'top',
@@ -1078,13 +1095,13 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     this.signatureError = '';
 
     if (!this.signatureAgreed) {
-      this.signatureError = 'Você precisa marcar a confirmação de veracidade dos dados.';
+      this.signatureError = this.translate.instant('preAnestesica.validation.agreementRequired');
       return;
     }
 
     const senha = (this.signaturePassword || '').trim();
     if (!senha) {
-      this.signatureError = 'Informe sua senha para assinar digitalmente.';
+      this.signatureError = this.translate.instant('preAnestesica.validation.passwordRequired');
       return;
     }
 
@@ -1115,7 +1132,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
         this.signaturePassword = '';
 
         const t = await this.toastCtrl.create({
-          message: 'Avaliação pré-anestésica assinada e salva com sucesso.',
+          message: this.translate.instant('preAnestesica.toasts.signedSuccess'),
           duration: 2200,
           color: 'success',
           position: 'top',
@@ -1126,7 +1143,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
         this.isSaving = false;
 
         const t = await this.toastCtrl.create({
-          message: 'Não foi possível enviar a avaliação pré-anestésica para o servidor. O rascunho foi mantido e o envio será refeito automaticamente assim que possível.',
+          message: this.translate.instant('preAnestesica.toasts.submitError'),
           duration: 3500,
           color: 'danger',
           position: 'top',
@@ -1145,12 +1162,12 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     if (!this.isAdminUser || !this.anesthesiaRecordId || this.isReopening) return;
 
     const alert = await this.alertCtrl.create({
-      header: 'Liberar para edição',
-      message: 'Tem certeza que deseja liberar esta avaliação pré-anestésica finalizada para edição novamente?',
+      header: this.translate.instant('preAnestesica.reopenAlert.header'),
+      message: this.translate.instant('preAnestesica.reopenAlert.message'),
       buttons: [
-        { text: 'Cancelar', role: 'cancel', cssClass: 'secondary' },
+        { text: this.translate.instant('common.cancel'), role: 'cancel', cssClass: 'secondary' },
         {
-          text: 'Liberar para edição',
+          text: this.translate.instant('preAnestesica.reopenAlert.confirm'),
           handler: () => this.confirmReopenPreAnesthesia(),
         },
       ],
@@ -1164,7 +1181,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
     this.isReopening = true;
     const loading = await this.loadingCtrl.create({
-      message: 'Liberando ficha pré-anestésica...',
+      message: this.translate.instant('preAnestesica.reopenAlert.loading'),
       spinner: 'circular',
     });
     await loading.present();
@@ -1180,7 +1197,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
         this.isFinalized = false;
 
         const t = await this.toastCtrl.create({
-          message: 'Ficha pré-anestésica liberada para edição.',
+          message: this.translate.instant('preAnestesica.toasts.reopenSuccess'),
           duration: 2200,
           color: 'success',
           position: 'top',
@@ -1192,7 +1209,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
         await loading.dismiss();
 
         const t = await this.toastCtrl.create({
-          message: err?.error?.message || 'Não foi possível liberar a ficha pré-anestésica para edição.',
+          message: err?.error?.message || this.translate.instant('preAnestesica.toasts.reopenError'),
           duration: 3000,
           color: 'danger',
           position: 'top',

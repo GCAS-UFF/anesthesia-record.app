@@ -2,6 +2,7 @@ import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { IonSelect, IonSelectOption } from '@ionic/angular/standalone';
+import { TranslatePipe } from '@ngx-translate/core';
 import { FormSectionComponent } from '../../../../shared/components/form-section/form-section.component';
 import { FormFieldComponent } from '../../../../shared/components/form-field/form-field.component';
 import { maskTimeInput, normalizeTimeInput } from '../../../../shared/utils/time-input.util';
@@ -15,7 +16,8 @@ import { maskTimeInput, normalizeTimeInput } from '../../../../shared/utils/time
     IonSelect,
     IonSelectOption,
     FormSectionComponent,
-    FormFieldComponent
+    FormFieldComponent,
+    TranslatePipe
   ],
   templateUrl: './dados-vitais-section.component.html',
   styleUrls: ['./dados-vitais-section.component.scss'],

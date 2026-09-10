@@ -8,12 +8,11 @@
       <div class="header-text">
         <span class="eyebrow">
           <ion-icon name="analytics-outline" aria-hidden="true"></ion-icon>
-          Administração
+          {{ 'relatorios.page.eyebrow' | translate }}
         </span>
-        <h1 class="page-title">Relatórios</h1>
+        <h1 class="page-title">{{ 'relatorios.page.title' | translate }}</h1>
         <p class="page-subtitle">
-          Indicadores consolidados do centro cirúrgico e da operação anestésica,
-          com base nos dados registrados no SIGA.
+          {{ 'relatorios.page.subtitle' | translate }}
         </p>
       </div>
     </section>
@@ -36,7 +35,7 @@
             <ion-icon name="calendar-outline"></ion-icon>
             <div>
               <span class="value">{{ s.totalSurgeries }}</span>
-              <span class="label">Cirurgias no período</span>
+              <span class="label">{{ 'relatorios.page.summary.surgeriesInPeriod' | translate }}</span>
             </div>
           </div>
           <div class="summary-card">
@@ -49,7 +48,7 @@
                 >{{ s.completedSurgeries }}
                 <small>({{ s.completedPercentage }}%)</small></span
               >
-              <span class="label">Concluídas</span>
+              <span class="label">{{ 'relatorios.page.summary.completed' | translate }}</span>
             </div>
           </div>
           <div class="summary-card">
@@ -59,28 +58,28 @@
                 >{{ s.canceledSurgeries }}
                 <small>({{ s.canceledPercentage }}%)</small></span
               >
-              <span class="label">Canceladas</span>
+              <span class="label">{{ 'relatorios.page.summary.canceled' | translate }}</span>
             </div>
           </div>
           <div class="summary-card">
             <ion-icon name="document-text-outline"></ion-icon>
             <div>
               <span class="value">{{ s.signedAnesthesiaRecords }}</span>
-              <span class="label">Fichas assinadas</span>
+              <span class="label">{{ 'relatorios.page.summary.signedRecords' | translate }}</span>
             </div>
           </div>
           <div class="summary-card">
             <ion-icon name="pulse-outline"></ion-icon>
             <div>
               <span class="value">{{ s.clinicalEventsCount }}</span>
-              <span class="label">Eventos clínicos</span>
+              <span class="label">{{ 'relatorios.page.summary.clinicalEvents' | translate }}</span>
             </div>
           </div>
           <div class="summary-card">
             <ion-icon name="medkit-outline"></ion-icon>
             <div>
               <span class="value">{{ s.administeredAgentsCount }}</span>
-              <span class="label">Medicamentos administrados</span>
+              <span class="label">{{ 'relatorios.page.summary.medicationsAdministered' | translate }}</span>
             </div>
           </div>
         </div>
@@ -94,7 +93,7 @@
         (click)="selectTab('operacional')"
       >
         <ion-icon name="calendar-outline"></ion-icon>
-        Operacional
+        {{ 'relatorios.page.tabs.operational' | translate }}
       </button>
       <button
         class="tab-btn"
@@ -102,7 +101,7 @@
         (click)="selectTab('clinico')"
       >
         <ion-icon name="pulse-outline"></ion-icon>
-        Clínico
+        {{ 'relatorios.page.tabs.clinical' | translate }}
       </button>
       <button
         class="tab-btn"
@@ -110,7 +109,7 @@
         (click)="selectTab('medicamentos')"
       >
         <ion-icon name="flask-outline"></ion-icon>
-        Medicamentos
+        {{ 'relatorios.page.tabs.medications' | translate }}
       </button>
       <button
         class="tab-btn"
@@ -118,7 +117,7 @@
         (click)="selectTab('integracoes')"
       >
         <ion-icon name="sync-outline"></ion-icon>
-        Integrações
+        {{ 'relatorios.page.tabs.integrations' | translate }}
       </button>
     </nav>
 

@@ -8,23 +8,23 @@
   <div class="cfg-topbar">
     <div class="cfg-topbar__title">
       <ion-icon name="settings-outline"></ion-icon>
-      <h1>Configurações</h1>
+      <h1>{{ 'settings.title' | translate }}</h1>
       <span class="chip-tag" [class.is-admin]="isAdmin">
-        {{ isAdmin ? 'Administrador' : 'Usuário' }}
+        {{ (isAdmin ? 'settings.roleAdmin' : 'settings.roleUser') | translate }}
       </span>
     </div>
 
     <div class="cfg-topbar__actions">
       <span class="save-status" *ngIf="savedAt">
         <ion-icon name="checkmark-circle-outline"></ion-icon>
-        Salvo {{ savedAt | date: 'HH:mm' }}
+        {{ 'settings.savedAt' | translate }} {{ savedAt | date: 'HH:mm' }}
       </span>
     </div>
   </div>
 
   <div class="cfg-loading" *ngIf="loading">
     <ion-spinner name="crescent"></ion-spinner>
-    <p>Carregando configurações...</p>
+    <p>{{ 'settings.loading' | translate }}</p>
   </div>
 
   <div class="cfg-layout" [formGroup]="form" *ngIf="!loading">
@@ -38,8 +38,8 @@
           (click)="scrollTo(s.id)"
         >
           <ion-icon [name]="s.icon"></ion-icon>
-          <span>{{ s.title }}</span>
-          <em class="lock" *ngIf="s.admin">admin</em>
+          <span>{{ s.titleKey | translate }}</span>
+          <em class="lock" *ngIf="s.admin">{{ 'settings.adminBadge' | translate }}</em>
         </button>
       </div>
     </aside>
@@ -49,15 +49,15 @@
         <header class="card__head">
           <div class="card__idx">01</div>
           <div>
-            <h2>Preferências gerais</h2>
-            <p>Idioma da interface do sistema anestésico.</p>
+            <h2>{{ 'settings.sections.general' | translate }}</h2>
+            <p>{{ 'settings.general.description' | translate }}</p>
           </div>
           <ion-icon name="language-outline" class="card__icon"></ion-icon>
         </header>
 
         <div class="card__body">
           <div class="field">
-            <label>Idioma</label>
+            <label>{{ 'settings.general.language' | translate }}</label>
             <div class="option-grid option-grid--3">
               <button
                 *ngFor="let i of idiomas"
@@ -79,8 +79,8 @@
         <header class="card__head">
           <div class="card__idx">02</div>
           <div>
-            <h2>Aferição automática</h2>
-            <p>Frequência com que os sinais vitais são registrados automaticamente na monitorização.</p>
+            <h2>{{ 'settings.sections.measurement' | translate }}</h2>
+            <p>{{ 'settings.measurement.description' | translate }}</p>
           </div>
           <ion-icon name="timer-outline" class="card__icon"></ion-icon>
         </header>
@@ -88,13 +88,13 @@
         <div class="card__body">
           <label class="switch-row">
             <ion-checkbox formControlName="usarIntervaloInstitucional" labelPlacement="end">
-              Usar o intervalo institucional
-              (<strong>{{ form.value.intervaloInstitucional }} min</strong>)
+              {{ 'settings.measurement.useInstitutional' | translate }}
+              (<strong>{{ form.value.intervaloInstitucional }} {{ 'settings.measurement.minutesUnit' | translate }}</strong>)
             </ion-checkbox>
           </label>
 
           <div class="field" [class.is-disabled]="form.value.usarIntervaloInstitucional">
-            <label>Meu intervalo de aferição</label>
+            <label>{{ 'settings.measurement.myInterval' | translate }}</label>
             <div class="chip-row">
               <button
                 *ngFor="let m of intervalos"
@@ -104,17 +104,17 @@
                 [class.is-selected]="form.value.intervaloAfericao === m"
                 (click)="setIntervalo('intervaloAfericao', m)"
               >
-                {{ m }} min
+                {{ m }} {{ 'settings.measurement.minutesUnit' | translate }}
               </button>
             </div>
             <p class="hint">
               <ion-icon name="information-circle-outline"></ion-icon>
-              Intervalos menores geram mais registros no gráfico de tendências.
+              {{ 'settings.measurement.minutesHint' | translate }}
             </p>
           </div>
 
           <div class="field" *ngIf="isAdmin">
-            <label>Intervalo padrão institucional</label>
+            <label>{{ 'settings.measurement.institutionalDefault' | translate }}</label>
             <div class="chip-row">
               <button
                 *ngFor="let m of intervalos"
@@ -123,11 +123,11 @@
                 [class.is-selected]="form.value.intervaloInstitucional === m"
                 (click)="setIntervalo('intervaloInstitucional', m)"
               >
-                {{ m }} min
+                {{ m }} {{ 'settings.measurement.minutesUnit' | translate }}
               </button>
             </div>
             <p class="hint">
-              Valor aplicado a todos os anestesistas. O usuário pode alterar o próprio intervalo.
+              {{ 'settings.measurement.institutionalHint' | translate }}
             </p>
           </div>
         </div>
@@ -137,15 +137,15 @@
         <header class="card__head">
           <div class="card__idx">03</div>
           <div>
-            <h2>API SIGA</h2>
-            <p>Endereço da API SIGA usado por este dispositivo para login e demais requisições. Configuração local do tablet.</p>
+            <h2>{{ 'settings.siga.heading' | translate }}</h2>
+            <p>{{ 'settings.siga.description' | translate }}</p>
           </div>
           <ion-icon name="server-outline" class="card__icon"></ion-icon>
         </header>
 
         <div class="card__body">
           <div class="field">
-            <label>URL</label>
+            <label>{{ 'settings.siga.url' | translate }}</label>
             <div class="input-with-action">
               <span class="input-icon"><ion-icon name="link-outline"></ion-icon></span>
               <input
@@ -159,14 +159,14 @@
               <button type="button" class="btn btn-ghost" [disabled]="testing.siga === 'running'" (click)="testarConexao('siga')">
                 <ion-spinner *ngIf="testing.siga === 'running'" name="crescent"></ion-spinner>
                 <ion-icon *ngIf="testing.siga !== 'running'" name="refresh-outline"></ion-icon>
-                Testar conexão
+                {{ 'settings.siga.testConnection' | translate }}
               </button>
             </div>
             <p class="status-line ok" *ngIf="sigaStatusLabel === 'ok'">
-              <ion-icon name="checkmark-circle-outline"></ion-icon> Conectado
+              <ion-icon name="checkmark-circle-outline"></ion-icon> {{ 'common.connected' | translate }}
             </p>
             <p class="status-line fail" *ngIf="sigaStatusLabel === 'fail'">
-              <ion-icon name="close-circle-outline"></ion-icon> Não conectado
+              <ion-icon name="close-circle-outline"></ion-icon> {{ 'common.disconnected' | translate }}
             </p>
           </div>
         </div>
@@ -176,15 +176,15 @@
         <header class="card__head">
           <div class="card__idx">04</div>
           <div>
-            <h2>API AGHU</h2>
-            <p>Integração com o sistema hospitalar AGHU. Configuração da instalação — armazenada no servidor.</p>
+            <h2>{{ 'settings.aghu.heading' | translate }}</h2>
+            <p>{{ 'settings.aghu.description' | translate }}</p>
           </div>
           <ion-icon name="cloud-outline" class="card__icon"></ion-icon>
         </header>
 
         <div class="card__body">
           <div class="field">
-            <label>URL</label>
+            <label>{{ 'settings.aghu.url' | translate }}</label>
             <div class="input-with-action">
               <span class="input-icon"><ion-icon name="link-outline"></ion-icon></span>
               <input
@@ -198,14 +198,14 @@
               <button type="button" class="btn btn-ghost" [disabled]="testing.aghu === 'running'" (click)="testarConexao('aghu')">
                 <ion-spinner *ngIf="testing.aghu === 'running'" name="crescent"></ion-spinner>
                 <ion-icon *ngIf="testing.aghu !== 'running'" name="refresh-outline"></ion-icon>
-                Testar conexão
+                {{ 'settings.aghu.testConnection' | translate }}
               </button>
             </div>
             <p class="status-line ok" *ngIf="aghuStatusLabel === 'ok'">
-              <ion-icon name="checkmark-circle-outline"></ion-icon> Conectado
+              <ion-icon name="checkmark-circle-outline"></ion-icon> {{ 'common.connected' | translate }}
             </p>
             <p class="status-line fail" *ngIf="aghuStatusLabel === 'fail'">
-              <ion-icon name="close-circle-outline"></ion-icon> Não conectado
+              <ion-icon name="close-circle-outline"></ion-icon> {{ 'common.disconnected' | translate }}
             </p>
           </div>
         </div>
@@ -215,8 +215,8 @@
         <header class="card__head">
           <div class="card__idx">05</div>
           <div>
-            <h2>Conta ADMIN</h2>
-            <p>Informações da conta administrativa autenticada e alteração de senha.</p>
+            <h2>{{ 'settings.sections.adminAccount' | translate }}</h2>
+            <p>{{ 'settings.adminAccount.description' | translate }}</p>
           </div>
           <ion-icon name="person-circle-outline" class="card__icon"></ion-icon>
         </header>
@@ -224,19 +224,19 @@
         <div class="card__body">
           <div class="grid-2" *ngIf="adminAccount as acc">
             <div class="field">
-              <label>Nome</label>
+              <label>{{ 'settings.adminAccount.name' | translate }}</label>
               <input type="text" [value]="acc.name" readonly />
             </div>
             <div class="field">
-              <label>Usuário (login)</label>
+              <label>{{ 'settings.adminAccount.username' | translate }}</label>
               <input type="text" [value]="acc.username" readonly />
             </div>
             <div class="field" *ngIf="acc.email">
-              <label>E-mail</label>
+              <label>{{ 'settings.adminAccount.email' | translate }}</label>
               <input type="text" [value]="acc.email" readonly />
             </div>
             <div class="field">
-              <label>Setor</label>
+              <label>{{ 'settings.adminAccount.sector' | translate }}</label>
               <input type="text" [value]="acc.sector" readonly />
             </div>
           </div>
@@ -244,10 +244,10 @@
           <hr class="divider" />
 
           <form [formGroup]="passwordForm" (ngSubmit)="alterarSenha()">
-            <h3 class="subtitle">Alterar senha</h3>
+            <h3 class="subtitle">{{ 'settings.adminAccount.changePassword' | translate }}</h3>
             <div class="grid-3">
               <div class="field">
-                <label>Senha atual</label>
+                <label>{{ 'settings.adminAccount.currentPassword' | translate }}</label>
                 <div class="input-with-action">
                   <span class="input-icon"><ion-icon name="key-outline"></ion-icon></span>
                   <input [type]="mostrarSenhaConta ? 'text' : 'password'" formControlName="atual" placeholder="••••••••" />
@@ -257,15 +257,15 @@
                 </div>
               </div>
               <div class="field">
-                <label>Nova senha</label>
-                <input [type]="mostrarSenhaConta ? 'text' : 'password'" formControlName="nova" placeholder="Mínimo 6 caracteres" />
+                <label for="nova-senha">{{ 'settings.adminAccount.newPassword' | translate }}</label>
+                <input id="nova-senha" [type]="mostrarSenhaConta ? 'text' : 'password'" formControlName="nova" [placeholder]="'settings.adminAccount.newPasswordPlaceholder' | translate" />
               </div>
               <div class="field">
-                <label>Confirmar nova senha</label>
-                <input [type]="mostrarSenhaConta ? 'text' : 'password'" formControlName="confirmar" placeholder="Repita a nova senha" />
+                <label for="confirmar-senha">{{ 'settings.adminAccount.confirmPassword' | translate }}</label>
+                <input id="confirmar-senha" [type]="mostrarSenhaConta ? 'text' : 'password'" formControlName="confirmar" [placeholder]="'settings.adminAccount.confirmPasswordPlaceholder' | translate" />
               </div>
             </div>
-            <p class="status-line fail" *ngIf="passwordMismatch">A confirmação não confere com a nova senha.</p>
+            <p class="status-line fail" *ngIf="passwordMismatch">{{ 'settings.adminAccount.passwordMismatch' | translate }}</p>
             <div class="form-actions">
               <button
                 type="submit"
@@ -274,7 +274,7 @@
               >
                 <ion-spinner *ngIf="changingPassword" name="crescent"></ion-spinner>
                 <ion-icon *ngIf="!changingPassword" name="key-outline"></ion-icon>
-                {{ changingPassword ? 'Alterando...' : 'Alterar senha' }}
+                {{ (changingPassword ? 'settings.adminAccount.changing' : 'settings.adminAccount.changePassword') | translate }}
               </button>
             </div>
           </form>
@@ -285,8 +285,8 @@
         <header class="card__head">
           <div class="card__idx">06</div>
           <div>
-            <h2>Dados do hospital</h2>
-            <p>Informações institucionais impressas nas fichas anestésicas e relatórios.</p>
+            <h2>{{ 'settings.sections.hospital' | translate }}</h2>
+            <p>{{ 'settings.hospital.description' | translate }}</p>
           </div>
           <ion-icon name="business-outline" class="card__icon"></ion-icon>
         </header>
@@ -294,45 +294,45 @@
         <div class="card__body" formGroupName="hospital">
           <div class="grid-2">
             <div class="field">
-              <label>Nome do hospital</label>
+              <label>{{ 'settings.hospital.name' | translate }}</label>
               <input type="text" formControlName="nome" placeholder="Hospital Universitário Antônio Pedro" />
             </div>
             <div class="field">
-              <label>Setor / Unidade</label>
+              <label>{{ 'settings.hospital.sector' | translate }}</label>
               <input type="text" formControlName="setor" placeholder="Centro Cirúrgico — Anestesiologia" />
             </div>
           </div>
 
           <div class="grid-3">
             <div class="field">
-              <label>CNPJ</label>
+              <label>{{ 'settings.hospital.cnpj' | translate }}</label>
               <input type="text" inputmode="numeric" formControlName="cnpj" (input)="formatCnpj()" placeholder="00.000.000/0000-00" />
             </div>
             <div class="field">
-              <label>CEP</label>
+              <label>{{ 'settings.hospital.cep' | translate }}</label>
               <input type="text" inputmode="numeric" formControlName="cep" placeholder="24033-900" />
             </div>
             <div class="field">
-              <label>Bairro</label>
+              <label>{{ 'settings.hospital.neighborhood' | translate }}</label>
               <input type="text" formControlName="bairro" placeholder="Centro" />
             </div>
           </div>
 
           <div class="grid-endereco">
             <div class="field">
-              <label>Logradouro</label>
+              <label>{{ 'settings.hospital.street' | translate }}</label>
               <input type="text" formControlName="logradouro" placeholder="Av. Marquês do Paraná" />
             </div>
             <div class="field">
-              <label>Número</label>
+              <label>{{ 'settings.hospital.number' | translate }}</label>
               <input type="text" inputmode="numeric" formControlName="numero" placeholder="303" />
             </div>
             <div class="field">
-              <label>Cidade</label>
+              <label>{{ 'settings.hospital.city' | translate }}</label>
               <input type="text" formControlName="cidade" placeholder="Niterói" />
             </div>
             <div class="field">
-              <label>UF</label>
+              <label>{{ 'settings.hospital.state' | translate }}</label>
               <input type="text" maxlength="2" formControlName="uf" placeholder="RJ" />
             </div>
           </div>
@@ -349,7 +349,7 @@
         <header class="sign__head">
           <div class="sign__title">
             <ion-icon name="shield-checkmark-outline"></ion-icon>
-            <h3>Confirmar alterações</h3>
+            <h3>{{ 'settings.signature.title' | translate }}</h3>
           </div>
           <button type="button" class="icon-btn" (click)="fecharAssinatura()">
             <ion-icon name="close-outline"></ion-icon>
@@ -364,21 +364,21 @@
               labelPlacement="end"
             >
               <span class="sign__check-text">
-                Declaro estar ciente de que estas configurações afetam o
-                funcionamento do sistema anestésico e confirmo as alterações.
+                {{ 'settings.signature.declaration' | translate }}
               </span>
             </ion-checkbox>
           </label>
 
           <div class="field">
-            <label>Senha de acesso</label>
+            <label for="senha-assinatura">{{ 'settings.signature.passwordLabel' | translate }}</label>
             <div class="input-with-action">
               <span class="input-icon"><ion-icon name="lock-closed-outline"></ion-icon></span>
               <input
+                id="senha-assinatura"
                 [type]="mostrarSenha ? 'text' : 'password'"
                 [(ngModel)]="senhaAssinatura"
                 [ngModelOptions]="{ standalone: true }"
-                placeholder="Digite sua senha para assinar"
+                [placeholder]="'settings.signature.passwordPlaceholder' | translate"
               />
               <button type="button" class="icon-btn" (click)="mostrarSenha = !mostrarSenha">
                 <ion-icon [name]="mostrarSenha ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
@@ -388,7 +388,7 @@
         </div>
 
         <footer class="sign__foot">
-          <button type="button" class="btn btn-ghost" (click)="fecharAssinatura()">Cancelar</button>
+          <button type="button" class="btn btn-ghost" (click)="fecharAssinatura()">{{ 'common.cancel' | translate }}</button>
           <button
             type="button"
             class="btn btn-primary"
@@ -396,7 +396,7 @@
             (click)="confirmarSalvar()"
           >
             <ion-icon name="save-outline"></ion-icon>
-            Assinar e salvar
+            {{ 'settings.signature.confirm' | translate }}
           </button>
         </footer>
       </div>

@@ -3,17 +3,18 @@ import { CommonModule } from '@angular/common';
 import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { warning } from 'ionicons/icons';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-patient-info-card',
   templateUrl: './patient-info-card.component.html',
   styleUrls: ['./patient-info-card.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonIcon],
+  imports: [CommonModule, IonIcon, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PatientInfoCardComponent {
-  constructor() {
+  constructor(private translate: TranslateService) {
     addIcons({ warning });
   }
 
@@ -38,7 +39,7 @@ export class PatientInfoCardComponent {
     if (Array.isArray(this.allergies)) {
       return this.allergies.map((a: any) => {
         if (typeof a === 'string') return a;
-        return a.name || a.description || a.medicamento || 'Alergia (não especificada)';
+        return a.name || a.description || a.medicamento || this.translate.instant('sharedComponents.patientInfoCard.allergyUnspecified');
       }).join(', ');
     }
     return String(this.allergies);

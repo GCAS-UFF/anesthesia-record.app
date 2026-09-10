@@ -1,8 +1,8 @@
 <div class="report-card">
   <div class="report-card-header">
     <div>
-      <h3 class="report-title">Cancelamentos</h3>
-      <p class="report-subtitle">Cirurgias canceladas no período.</p>
+      <h3 class="report-title">{{ 'relatorios.cancellations.title' | translate }}</h3>
+      <p class="report-subtitle">{{ 'relatorios.cancellations.subtitle' | translate }}</p>
     </div>
     <app-report-pdf-actions reportKey="cancellations" [filters]="filters"></app-report-pdf-actions>
   </div>
@@ -12,22 +12,22 @@
       <div class="kpi-row">
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.totalSurgeries }}</span>
-          <span class="kpi-label">Total de cirurgias</span>
+          <span class="kpi-label">{{ 'relatorios.cancellations.kpiTotalSurgeries' | translate }}</span>
         </div>
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.canceledSurgeries }} <small>({{ r.canceledPercentage }}%)</small></span>
-          <span class="kpi-label">Canceladas</span>
+          <span class="kpi-label">{{ 'relatorios.cancellations.kpiCanceled' | translate }}</span>
         </div>
       </div>
 
       <div class="charts-grid">
         <div class="chart-block">
-          <h4>Cancelamentos por anestesista</h4>
-          <app-bar-chart [labels]="anesthetistLabels" [data]="anesthetistCounts" datasetLabel="Cancelamentos" [horizontal]="true"></app-bar-chart>
+          <h4>{{ 'relatorios.cancellations.chartByAnesthetist' | translate }}</h4>
+          <app-bar-chart [labels]="anesthetistLabels" [data]="anesthetistCounts" [datasetLabel]="'relatorios.cancellations.datasetCancellations' | translate" [horizontal]="true"></app-bar-chart>
         </div>
         <div class="chart-block">
-          <h4>Cancelamentos por dia da semana</h4>
-          <app-bar-chart [labels]="weekdayLabels" [data]="weekdayCounts" datasetLabel="Cancelamentos"></app-bar-chart>
+          <h4>{{ 'relatorios.cancellations.chartByWeekday' | translate }}</h4>
+          <app-bar-chart [labels]="weekdayLabels" [data]="weekdayCounts" [datasetLabel]="'relatorios.cancellations.datasetCancellations' | translate"></app-bar-chart>
         </div>
       </div>
 
@@ -35,8 +35,8 @@
         <table class="report-table">
           <thead>
             <tr>
-              <th>Anestesista</th>
-              <th class="num">Cancelamentos</th>
+              <th>{{ 'relatorios.cancellations.tableAnesthetist' | translate }}</th>
+              <th class="num">{{ 'relatorios.cancellations.tableCancellations' | translate }}</th>
             </tr>
           </thead>
           <tbody>

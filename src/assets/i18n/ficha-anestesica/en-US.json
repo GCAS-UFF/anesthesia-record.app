@@ -1,0 +1,431 @@
+{
+  "fichaAnestesica": {
+    "common": {
+      "yes": "Yes",
+      "no": "No",
+      "cancel": "Cancel",
+      "add": "Add",
+      "searchByNameOrCode": "Search by name or code...",
+      "noResults": "No results"
+    },
+    "header": {
+      "preAnestesicaButton": "Pre-Anesth.",
+      "saveAria": "Save",
+      "sendLabel": "Submit",
+      "goToSurgeryAria": "Go to Surgery",
+      "surgeryLabel": "Surgery"
+    },
+    "page": {
+      "eyebrow": "Perioperative record",
+      "title": "Anesthesia Record",
+      "autosaveTag": "Draft saved",
+      "pullingText": "Pull to refresh",
+      "refreshingText": "Refreshing..."
+    },
+    "seguranca": {
+      "title": "Patient Safety",
+      "identificadoAvaliado": "Was the patient identified and evaluated before induction?",
+      "consentimentoAssinado": "Anesthesia informed consent signed?",
+      "equipamentosChecados": "Anesthesia equipment and accessories checked?",
+      "atencaoLabel": "Attention (Safety Notes)"
+    },
+    "preInducao": {
+      "title": "Pre-Induction",
+      "recebeuMedPrevia": "Preanesthetic medication?",
+      "horaLabel": "Time",
+      "farmacoLabel": "Drug",
+      "selecionarFarmaco": "Select drug...",
+      "buscarFarmaco": "Search drug...",
+      "nenhumFarmacoEncontrado": "No drug found",
+      "viaLabel": "Route",
+      "especifiqueVia": "Specify route",
+      "viaOptions": {
+        "vo": "Oral",
+        "im": "IM",
+        "iv": "IV",
+        "outras": "OTHER"
+      }
+    },
+    "antibiotico": {
+      "title": "Antibiotic Prophylaxis",
+      "temAntibiotico": "Received antibiotic prophylaxis?",
+      "repiqueLabel": "Redose?",
+      "sim": "YES",
+      "nao": "NO",
+      "addRepiqueTitle": "Add Redose",
+      "repiquePrefix": "Redose:",
+      "addAntibioticoButton": "Add Antibiotic",
+      "antibioticoLabel": "Antibiotic *",
+      "selecionarAntibiotico": "Select antibiotic...",
+      "buscarAntibiotico": "Search antibiotic...",
+      "nenhumAntibioticoEncontrado": "No antibiotic found",
+      "doseLabel": "Dose *",
+      "dosePlaceholder": "e.g. 2g",
+      "viaLabel": "Route",
+      "viaPlaceholder": "IV",
+      "horaLabel": "Time",
+      "cancelar": "Cancel",
+      "adicionar": "Add",
+      "novoRepiqueHeader": "New Redose",
+      "paraLabel": "For: {{nome}}",
+      "doseRepiquePlaceholder": "Redose dose",
+      "toastSelecioneAntibiotico": "Select the antibiotic and enter the dose."
+    },
+    "dadosVitais": {
+      "title": "Vital Signs and Anthropometric Data",
+      "subtitle": "Before anesthetic induction",
+      "pa": "BP",
+      "fr": "RR",
+      "temp": "T (°C)",
+      "spo2": "SpO2",
+      "peso": "Weight (kg)",
+      "asa": "ASA",
+      "selecionePlaceholder": "Select",
+      "entradaSala": "Operating Room Entry"
+    },
+    "equipe": {
+      "title": "Surgical Team and Pre-Procedure",
+      "cirurgiao": "Surgeon *",
+      "selecionarCirurgiao": "Select surgeon...",
+      "assistente": "Assistant *",
+      "selecionarAssistente": "Select assistant...",
+      "diagnosticoPre": "Pre-operative diagnosis *",
+      "horaInicioAnestesia": "Anesthesia start time *"
+    },
+    "posicao": {
+      "title": "Surgical Position",
+      "posicaoLabel": "Position",
+      "especifiquePosicao": "Specify position",
+      "usoCoxim": "Use of positioning pads?",
+      "localCoxim": "Pad location",
+      "localCoximPlaceholder": "e.g. Head, shoulders...",
+      "acessoVenoso": "Venous access",
+      "localAcesso": "Access site",
+      "localAcessoPlaceholder": "e.g. Right hand, jugular...",
+      "dificuldadePuncao": "Difficult puncture?",
+      "options": {
+        "supina": "Supine",
+        "prona": "Prone",
+        "sentado": "Sitting",
+        "lateralEsq": "Left Lateral",
+        "lateralDir": "Right Lateral",
+        "trendelenburg": "Trendelenburg",
+        "litotomica": "Lithotomy"
+      },
+      "acessoOptions": {
+        "periferico": "Peripheral",
+        "central": "Central"
+      }
+    },
+    "tecnica": {
+      "title": "Anesthetic Technique",
+      "anestesiaGeralCardHeader": "General Anesthesia",
+      "anestesiaGeralLabel": "General anesthesia?",
+      "respiracaoTitle": "Breathing",
+      "assistidaLabel": "Assisted:",
+      "controladaLabel": "Controlled:",
+      "circuitoAbsorvedorLabel": "Circuit (CO₂ absorber)?",
+      "viaAereaCardHeader": "Airway (if applicable)",
+      "dispositivosTitle": "Devices",
+      "guedel": "Guedel",
+      "mascLaringea": "Laryngeal Mask",
+      "mascFacial": "Face Mask",
+      "tubo": "Tube",
+      "numeroAbrev": "No.",
+      "cuff": "Cuff",
+      "oral": "Oral",
+      "nasal": "Nasal",
+      "iot": "IOT",
+      "facil": "Easy",
+      "dificil": "Difficult",
+      "viaAereaTipoCardHeader": "Airway - Type / Techniques",
+      "tipoTitle": "Type",
+      "tipoSimples": "Simple",
+      "tipoEndobronquico": "Endobronchial",
+      "tipoAramado": "Reinforced (wire)",
+      "tipoOutras": "Other",
+      "quaisPlaceholder": "Which ones?",
+      "tecnicasTitle": "Techniques",
+      "tecLaringoscopia": "Laryngoscopy",
+      "tecRetrograda": "Retrograde",
+      "tecVideolaringoscopia": "Videolaryngoscopy",
+      "tecBroncofibroscopia": "Fiberoptic Bronchoscopy",
+      "tecTraqueostomia": "Tracheostomy",
+      "tecOutras": "Other",
+      "bloqueiosEspinhaisCardHeader": "Neuraxial Blocks",
+      "realizado": "Performed?",
+      "nivelPuncaoTitle": "Puncture level",
+      "posicaoLabel": "Position",
+      "cateterLabel": "Catheter?",
+      "opioideLabel": "Opioid?",
+      "numeroPuncoesLabel": "Number of punctures",
+      "sedacaoOxigenioCardHeader": "Sedation and Oxygen",
+      "sedacaoLabel": "Sedation?",
+      "suplementacaoO2Label": "O₂ supplementation?",
+      "tipoLabel": "Type",
+      "outrosLabel": "Other",
+      "especifiquePlaceholder": "Specify...",
+      "bloqueioPlexoCardHeader": "Plexus / Nerve Block",
+      "bloqueioPlexoLabel": "Plexus block?",
+      "neuroestimuladorLabel": "Nerve stimulator?",
+      "nervosEstimuladosTitle": "Stimulated nerves",
+      "yesNo": {
+        "sim": "Yes",
+        "nao": "No"
+      },
+      "respiracaoAssistidaOptions": {
+        "espontanea": "Spontaneous",
+        "manual": "Manual"
+      },
+      "respiracaoControladaOptions": {
+        "volume": "Volume",
+        "pressao": "Pressure"
+      },
+      "nivelPuncaoOptions": {
+        "l1l2": "L1-L2",
+        "l2l3": "L2-L3",
+        "l3l4": "L3-L4",
+        "l4l5": "L4-L5",
+        "hiatoSacro": "Sacral Hiatus"
+      },
+      "posicaoPuncaoOptions": {
+        "sentada": "Sitting",
+        "decubitoLateral": "Lateral Decubitus"
+      },
+      "nervosEstimuladosOptions": {
+        "femoral": "Femoral",
+        "ciatico": "Sciatic",
+        "iliohipogastrico": "Iliohypogastric",
+        "ilioinguinal": "Ilioinguinal",
+        "retrobulbar": "Retrobulbar",
+        "peribulbar": "Peribulbar"
+      },
+      "suplementacaoO2Options": {
+        "cateterNasal": "Nasal Cannula",
+        "mascaraFacial": "Face Mask",
+        "guedel": "Guedel",
+        "nasofaringe": "Nasopharyngeal Airway"
+      }
+    },
+    "posProcedimento": {
+      "title": "Post-Procedure",
+      "cirurgiaRealizada": "Surgery performed *",
+      "selecionarProcedimento": "Select procedure...",
+      "buscarProcedimento": "Search procedure...",
+      "horaLabel": "Time *",
+      "principalLabel": "Primary",
+      "removerProcedimentoAria": "Remove procedure",
+      "adicionarProcedimento": "Add procedure",
+      "horaTerminoCirurgia": "Surgery end time *",
+      "diagnosticoPos": "Post-operative diagnosis *",
+      "horaTerminoAnestesia": "Anesthesia end time *"
+    },
+    "alderete": {
+      "title": "Aldrete-Kroulik Score",
+      "subtitle": "Assessment for discharge from the room",
+      "fields": {
+        "consciencia": {
+          "label": "Consciousness",
+          "opt2": "Fully awake",
+          "opt1": "Arousable when called",
+          "opt0": "Not responsive"
+        },
+        "atividade": {
+          "label": "Activity",
+          "opt2": "Moves all extremities",
+          "opt1": "Moves two extremities",
+          "opt0": "Unable to move"
+        },
+        "circulacao": {
+          "label": "Circulation",
+          "opt2": "BP ± 20% of pre-anesthetic level",
+          "opt1": "BP 20% to 50% of pre-anesthetic level",
+          "opt0": "BP ± 50% of pre-anesthetic level"
+        },
+        "respiracao": {
+          "label": "Respiration",
+          "opt2": "Breathes deeply and coughs freely",
+          "opt1": "Dyspnea, hypoventilation",
+          "opt0": "Apnea"
+        },
+        "saturacao": {
+          "label": "SpO2",
+          "opt2": "Maintains SpO2 > 90% on room air",
+          "opt1": "Needs O2 to maintain SpO2 > 90%",
+          "opt0": "SpO2 < 90% even with O2"
+        }
+      },
+      "totalLabel": "Total Aldrete & Kroulik",
+      "status": {
+        "apto": "Fit for Discharge",
+        "observacao": "Under Observation",
+        "monitoramento": "Intensive Monitoring"
+      },
+      "condicoesAltaTitle": "Clinical conditions at discharge",
+      "condicoesAltaOptions": {
+        "acordado": "Awake",
+        "sonolento": "Drowsy",
+        "intubado": "Intubated"
+      },
+      "dorErrorMsg": "If you select “Yes”, choose at least one scale and fill in the value.",
+      "dorTitle": "Pain present?",
+      "dorAriaLabel": "Pain present",
+      "dorSim": "Yes",
+      "dorNao": "No",
+      "scaleHint010": "0 to 10",
+      "scaleHint312": "3 to 12",
+      "condutaLabel": "Action taken",
+      "condutaPlaceholder": "Describe the action taken..."
+    },
+    "assinaturas": {
+      "title": "Signatures",
+      "noticeBefore": "By clicking",
+      "noticeStrong": "Sign and Save",
+      "noticeAfter": "a digital confirmation will be requested, and the 1st anesthesiologist field will be filled in automatically with the name of the logged-in professional.",
+      "primeiroLabel": "1st Anesthesiologist *",
+      "primeiroPlaceholder": "Filled in by digital signature",
+      "segundoLabel": "2nd Anesthesiologist",
+      "selecionarAnestesiologista": "Select anesthesiologist...",
+      "dataLabel": "Date *"
+    },
+    "formActions": {
+      "limparFormulario": "Clear Form",
+      "imprimir": "Print"
+    },
+    "signatureWatermark": {
+      "documentoAssinado": "Digitally signed document",
+      "textPart1": "This anesthesia record was submitted on",
+      "textPart2": "at",
+      "textPart3": "and signed by",
+      "textPart4": ", via authentication with the professional's personal password.",
+      "registroPrefix": "Record No. FA-",
+      "sincronizado": "Synchronized with the server",
+      "assinaturaValida": "Valid signature"
+    },
+    "signModal": {
+      "title": "Confirm and Sign Digitally",
+      "subtitleText": "Monitoring for this surgery has already been completed. By signing, you declare that you have reviewed all the data on this anesthesia record and assume professional responsibility for the information recorded.",
+      "subtitleStrong": "This will be the final save — once confirmed, the record can no longer be edited.",
+      "checkLabel": "I confirm that I have reviewed and agree with all the data entered.",
+      "nomeCompletoLabel": "Type your full name to sign",
+      "nomeCompletoPlaceholder": "Full name",
+      "profissionalLogadoPrefix": "Logged-in professional:",
+      "senhaLabel": "Type your password to sign",
+      "senhaPlaceholder": "Access password",
+      "cancelar": "Cancel",
+      "assinarSalvar": "Sign and Save"
+    },
+    "confirmarLimpezaAlert": {
+      "header": "Clear Form?",
+      "message": "This will erase all filled-in fields. Do you want to continue?",
+      "cancelar": "Cancel",
+      "limpar": "Clear"
+    },
+    "validationAlert": {
+      "header": "Required fields not filled in",
+      "subHeader": "{{count}} issue(s) found",
+      "message": "Check the fields highlighted in red.",
+      "entendi": "Got it"
+    },
+    "toasts": {
+      "selecioneAntibiotico": "Select the antibiotic and enter the dose.",
+      "naoFoiPossivelCarregarFicha": "Could not load the record (no connection to the server and no local draft). Please try again.",
+      "rascunhoReenviado": "Draft resubmitted successfully!",
+      "rascunhoLimpoFalhouServidor": "Local draft cleared. Failed to clear it on the server.",
+      "formularioLimpo": "Form cleared.",
+      "fichaAssinadaSalva": "Anesthesia record signed and saved successfully!",
+      "fichaSalva": "Anesthesia record saved successfully!",
+      "naoEnviadaRascunhoSalvo": "Could not submit the record to the server at this time. A draft was saved for retry.",
+      "naoSalvaRascunhoLocal": "Could not save to the server at this time. A draft was saved locally.",
+      "naoIdentificouCirurgiaImpressao": "Could not identify the surgery for printing. Reload the page and try again.",
+      "naoIdentificouCirurgia": "Could not identify the surgery. Reload the page and try again.",
+      "pacienteCanceladoCirurgia": "Patient cancelled. Cannot access the surgery.",
+      "monitorizacaoNaoConcluida": "Monitoring not yet completed.",
+      "fichaPreNaoEncontrada": "Pre-Anesthesia Record not found (or offline).",
+      "erroAbrirFichaPre": "Error opening Pre-Anesthesia Record",
+      "naoFoiPossivelCarregarListasAghu": "Could not load AGHU lists.",
+      "dadosRecarregados": "Data reloaded successfully!",
+      "falhaRecarregarDados": "Failed to reload data"
+    },
+    "signatureErrors": {
+      "confirmeVeracidade": "You must check the confirmation of the accuracy of the data.",
+      "digiteNomeCompleto": "Type your full name to sign.",
+      "nomeNaoConfere": "The name typed does not match the logged-in professional ({{expected}}).",
+      "digiteSenha": "Type your password to confirm."
+    },
+    "fieldLabels": {
+      "seguranca": {
+        "identificadoAvaliado": "Patient identified and evaluated",
+        "consentimentoAssinado": "Consent form signed",
+        "equipamentosChecados": "Equipment checked"
+      },
+      "preInducao": {
+        "recebeuMedPrevia": "Received preanesthetic medication"
+      },
+      "antibiotico": {
+        "temAntibiotico": "Antibiotic prophylaxis use"
+      },
+      "dadosVitais": {
+        "pa": "BP",
+        "fr": "RR",
+        "temp": "Temperature",
+        "spo2": "SpO₂",
+        "peso": "Weight",
+        "asa": "ASA",
+        "entradaSala": "Operating Room Entry"
+      },
+      "equipe": {
+        "cirurgiao": "Surgeon",
+        "assistente": "Assistant",
+        "diagnosticoPre": "Pre-op Diagnosis",
+        "horaInicioAnestesia": "Anesthesia start time"
+      },
+      "posicao": {
+        "usoCoxim": "Use of positioning pads",
+        "dificuldadePuncao": "Difficult puncture"
+      },
+      "tecnica": {
+        "anestesiaGeral": "General anesthesia (Yes/No)",
+        "circuitoAbsorvedor": "CO₂ absorber circuit",
+        "bloqueiosEspinhais": "Neuraxial blocks (Yes/No)",
+        "cateter": "Catheter (neuraxial block)",
+        "opioide": "Opioid (neuraxial block)",
+        "sedacao": "Sedation (Yes/No)",
+        "suplementacaoO2": "O₂ supplementation",
+        "bloqueioPlexo": "Plexus block (Yes/No)",
+        "neuroestimulador": "Nerve stimulator"
+      },
+      "posProcedimento": {
+        "horaTerminoCirurgia": "Surgery end time",
+        "diagnosticoPos": "Post-op diagnosis",
+        "horaTerminoAnestesia": "Anesthesia end time"
+      },
+      "alderete": {
+        "dor": "Pain present (Yes/No)",
+        "dorENV": "VAS scale (0-10)",
+        "dorPAINAD": "PAINAD scale (0-10)",
+        "dorBPS": "BPS scale (3-12)"
+      },
+      "assinaturas": {
+        "dataAssinatura": "Signature date"
+      }
+    },
+    "sectionLabels": {
+      "seguranca": "Patient Safety",
+      "preInducao": "Pre-Induction",
+      "antibiotico": "Antibiotic Prophylaxis",
+      "dadosVitais": "Vital Signs",
+      "equipe": "Surgical Team",
+      "posicao": "Position and Access",
+      "tecnica": "Anesthetic Technique",
+      "posProcedimento": "Post-Procedure",
+      "alderete": "Aldrete and Pain",
+      "assinaturas": "Signatures"
+    },
+    "missing": {
+      "escalaDorRequired": "Select at least one pain scale (VAS / PAINAD / BPS)",
+      "escalaDorInvalid": "Pain scale value out of the allowed range",
+      "procedimentoRequired": "Enter at least one procedure performed"
+    }
+  }
+}

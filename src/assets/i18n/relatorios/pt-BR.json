@@ -1,0 +1,181 @@
+{
+  "relatorios": {
+    "common": {
+      "loadError": "Não foi possível carregar os relatórios. Tente novamente.",
+      "neverSynced": "Nunca sincronizado"
+    },
+    "page": {
+      "eyebrow": "Administração",
+      "title": "Relatórios",
+      "subtitle": "Indicadores consolidados do centro cirúrgico e da operação anestésica, com base nos dados registrados no SIGA.",
+      "summary": {
+        "surgeriesInPeriod": "Cirurgias no período",
+        "completed": "Concluídas",
+        "canceled": "Canceladas",
+        "signedRecords": "Fichas assinadas",
+        "clinicalEvents": "Eventos clínicos",
+        "medicationsAdministered": "Medicamentos administrados"
+      },
+      "tabs": {
+        "operational": "Operacional",
+        "clinical": "Clínico",
+        "medications": "Medicamentos",
+        "integrations": "Integrações"
+      }
+    },
+    "filters": {
+      "from": "De",
+      "to": "Até",
+      "today": "Hoje",
+      "last7Days": "7 dias",
+      "thisMonth": "Este mês",
+      "anesthetist": "Anestesista",
+      "allAnesthetists": "Todos",
+      "status": "Status",
+      "allStatuses": "Todos",
+      "refresh": "Atualizar"
+    },
+    "state": {
+      "loading": "Carregando relatório...",
+      "retry": "Atualizar",
+      "emptyDefault": "Nenhum dado encontrado para os filtros selecionados."
+    },
+    "pdfActions": {
+      "generating": "Gerando...",
+      "viewPrint": "Visualizar / Imprimir",
+      "generateError": "Não foi possível gerar o relatório. Tente novamente."
+    },
+    "charts": {
+      "quantityDataset": "Quantidade"
+    },
+    "anesthetists": {
+      "title": "Produtividade por Anestesista",
+      "subtitle": "Indicador operacional de volume de trabalho — não representa avaliação de desempenho individual.",
+      "kpiAnesthetistsInPeriod": "Anestesistas no período",
+      "chartSurgeriesByAnesthetist": "Cirurgias por anestesista",
+      "datasetSurgeries": "Cirurgias",
+      "tableAnesthetist": "Anestesista",
+      "tableSurgeries": "Cirurgias",
+      "tableSignedRecords": "Fichas assinadas",
+      "tableAvgDuration": "Duração média (min)"
+    },
+    "antibioticProphylaxis": {
+      "title": "Antibioticoprofilaxia",
+      "subtitle": "Considera todas as fichas do período — o sistema não registra critério de elegibilidade nem horário de incisão cirúrgica.",
+      "kpiTotalSurgeries": "Total de cirurgias",
+      "kpiWithProphylaxis": "Com profilaxia registrada",
+      "kpiWithoutRecord": "Sem registro",
+      "kpiAdherence": "Adesão",
+      "chartTopMedications": "Medicamentos mais usados",
+      "datasetAdministrations": "Administrações",
+      "tableMedication": "Medicamento",
+      "tableQuantity": "Quantidade"
+    },
+    "asa": {
+      "title": "Classificação ASA",
+      "subtitle": "Distribuição de risco anestésico das cirurgias avaliadas.",
+      "kpiTotalEvaluated": "Total avaliado",
+      "chartDistribution": "Distribuição ASA",
+      "chartByAnesthetist": "Por anestesista",
+      "datasetEvaluations": "Avaliações",
+      "chartByWeek": "Evolução por semana",
+      "tableClassification": "Classificação",
+      "tableQuantity": "Quantidade",
+      "tablePercentage": "Percentual"
+    },
+    "cancellations": {
+      "title": "Cancelamentos",
+      "subtitle": "Cirurgias canceladas no período.",
+      "kpiTotalSurgeries": "Total de cirurgias",
+      "kpiCanceled": "Canceladas",
+      "chartByAnesthetist": "Cancelamentos por anestesista",
+      "datasetCancellations": "Cancelamentos",
+      "chartByWeekday": "Cancelamentos por dia da semana",
+      "tableAnesthetist": "Anestesista",
+      "tableCancellations": "Cancelamentos"
+    },
+    "clinicalEvents": {
+      "title": "Eventos Clínicos",
+      "subtitle": "Eventos registrados durante a monitorização intraoperatória.",
+      "kpiTotalEvents": "Total de eventos",
+      "kpiDistinctTypes": "Tipos diferentes",
+      "kpiSurgeriesWithEvent": "Cirurgias com evento",
+      "chartByType": "Eventos por tipo",
+      "datasetEvents": "Eventos",
+      "chartByAnesthetist": "Eventos por anestesista",
+      "chartOverTime": "Eventos ao longo do tempo",
+      "tableEventType": "Tipo do evento",
+      "tableQuantity": "Quantidade",
+      "tablePercentage": "Percentual"
+    },
+    "drugConsumption": {
+      "title": "Consumo de Fármacos e Insumos",
+      "subtitle": "Medicamentos e insumos administrados no período.",
+      "allCategories": "Todas as categorias",
+      "kpiTotalAdministrations": "Total de administrações",
+      "kpiDistinctDrugs": "Fármacos distintos",
+      "kpiTopDrug": "Fármaco mais usado",
+      "kpiTopCategory": "Categoria mais usada",
+      "chartTopMedications": "Top medicamentos utilizados",
+      "datasetAdministrations": "Administrações",
+      "chartByCategory": "Por categoria",
+      "tableMedication": "Medicamento",
+      "tableCategory": "Categoria",
+      "tableQuantity": "Quantidade"
+    },
+    "fluidBalance": {
+      "title": "Balanço Hídrico",
+      "subtitle": "Ganhos e perdas de volume registrados durante as cirurgias.",
+      "kpiVolumeGained": "Volume ganho",
+      "kpiVolumeLost": "Volume perdido",
+      "kpiBalance": "Balanço",
+      "kpiBleeding": "Sangramento",
+      "kpiBloodProducts": "Hemocomponentes",
+      "chartByCategory": "Por categoria",
+      "chartByProcedureType": "Por tipo de procedimento",
+      "datasetVolume": "Volume (mL)",
+      "tableCategory": "Categoria",
+      "tableVolume": "Volume (mL)"
+    },
+    "integrationStatus": {
+      "title": "Saúde da Integração AGHU/SIGA",
+      "subtitle": "Estado atual da sincronização com o AGHU. Não há histórico armazenado — apenas o instante mais recente de cada sincronização.",
+      "checkNow": "Verificar agora",
+      "database": "Banco de dados",
+      "medicines": "Medicamentos",
+      "procedures": "Procedimentos",
+      "professionals": "Profissionais",
+      "outdated": "Desatualizado",
+      "updated": "Atualizado"
+    },
+    "recovery": {
+      "title": "Recuperação / Aldrete",
+      "subtitle": "Não há registro de horário de entrada/alta da RPA no sistema. O tempo abaixo é entre o fim da anestesia e a avaliação de Aldrete.",
+      "kpiPatientsEvaluated": "Pacientes avaliados",
+      "kpiAvgTimeToAldrete": "Tempo médio até avaliação de Aldrete",
+      "nEvaluations": "(n = {{count}})",
+      "chartScoreDistribution": "Distribuição do score de Aldrete",
+      "datasetPatients": "Pacientes",
+      "chartDestination": "Destino do paciente",
+      "chartDischargeCondition": "Condição de alta",
+      "tableScore": "Score",
+      "tableQuantity": "Quantidade",
+      "scoreLabel": "Score {{score}}"
+    },
+    "surgeries": {
+      "title": "Volume e Tempo de Cirurgias",
+      "subtitle": "Duração calculada apenas para cirurgias com registro de início e fim na monitorização.",
+      "kpiTotalSurgeries": "Total de cirurgias",
+      "kpiAvgDuration": "Duração média",
+      "kpiMinDuration": "Duração mínima",
+      "kpiMaxDuration": "Duração máxima",
+      "durationDataInfo": "{{withData}} de {{total}} cirurgias com dados de duração",
+      "chartByDay": "Cirurgias por dia",
+      "datasetSurgeries": "Cirurgias",
+      "chartByProcedureType": "Cirurgias por tipo de procedimento",
+      "tableShift": "Turno",
+      "tableSurgeries": "Cirurgias",
+      "tableAvgDuration": "Duração média (min)"
+    }
+  }
+}

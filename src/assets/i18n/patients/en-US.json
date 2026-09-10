@@ -1,0 +1,110 @@
+{
+  "patientList": {
+    "title": "All Patients",
+    "filters": {
+      "toggle": "Filters",
+      "statusAriaLabel": "Status filter",
+      "searchPlaceholder": "Search by patient or medical record"
+    },
+    "refresh": {
+      "label": "Refresh list"
+    },
+    "countSuffix": "procedures today",
+    "status": {
+      "all": "All",
+      "scheduled": "Scheduled",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "date": {
+      "allDates": "All dates",
+      "today": "Today"
+    },
+    "emptyState": "No procedures found for the selected filters.",
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageLabel": "Page",
+      "of": "of"
+    },
+    "loadingMasterData": "Downloading medications, professionals and procedures...",
+    "procedureNotInformed": "Procedure not informed",
+    "common": {
+      "confirm": "Confirm"
+    },
+    "assume": {
+      "title": "Assume Patient",
+      "confirmMessage": "Do you really want to assume this patient and start anesthetic preparation?",
+      "loading": "Assuming patient...",
+      "success": "Patient assumed successfully!",
+      "error": "Communication failure with the API. Unable to assume the patient."
+    },
+    "abandon": {
+      "removeDoctorTitle": "Remove Doctor",
+      "leaveTitle": "Leave Patient",
+      "removeDoctorMessage": "Do you really want to remove the doctor responsible for this patient?",
+      "leaveMessage": "Do you really want to leave this patient?",
+      "removingDoctor": "Removing doctor...",
+      "leaving": "Leaving patient...",
+      "removeDoctorSuccess": "Doctor removed successfully!",
+      "leaveSuccess": "Patient released successfully!",
+      "removeDoctorError": "Communication failure with the API. Unable to remove the doctor.",
+      "leaveError": "Communication failure with the API. Unable to release the patient."
+    },
+    "reopen": {
+      "title": "Reopen Record",
+      "confirmMessage": "Do you want to reopen this completed anesthesia record? The responsible doctor will be able to edit and save it again.",
+      "confirm": "Reopen",
+      "loading": "Reopening record...",
+      "success": "Record reopened successfully!",
+      "error": "Communication failure with the API. Unable to reopen the record."
+    }
+  },
+  "myPatients": {
+    "title": "My Patients",
+    "filters": {
+      "toggle": "Filters",
+      "statusAriaLabel": "Status filter",
+      "searchPlaceholder": "Search by patient or medical record"
+    },
+    "refresh": {
+      "label": "Refresh list"
+    },
+    "countSuffix": "patient(s) of yours",
+    "status": {
+      "all": "All",
+      "inProgress": "In Progress",
+      "completed": "Completed"
+    },
+    "date": {
+      "allDates": "All dates",
+      "today": "Today"
+    },
+    "emptyState": "You don't have any patients yet for the selected filters.",
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageLabel": "Page",
+      "of": "of"
+    },
+    "loadError": "Failed to load your patients.",
+    "procedureNotInformed": "Procedure not informed",
+    "you": "You",
+    "monitorization": {
+      "continue": "Continue Monitoring",
+      "start": "Start Monitoring",
+      "access": "Access Monitoring",
+      "default": "Monitoring"
+    },
+    "common": {
+      "confirm": "Confirm"
+    },
+    "abandon": {
+      "title": "Leave Patient",
+      "confirmMessage": "Do you really want to leave this patient?",
+      "loading": "Leaving patient...",
+      "success": "Patient released successfully!",
+      "error": "Communication failure with the API. Unable to release the patient."
+    }
+  }
+}

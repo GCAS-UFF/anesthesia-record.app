@@ -1,6 +1,6 @@
 <div class="report-actions">
   <button type="button" class="action-btn" [disabled]="generating" (click)="visualizar()">
     <ion-icon name="print-outline"></ion-icon>
-    {{ generating ? 'Gerando...' : 'Visualizar / Imprimir' }}
+    {{ (generating ? 'relatorios.pdfActions.generating' : 'relatorios.pdfActions.viewPrint') | translate }}
   </button>
 </div>

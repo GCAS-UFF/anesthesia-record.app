@@ -14,6 +14,7 @@ import {
   arrowDownOutline,
 } from 'ionicons/icons';
 import { Router } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { SurgeryService } from '../../core/services/surgery.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AnesthesiaRecordService } from '../../core/services/anesthesia-record.service';
@@ -41,6 +42,7 @@ import { firstValueFrom } from 'rxjs';
     DateFilterComponent,
     ProcedureCardComponent,
     EmptyStateComponent,
+    TranslatePipe,
   ],
   providers: [DatePipe],
 })
@@ -86,7 +88,8 @@ export class PatientListPage implements OnInit {
     private authService: AuthService,
     private anesthesiaRecordService: AnesthesiaRecordService,
     private masterDataService: MasterDataService,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private translate: TranslateService
   ) {
     addIcons({
       chevronBackOutline,
@@ -103,22 +106,27 @@ export class PatientListPage implements OnInit {
   get statusLabel(): string {
     switch (this.selectedStatus) {
       case SurgeryStatusEnum.Agendado:
-        return 'Agendados';
+        return this.translate.instant('patientList.status.scheduled');
       case SurgeryStatusEnum.Concluido:
-        return 'Realizados';
+        return this.translate.instant('patientList.status.completed');
       case SurgeryStatusEnum.Cancelada:
-        return 'Cancelados';
+        return this.translate.instant('patientList.status.cancelled');
       default:
-        return 'Todos';
+        return this.translate.instant('patientList.status.all');
     }
   }
 
   get dateLabel(): string {
-    if (!this.selectedDate) return 'Todas as datas';
+    if (!this.selectedDate) return this.translate.instant('patientList.date.allDates');
     const today = new Date().toISOString().split('T')[0];
-    if (this.selectedDate === today) return 'Hoje';
+    if (this.selectedDate === today) return this.translate.instant('patientList.date.today');
     const [year, month, day] = this.selectedDate.split('-');
     return `${day}/${month}`;
+  }
+
+  get isTodaySelected(): boolean {
+    const today = new Date().toISOString().split('T')[0];
+    return this.selectedDate === today;
   }
 
   toggleFilters() {
@@ -204,7 +212,7 @@ export class PatientListPage implements OnInit {
 
     const loading = await this.loadingController.create({
       spinner: 'crescent',
-      message: 'Baixando medicamentos, profissionais e procedimentos...',
+      message: this.translate.instant('patientList.loadingMasterData'),
       backdropDismiss: false
     });
 
@@ -318,7 +326,7 @@ export class PatientListPage implements OnInit {
         procedure:
           primaryProc && primaryProc.description && primaryProc.description !== 'Não informado'
             ? primaryProc.description
-            : 'Procedimento não informado',
+            : this.translate.instant('patientList.procedureNotInformed'),
         status: item.status === SurgeryStatusEnum.Agendado ? SurgeryStatusEnum.Agendado : item.status === SurgeryStatusEnum.EmPreparacao ? SurgeryStatusEnum.EmPreparacao : item.status === SurgeryStatusEnum.EmProgresso ? SurgeryStatusEnum.EmProgresso : item.status === SurgeryStatusEnum.Concluido ? SurgeryStatusEnum.Concluido : item.status === SurgeryStatusEnum.Cancelada ? SurgeryStatusEnum.Cancelada : null,
         date: this.datePipe.transform(dt, 'yyyy-MM-dd'),
         time: this.datePipe.transform(dt, 'HH:mm'),
@@ -386,15 +394,15 @@ export class PatientListPage implements OnInit {
     }
 
     const alert = await this.alertController.create({
-      header: 'Assumir Paciente',
-      message: 'Deseja realmente assumir este paciente e iniciar o preparo anestésico?',
+      header: this.translate.instant('patientList.assume.title'),
+      message: this.translate.instant('patientList.assume.confirmMessage'),
       buttons: [
-        { text: 'Cancelar', role: 'cancel', cssClass: 'secondary' },
+        { text: this.translate.instant('common.cancel'), role: 'cancel', cssClass: 'secondary' },
         {
-          text: 'Confirmar',
+          text: this.translate.instant('patientList.common.confirm'),
           handler: async () => {
             const loading = await this.loadingController.create({
-              message: 'Assumindo paciente...',
+              message: this.translate.instant('patientList.assume.loading'),
               duration: 1000,
               spinner: 'circular',
             });
@@ -406,7 +414,7 @@ export class PatientListPage implements OnInit {
               next: async () => {
                 await loading.dismiss();
                 const toast = await this.toastController.create({
-                  message: 'Paciente assumido com sucesso!',
+                  message: this.translate.instant('patientList.assume.success'),
                   duration: 2000,
                   color: 'success',
                   icon: 'checkmark-circle',
@@ -417,7 +425,7 @@ export class PatientListPage implements OnInit {
               error: async () => {
                 await loading.dismiss();
                 const toast = await this.toastController.create({
-                  message: 'Falha de comunicação com a API. Não foi possível assumir o paciente.',
+                  message: this.translate.instant('patientList.assume.error'),
                   duration: 3000,
                   color: 'danger',
                 });
@@ -455,17 +463,21 @@ export class PatientListPage implements OnInit {
 
   async abandonPatient(surgeryId: string | number, patientId: string) {
     const alert = await this.alertController.create({
-      header: this.isAdminUser ? 'Remover Médico' : 'Deixar Paciente',
+      header: this.isAdminUser
+        ? this.translate.instant('patientList.abandon.removeDoctorTitle')
+        : this.translate.instant('patientList.abandon.leaveTitle'),
       message: this.isAdminUser
-        ? 'Deseja realmente remover o médico responsável por este paciente?'
-        : 'Deseja realmente deixar esse paciente?',
+        ? this.translate.instant('patientList.abandon.removeDoctorMessage')
+        : this.translate.instant('patientList.abandon.leaveMessage'),
       buttons: [
-        { text: 'Cancelar', role: 'cancel', cssClass: 'secondary' },
+        { text: this.translate.instant('common.cancel'), role: 'cancel', cssClass: 'secondary' },
         {
-          text: 'Confirmar',
+          text: this.translate.instant('patientList.common.confirm'),
           handler: async () => {
             const loading = await this.loadingController.create({
-              message: this.isAdminUser ? 'Removendo médico...' : 'Deixando paciente...',
+              message: this.isAdminUser
+                ? this.translate.instant('patientList.abandon.removingDoctor')
+                : this.translate.instant('patientList.abandon.leaving'),
               duration: 1000,
               spinner: 'circular',
             });
@@ -475,7 +487,9 @@ export class PatientListPage implements OnInit {
               next: async () => {
                 await loading.dismiss();
                 const toast = await this.toastController.create({
-                  message: this.isAdminUser ? 'Médico removido com sucesso!' : 'Paciente liberado com sucesso!',
+                  message: this.isAdminUser
+                    ? this.translate.instant('patientList.abandon.removeDoctorSuccess')
+                    : this.translate.instant('patientList.abandon.leaveSuccess'),
                   duration: 2000,
                   color: 'success',
                   icon: 'checkmark-circle',
@@ -487,8 +501,8 @@ export class PatientListPage implements OnInit {
                 await loading.dismiss();
                 const toast = await this.toastController.create({
                   message: this.isAdminUser
-                    ? 'Falha de comunicação com a API. Não foi possível remover o médico.'
-                    : 'Falha de comunicação com a API. Não foi possível liberar o paciente.',
+                    ? this.translate.instant('patientList.abandon.removeDoctorError')
+                    : this.translate.instant('patientList.abandon.leaveError'),
                   duration: 3000,
                   color: 'danger',
                 });
@@ -525,15 +539,15 @@ export class PatientListPage implements OnInit {
     if (!this.isAdminUser) return;
 
     const alert = await this.alertController.create({
-      header: 'Reabrir Ficha',
-      message: 'Deseja reabrir esta ficha finalizada? O médico responsável poderá editar e salvar novamente.',
+      header: this.translate.instant('patientList.reopen.title'),
+      message: this.translate.instant('patientList.reopen.confirmMessage'),
       buttons: [
-        { text: 'Cancelar', role: 'cancel', cssClass: 'secondary' },
+        { text: this.translate.instant('common.cancel'), role: 'cancel', cssClass: 'secondary' },
         {
-          text: 'Reabrir',
+          text: this.translate.instant('patientList.reopen.confirm'),
           handler: async () => {
             const loading = await this.loadingController.create({
-              message: 'Reabrindo ficha...',
+              message: this.translate.instant('patientList.reopen.loading'),
               duration: 1000,
               spinner: 'circular',
             });
@@ -543,7 +557,7 @@ export class PatientListPage implements OnInit {
               next: async () => {
                 await loading.dismiss();
                 const toast = await this.toastController.create({
-                  message: 'Ficha reaberta com sucesso!',
+                  message: this.translate.instant('patientList.reopen.success'),
                   duration: 2000,
                   color: 'success',
                   icon: 'checkmark-circle',
@@ -554,7 +568,7 @@ export class PatientListPage implements OnInit {
               error: async () => {
                 await loading.dismiss();
                 const toast = await this.toastController.create({
-                  message: 'Falha de comunicação com a API. Não foi possível reabrir a ficha.',
+                  message: this.translate.instant('patientList.reopen.error'),
                   duration: 3000,
                   color: 'danger',
                 });

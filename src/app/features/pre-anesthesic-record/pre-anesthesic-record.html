@@ -5,14 +5,14 @@
 
   <header class="pre-topbar">
     <div class="pre-topbar__title">
-      <span class="chip-tag">Ficha</span>
-      <h1>Avaliação Pré-Anestésica</h1>
+      <span class="chip-tag">{{ 'preAnestesica.chipTag' | translate }}</span>
+      <h1>{{ 'preAnestesica.pageTitle' | translate }}</h1>
     </div>
 
     <div class="pre-topbar__actions">
       <span class="save-status" *ngIf="lastSavedAt">
         <ion-icon name="cloud-done-outline"></ion-icon>
-        Rascunho salvo {{ lastSavedAt | date:'HH:mm' }}
+        {{ 'preAnestesica.draftSavedAt' | translate }} {{ lastSavedAt | date:'HH:mm' }}
       </span>
       <ion-spinner *ngIf="isSaving" name="dots"></ion-spinner>
     </div>
@@ -20,12 +20,12 @@
 
   <div class="finalized-banner" *ngIf="isFinalized">
     <ion-icon name="lock-closed-outline"></ion-icon>
-    <span>Esta avaliação pré-anestésica já foi finalizada e não pode mais ser editada.</span>
+    <span>{{ 'preAnestesica.finalizedBanner' | translate }}</span>
   </div>
 
   <div class="finalized-banner" *ngIf="!isFinalized && !canEdit">
     <ion-icon name="eye-outline"></ion-icon>
-    <span>Você não é o médico responsável por este atendimento. Visualização somente leitura.</span>
+    <span>{{ 'preAnestesica.readOnlyBanner' | translate }}</span>
   </div>
 
   <div class="pre-layout">
@@ -40,7 +40,7 @@
           (click)="goToSection(s.id)"
         >
           <span class="pre-nav__index">{{ s.index }}</span>
-          <span class="pre-nav__label">{{ s.title }}</span>
+          <span class="pre-nav__label">{{ s.titleKey | translate }}</span>
         </button>
       </div>
     </aside>
@@ -51,21 +51,21 @@
         <div class="pre-section__head">
           <span class="pre-section__num">01</span>
           <div>
-            <h2>Procedimento</h2>
-            <p>Informações do agendamento cirúrgico.</p>
+            <h2>{{ 'preAnestesica.sections.procedimento.title' | translate }}</h2>
+            <p>{{ 'preAnestesica.sections.procedimento.description' | translate }}</p>
           </div>
         </div>
 
         <div class="qa-row qa-row--column">
-          <span class="qa-label">Cirurgia(s) proposta(s) <em class="req">*</em></span>
+          <span class="qa-label">{{ 'preAnestesica.procedimento.surgeriesLabel' | translate }} <em class="req">*</em></span>
           <div class="inline-add">
             <select class="select-control" [(ngModel)]="cirurgiaSelecionada" [ngModelOptions]="{ standalone: true }">
-              <option value="">Selecione uma cirurgia (AGHU)…</option>
-              <option *ngFor="let c of cirurgiasAghu" [value]="c">{{ c }}</option>
+              <option value="">{{ 'preAnestesica.procedimento.selectSurgeryPlaceholder' | translate }}</option>
+              <option *ngFor="let c of cirurgiasAghu" [value]="c.value">{{ c.labelKey | translate }}</option>
             </select>
             <button type="button" class="btn-add" (click)="addCirurgia()">
               <ion-icon name="add-circle-outline"></ion-icon>
-              Adicionar
+              {{ 'preAnestesica.procedimento.add' | translate }}
             </button>
           </div>
 
@@ -73,35 +73,35 @@
             <div class="repeat-row" *ngFor="let c of cirurgias.controls; let i = index" [formGroupName]="i">
               <input type="text" formControlName="nome" />
               <button type="button" class="pill" [class.pill--on]="c.get('principal')?.value" (click)="setCirurgiaPrincipal(i)">
-                Principal
+                {{ 'preAnestesica.procedimento.principal' | translate }}
               </button>
               <button type="button" class="btn-icon btn-icon--danger" (click)="removeCirurgia(i)">
                 <ion-icon name="trash-outline"></ion-icon>
               </button>
             </div>
-            <p class="empty-hint" *ngIf="!cirurgias.length">Nenhuma cirurgia adicionada.</p>
+            <p class="empty-hint" *ngIf="!cirurgias.length">{{ 'preAnestesica.procedimento.noSurgeryAdded' | translate }}</p>
           </div>
         </div>
 
         <div class="grid-2">
           <label class="field">
-            <span>Lateralidade</span>
+            <span>{{ 'preAnestesica.procedimento.laterality' | translate }}</span>
             <select class="select-control" formControlName="lateralidade">
-              <option value="">Selecione…</option>
+              <option value="">{{ 'preAnestesica.selectPlaceholder' | translate }}</option>
               <option *ngFor="let l of lateralidadeOptions" [value]="l.value">{{ l.label }}</option>
             </select>
           </label>
           <label class="field">
-            <span>Data da consulta</span>
+            <span>{{ 'preAnestesica.procedimento.consultationDate' | translate }}</span>
             <input type="datetime-local" formControlName="dataConsulta" />
           </label>
           <label class="field field--col-2">
-            <span>Diagnóstico pré-operatório</span>
-            <input type="text" formControlName="diagnosticoPreOperatorio" placeholder="Ex.: Colelitíase" />
+            <span>{{ 'preAnestesica.procedimento.preOperativeDiagnosis' | translate }}</span>
+            <input type="text" formControlName="diagnosticoPreOperatorio" [placeholder]="'preAnestesica.procedimento.preOperativeDiagnosisPlaceholder' | translate" />
           </label>
           <label class="field field--col-2">
-            <span>Observações</span>
-            <textarea rows="2" formControlName="observacao" placeholder="Detalhes adicionais do procedimento"></textarea>
+            <span>{{ 'preAnestesica.observations' | translate }}</span>
+            <textarea rows="2" formControlName="observacao" [placeholder]="'preAnestesica.procedimento.observationsPlaceholder' | translate"></textarea>
           </label>
         </div>
       </section>
@@ -110,53 +110,53 @@
         <div class="pre-section__head">
           <span class="pre-section__num">02</span>
           <div>
-            <h2>Antropometria e Sinais Vitais</h2>
-            <p>Medidas e sinais vitais basais.</p>
+            <h2>{{ 'preAnestesica.sections.antropometria.title' | translate }}</h2>
+            <p>{{ 'preAnestesica.sections.antropometria.description' | translate }}</p>
           </div>
         </div>
 
         <div class="grid-5">
           <label class="field">
-            <span>Peso (kg)</span>
+            <span>{{ 'preAnestesica.antropometria.weight' | translate }}</span>
             <input type="number" step="0.1" formControlName="peso" />
           </label>
           <label class="field">
-            <span>Altura (cm)</span>
+            <span>{{ 'preAnestesica.antropometria.height' | translate }}</span>
             <input type="number" formControlName="altura" />
           </label>
           <label class="field field--readonly">
-            <span>IMC</span>
+            <span>{{ 'preAnestesica.antropometria.bmi' | translate }}</span>
             <input type="number" formControlName="imc" readonly />
           </label>
           <label class="field">
-            <span>Temperatura (°C)</span>
+            <span>{{ 'preAnestesica.antropometria.temperature' | translate }}</span>
             <input type="number" step="0.1" formControlName="temperatura" />
           </label>
           <label class="field">
-            <span>SpO₂ (%)</span>
+            <span>{{ 'preAnestesica.antropometria.spo2' | translate }}</span>
             <input type="number" formControlName="saturacao" />
           </label>
         </div>
 
         <div class="grid-5">
           <label class="field">
-            <span>Frequência cardíaca (bpm)</span>
+            <span>{{ 'preAnestesica.antropometria.heartRate' | translate }}</span>
             <input type="number" formControlName="frequenciaCardiaca" />
           </label>
           <label class="field">
-            <span>PA sistólica (mmHg)</span>
+            <span>{{ 'preAnestesica.antropometria.systolicBp' | translate }}</span>
             <input type="number" formControlName="pressaoSistolica" />
           </label>
           <label class="field">
-            <span>PA diastólica (mmHg)</span>
+            <span>{{ 'preAnestesica.antropometria.diastolicBp' | translate }}</span>
             <input type="number" formControlName="pressaoDiastolica" />
           </label>
           <label class="field">
-            <span>Jejum sólidos (h)</span>
+            <span>{{ 'preAnestesica.antropometria.fastingSolids' | translate }}</span>
             <input type="number" formControlName="jejumSolidos" />
           </label>
           <label class="field">
-            <span>Jejum líquidos (h)</span>
+            <span>{{ 'preAnestesica.antropometria.fastingLiquids' | translate }}</span>
             <input type="number" formControlName="jejumLiquidos" />
           </label>
         </div>
@@ -166,8 +166,8 @@
         <div class="pre-section__head">
           <span class="pre-section__num">03</span>
           <div>
-            <h2>Comorbidades</h2>
-            <p>Marque os achados por sistema. Campos de observação são livres.</p>
+            <h2>{{ 'preAnestesica.sections.comorbidades.title' | translate }}</h2>
+            <p>{{ 'preAnestesica.sections.comorbidades.description' | translate }}</p>
           </div>
         </div>
 
@@ -182,29 +182,29 @@
           </div>
 
           <label class="field field--full" *ngIf="isChecked('comorbidades.' + g.key + '.outros')">
-            <span>Outros — descrever</span>
-            <input type="text" formControlName="outrosDescricao" placeholder="Descreva" />
+            <span>{{ 'preAnestesica.otherDescribe' | translate }}</span>
+            <input type="text" formControlName="outrosDescricao" [placeholder]="'preAnestesica.otherDescribePlaceholder' | translate" />
           </label>
 
           <label class="field field--full">
-            <span>Observações</span>
+            <span>{{ 'preAnestesica.observations' | translate }}</span>
             <textarea rows="2" formControlName="observacoes"></textarea>
           </label>
         </div>
 
         <div class="sub-block" formGroupName="outros">
-          <h3 class="sub-head">Outros</h3>
+          <h3 class="sub-head">{{ 'preAnestesica.comorbidades.outrosTitle' | translate }}</h3>
           <label class="field field--full">
-            <span>Descrever</span>
-            <textarea rows="3" formControlName="descricao" placeholder="Outras condições relevantes"></textarea>
+            <span>{{ 'preAnestesica.describe' | translate }}</span>
+            <textarea rows="3" formControlName="descricao" [placeholder]="'preAnestesica.comorbidades.outrosPlaceholder' | translate"></textarea>
           </label>
         </div>
 
         <div class="sub-block" formGroupName="historiaFamiliar">
-          <h3 class="sub-head">História familiar e outras informações</h3>
+          <h3 class="sub-head">{{ 'preAnestesica.comorbidades.familyHistoryTitle' | translate }}</h3>
           <label class="field field--full">
-            <span>Descrever</span>
-            <textarea rows="3" formControlName="descricao" placeholder="Ex.: hipertermia maligna na família, doenças hereditárias…"></textarea>
+            <span>{{ 'preAnestesica.describe' | translate }}</span>
+            <textarea rows="3" formControlName="descricao" [placeholder]="'preAnestesica.comorbidades.familyHistoryPlaceholder' | translate"></textarea>
           </label>
         </div>
       </section>
@@ -212,14 +212,14 @@
       <section id="sec-habitos" class="pre-section" formGroupName="habitos">
         <div class="pre-section__head">
           <span class="pre-section__num">04</span>
-          <div><h2>Hábitos</h2></div>
+          <div><h2>{{ 'preAnestesica.sections.habitos.title' | translate }}</h2></div>
         </div>
 
         <div class="qa-row">
-          <span class="qa-label">Usuário de drogas ilícitas?</span>
+          <span class="qa-label">{{ 'preAnestesica.habitos.illicitDrugsQuestion' | translate }}</span>
           <div class="chips">
-            <button type="button" class="chip chip--sim" [class.active]="isBool('habitos.drogasIlicitas', true)" (click)="setBool('habitos.drogasIlicitas', true)">SIM</button>
-            <button type="button" class="chip chip--nao" [class.active]="isBool('habitos.drogasIlicitas', false)" (click)="setBool('habitos.drogasIlicitas', false)">NÃO</button>
+            <button type="button" class="chip chip--sim" [class.active]="isBool('habitos.drogasIlicitas', true)" (click)="setBool('habitos.drogasIlicitas', true)">{{ 'preAnestesica.yes' | translate }}</button>
+            <button type="button" class="chip chip--nao" [class.active]="isBool('habitos.drogasIlicitas', false)" (click)="setBool('habitos.drogasIlicitas', false)">{{ 'preAnestesica.no' | translate }}</button>
           </div>
         </div>
         <ng-container *ngIf="isBool('habitos.drogasIlicitas', true)">
@@ -230,47 +230,47 @@
             </label>
           </div>
           <label class="field field--full" *ngIf="isChecked('habitos.drogasTipos.outros')">
-            <span>Outros — descrever</span>
+            <span>{{ 'preAnestesica.otherDescribe' | translate }}</span>
             <input type="text" formControlName="drogasOutrosDescricao" />
           </label>
         </ng-container>
 
         <div class="qa-row">
-          <span class="qa-label">Tabagista ou ex-tabagista?</span>
+          <span class="qa-label">{{ 'preAnestesica.habitos.smokerQuestion' | translate }}</span>
           <div class="chips">
-            <button type="button" class="chip chip--sim" [class.active]="isBool('habitos.tabagista', true)" (click)="setBool('habitos.tabagista', true)">SIM</button>
-            <button type="button" class="chip chip--nao" [class.active]="isBool('habitos.tabagista', false)" (click)="setBool('habitos.tabagista', false)">NÃO</button>
+            <button type="button" class="chip chip--sim" [class.active]="isBool('habitos.tabagista', true)" (click)="setBool('habitos.tabagista', true)">{{ 'preAnestesica.yes' | translate }}</button>
+            <button type="button" class="chip chip--nao" [class.active]="isBool('habitos.tabagista', false)" (click)="setBool('habitos.tabagista', false)">{{ 'preAnestesica.no' | translate }}</button>
           </div>
         </div>
         <label class="field field--full" *ngIf="isBool('habitos.tabagista', true)">
-          <span>Carga tabágica</span>
-          <input type="text" formControlName="cargaTabagica" placeholder="Ex.: 20 maços/ano" />
+          <span>{{ 'preAnestesica.habitos.smokingLoad' | translate }}</span>
+          <input type="text" formControlName="cargaTabagica" [placeholder]="'preAnestesica.habitos.smokingLoadPlaceholder' | translate" />
         </label>
 
         <div class="qa-row">
-          <span class="qa-label">Etilista?</span>
+          <span class="qa-label">{{ 'preAnestesica.habitos.alcoholQuestion' | translate }}</span>
           <div class="chips">
-            <button type="button" class="chip chip--sim" [class.active]="isBool('habitos.etilista', true)" (click)="setBool('habitos.etilista', true)">SIM</button>
-            <button type="button" class="chip chip--nao" [class.active]="isBool('habitos.etilista', false)" (click)="setBool('habitos.etilista', false)">NÃO</button>
+            <button type="button" class="chip chip--sim" [class.active]="isBool('habitos.etilista', true)" (click)="setBool('habitos.etilista', true)">{{ 'preAnestesica.yes' | translate }}</button>
+            <button type="button" class="chip chip--nao" [class.active]="isBool('habitos.etilista', false)" (click)="setBool('habitos.etilista', false)">{{ 'preAnestesica.no' | translate }}</button>
           </div>
         </div>
         <label class="field field--full" *ngIf="isBool('habitos.etilista', true)">
-          <span>Gramas de álcool por dia</span>
-          <input type="text" formControlName="gramasAlcoolDia" placeholder="Ex.: 40 g/dia" />
+          <span>{{ 'preAnestesica.habitos.alcoholGramsPerDay' | translate }}</span>
+          <input type="text" formControlName="gramasAlcoolDia" [placeholder]="'preAnestesica.habitos.alcoholGramsPerDayPlaceholder' | translate" />
         </label>
       </section>
 
       <section id="sec-alergias" class="pre-section" formGroupName="alergias">
         <div class="pre-section__head">
           <span class="pre-section__num">05</span>
-          <div><h2>Alergias e Reações Adversas</h2></div>
+          <div><h2>{{ 'preAnestesica.sections.alergias.title' | translate }}</h2></div>
         </div>
 
         <div class="qa-row">
-          <span class="qa-label">Possui alergia?</span>
+          <span class="qa-label">{{ 'preAnestesica.alergias.hasAllergyQuestion' | translate }}</span>
           <div class="chips">
-            <button type="button" class="chip chip--sim" [class.active]="isBool('alergias.possuiAlergia', true)" (click)="setBool('alergias.possuiAlergia', true)">SIM</button>
-            <button type="button" class="chip chip--nao" [class.active]="isBool('alergias.possuiAlergia', false)" (click)="setBool('alergias.possuiAlergia', false)">NÃO</button>
+            <button type="button" class="chip chip--sim" [class.active]="isBool('alergias.possuiAlergia', true)" (click)="setBool('alergias.possuiAlergia', true)">{{ 'preAnestesica.yes' | translate }}</button>
+            <button type="button" class="chip chip--nao" [class.active]="isBool('alergias.possuiAlergia', false)" (click)="setBool('alergias.possuiAlergia', false)">{{ 'preAnestesica.no' | translate }}</button>
           </div>
         </div>
 
@@ -284,21 +284,21 @@
 
           <div class="grid-2">
             <label class="field" *ngIf="isChecked('alergias.tipos.outros')">
-              <span>Outros — descrever</span>
+              <span>{{ 'preAnestesica.otherDescribe' | translate }}</span>
               <input type="text" formControlName="outrosDescricao" />
             </label>
             <label class="field">
-              <span>Tipo de reação</span>
-              <input type="text" formControlName="tipoReacao" placeholder="Ex.: urticária, broncoespasmo, anafilaxia" />
+              <span>{{ 'preAnestesica.alergias.reactionType' | translate }}</span>
+              <input type="text" formControlName="tipoReacao" [placeholder]="'preAnestesica.alergias.reactionTypePlaceholder' | translate" />
             </label>
           </div>
         </ng-container>
 
         <div class="sub-block">
-          <h3 class="sub-head">Antecedentes anestésicos</h3>
+          <h3 class="sub-head">{{ 'preAnestesica.alergias.anestheticHistoryTitle' | translate }}</h3>
           <label class="field field--full">
-            <span>Descrever</span>
-            <textarea rows="3" formControlName="antecedentesAnestesicos" placeholder="Anestesias prévias, intercorrências, NVPO, dificuldade de via aérea…"></textarea>
+            <span>{{ 'preAnestesica.describe' | translate }}</span>
+            <textarea rows="3" formControlName="antecedentesAnestesicos" [placeholder]="'preAnestesica.alergias.anestheticHistoryPlaceholder' | translate"></textarea>
           </label>
         </div>
       </section>
@@ -306,24 +306,24 @@
       <section id="sec-medicacoes" class="pre-section" formGroupName="medicacoes">
         <div class="pre-section__head">
           <span class="pre-section__num">06</span>
-          <div><h2>Medicações em uso</h2></div>
+          <div><h2>{{ 'preAnestesica.sections.medicacoes.title' | translate }}</h2></div>
         </div>
 
         <div class="qa-row">
-          <span class="qa-label">Faz uso de medicações?</span>
+          <span class="qa-label">{{ 'preAnestesica.medicacoes.usesMedicationQuestion' | translate }}</span>
           <div class="chips">
-            <button type="button" class="chip chip--sim" [class.active]="isBool('medicacoes.usaMedicacao', true)" (click)="setBool('medicacoes.usaMedicacao', true)">SIM</button>
-            <button type="button" class="chip chip--nao" [class.active]="isBool('medicacoes.usaMedicacao', false)" (click)="setBool('medicacoes.usaMedicacao', false)">NÃO</button>
+            <button type="button" class="chip chip--sim" [class.active]="isBool('medicacoes.usaMedicacao', true)" (click)="setBool('medicacoes.usaMedicacao', true)">{{ 'preAnestesica.yes' | translate }}</button>
+            <button type="button" class="chip chip--nao" [class.active]="isBool('medicacoes.usaMedicacao', false)" (click)="setBool('medicacoes.usaMedicacao', false)">{{ 'preAnestesica.no' | translate }}</button>
           </div>
         </div>
 
         <ng-container *ngIf="isBool('medicacoes.usaMedicacao', true)">
           <div class="repeat-list" formArrayName="itens">
             <div class="repeat-row repeat-row--med" *ngFor="let m of medicacoes.controls; let i = index" [formGroupName]="i">
-              <input type="text" formControlName="nome" placeholder="Medicação" />
-              <input type="text" formControlName="dose" placeholder="Dose" />
-              <input type="text" formControlName="via" placeholder="Via" />
-              <input type="text" formControlName="frequencia" placeholder="Frequência" />
+              <input type="text" formControlName="nome" [placeholder]="'preAnestesica.medicacoes.namePlaceholder' | translate" />
+              <input type="text" formControlName="dose" [placeholder]="'preAnestesica.medicacoes.dosePlaceholder' | translate" />
+              <input type="text" formControlName="via" [placeholder]="'preAnestesica.medicacoes.routePlaceholder' | translate" />
+              <input type="text" formControlName="frequencia" [placeholder]="'preAnestesica.medicacoes.frequencyPlaceholder' | translate" />
               <button type="button" class="btn-icon btn-icon--danger" (click)="removeMedicacao(i)">
                 <ion-icon name="trash-outline"></ion-icon>
               </button>
@@ -331,7 +331,7 @@
           </div>
           <button type="button" class="btn-add" (click)="addMedicacao()">
             <ion-icon name="add-circle-outline"></ion-icon>
-            Adicionar medicação
+            {{ 'preAnestesica.medicacoes.addMedication' | translate }}
           </button>
         </ng-container>
       </section>
@@ -340,13 +340,13 @@
         <div class="pre-section__head">
           <span class="pre-section__num">07</span>
           <div>
-            <h2>Exame Físico</h2>
-            <p>Via aérea, Mallampati e exame segmentar.</p>
+            <h2>{{ 'preAnestesica.sections.exameFisico.title' | translate }}</h2>
+            <p>{{ 'preAnestesica.sections.exameFisico.description' | translate }}</p>
           </div>
         </div>
 
         <div class="sub-block">
-          <h3 class="sub-head">Mucosas <small>(múltipla escolha)</small></h3>
+          <h3 class="sub-head">{{ 'preAnestesica.exameFisico.mucosaTitle' | translate }} <small>{{ 'preAnestesica.exameFisico.multipleChoiceHint' | translate }}</small></h3>
           <div class="chip-group">
             <button type="button" *ngFor="let opt of mucosasOptions" class="chip chip--outline"
               [class.active]="isMulti('exameFisico.mucosas', opt.value)"
@@ -355,7 +355,7 @@
         </div>
 
         <div class="sub-block">
-          <h3 class="sub-head">Boca &mdash; Dentição</h3>
+          <h3 class="sub-head">{{ 'preAnestesica.exameFisico.dentitionTitle' | translate }}</h3>
           <div class="chip-group">
             <button type="button" *ngFor="let opt of denticaoOptions" class="chip chip--outline"
               [class.active]="isValue('exameFisico.denticao', opt.value)"
@@ -364,7 +364,7 @@
         </div>
 
         <div class="sub-block">
-          <h3 class="sub-head">Distância Inter-Incisivos</h3>
+          <h3 class="sub-head">{{ 'preAnestesica.exameFisico.interIncisorTitle' | translate }}</h3>
           <div class="chip-group">
             <button type="button" *ngFor="let opt of interIncisivosOptions" class="chip chip--outline"
               [class.active]="isValue('exameFisico.distanciaInterIncisivos', opt.value)"
@@ -373,7 +373,7 @@
         </div>
 
         <div class="sub-block">
-          <h3 class="sub-head">Comprimento dos Incisivos Superiores</h3>
+          <h3 class="sub-head">{{ 'preAnestesica.exameFisico.upperIncisorTitle' | translate }}</h3>
           <div class="chip-group">
             <button type="button" *ngFor="let opt of incisivosSuperioresOptions" class="chip chip--outline"
               [class.active]="isValue('exameFisico.comprimentoIncisivosSuperiores', opt.value)"
@@ -382,7 +382,7 @@
         </div>
 
         <div class="sub-block">
-          <h3 class="sub-head">Classificação de Mallampati</h3>
+          <h3 class="sub-head">{{ 'preAnestesica.exameFisico.mallampatiTitle' | translate }}</h3>
           <div class="mallampati-grid">
             <button type="button"
               *ngFor="let opt of mallampatiOptions"
@@ -390,13 +390,13 @@
               [class.active]="isValue('exameFisico.mallampati', opt.value)"
               (click)="setValue('exameFisico.mallampati', opt.value)">
               <img [src]="'assets/mallampati/palato_' + opt.label + '.png'" [alt]="'Mallampati ' + opt.label" />
-              <span class="mallampati-label">Classe {{ opt.label }}</span>
+              <span class="mallampati-label">{{ 'preAnestesica.exameFisico.mallampatiClassLabel' | translate }} {{ opt.label }}</span>
             </button>
           </div>
         </div>
 
         <div class="sub-block">
-          <h3 class="sub-head">Relação Incisivos Maxilares X Mandibulares em Perfil</h3>
+          <h3 class="sub-head">{{ 'preAnestesica.exameFisico.incisorRelationTitle' | translate }}</h3>
           <div class="chip-group">
             <button type="button" *ngFor="let opt of relacaoIncisivosOptions" class="chip chip--outline"
               [class.active]="isValue('exameFisico.relacaoIncisivos', opt.value)"
@@ -405,7 +405,7 @@
         </div>
 
         <div class="sub-block">
-          <h3 class="sub-head">Palato</h3>
+          <h3 class="sub-head">{{ 'preAnestesica.exameFisico.palateTitle' | translate }}</h3>
           <div class="chip-group">
             <button type="button" *ngFor="let opt of palatoOptions" class="chip chip--outline"
               [class.active]="isValue('exameFisico.palato', opt.value)"
@@ -414,9 +414,9 @@
         </div>
 
         <div class="sub-block">
-          <h3 class="sub-head">Protusão da Mandíbula em Perfil</h3>
+          <h3 class="sub-head">{{ 'preAnestesica.exameFisico.mandibleProtrusionTitle' | translate }}</h3>
           <div class="qa-row">
-            <span class="qa-label">Dentes ultrapassam a linha dos maxilares?</span>
+            <span class="qa-label">{{ 'preAnestesica.exameFisico.teethProtrudeQuestion' | translate }}</span>
             <div class="chip-group">
               <button type="button" *ngFor="let opt of yesNoNaOptions" class="chip chip--outline"
                 [class.active]="isValue('exameFisico.protusaoMandibula', opt.value)"
@@ -426,10 +426,10 @@
         </div>
 
         <div class="sub-block">
-          <h3 class="sub-head">Pescoço</h3>
+          <h3 class="sub-head">{{ 'preAnestesica.exameFisico.neckTitle' | translate }}</h3>
 
           <div class="qa-row">
-            <span class="qa-label">Comprimento</span>
+            <span class="qa-label">{{ 'preAnestesica.exameFisico.length' | translate }}</span>
             <div class="chip-group">
               <button type="button" *ngFor="let opt of pescocoComprimentoOptions" class="chip chip--outline"
                 [class.active]="isValue('exameFisico.pescocoComprimento', opt.value)"
@@ -438,7 +438,7 @@
           </div>
 
           <div class="qa-row">
-            <span class="qa-label">Largura</span>
+            <span class="qa-label">{{ 'preAnestesica.exameFisico.width' | translate }}</span>
             <div class="chip-group">
               <button type="button" *ngFor="let opt of pescocoLarguraOptions" class="chip chip--outline"
                 [class.active]="isValue('exameFisico.pescocoLargura', opt.value)"
@@ -447,7 +447,7 @@
           </div>
 
           <div class="qa-row">
-            <span class="qa-label">Distância Esternocleidomentoniana</span>
+            <span class="qa-label">{{ 'preAnestesica.exameFisico.sternomentalDistance' | translate }}</span>
             <div class="chip-group">
               <button type="button" *ngFor="let opt of esternoMentonianaOptions" class="chip chip--outline"
                 [class.active]="isValue('exameFisico.distanciaEsternocleidomentoniana', opt.value)"
@@ -456,7 +456,7 @@
           </div>
 
           <div class="qa-row">
-            <span class="qa-label">Distância Tireomentoniana</span>
+            <span class="qa-label">{{ 'preAnestesica.exameFisico.thyromentalDistance' | translate }}</span>
             <div class="chip-group">
               <button type="button" *ngFor="let opt of tireomentonianaOptions" class="chip chip--outline"
                 [class.active]="isValue('exameFisico.distanciaTireomentoniana', opt.value)"
@@ -465,7 +465,7 @@
           </div>
 
           <div class="qa-row">
-            <span class="qa-label">Flexão do Pescoço</span>
+            <span class="qa-label">{{ 'preAnestesica.exameFisico.neckFlexion' | translate }}</span>
             <div class="chip-group">
               <button type="button" *ngFor="let opt of normalAnormalOptions" class="chip chip--outline"
                 [class.active]="isValue('exameFisico.flexaoPescoco', opt.value)"
@@ -474,7 +474,7 @@
           </div>
 
           <div class="qa-row">
-            <span class="qa-label">Extensão do Pescoço</span>
+            <span class="qa-label">{{ 'preAnestesica.exameFisico.neckExtension' | translate }}</span>
             <div class="chip-group">
               <button type="button" *ngFor="let opt of normalAnormalOptions" class="chip chip--outline"
                 [class.active]="isValue('exameFisico.extensaoPescoco', opt.value)"
@@ -483,7 +483,7 @@
           </div>
 
           <div class="qa-row">
-            <span class="qa-label">Complacência do Espaço Mandibular</span>
+            <span class="qa-label">{{ 'preAnestesica.exameFisico.mandibularSpaceCompliance' | translate }}</span>
             <div class="chip-group">
               <button type="button" *ngFor="let opt of normalAnormalOptions" class="chip chip--outline"
                 [class.active]="isValue('exameFisico.complacenciaEspacoMandibular', opt.value)"
@@ -492,19 +492,19 @@
           </div>
 
           <label class="field field--full">
-            <span>Observações</span>
+            <span>{{ 'preAnestesica.observations' | translate }}</span>
             <textarea rows="2" formControlName="observacoesViaAerea"></textarea>
           </label>
         </div>
 
         <div class="sub-block">
-          <h3 class="sub-head">Anomalia de Caixa Torácica?</h3>
+          <h3 class="sub-head">{{ 'preAnestesica.exameFisico.thoracicCageAbnormalityQuestion' | translate }}</h3>
           <div class="chips">
-            <button type="button" class="chip chip--sim" [class.active]="isBool('exameFisico.anomaliaCaixaToracica', true)" (click)="setBool('exameFisico.anomaliaCaixaToracica', true)">SIM</button>
-            <button type="button" class="chip chip--nao" [class.active]="isBool('exameFisico.anomaliaCaixaToracica', false)" (click)="setBool('exameFisico.anomaliaCaixaToracica', false)">NÃO</button>
+            <button type="button" class="chip chip--sim" [class.active]="isBool('exameFisico.anomaliaCaixaToracica', true)" (click)="setBool('exameFisico.anomaliaCaixaToracica', true)">{{ 'preAnestesica.yes' | translate }}</button>
+            <button type="button" class="chip chip--nao" [class.active]="isBool('exameFisico.anomaliaCaixaToracica', false)" (click)="setBool('exameFisico.anomaliaCaixaToracica', false)">{{ 'preAnestesica.no' | translate }}</button>
           </div>
           <label class="field field--full" *ngIf="isBool('exameFisico.anomaliaCaixaToracica', true)">
-            <span>Descrição da anomalia</span>
+            <span>{{ 'preAnestesica.exameFisico.abnormalityDescription' | translate }}</span>
             <textarea rows="2" formControlName="anomaliaCaixaToracicaDescricao"></textarea>
           </label>
         </div>
@@ -520,12 +520,12 @@
           </div>
 
           <label class="field field--full" *ngIf="isChecked('exameFisico.' + g.key + '.outros')">
-            <span>Outros — descrever</span>
+            <span>{{ 'preAnestesica.otherDescribe' | translate }}</span>
             <input type="text" formControlName="outrosDescricao" />
           </label>
 
           <label class="field field--full">
-            <span>Observações</span>
+            <span>{{ 'preAnestesica.observations' | translate }}</span>
             <textarea rows="2" formControlName="observacoes"></textarea>
           </label>
         </div>
@@ -535,52 +535,52 @@
         <div class="pre-section__head">
           <span class="pre-section__num">08</span>
           <div>
-            <h2>Exames Complementares e Pareceres</h2>
-            <p>Mesmos exames disponíveis na Ficha Anestésica.</p>
+            <h2>{{ 'preAnestesica.sections.exames.title' | translate }}</h2>
+            <p>{{ 'preAnestesica.sections.exames.description' | translate }}</p>
           </div>
         </div>
 
-        <h3 class="sub-head">Laboratoriais</h3>
+        <h3 class="sub-head">{{ 'preAnestesica.exames.labsTitle' | translate }}</h3>
         <div class="grid-5">
-          <label class="field"><span>Hemoglobina (g/dL)</span><input type="number" step="0.1" formControlName="hemoglobina" /></label>
-          <label class="field"><span>Hematócrito (%)</span><input type="number" step="0.1" formControlName="hematocrito" /></label>
-          <label class="field"><span>Leucócitos (/mm³)</span><input type="number" formControlName="leucocitos" /></label>
-          <label class="field"><span>Plaquetas (/mm³)</span><input type="number" formControlName="plaquetas" /></label>
-          <label class="field"><span>TAP / INR</span><input type="number" step="0.01" formControlName="tapInr" /></label>
-          <label class="field"><span>TTPA (s)</span><input type="number" step="0.1" formControlName="ttpa" /></label>
-          <label class="field"><span>Glicemia (mg/dL)</span><input type="number" formControlName="glicemia" /></label>
-          <label class="field"><span>Ureia (mg/dL)</span><input type="number" formControlName="ureia" /></label>
-          <label class="field"><span>Creatinina (mg/dL)</span><input type="number" step="0.01" formControlName="creatinina" /></label>
-          <label class="field"><span>Sódio (mEq/L)</span><input type="number" formControlName="sodio" /></label>
-          <label class="field"><span>Potássio (mEq/L)</span><input type="number" step="0.1" formControlName="potassio" /></label>
-          <label class="field"><span>TP (s)</span><input type="text" formControlName="tp" /></label>
-          <label class="field"><span>EAS</span><input type="text" formControlName="eas" /></label>
-          <label class="field"><span>Testes de função hepática</span><input type="text" formControlName="funcaoHepatica" /></label>
-          <label class="field"><span>Teste de gravidez</span><input type="text" formControlName="testeGravidez" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.hemoglobin' | translate }}</span><input type="number" step="0.1" formControlName="hemoglobina" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.hematocrit' | translate }}</span><input type="number" step="0.1" formControlName="hematocrito" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.leukocytes' | translate }}</span><input type="number" formControlName="leucocitos" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.platelets' | translate }}</span><input type="number" formControlName="plaquetas" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.tapInr' | translate }}</span><input type="number" step="0.01" formControlName="tapInr" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.aptt' | translate }}</span><input type="number" step="0.1" formControlName="ttpa" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.glucose' | translate }}</span><input type="number" formControlName="glicemia" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.urea' | translate }}</span><input type="number" formControlName="ureia" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.creatinine' | translate }}</span><input type="number" step="0.01" formControlName="creatinina" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.sodium' | translate }}</span><input type="number" formControlName="sodio" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.potassium' | translate }}</span><input type="number" step="0.1" formControlName="potassio" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.tp' | translate }}</span><input type="text" formControlName="tp" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.eas' | translate }}</span><input type="text" formControlName="eas" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.liverFunctionTests' | translate }}</span><input type="text" formControlName="funcaoHepatica" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.pregnancyTest' | translate }}</span><input type="text" formControlName="testeGravidez" /></label>
         </div>
 
-        <h3 class="sub-head">Imagem e gráficos</h3>
+        <h3 class="sub-head">{{ 'preAnestesica.exames.imagingTitle' | translate }}</h3>
         <div class="grid-2">
-          <label class="field"><span>ECG</span><input type="text" formControlName="ecg" placeholder="Achados" /></label>
-          <label class="field"><span>RX de tórax</span><input type="text" formControlName="rxTorax" placeholder="Achados" /></label>
-          <label class="field"><span>Ecocardiograma</span><input type="text" formControlName="ecocardiograma" placeholder="Achados" /></label>
-          <label class="field"><span>Prova de função respiratória</span><input type="text" formControlName="provaFuncaoRespiratoria" /></label>
-          <label class="field"><span>Outros</span><input type="text" formControlName="outrosExames" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.ecg' | translate }}</span><input type="text" formControlName="ecg" [placeholder]="'preAnestesica.exames.findingsPlaceholder' | translate" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.chestXRay' | translate }}</span><input type="text" formControlName="rxTorax" [placeholder]="'preAnestesica.exames.findingsPlaceholder' | translate" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.echocardiogram' | translate }}</span><input type="text" formControlName="ecocardiograma" [placeholder]="'preAnestesica.exames.findingsPlaceholder' | translate" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.pulmonaryFunctionTest' | translate }}</span><input type="text" formControlName="provaFuncaoRespiratoria" /></label>
+          <label class="field"><span>{{ 'preAnestesica.exames.other' | translate }}</span><input type="text" formControlName="outrosExames" /></label>
         </div>
 
-        <h3 class="sub-head">Pareceres</h3>
+        <h3 class="sub-head">{{ 'preAnestesica.exames.reportsTitle' | translate }}</h3>
         <label class="field field--full">
-          <span>Parecer da Cardiologia</span>
+          <span>{{ 'preAnestesica.exames.cardiologyReport' | translate }}</span>
           <textarea rows="2" formControlName="parecerCardiologia"></textarea>
         </label>
 
         <div class="repeat-list" formArrayName="outrosPareceres">
           <div class="repeat-row repeat-row--parecer" *ngFor="let p of outrosPareceres.controls; let i = index" [formGroupName]="i">
             <select class="select-control" formControlName="especialidade">
-              <option value="">Especialidade…</option>
+              <option value="">{{ 'preAnestesica.exames.specialtyPlaceholder' | translate }}</option>
               <option *ngFor="let e of especialidadesHuap" [value]="e.value">{{ e.label }}</option>
             </select>
-            <input type="text" formControlName="descricao" placeholder="Parecer" />
+            <input type="text" formControlName="descricao" [placeholder]="'preAnestesica.exames.reportPlaceholder' | translate" />
             <button type="button" class="btn-icon btn-icon--danger" (click)="removeParecer(i)">
               <ion-icon name="trash-outline"></ion-icon>
             </button>
@@ -588,7 +588,7 @@
         </div>
         <button type="button" class="btn-add" (click)="addParecer()">
           <ion-icon name="add-circle-outline"></ion-icon>
-          Adicionar outros pareceres
+          {{ 'preAnestesica.exames.addOtherReports' | translate }}
         </button>
       </section>
 
@@ -596,36 +596,36 @@
         <div class="pre-section__head">
           <span class="pre-section__num">09</span>
           <div>
-            <h2>Classificação e Conduta</h2>
-            <p>Estado físico ASA e liberação para o procedimento.</p>
+            <h2>{{ 'preAnestesica.sections.conduta.title' | translate }}</h2>
+            <p>{{ 'preAnestesica.sections.conduta.description' | translate }}</p>
           </div>
         </div>
 
         <div class="qa-row qa-row--column">
-          <span class="qa-label">Classificação ASA <em class="req">*</em></span>
+          <span class="qa-label">{{ 'preAnestesica.conduta.asaTitle' | translate }} <em class="req">*</em></span>
           <div class="chip-group">
             <button type="button" *ngFor="let opt of asaOptions" class="chip chip--outline"
               [class.active]="isValue('conduta.asa', opt.value)"
               (click)="setValue('conduta.asa', opt.value)">ASA {{ opt.label }}</button>
             <button type="button" class="chip chip--outline chip--emergencia"
               [class.active]="isChecked('conduta.emergencia')"
-              (click)="toggleValue('conduta.emergencia')">Emergência (E)</button>
+              (click)="toggleValue('conduta.emergencia')">{{ 'preAnestesica.conduta.emergency' | translate }}</button>
           </div>
         </div>
 
         <div class="alert-block" [class.alert-block--on]="isChecked('conduta.naoLiberado')">
           <label class="checkbox-tile checkbox-tile--danger">
             <input type="checkbox" formControlName="naoLiberado" />
-            <span>Paciente <strong>não liberado</strong> para o procedimento anestésico-cirúrgico</span>
+            <span>{{ 'preAnestesica.conduta.notClearedPrefix' | translate }} <strong>{{ 'preAnestesica.conduta.notClearedBold' | translate }}</strong> {{ 'preAnestesica.conduta.notClearedSuffix' | translate }}</span>
           </label>
           <label class="field field--full" *ngIf="isChecked('conduta.naoLiberado')">
-            <span>Motivo</span>
-            <textarea rows="2" formControlName="motivoNaoLiberacao" placeholder="Descreva o motivo da não liberação"></textarea>
+            <span>{{ 'preAnestesica.conduta.reason' | translate }}</span>
+            <textarea rows="2" formControlName="motivoNaoLiberacao" [placeholder]="'preAnestesica.conduta.reasonPlaceholder' | translate"></textarea>
           </label>
         </div>
 
         <div class="qa-row qa-row--column">
-          <span class="qa-label">Conduta (pode marcar mais de um)</span>
+          <span class="qa-label">{{ 'preAnestesica.conduta.conductLabel' | translate }}</span>
           <div class="check-grid check-grid--stack" formGroupName="condutas">
             <label class="checkbox-tile" *ngFor="let o of condutaOptions">
               <input type="checkbox" [formControlName]="o.key" />
@@ -635,8 +635,8 @@
         </div>
 
         <label class="field field--full">
-          <span>Anotações</span>
-          <textarea rows="4" formControlName="anotacoes" placeholder="Anotações da avaliação pré-anestésica"></textarea>
+          <span>{{ 'preAnestesica.conduta.notes' | translate }}</span>
+          <textarea rows="4" formControlName="anotacoes" [placeholder]="'preAnestesica.conduta.notesPlaceholder' | translate"></textarea>
         </label>
       </section>
 
@@ -649,11 +649,9 @@
         <div class="sign-modal-icon">
           <ion-icon name="shield-checkmark-outline"></ion-icon>
         </div>
-        <h2 class="sign-modal-title">Confirmar e Assinar Digitalmente</h2>
+        <h2 class="sign-modal-title">{{ 'preAnestesica.signModal.title' | translate }}</h2>
         <p class="sign-modal-subtitle">
-          Ao assinar, você declara que revisou todos os dados desta avaliação
-          pré-anestésica e assume responsabilidade profissional pelas informações
-          registradas.
+          {{ 'preAnestesica.signModal.subtitle' | translate }}
         </p>
 
         <div class="sign-check-row">
@@ -664,25 +662,25 @@
             class="sign-check"
           >
             <span class="sign-check-label">
-              Confirmo que revisei e estou de acordo com todos os dados preenchidos.
+              {{ 'preAnestesica.signModal.agreementLabel' | translate }}
             </span>
           </ion-checkbox>
         </div>
 
         <div class="sign-name-block">
-          <label class="field-label">Digite sua senha para assinar</label>
+          <label class="field-label">{{ 'preAnestesica.signModal.passwordLabel' | translate }}</label>
           <input
             type="password"
             class="text-input sign-input"
             [(ngModel)]="signaturePassword"
             [ngModelOptions]="{ standalone: true }"
-            placeholder="Senha de acesso"
+            [placeholder]="'preAnestesica.signModal.passwordPlaceholder' | translate"
             autocomplete="current-password"
             spellcheck="false"
             (keyup.enter)="confirmarESalvar()"
           />
           <p class="sign-hint" *ngIf="expectedSignatureName">
-            Profissional logado: <strong>{{ expectedSignatureName }}</strong>
+            {{ 'preAnestesica.signModal.loggedProfessional' | translate }} <strong>{{ expectedSignatureName }}</strong>
           </p>
         </div>
 
@@ -691,11 +689,11 @@
         </p>
 
         <div class="sign-modal-actions">
-          <ion-button fill="outline" (click)="closeSignModal()">Cancelar</ion-button>
+          <ion-button fill="outline" (click)="closeSignModal()">{{ 'common.cancel' | translate }}</ion-button>
           <ion-button class="btn-primary" (click)="confirmarESalvar()"
             [disabled]="!signatureAgreed || !signaturePassword.trim()">
             <ion-icon name="create-outline" slot="start"></ion-icon>
-            Assinar e Salvar
+            {{ 'preAnestesica.signModal.signAndSave' | translate }}
           </ion-button>
         </div>
       </div>

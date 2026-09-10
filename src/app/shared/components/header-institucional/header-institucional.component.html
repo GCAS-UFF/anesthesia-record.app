@@ -1,6 +1,6 @@
 <header class="hospital-header">
   <div class="header-left">
-    <button class="menu-btn" (click)="openMenu()" aria-label="Abrir menu">
+    <button class="menu-btn" (click)="openMenu()" [attr.aria-label]="'header.openMenu' | translate">
       <ion-icon name="menu-outline"></ion-icon>
     </button>
 
@@ -10,7 +10,7 @@
       [class.is-hidden]="menuOpen"
       *ngIf="showBackButton"
       (click)="voltar()"
-      aria-label="Voltar"
+      [attr.aria-label]="'header.back' | translate"
     >
       <ion-icon name="arrow-back-outline"></ion-icon>
     </button>
@@ -112,10 +112,10 @@
   class="drawer"
   [class.open]="menuOpen"
   role="dialog"
-  aria-label="Menu principal"
+  [attr.aria-label]="'header.mainMenu' | translate"
 >
   <div class="drawer-header">
-    <button class="close-btn" (click)="closeMenu()" aria-label="Fechar menu">
+    <button class="close-btn" (click)="closeMenu()" [attr.aria-label]="'header.closeMenu' | translate">
       <ion-icon name="close-outline"></ion-icon>
     </button>
     <div class="drawer-logos">
@@ -132,7 +132,7 @@
       (click)="navigate(item)"
     >
       <ion-icon [name]="item.icon"></ion-icon>
-      <span>{{ item.label }}</span>
+      <span>{{ item.labelKey | translate }}</span>
     </button>
   </nav>
 </aside>

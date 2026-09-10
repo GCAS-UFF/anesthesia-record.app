@@ -6,6 +6,8 @@ import { LoginCredentials } from '../../features/login/login.model';
 import { StorageService } from './storage.service';
 import { ApiUrlService } from './api-url.service';
 import { SettingsService } from './settings.service';
+import { LanguageService } from './language.service';
+import { UserSettingsDto } from '../../shared/models/settings.model';
 
 const DEFAULT_HOSPITAL_NAME = 'HOSPITAL NÂO IDENTIFICADO';
 
@@ -80,7 +82,8 @@ export class AuthService {
     private http: HttpClient,
     private storageService: StorageService,
     private apiUrlService: ApiUrlService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private languageService: LanguageService
   ) {
     this.checkSavedSession();
     this.restoreHospitalName();
@@ -98,7 +101,7 @@ export class AuthService {
       map(() => true),
       catchError(err => {
         console.error('Erro na API de Login:', err);
-        return throwError(() => 'Usuário ou senha inválidos, ou API indisponível.');
+        return throwError(() => 'login.invalidCredentials');
       })
     );
   }
@@ -181,14 +184,19 @@ export class AuthService {
 
   private loadHospitalName(): void {
     this.settingsService.get().subscribe({
-      next: (settings) => {
-        const hospitalName = settings.hospitalName;
-        if (hospitalName) {
-          this.setHospitalName(hospitalName);
-        }
-      },
+      next: (settings) => this.applyUserSettings(settings),
       error: (err) => console.error('Erro ao carregar dados institucionais:', err)
     });
+  }
+
+  private applyUserSettings(settings: UserSettingsDto): void {
+    if (settings.hospitalName) {
+      this.setHospitalName(settings.hospitalName);
+    }
+
+    if (settings.language) {
+      this.languageService.setLanguage(settings.language);
+    }
   }
 
   private setHospitalName(hospitalName: string): void {

@@ -22,6 +22,7 @@ import {
   lockOpenOutline
 } from 'ionicons/icons';
 import { SurgeryStatusEnum } from 'src/app/core/models/api-enums.model';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 export type ProcedureStatus = SurgeryStatusEnum | null;
 export type ProcedureType = 'Eletiva' | 'Urgência' | 'Emergência';
@@ -29,7 +30,7 @@ export type ProcedureType = 'Eletiva' | 'Urgência' | 'Emergência';
 @Component({
   selector: 'app-procedure-card',
   standalone: true,
-  imports: [CommonModule, IonRippleEffect, IonIcon],
+  imports: [CommonModule, IonRippleEffect, IonIcon, TranslatePipe],
   providers: [DatePipe],
   templateUrl: './procedure-card.component.html',
   styleUrls: ['./procedure-card.component.scss'],
@@ -86,7 +87,7 @@ export class ProcedureCardComponent {
   private touchId: number | null = null;
   openCardId: string | number | null = null;
 
-  constructor() {
+  constructor(private translate: TranslateService) {
     addIcons({
       exitOutline,
       timeOutline,
@@ -239,7 +240,9 @@ export class ProcedureCardComponent {
   }
 
   get abandonButtonLabel(): string {
-    return this.isAdmin ? 'Remover Médico' : 'Abandonar';
+    return this.isAdmin
+      ? this.translate.instant('sharedComponents.procedureCard.removeDoctor')
+      : this.translate.instant('sharedComponents.procedureCard.abandon');
   }
 
   get abandonButtonIcon(): string {

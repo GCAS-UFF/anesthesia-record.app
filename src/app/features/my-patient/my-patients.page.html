@@ -7,7 +7,7 @@
     <div class="filters-wrapper" #filtersContainer>
     <section class="filters-bar">
       <div class="page-title-block">
-        <h1 class="page-title">Meus Pacientes</h1>
+        <h1 class="page-title">{{ 'myPatients.title' | translate }}</h1>
       </div>
 
       <button
@@ -18,11 +18,11 @@
         aria-controls="my-patients-filters-panel"
       >
         <ion-icon name="options-outline" class="filters-toggle-icon"></ion-icon>
-        <span class="filters-toggle-label">Filtros</span>
+        <span class="filters-toggle-label">{{ 'myPatients.filters.toggle' | translate }}</span>
 
         <span class="filters-chips" *ngIf="!filtersOpen">
           <span class="chip" [class.chip-active]="selectedStatus !== 'all'">{{ statusLabel }}</span>
-          <span class="chip" [class.chip-active]="dateLabel !== 'Hoje'">{{ dateLabel }}</span>
+          <span class="chip" [class.chip-active]="!isTodaySelected">{{ dateLabel }}</span>
           <span class="chip chip-search" *ngIf="searchQuery">"{{ searchQuery }}"</span>
         </span>
 
@@ -38,14 +38,14 @@
           class="refresh-btn"
           (click)="handleRefresh()"
           [disabled]="isRefreshing"
-          aria-label="Atualizar lista"
-          title="Atualizar lista"
+          [attr.aria-label]="'myPatients.refresh.label' | translate"
+          [title]="'myPatients.refresh.label' | translate"
         >
           <ion-spinner *ngIf="isRefreshing" name="crescent"></ion-spinner>
           <ion-icon *ngIf="!isRefreshing" name="refresh-outline"></ion-icon>
         </button>
 
-        <span class="count-pill"> {{ totalItems }} paciente(s) seu(s) </span>
+        <span class="count-pill"> {{ totalItems }} {{ 'myPatients.countSuffix' | translate }} </span>
       </div>
     </section>
 
@@ -64,20 +64,20 @@
           <input
             type="text"
             class="search-input"
-            placeholder="Buscar por paciente ou prontuário"
+            [placeholder]="'myPatients.filters.searchPlaceholder' | translate"
             [value]="searchQuery"
             (input)="onSearchChange($any($event.target).value)"
           />
         </div>
 
-        <div class="segmented" role="tablist" aria-label="Filtro de status">
+        <div class="segmented" role="tablist" [attr.aria-label]="'myPatients.filters.statusAriaLabel' | translate">
           <button
             role="tab"
             [attr.aria-selected]="selectedStatus === 'all'"
             [class.active]="selectedStatus === 'all'"
             (click)="changeStatus('all')"
           >
-            Todos
+            {{ 'myPatients.status.all' | translate }}
           </button>
           <button
             role="tab"
@@ -85,7 +85,7 @@
             [class.active]="selectedStatus === 'inProgress'"
             (click)="changeStatus('inProgress')"
           >
-            Em Atendimento
+            {{ 'myPatients.status.inProgress' | translate }}
           </button>
           <button
             role="tab"
@@ -93,7 +93,7 @@
             [class.active]="selectedStatus === 'completed'"
             (click)="changeStatus('completed')"
           >
-            Realizados
+            {{ 'myPatients.status.completed' | translate }}
           </button>
         </div>
       </div>
@@ -149,7 +149,7 @@
           [age]="p.age"
           [record]="p.record"
           [id]="p.id"
-          [anesthesiologist]="p.anesthesiologist?.fullName || 'Você'"
+          [anesthesiologist]="p.anesthesiologist?.fullName || youLabel"
           [isCurrentAnesthesiologist]="true"
           [canAssumePatient]="false"
           (assume)="onOpenMonitorizacao(p.id, p.patientId)"
@@ -163,7 +163,7 @@
         <app-empty-state
           *ngIf="totalItems === 0"
           icon="📭"
-          message="Você ainda não tem pacientes para os filtros selecionados."
+          [message]="'myPatients.emptyState' | translate"
         ></app-empty-state>
       </ng-container>
 
@@ -226,17 +226,17 @@
         [disabled]="currentPage === 1"
         class="page-btn"
       >
-        <ion-icon name="chevron-back-outline"></ion-icon> Anterior
+        <ion-icon name="chevron-back-outline"></ion-icon> {{ 'myPatients.pagination.previous' | translate }}
       </button>
       <span class="page-info">
-        Página <strong>{{ currentPage }}</strong> de {{ totalPages }}
+        {{ 'myPatients.pagination.pageLabel' | translate }} <strong>{{ currentPage }}</strong> {{ 'myPatients.pagination.of' | translate }} {{ totalPages }}
       </span>
       <button
         (click)="nextPage()"
         [disabled]="currentPage === totalPages"
         class="page-btn"
       >
-        Próximo <ion-icon name="chevron-forward-outline"></ion-icon>
+        {{ 'myPatients.pagination.next' | translate }} <ion-icon name="chevron-forward-outline"></ion-icon>
       </button>
     </div>
   </main>

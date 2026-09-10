@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonIcon, ToastController } from '@ionic/angular/standalone';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
 import { printOutline } from 'ionicons/icons';
 import { firstValueFrom } from 'rxjs';
@@ -21,7 +22,7 @@ function defaultFilters(): ReportFilters {
 @Component({
   selector: 'app-report-pdf-actions',
   standalone: true,
-  imports: [CommonModule, IonIcon],
+  imports: [CommonModule, IonIcon, TranslatePipe],
   templateUrl: './report-pdf-actions.component.html',
   styleUrls: ['../report-card.scss']
 })
@@ -34,7 +35,8 @@ export class ReportPdfActionsComponent {
 
   constructor(
     private reportsService: ReportsService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private translate: TranslateService,
   ) {
     addIcons({ printOutline });
   }
@@ -49,7 +51,7 @@ export class ReportPdfActionsComponent {
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (error) {
       console.error('Erro ao gerar relatório', error);
-      await this.showToast('Não foi possível gerar o relatório. Tente novamente.', 'danger');
+      await this.showToast(this.translate.instant('relatorios.pdfActions.generateError'), 'danger');
     } finally {
       this.generating = false;
     }

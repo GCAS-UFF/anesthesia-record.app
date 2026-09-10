@@ -1,0 +1,127 @@
+{
+  "sharedComponents": {
+    "clinicalItemModal": {
+      "titleAddAgent": "Adicionar Agente",
+      "titleAddEvent": "Adicionar Evento",
+      "titleEditEvent": "Editar Evento",
+      "titleAddBalance": "Adicionar Balanço",
+      "clearSelection": "Limpar seleção",
+      "agent": {
+        "medicationLabel": "Medicação *",
+        "medicationPlaceholder": "Digite o nome da medicação...",
+        "noMedicationFound": "Nenhuma medicação encontrada.",
+        "noMedicationLoaded": "Nenhuma medicação carregada no storage.",
+        "doseLabel": "Dose *",
+        "dosePlaceholder": "ex: 100",
+        "unitLabel": "Unidade *",
+        "routeLabel": "Via *",
+        "selectPlaceholder": "Selecione"
+      },
+      "event": {
+        "timeLabel": "Horário",
+        "timeAriaLabel": "Horário do evento",
+        "eventLabel": "Evento *",
+        "searchPlaceholder": "Buscar evento...",
+        "noEventsRegistered": "Nenhum evento cadastrado. Peça ao administrador para cadastrar eventos em \"Manutenção de Itens\".",
+        "descriptionLabel": "Descrição *",
+        "descriptionPlaceholder": "Descreva o evento..."
+      },
+      "balance": {
+        "typeLabel": "Tipo *",
+        "gain": "Ganho",
+        "loss": "Perda",
+        "itemLabel": "Item *",
+        "searchPlaceholder": "Digite para buscar...",
+        "noItemFound": "Nenhum item encontrado.",
+        "detailOtherLabel": "Detalhar \"Outro\" *",
+        "detailPlaceholder": "Especifique...",
+        "volumeLabel": "Volume (ml) *"
+      }
+    },
+    "dateFilter": {
+      "dateLabel": "Data:",
+      "allLabel": "Todos",
+      "clearFilterTitle": "Limpar filtro",
+      "today": "Hoje"
+    },
+    "emptyState": {
+      "defaultMessage": "Nenhum item encontrado."
+    },
+    "patientInfoCard": {
+      "patientLabel": "PACIENTE",
+      "patientNameFallback": "NOME NÃO INFORMADO",
+      "floorPrefix": "Andar",
+      "bedPrefix": "Leito",
+      "birthDateLabel": "NASCIMENTO",
+      "ageLabel": "IDADE",
+      "yearsSuffix": "anos",
+      "genderLabel": "SEXO",
+      "genderMale": "Masculino",
+      "genderFemale": "Feminino",
+      "weightLabel": "PESO",
+      "procedureLabel": "PROCEDIMENTO",
+      "procedureFallback": "NÃO INFORMADO",
+      "allergyLabel": "ALERGIA:",
+      "allergiesLabelMini": "Alergias:",
+      "allergyUnspecified": "Alergia (não especificada)"
+    },
+    "procedureCard": {
+      "reopenTicket": "Reabrir Ficha",
+      "abandon": "Abandonar",
+      "removeDoctor": "Remover Médico",
+      "yourPatient": "Seu paciente",
+      "surgeryRoom": "Sala de Cirurgia",
+      "statusScheduled": "Agendada",
+      "statusPreparation": "Em preparação",
+      "statusInProgress": "Em andamento",
+      "statusCompleted": "Realizada",
+      "statusCancelled": "Cancelada",
+      "recordPrefix": "Prontuário:",
+      "idPrefix": "ID:",
+      "yearsSuffix": "anos",
+      "procedureNotInformed": "Procedimento não informado",
+      "viewPreAnesthesia": "Ver Pré Anestesia",
+      "viewRecords": "Ver Registros",
+      "preAnesthesiaDone": "Pré Anestesia Concluída",
+      "preAnesthesia": "Pré Anestesia",
+      "anestheticRecord": "Ficha Anestésica",
+      "assumePatient": "Assumir Paciente",
+      "goToSurgery": "Ir para Cirurgia"
+    },
+    "quickVitalInput": {
+      "autoTitle": "Registro automático",
+      "manualTitle": "Lançar sinais vitais",
+      "autoCollection": "Coleta automática",
+      "manualRecord": "Registro manual",
+      "fillAvailableSignals": "Preencha os sinais disponíveis neste momento.",
+      "timeOfRecordLabel": "Horário do lançamento",
+      "customFieldsHeader": "Campos personalizados",
+      "validationMessage": "Informe pelo menos um sinal vital para salvar o registro.",
+      "saveRecord": "Salvar registro",
+      "groups": {
+        "bloodPressure": "Pressão arterial",
+        "monitoring": "Monitorização",
+        "complementary": "Complementares"
+      },
+      "fields": {
+        "pas": "PAS",
+        "pad": "PAD",
+        "pam": "PAM",
+        "fc": "FC",
+        "spo2": "SpO₂",
+        "etco2": "EtCO₂",
+        "bis": "BIS",
+        "pvc": "PVC",
+        "pcap": "PCAP",
+        "temp": "Temperatura"
+      }
+    },
+    "recordViewerModal": {
+      "titleFallback": "Ficha",
+      "noDataAvailable": "Nenhum dado disponível nesta ficha."
+    },
+    "searchBar": {
+      "defaultPlaceholder": "Buscar..."
+    }
+  }
+}

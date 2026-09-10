@@ -1,11 +1,11 @@
 <div class="report-card">
   <div class="report-card-header">
     <div>
-      <h3 class="report-title">Consumo de Fármacos e Insumos</h3>
-      <p class="report-subtitle">Medicamentos e insumos administrados no período.</p>
+      <h3 class="report-title">{{ 'relatorios.drugConsumption.title' | translate }}</h3>
+      <p class="report-subtitle">{{ 'relatorios.drugConsumption.subtitle' | translate }}</p>
     </div>
     <select class="category-filter" [ngModel]="category" (ngModelChange)="category = $event; onCategoryChange()">
-      <option [ngValue]="null">Todas as categorias</option>
+      <option [ngValue]="null">{{ 'relatorios.drugConsumption.allCategories' | translate }}</option>
       <option *ngFor="let c of categoryOptions" [ngValue]="c.id">{{ c.label }}</option>
     </select>
     <app-report-pdf-actions reportKey="drug-consumption" [filters]="filters" [category]="category"></app-report-pdf-actions>
@@ -16,29 +16,29 @@
       <div class="kpi-row">
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.totalAdministrations }}</span>
-          <span class="kpi-label">Total de administrações</span>
+          <span class="kpi-label">{{ 'relatorios.drugConsumption.kpiTotalAdministrations' | translate }}</span>
         </div>
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.distinctDrugs }}</span>
-          <span class="kpi-label">Fármacos distintos</span>
+          <span class="kpi-label">{{ 'relatorios.drugConsumption.kpiDistinctDrugs' | translate }}</span>
         </div>
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.topDrug ?? '—' }}</span>
-          <span class="kpi-label">Fármaco mais usado</span>
+          <span class="kpi-label">{{ 'relatorios.drugConsumption.kpiTopDrug' | translate }}</span>
         </div>
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.topCategory ?? '—' }}</span>
-          <span class="kpi-label">Categoria mais usada</span>
+          <span class="kpi-label">{{ 'relatorios.drugConsumption.kpiTopCategory' | translate }}</span>
         </div>
       </div>
 
       <div class="charts-grid">
         <div class="chart-block">
-          <h4>Top medicamentos utilizados</h4>
-          <app-bar-chart [labels]="drugLabels" [data]="drugCounts" datasetLabel="Administrações" [horizontal]="true"></app-bar-chart>
+          <h4>{{ 'relatorios.drugConsumption.chartTopMedications' | translate }}</h4>
+          <app-bar-chart [labels]="drugLabels" [data]="drugCounts" [datasetLabel]="'relatorios.drugConsumption.datasetAdministrations' | translate" [horizontal]="true"></app-bar-chart>
         </div>
         <div class="chart-block" *ngIf="categoryLabels.length">
-          <h4>Por categoria</h4>
+          <h4>{{ 'relatorios.drugConsumption.chartByCategory' | translate }}</h4>
           <app-donut-chart [labels]="categoryLabels" [data]="categoryCounts"></app-donut-chart>
         </div>
       </div>
@@ -47,9 +47,9 @@
         <table class="report-table">
           <thead>
             <tr>
-              <th>Medicamento</th>
-              <th>Categoria</th>
-              <th class="num">Quantidade</th>
+              <th>{{ 'relatorios.drugConsumption.tableMedication' | translate }}</th>
+              <th>{{ 'relatorios.drugConsumption.tableCategory' | translate }}</th>
+              <th class="num">{{ 'relatorios.drugConsumption.tableQuantity' | translate }}</th>
               <th class="num">%</th>
             </tr>
           </thead>

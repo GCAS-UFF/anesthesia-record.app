@@ -1,0 +1,142 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "connected": "Connected",
+    "disconnected": "Not connected",
+    "wait": "Please wait..."
+  },
+  "header": {
+    "openMenu": "Open menu",
+    "back": "Back",
+    "mainMenu": "Main menu",
+    "closeMenu": "Close menu",
+    "settings": "Settings",
+    "logout": "Log out",
+    "logoutConfirmTitle": "Log out",
+    "logoutConfirmMessage": "Are you sure you want to log out of the application?",
+    "nav": {
+      "allPatients": "All Patients",
+      "myPatients": "My Patients",
+      "integrationsTracking": "Integration Tracking",
+      "itemMaintenanceAdmin": "Item Maintenance (Admin)",
+      "fetchAghuDataAdmin": "Fetch AGHU Data (Admin)",
+      "reportsAdmin": "Reports (Admin)"
+    }
+  },
+  "statusBar": {
+    "syncTitle": "Record synchronization",
+    "networkTitle": "Network connection",
+    "aghuTitle": "AGHU integration",
+    "records": "RECORDS",
+    "network": "NETWORK",
+    "aghu": "AGHU"
+  },
+  "connectionStatus": {
+    "connected": "Server: Connected",
+    "disconnected": "Server: Disconnected"
+  },
+  "login": {
+    "systemName": "Anesthesia Management System",
+    "networkLabel": "Network",
+    "networkTitle": "Network connection",
+    "aghuLabel": "AGHU",
+    "aghuTitle": "AGHU integration",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Enter your username",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "forgotPassword": "Forgot your password?",
+    "submit": "SIGN IN",
+    "notice": "Use the same username and password as the AGHU system to sign in.",
+    "forgotTitle": "Forgot your password?",
+    "forgotMessage": "Access uses the same username and password as the AGHU system. To reset your password, contact the IT team responsible for AGHU.",
+    "understood": "Got it",
+    "footerLine1": "Anesthesia Management System - v1",
+    "footerLine2": "UFF - Fluminense Federal University",
+    "invalidCredentials": "Invalid username or password, or the API is unavailable."
+  },
+  "settings": {
+    "title": "Settings",
+    "roleAdmin": "Administrator",
+    "roleUser": "User",
+    "savedAt": "Saved",
+    "loading": "Loading settings...",
+    "loadError": "Unable to load settings.",
+    "saveError": "Unable to save. Please try again.",
+    "saveSuccess": "Settings saved successfully.",
+    "adminBadge": "admin",
+    "sections": {
+      "general": "General preferences",
+      "measurement": "Automatic measurement",
+      "integrations": "Integrations and APIs",
+      "adminAccount": "ADMIN account",
+      "hospital": "Hospital data"
+    },
+    "general": {
+      "description": "Language of the anesthesia system interface.",
+      "language": "Language"
+    },
+    "measurement": {
+      "description": "How often vital signs are automatically recorded during monitoring.",
+      "useInstitutional": "Use institutional interval",
+      "myInterval": "My measurement interval",
+      "minutesUnit": "min",
+      "minutesHint": "Shorter intervals generate more records in the trend chart.",
+      "institutionalDefault": "Institutional default interval",
+      "institutionalHint": "Value applied to all anesthesiologists. The user can change their own interval."
+    },
+    "siga": {
+      "heading": "SIGA API",
+      "description": "SIGA API address used by this device for login and other requests. Local configuration for this tablet.",
+      "url": "URL",
+      "testConnection": "Test connection"
+    },
+    "aghu": {
+      "heading": "AGHU API",
+      "description": "Integration with the AGHU hospital system. Installation-wide configuration — stored on the server.",
+      "url": "URL",
+      "testConnection": "Test connection",
+      "connectSuccess": "AGHU connection validated and saved.",
+      "connectFail": "Could not connect to AGHU. The previous configuration was kept."
+    },
+    "sigaConnectSuccess": "SIGA API connection validated and saved on this device.",
+    "adminAccount": {
+      "description": "Authenticated administrator account information and password change.",
+      "name": "Name",
+      "username": "Username (login)",
+      "email": "Email",
+      "sector": "Sector",
+      "changePassword": "Change password",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "newPasswordPlaceholder": "At least 6 characters",
+      "confirmPassword": "Confirm new password",
+      "confirmPasswordPlaceholder": "Repeat the new password",
+      "passwordMismatch": "The confirmation does not match the new password.",
+      "changing": "Changing...",
+      "changeSuccess": "Password updated successfully.",
+      "changeError": "Unable to change the password. Check your current password."
+    },
+    "hospital": {
+      "description": "Institutional information printed on anesthesia records and reports.",
+      "name": "Hospital name",
+      "sector": "Sector / Unit",
+      "cnpj": "Tax ID (CNPJ)",
+      "cep": "Postal code",
+      "neighborhood": "Neighborhood",
+      "street": "Street",
+      "number": "Number",
+      "city": "City",
+      "state": "State"
+    },
+    "signature": {
+      "title": "Confirm changes",
+      "declaration": "I acknowledge that these settings affect how the anesthesia system operates and I confirm the changes.",
+      "passwordLabel": "Access password",
+      "passwordPlaceholder": "Enter your password to sign",
+      "confirm": "Sign and save"
+    }
+  }
+}

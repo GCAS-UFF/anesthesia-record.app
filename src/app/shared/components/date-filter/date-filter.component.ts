@@ -5,11 +5,12 @@ import { FilterStateService } from 'src/app/core/services/filter-state.service';
 import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { calendarOutline, chevronDownOutline, closeCircle } from 'ionicons/icons';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-date-filter',
   standalone: true,
-  imports: [CommonModule, IonIcon],
+  imports: [CommonModule, IonIcon, TranslatePipe],
   templateUrl: './date-filter.component.html',
   styleUrls: ['./date-filter.component.scss']
 })

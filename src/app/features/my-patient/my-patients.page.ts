@@ -18,6 +18,7 @@ import {
   arrowDownOutline,
 } from 'ionicons/icons';
 import { Router } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { SurgeryService } from '../../core/services/surgery.service';
 import { AuthService } from '../../core/services/auth.service';
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
@@ -43,7 +44,8 @@ type MyPatientStatusFilter = 'all' | 'inProgress' | 'completed';
     HeaderInstitucionalComponent,
     DateFilterComponent,
     EmptyStateComponent,
-    ProcedureCardComponent
+    ProcedureCardComponent,
+    TranslatePipe
   ],
   providers: [DatePipe],
 })
@@ -80,7 +82,8 @@ export class MyPatientsPage implements OnInit {
     private surgeryService: SurgeryService,
     private authService: AuthService,
     private alertController: AlertController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private translate: TranslateService
   ) {
     addIcons({
       chevronBackOutline,
@@ -104,20 +107,29 @@ export class MyPatientsPage implements OnInit {
   get statusLabel(): string {
     switch (this.selectedStatus) {
       case 'inProgress':
-        return 'Em Atendimento';
+        return this.translate.instant('myPatients.status.inProgress');
       case 'completed':
-        return 'Realizados';
+        return this.translate.instant('myPatients.status.completed');
       default:
-        return 'Todos';
+        return this.translate.instant('myPatients.status.all');
     }
   }
 
   get dateLabel(): string {
-    if (!this.selectedDate) return 'Todas as datas';
+    if (!this.selectedDate) return this.translate.instant('myPatients.date.allDates');
     const today = new Date().toISOString().split('T')[0];
-    if (this.selectedDate === today) return 'Hoje';
+    if (this.selectedDate === today) return this.translate.instant('myPatients.date.today');
     const [year, month, day] = this.selectedDate.split('-');
     return `${day}/${month}`;
+  }
+
+  get isTodaySelected(): boolean {
+    const today = new Date().toISOString().split('T')[0];
+    return this.selectedDate === today;
+  }
+
+  get youLabel(): string {
+    return this.translate.instant('myPatients.you');
   }
 
   toggleFilters() {
@@ -231,7 +243,7 @@ export class MyPatientsPage implements OnInit {
         error: async () => {
           this.isRefreshing = false;
           const toast = await this.toastController.create({
-            message: 'Falha ao carregar seus pacientes.',
+            message: this.translate.instant('myPatients.loadError'),
             duration: 2500,
             color: 'danger',
           });
@@ -261,13 +273,13 @@ export class MyPatientsPage implements OnInit {
   getMonitorizacaoButtonText(status: SurgeryStatusEnum | null): string {
     switch (status) {
       case SurgeryStatusEnum.EmProgresso:
-        return 'Continuar Monitorização';
+        return this.translate.instant('myPatients.monitorization.continue');
       case SurgeryStatusEnum.EmPreparacao:
-        return 'Iniciar Monitorização';
+        return this.translate.instant('myPatients.monitorization.start');
       case SurgeryStatusEnum.Agendado:
-        return 'Acessar Monitorização';
+        return this.translate.instant('myPatients.monitorization.access');
       default:
-        return 'Monitorização';
+        return this.translate.instant('myPatients.monitorization.default');
     }
   }
 
@@ -308,11 +320,11 @@ export class MyPatientsPage implements OnInit {
         bed: item.currentLocation?.bed || '',
         floor: item.currentLocation?.floor || '',
         unit: item.currentLocation?.unit?.description || '',
-        anesthesiologist: item.firstAnesthesiologist || { fullName: 'Você' },
+        anesthesiologist: item.firstAnesthesiologist || { fullName: this.translate.instant('myPatients.you') },
         procedure:
           primaryProc && primaryProc.description && primaryProc.description !== 'Não informado'
             ? primaryProc.description
-            : 'Procedimento não informado',
+            : this.translate.instant('myPatients.procedureNotInformed'),
         status,
         date: this.datePipe.transform(dt, 'yyyy-MM-dd'),
         time: this.datePipe.transform(dt, 'HH:mm'),
@@ -410,15 +422,15 @@ export class MyPatientsPage implements OnInit {
 
   async abandonPatient(surgeryId: string | number, patientId: string) {
     const alert = await this.alertController.create({
-      header: 'Deixar Paciente',
-      message: 'Deseja realmente deixar esse paciente?',
+      header: this.translate.instant('myPatients.abandon.title'),
+      message: this.translate.instant('myPatients.abandon.confirmMessage'),
       buttons: [
-        { text: 'Cancelar', role: 'cancel', cssClass: 'secondary' },
+        { text: this.translate.instant('common.cancel'), role: 'cancel', cssClass: 'secondary' },
         {
-          text: 'Confirmar',
+          text: this.translate.instant('myPatients.common.confirm'),
           handler: async () => {
             const loading = await this.loadingController.create({
-              message: 'Deixando paciente...',
+              message: this.translate.instant('myPatients.abandon.loading'),
               duration: 1000,
               spinner: 'circular',
             });
@@ -428,7 +440,7 @@ export class MyPatientsPage implements OnInit {
               next: async () => {
                 await loading.dismiss();
                 const toast = await this.toastController.create({
-                  message: 'Paciente liberado com sucesso!',
+                  message: this.translate.instant('myPatients.abandon.success'),
                   duration: 2000,
                   color: 'success',
                   icon: 'checkmark-circle',
@@ -439,7 +451,7 @@ export class MyPatientsPage implements OnInit {
               error: async () => {
                 await loading.dismiss();
                 const toast = await this.toastController.create({
-                  message: 'Falha de comunicação com a API. Não foi possível liberar o paciente.',
+                  message: this.translate.instant('myPatients.abandon.error'),
                   duration: 3000,
                   color: 'danger',
                 });

@@ -17,6 +17,7 @@ import { addIcons } from 'ionicons';
 import { wifiOutline, cloudOutline, informationCircleOutline } from 'ionicons/icons';
 import { HealthService } from 'src/app/core/services/health.service';
 import { IonIcon } from "@ionic/angular/standalone";
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 /**
  * LoginPage
@@ -26,12 +27,13 @@ import { IonIcon } from "@ionic/angular/standalone";
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [IonIcon, 
+  imports: [IonIcon,
     CommonModule,
     ReactiveFormsModule,
     CustomInputComponent,
     LoadingButtonComponent,
-    ErrorMessageComponent
+    ErrorMessageComponent,
+    TranslatePipe
   ],
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
@@ -53,7 +55,8 @@ export class LoginPage implements OnInit, OnDestroy {
     private authService: AuthService,
     private router: Router,
     private healthService: HealthService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private translate: TranslateService
   ) {
     addIcons({
       wifiOutline,
@@ -94,7 +97,7 @@ export class LoginPage implements OnInit, OnDestroy {
           this.router.navigate(['/pacientes']);
         },
         error: err => {
-          this.error = err;
+          this.error = this.translate.instant(err);
           this.loading = false;
         }
       });
@@ -133,9 +136,9 @@ export class LoginPage implements OnInit, OnDestroy {
     event.preventDefault();
 
     const alert = await this.alertController.create({
-      header: 'Esqueceu a senha?',
-      message: 'O acesso utiliza o mesmo usuário e senha do sistema AGHU. Para redefinir sua senha, entre em contato com a equipe de TI responsável pelo AGHU.',
-      buttons: ['Entendi']
+      header: this.translate.instant('login.forgotTitle'),
+      message: this.translate.instant('login.forgotMessage'),
+      buttons: [this.translate.instant('login.understood')]
     });
 
     await alert.present();

@@ -3,20 +3,20 @@
     <div class="ch-title">
       <span class="dot"></span>
       <ion-icon name="water-outline"></ion-icon>
-      <span>GANHOS E PERDAS</span>
+      <span>{{ 'monitorizacao.fluidBalance.title' | translate }}</span>
     </div>
 
     <div class="totals">
       <span class="tot gain">+{{ totalGain }} ml</span>
       <span class="tot loss">−{{ totalLoss }} ml</span>
       <span class="tot net" [class.pos]="net >= 0" [class.neg]="net < 0">
-        Balanço {{ net >= 0 ? '+' : '' }}{{ net }} ml
+        {{ 'monitorizacao.fluidBalance.balanceLabel' | translate }} {{ net >= 0 ? '+' : '' }}{{ net }} ml
       </span>
     </div>
 
     <div class="ch-actions" (click)="$event.stopPropagation()">
       <ion-button size="small" fill="clear" (click)="toggle.emit()"
-                  [title]="collapsed ? 'Expandir' : 'Recolher'">
+                  [title]="(collapsed ? 'monitorizacao.common.expand' : 'monitorizacao.common.collapse') | translate">
         <ion-icon [name]="collapsed ? 'chevron-down-outline' : 'chevron-up-outline'" slot="icon-only"></ion-icon>
       </ion-button>
     </div>
@@ -25,7 +25,7 @@
   <div class="bars-area" *ngIf="!collapsed">
     <!-- lanes: gain (top half) / loss (bottom half) separadas por eixo central -->
     <div class="lane lane-gain">
-      <div class="lane-label">GANHOS</div>
+      <div class="lane-label">{{ 'monitorizacao.fluidBalance.gainsLane' | translate }}</div>
       <div class="lane-track">
         <ng-container *ngFor="let b of gains">
           <div class="bar gain"
@@ -42,7 +42,7 @@
     <div class="axis-mid"><span>0 ml</span></div>
 
     <div class="lane lane-loss">
-      <div class="lane-label">PERDAS</div>
+      <div class="lane-label">{{ 'monitorizacao.fluidBalance.lossesLane' | translate }}</div>
       <div class="lane-track">
         <ng-container *ngFor="let b of losses">
           <div class="bar loss"
@@ -56,6 +56,6 @@
       </div>
     </div>
 
-    <div class="empty" *ngIf="!balance?.length">Nenhum balanço lançado</div>
+    <div class="empty" *ngIf="!balance?.length">{{ 'monitorizacao.fluidBalance.empty' | translate }}</div>
   </div>
 </div>

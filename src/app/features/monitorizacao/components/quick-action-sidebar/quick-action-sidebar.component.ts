@@ -8,11 +8,12 @@ import {
   pulseOutline, medkitOutline, warningOutline, waterOutline,
   checkmarkDoneOutline, cutOutline, timeOutline, listOutline
 } from 'ionicons/icons';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-quick-action-sidebar',
   standalone: true,
-  imports: [CommonModule, IonButton, IonIcon],
+  imports: [CommonModule, IonButton, IonIcon, TranslatePipe],
   templateUrl: './quick-action-sidebar.component.html',
   styleUrls: ['./quick-action-sidebar.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

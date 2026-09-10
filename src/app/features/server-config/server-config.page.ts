@@ -16,13 +16,14 @@ import {
 import { environment } from 'src/environments/environment';
 import { HealthService } from '../../core/services/health.service';
 import { ApiUrlService } from '../../core/services/api-url.service';
+import { TranslatePipe } from '@ngx-translate/core';
 
 type ConnectionState = 'idle' | 'testing' | 'success' | 'error';
 
 @Component({
   selector: 'app-server-config',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IonIcon, IonSpinner],
+  imports: [CommonModule, ReactiveFormsModule, IonIcon, IonSpinner, TranslatePipe],
   templateUrl: './server-config.page.html',
   styleUrls: ['./server-config.page.scss'],
 })

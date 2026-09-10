@@ -8,13 +8,14 @@ import {
   medkitOutline, addOutline,
   chevronUpOutline, chevronDownOutline,
 } from 'ionicons/icons';
+import { TranslatePipe } from '@ngx-translate/core';
 
 type AnyAgent = any;
 
 @Component({
   selector: 'app-agents-chart',
   standalone: true,
-  imports: [CommonModule, IonButton, IonIcon],
+  imports: [CommonModule, IonButton, IonIcon, TranslatePipe],
   templateUrl: './agents-chart.component.html',
   styleUrls: ['./agents-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

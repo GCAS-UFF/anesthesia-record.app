@@ -1,0 +1,431 @@
+{
+  "fichaAnestesica": {
+    "common": {
+      "yes": "Sí",
+      "no": "No",
+      "cancel": "Cancelar",
+      "add": "Añadir",
+      "searchByNameOrCode": "Buscar por nombre o código...",
+      "noResults": "Sin resultados"
+    },
+    "header": {
+      "preAnestesicaButton": "Pre Anest.",
+      "saveAria": "Guardar",
+      "sendLabel": "Enviar",
+      "goToSurgeryAria": "Ir a la Cirugía",
+      "surgeryLabel": "Cirugía"
+    },
+    "page": {
+      "eyebrow": "Registro perioperatorio",
+      "title": "Ficha Anestésica",
+      "autosaveTag": "Borrador guardado",
+      "pullingText": "Desliza para actualizar",
+      "refreshingText": "Actualizando..."
+    },
+    "seguranca": {
+      "title": "Seguridad del Paciente",
+      "identificadoAvaliado": "¿Paciente identificado y evaluado antes de la inducción?",
+      "consentimentoAssinado": "¿Consentimiento informado de anestesia firmado?",
+      "equipamentosChecados": "¿Equipo de anestesia y accesorios verificados?",
+      "atencaoLabel": "Atención (Observaciones de Seguridad)"
+    },
+    "preInducao": {
+      "title": "Pre-Inducción",
+      "recebeuMedPrevia": "¿Medicación preanestésica?",
+      "horaLabel": "Hora",
+      "farmacoLabel": "Fármaco",
+      "selecionarFarmaco": "Seleccionar fármaco...",
+      "buscarFarmaco": "Buscar fármaco...",
+      "nenhumFarmacoEncontrado": "Ningún fármaco encontrado",
+      "viaLabel": "Vía",
+      "especifiqueVia": "Especifique la vía",
+      "viaOptions": {
+        "vo": "VO",
+        "im": "IM",
+        "iv": "IV",
+        "outras": "OTRAS"
+      }
+    },
+    "antibiotico": {
+      "title": "Antibiótico Profiláctico",
+      "temAntibiotico": "¿Uso de antibiótico profiláctico?",
+      "repiqueLabel": "¿Redosis?",
+      "sim": "SÍ",
+      "nao": "NO",
+      "addRepiqueTitle": "Añadir Redosis",
+      "repiquePrefix": "Redosis:",
+      "addAntibioticoButton": "Añadir Antibiótico",
+      "antibioticoLabel": "Antibiótico *",
+      "selecionarAntibiotico": "Seleccionar antibiótico...",
+      "buscarAntibiotico": "Buscar antibiótico...",
+      "nenhumAntibioticoEncontrado": "Ningún antibiótico encontrado",
+      "doseLabel": "Dosis *",
+      "dosePlaceholder": "Ej: 2g",
+      "viaLabel": "Vía",
+      "viaPlaceholder": "IV",
+      "horaLabel": "Hora",
+      "cancelar": "Cancelar",
+      "adicionar": "Añadir",
+      "novoRepiqueHeader": "Nueva Redosis",
+      "paraLabel": "Para: {{nome}}",
+      "doseRepiquePlaceholder": "Dosis de la redosis",
+      "toastSelecioneAntibiotico": "Seleccione el antibiótico e indique la dosis."
+    },
+    "dadosVitais": {
+      "title": "Datos Vitales y Antropométricos",
+      "subtitle": "Antes de la inducción anestésica",
+      "pa": "PA",
+      "fr": "FR",
+      "temp": "T (°C)",
+      "spo2": "SpO2",
+      "peso": "Peso (kg)",
+      "asa": "ASA",
+      "selecionePlaceholder": "Seleccione",
+      "entradaSala": "Entrada a Quirófano"
+    },
+    "equipe": {
+      "title": "Equipo Quirúrgico y Pre-Procedimiento",
+      "cirurgiao": "Cirujano *",
+      "selecionarCirurgiao": "Seleccionar cirujano...",
+      "assistente": "Ayudante *",
+      "selecionarAssistente": "Seleccionar ayudante...",
+      "diagnosticoPre": "Diagnóstico preoperatorio *",
+      "horaInicioAnestesia": "Hora de inicio de la anestesia *"
+    },
+    "posicao": {
+      "title": "Posición Operatoria",
+      "posicaoLabel": "Posición",
+      "especifiquePosicao": "Especifique la posición",
+      "usoCoxim": "¿Uso de almohadillas de posicionamiento?",
+      "localCoxim": "Ubicación de las almohadillas",
+      "localCoximPlaceholder": "Ej: Cabeza, hombros...",
+      "acessoVenoso": "Acceso venoso",
+      "localAcesso": "Sitio de acceso",
+      "localAcessoPlaceholder": "Ej: MSD, Yugular...",
+      "dificuldadePuncao": "¿Dificultad de punción?",
+      "options": {
+        "supina": "Supina",
+        "prona": "Prona",
+        "sentado": "Sentado",
+        "lateralEsq": "Lateral Izquierdo",
+        "lateralDir": "Lateral Derecho",
+        "trendelenburg": "Trendelenburg",
+        "litotomica": "Litotomía"
+      },
+      "acessoOptions": {
+        "periferico": "Periférico",
+        "central": "Central"
+      }
+    },
+    "tecnica": {
+      "title": "Técnica Anestésica",
+      "anestesiaGeralCardHeader": "Anestesia General",
+      "anestesiaGeralLabel": "¿Anestesia general?",
+      "respiracaoTitle": "Respiración",
+      "assistidaLabel": "Asistida:",
+      "controladaLabel": "Controlada:",
+      "circuitoAbsorvedorLabel": "¿Circuito (absorbedor de CO₂)?",
+      "viaAereaCardHeader": "Vía Aérea (si aplica)",
+      "dispositivosTitle": "Dispositivos",
+      "guedel": "Guedel",
+      "mascLaringea": "Mascarilla Laríngea",
+      "mascFacial": "Mascarilla Facial",
+      "tubo": "Tubo",
+      "numeroAbrev": "Nº",
+      "cuff": "Cuff",
+      "oral": "Oral",
+      "nasal": "Nasal",
+      "iot": "IOT",
+      "facil": "Fácil",
+      "dificil": "Difícil",
+      "viaAereaTipoCardHeader": "Vía Aérea - Tipo / Técnicas",
+      "tipoTitle": "Tipo",
+      "tipoSimples": "Simple",
+      "tipoEndobronquico": "Endobronquial",
+      "tipoAramado": "Con alma metálica",
+      "tipoOutras": "Otras",
+      "quaisPlaceholder": "¿Cuáles?",
+      "tecnicasTitle": "Técnicas",
+      "tecLaringoscopia": "Laringoscopia",
+      "tecRetrograda": "Retrógrada",
+      "tecVideolaringoscopia": "Videolaringoscopia",
+      "tecBroncofibroscopia": "Broncofibroscopia",
+      "tecTraqueostomia": "Traqueostomía",
+      "tecOutras": "Otras",
+      "bloqueiosEspinhaisCardHeader": "Bloqueos Neuroaxiales",
+      "realizado": "¿Realizado?",
+      "nivelPuncaoTitle": "Nivel de punción",
+      "posicaoLabel": "Posición",
+      "cateterLabel": "¿Catéter?",
+      "opioideLabel": "¿Opioide?",
+      "numeroPuncoesLabel": "Número de punciones",
+      "sedacaoOxigenioCardHeader": "Sedación y Oxígeno",
+      "sedacaoLabel": "¿Sedación?",
+      "suplementacaoO2Label": "¿Suplementación de O₂?",
+      "tipoLabel": "Tipo",
+      "outrosLabel": "Otros",
+      "especifiquePlaceholder": "Especifique...",
+      "bloqueioPlexoCardHeader": "Bloqueo de Plexo / Nervio",
+      "bloqueioPlexoLabel": "¿Bloqueo de plexo?",
+      "neuroestimuladorLabel": "¿Neuroestimulador?",
+      "nervosEstimuladosTitle": "Nervios estimulados",
+      "yesNo": {
+        "sim": "Sí",
+        "nao": "No"
+      },
+      "respiracaoAssistidaOptions": {
+        "espontanea": "Espontánea",
+        "manual": "Manual"
+      },
+      "respiracaoControladaOptions": {
+        "volume": "Volumen",
+        "pressao": "Presión"
+      },
+      "nivelPuncaoOptions": {
+        "l1l2": "L1-L2",
+        "l2l3": "L2-L3",
+        "l3l4": "L3-L4",
+        "l4l5": "L4-L5",
+        "hiatoSacro": "Hiato Sacro"
+      },
+      "posicaoPuncaoOptions": {
+        "sentada": "Sentada",
+        "decubitoLateral": "Decúbito Lateral"
+      },
+      "nervosEstimuladosOptions": {
+        "femoral": "Femoral",
+        "ciatico": "Ciático",
+        "iliohipogastrico": "Iliohipogástrico",
+        "ilioinguinal": "Ilioinguinal",
+        "retrobulbar": "Retrobulbar",
+        "peribulbar": "Peribulbar"
+      },
+      "suplementacaoO2Options": {
+        "cateterNasal": "Cánula Nasal",
+        "mascaraFacial": "Mascarilla Facial",
+        "guedel": "Guedel",
+        "nasofaringe": "Nasofaríngea"
+      }
+    },
+    "posProcedimento": {
+      "title": "Post-Procedimiento",
+      "cirurgiaRealizada": "Cirugía realizada *",
+      "selecionarProcedimento": "Seleccionar procedimiento...",
+      "buscarProcedimento": "Buscar procedimiento...",
+      "horaLabel": "Hora *",
+      "principalLabel": "Principal",
+      "removerProcedimentoAria": "Eliminar procedimiento",
+      "adicionarProcedimento": "Añadir procedimiento",
+      "horaTerminoCirurgia": "Hora de término de la cirugía *",
+      "diagnosticoPos": "Diagnóstico postoperatorio *",
+      "horaTerminoAnestesia": "Hora de término de la anestesia *"
+    },
+    "alderete": {
+      "title": "Índice de Aldrete y Kroulik",
+      "subtitle": "Evaluación para el alta de la sala",
+      "fields": {
+        "consciencia": {
+          "label": "Consciencia",
+          "opt2": "Totalmente despierto",
+          "opt1": "Despierta al ser llamado",
+          "opt0": "No responde"
+        },
+        "atividade": {
+          "label": "Actividad",
+          "opt2": "Mueve las cuatro extremidades",
+          "opt1": "Mueve dos extremidades",
+          "opt0": "Incapaz de moverse"
+        },
+        "circulacao": {
+          "label": "Circulación",
+          "opt2": "PA ± 20% del valor preanestésico",
+          "opt1": "PA 20% a 50% del valor preanestésico",
+          "opt0": "PA ± 50% del valor preanestésico"
+        },
+        "respiracao": {
+          "label": "Respiración",
+          "opt2": "Respira profundamente y tose con libertad",
+          "opt1": "Disnea, hipoventilación",
+          "opt0": "Apnea"
+        },
+        "saturacao": {
+          "label": "SpO2",
+          "opt2": "Mantiene SpO2 > 90% con aire ambiente",
+          "opt1": "Necesita O2 para SpO2 > 90%",
+          "opt0": "SpO2 < 90% incluso con O2"
+        }
+      },
+      "totalLabel": "Total Aldrete & Kroulik",
+      "status": {
+        "apto": "Apto para el Alta",
+        "observacao": "En Observación",
+        "monitoramento": "Monitorización Intensiva"
+      },
+      "condicoesAltaTitle": "Condiciones clínicas al alta",
+      "condicoesAltaOptions": {
+        "acordado": "Despierto",
+        "sonolento": "Somnoliento",
+        "intubado": "Intubado"
+      },
+      "dorErrorMsg": "Si marca “Sí”, seleccione al menos una escala y complete el valor.",
+      "dorTitle": "¿Presencia de dolor?",
+      "dorAriaLabel": "Presencia de dolor",
+      "dorSim": "Sí",
+      "dorNao": "No",
+      "scaleHint010": "0 a 10",
+      "scaleHint312": "3 a 12",
+      "condutaLabel": "Conducta adoptada",
+      "condutaPlaceholder": "Describa la conducta realizada..."
+    },
+    "assinaturas": {
+      "title": "Firmas",
+      "noticeBefore": "Al hacer clic en",
+      "noticeStrong": "Firmar y Guardar",
+      "noticeAfter": "se solicitará una confirmación digital, y el campo del 1er anestesista se completará automáticamente con el nombre del profesional conectado.",
+      "primeiroLabel": "1er Anestesiólogo *",
+      "primeiroPlaceholder": "Completado por la firma digital",
+      "segundoLabel": "2º Anestesiólogo",
+      "selecionarAnestesiologista": "Seleccionar anestesiólogo...",
+      "dataLabel": "Fecha *"
+    },
+    "formActions": {
+      "limparFormulario": "Limpiar Formulario",
+      "imprimir": "Imprimir"
+    },
+    "signatureWatermark": {
+      "documentoAssinado": "Documento firmado digitalmente",
+      "textPart1": "Esta ficha anestésica fue enviada el",
+      "textPart2": "a las",
+      "textPart3": "y firmada por",
+      "textPart4": ", mediante autenticación con la contraseña personal del profesional.",
+      "registroPrefix": "Registro n.º FA-",
+      "sincronizado": "Sincronizado con el servidor",
+      "assinaturaValida": "Firma válida"
+    },
+    "signModal": {
+      "title": "Confirmar y Firmar Digitalmente",
+      "subtitleText": "La monitorización de esta cirugía ya ha finalizado. Al firmar, usted declara que ha revisado todos los datos de esta ficha anestésica y asume la responsabilidad profesional por la información registrada.",
+      "subtitleStrong": "Este será el último guardado — una vez confirmado, la ficha ya no podrá editarse.",
+      "checkLabel": "Confirmo que he revisado y estoy de acuerdo con todos los datos completados.",
+      "nomeCompletoLabel": "Escriba su nombre completo para firmar",
+      "nomeCompletoPlaceholder": "Nombre completo",
+      "profissionalLogadoPrefix": "Profesional conectado:",
+      "senhaLabel": "Escriba su contraseña para firmar",
+      "senhaPlaceholder": "Contraseña de acceso",
+      "cancelar": "Cancelar",
+      "assinarSalvar": "Firmar y Guardar"
+    },
+    "confirmarLimpezaAlert": {
+      "header": "¿Limpiar Formulario?",
+      "message": "Esto borrará todos los campos completados. ¿Desea continuar?",
+      "cancelar": "Cancelar",
+      "limpar": "Limpiar"
+    },
+    "validationAlert": {
+      "header": "Campos obligatorios no completados",
+      "subHeader": "{{count}} pendiente(s) encontrado(s)",
+      "message": "Verifique los campos resaltados en rojo.",
+      "entendi": "Entendido"
+    },
+    "toasts": {
+      "selecioneAntibiotico": "Seleccione el antibiótico e indique la dosis.",
+      "naoFoiPossivelCarregarFicha": "No se pudo cargar la ficha (sin conexión con el servidor y sin borrador local). Inténtelo de nuevo.",
+      "rascunhoReenviado": "¡Borrador reenviado con éxito!",
+      "rascunhoLimpoFalhouServidor": "Borrador local eliminado. Error al eliminarlo en el servidor.",
+      "formularioLimpo": "Formulario limpiado.",
+      "fichaAssinadaSalva": "¡Ficha Anestésica firmada y guardada con éxito!",
+      "fichaSalva": "¡Ficha Anestésica guardada con éxito!",
+      "naoEnviadaRascunhoSalvo": "No se pudo enviar la ficha al servidor en este momento. Se guardó un borrador para reintentar el envío.",
+      "naoSalvaRascunhoLocal": "No se pudo guardar en el servidor en este momento. Se guardó un borrador localmente.",
+      "naoIdentificouCirurgiaImpressao": "No se pudo identificar la cirugía para la impresión. Recargue la página e inténtelo de nuevo.",
+      "naoIdentificouCirurgia": "No se pudo identificar la cirugía. Recargue la página e inténtelo de nuevo.",
+      "pacienteCanceladoCirurgia": "Paciente cancelado. No es posible acceder a la cirugía.",
+      "monitorizacaoNaoConcluida": "La monitorización aún no ha finalizado.",
+      "fichaPreNaoEncontrada": "Ficha Pre-Anestésica no encontrada (o sin conexión).",
+      "erroAbrirFichaPre": "Error al abrir la Ficha Pre-Anestésica",
+      "naoFoiPossivelCarregarListasAghu": "No se pudieron cargar las listas del AGHU.",
+      "dadosRecarregados": "¡Datos recargados con éxito!",
+      "falhaRecarregarDados": "Error al recargar los datos"
+    },
+    "signatureErrors": {
+      "confirmeVeracidade": "Debe marcar la confirmación de veracidad de los datos.",
+      "digiteNomeCompleto": "Escriba su nombre completo para firmar.",
+      "nomeNaoConfere": "El nombre escrito no coincide con el del profesional conectado ({{expected}}).",
+      "digiteSenha": "Escriba su contraseña para confirmar."
+    },
+    "fieldLabels": {
+      "seguranca": {
+        "identificadoAvaliado": "Paciente identificado y evaluado",
+        "consentimentoAssinado": "Consentimiento firmado",
+        "equipamentosChecados": "Equipos verificados"
+      },
+      "preInducao": {
+        "recebeuMedPrevia": "Recibió medicación preanestésica"
+      },
+      "antibiotico": {
+        "temAntibiotico": "Uso de antibiótico profiláctico"
+      },
+      "dadosVitais": {
+        "pa": "PA",
+        "fr": "FR",
+        "temp": "Temperatura",
+        "spo2": "SpO₂",
+        "peso": "Peso",
+        "asa": "ASA",
+        "entradaSala": "Entrada a Quirófano"
+      },
+      "equipe": {
+        "cirurgiao": "Cirujano",
+        "assistente": "Ayudante",
+        "diagnosticoPre": "Diagnóstico Preoperatorio",
+        "horaInicioAnestesia": "Hora de inicio de la anestesia"
+      },
+      "posicao": {
+        "usoCoxim": "Uso de almohadillas",
+        "dificuldadePuncao": "Dificultad de punción"
+      },
+      "tecnica": {
+        "anestesiaGeral": "Anestesia general (Sí/No)",
+        "circuitoAbsorvedor": "Circuito absorbedor de CO₂",
+        "bloqueiosEspinhais": "Bloqueos neuroaxiales (Sí/No)",
+        "cateter": "Catéter (bloqueo neuroaxial)",
+        "opioide": "Opioide (bloqueo neuroaxial)",
+        "sedacao": "Sedación (Sí/No)",
+        "suplementacaoO2": "Suplementación de O₂",
+        "bloqueioPlexo": "Bloqueo de plexo (Sí/No)",
+        "neuroestimulador": "Neuroestimulador"
+      },
+      "posProcedimento": {
+        "horaTerminoCirurgia": "Hora de término de la cirugía",
+        "diagnosticoPos": "Diagnóstico postoperatorio",
+        "horaTerminoAnestesia": "Hora de término de la anestesia"
+      },
+      "alderete": {
+        "dor": "Presencia de dolor (Sí/No)",
+        "dorENV": "Escala EVA (0-10)",
+        "dorPAINAD": "Escala PAINAD (0-10)",
+        "dorBPS": "Escala BPS (3-12)"
+      },
+      "assinaturas": {
+        "dataAssinatura": "Fecha de la firma"
+      }
+    },
+    "sectionLabels": {
+      "seguranca": "Seguridad del Paciente",
+      "preInducao": "Pre-Inducción",
+      "antibiotico": "Antibiótico Profiláctico",
+      "dadosVitais": "Datos Vitales",
+      "equipe": "Equipo Quirúrgico",
+      "posicao": "Posición y Acceso",
+      "tecnica": "Técnica Anestésica",
+      "posProcedimento": "Post-Procedimiento",
+      "alderete": "Aldrete y Dolor",
+      "assinaturas": "Firmas"
+    },
+    "missing": {
+      "escalaDorRequired": "Seleccione al menos una escala de dolor (EVA / PAINAD / BPS)",
+      "escalaDorInvalid": "Valor de la escala de dolor fuera del rango permitido",
+      "procedimentoRequired": "Indique al menos un procedimiento realizado"
+    }
+  }
+}

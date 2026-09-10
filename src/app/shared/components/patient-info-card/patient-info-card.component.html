@@ -5,14 +5,14 @@
     <div class="card-body" *ngIf="!compact">
         <div class="patient-header">
             <div class="name-group">
-                <span class="label-mini">PACIENTE</span>
-                <h2 class="patient-name">{{ patientName || 'NOME NÃO INFORMADO' }}</h2>
+                <span class="label-mini">{{ 'sharedComponents.patientInfoCard.patientLabel' | translate }}</span>
+                <h2 class="patient-name">{{ patientName || ('sharedComponents.patientInfoCard.patientNameFallback' | translate) }}</h2>
             </div>
             <div class="badges-row" style="flex-wrap: wrap; gap: 6px;">
                 <span class="badge record" *ngIf="record">📋 {{ record }}</span>
                 <span class="badge" *ngIf="unit">🏥 {{ unit }}</span>
-                <span class="badge" *ngIf="floor">🏢 Andar {{ floor }}</span>
-                <span class="badge" *ngIf="bed">🛏️ Leito {{ bed }}</span>
+                <span class="badge" *ngIf="floor">🏢 {{ 'sharedComponents.patientInfoCard.floorPrefix' | translate }} {{ floor }}</span>
+                <span class="badge" *ngIf="bed">🛏️ {{ 'sharedComponents.patientInfoCard.bedPrefix' | translate }} {{ bed }}</span>
                 <span class="badge" *ngIf="surgicalCenter">⚕️ {{ surgicalCenter }}</span>
                 <span class="badge" *ngIf="room">🚪 {{ room }}</span>
             </div>
@@ -20,31 +20,31 @@
 
         <div class="patient-info-grid">
             <div class="info-column">
-                <span class="info-label">NASCIMENTO</span>
+                <span class="info-label">{{ 'sharedComponents.patientInfoCard.birthDateLabel' | translate }}</span>
                 <span class="info-value">{{ birthDate || '--' }}</span>
             </div>
             <div class="info-column">
-                <span class="info-label">IDADE</span>
-                <span class="info-value">{{ age || '--' }} anos</span>
+                <span class="info-label">{{ 'sharedComponents.patientInfoCard.ageLabel' | translate }}</span>
+                <span class="info-value">{{ age || '--' }} {{ 'sharedComponents.patientInfoCard.yearsSuffix' | translate }}</span>
             </div>
             <div class="info-column">
-                <span class="info-label">SEXO</span>
-                <span class="info-value">{{ gender === 'M' ? 'Masculino' : gender === 'F' ? 'Feminino' : gender || '--'
+                <span class="info-label">{{ 'sharedComponents.patientInfoCard.genderLabel' | translate }}</span>
+                <span class="info-value">{{ gender === 'M' ? ('sharedComponents.patientInfoCard.genderMale' | translate) : gender === 'F' ? ('sharedComponents.patientInfoCard.genderFemale' | translate) : gender || '--'
                     }}</span>
             </div>
             <div class="info-column">
-                <span class="info-label">PESO</span>
+                <span class="info-label">{{ 'sharedComponents.patientInfoCard.weightLabel' | translate }}</span>
                 <span class="info-value">{{ weight || '--' }} kg</span>
             </div>
             <div class="info-column procedure">
-                <span class="info-label">PROCEDIMENTO</span>
-                <span class="info-value truncate">{{ procedure || 'NÃO INFORMADO' }}</span>
+                <span class="info-label">{{ 'sharedComponents.patientInfoCard.procedureLabel' | translate }}</span>
+                <span class="info-value truncate">{{ procedure || ('sharedComponents.patientInfoCard.procedureFallback' | translate) }}</span>
             </div>
         </div>
 
         <div class="allergy-footer" *ngIf="hasAllergies">
             <ion-icon name="warning"></ion-icon>
-            <strong>ALERGIA:</strong>
+            <strong>{{ 'sharedComponents.patientInfoCard.allergyLabel' | translate }}</strong>
             <span>{{ formattedAllergies }}</span>
         </div>
     </div>
@@ -57,14 +57,14 @@
                 <span class="mini-record">{{ record }}</span>
             </div>
             <div class="mini-stats-grid">
-                <div class="mini-stat">👤 {{ age }} anos</div>
+                <div class="mini-stat">👤 {{ age }} {{ 'sharedComponents.patientInfoCard.yearsSuffix' | translate }}</div>
                 <div class="mini-stat">⚖️ {{ weight }}kg</div>
                 <div class="mini-stat"><span class="asa-badge">{{ status }}</span></div>
             </div>
         </div>
         <div class="mini-allergy-bar" *ngIf="hasAllergies">
             <ion-icon name="warning-outline"></ion-icon>
-            <strong>Alergias:</strong> {{ formattedAllergies }}
+            <strong>{{ 'sharedComponents.patientInfoCard.allergiesLabelMini' | translate }}</strong> {{ formattedAllergies }}
         </div>
     </div>
 </div>

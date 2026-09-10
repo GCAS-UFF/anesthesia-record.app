@@ -8,12 +8,11 @@
       <div class="header-text">
         <span class="eyebrow">
           <ion-icon name="server-outline" aria-hidden="true"></ion-icon>
-          Integração de dados
+          {{ 'aghuIntegration.eyebrow' | translate }}
         </span>
-        <h1 class="page-title">Integração com AGHU</h1>
+        <h1 class="page-title">{{ 'aghuIntegration.pageTitle' | translate }}</h1>
         <p class="page-subtitle">
-          Traga os dados do sistema hospitalar (AGHU) para o app — medicamentos
-          e funcionários usados durante o atendimento anestésico.
+          {{ 'aghuIntegration.pageSubtitle' | translate }}
         </p>
       </div>
 
@@ -23,9 +22,9 @@
         (click)="runAll()"
       >
         <ion-icon name="cloud-download-outline" aria-hidden="true"></ion-icon>
-        Integrar tudo
+        {{ 'aghuIntegration.runAllButton' | translate }}
       </button>
-    </section>   
+    </section>
 
     <section class="cards-grid">
       <article
@@ -40,22 +39,22 @@
             <ion-icon [name]="card.icon"></ion-icon>
           </div>
           <div class="card-title-wrap">
-            <h2 class="card-title">{{ card.title }}</h2>
-            <p class="card-desc">{{ card.description }}</p>
+            <h2 class="card-title">{{ card.titleKey | translate }}</h2>
+            <p class="card-desc">{{ card.descriptionKey | translate }}</p>
           </div>
           <span class="status-chip" [attr.data-status]="card.status">
             <ng-container [ngSwitch]="card.status">
               <ng-container *ngSwitchCase="'idle'">
-                <ion-icon name="time-outline"></ion-icon> Aguardando
+                <ion-icon name="time-outline"></ion-icon> {{ 'aghuIntegration.status.idle' | translate }}
               </ng-container>
               <ng-container *ngSwitchCase="'running'">
-                <ion-spinner name="crescent"></ion-spinner> Integrando…
+                <ion-spinner name="crescent"></ion-spinner> {{ 'aghuIntegration.status.running' | translate }}
               </ng-container>
               <ng-container *ngSwitchCase="'success'">
-                <ion-icon name="checkmark-circle"></ion-icon> Concluído
+                <ion-icon name="checkmark-circle"></ion-icon> {{ 'aghuIntegration.status.success' | translate }}
               </ng-container>
               <ng-container *ngSwitchCase="'error'">
-                <ion-icon name="alert-circle-outline"></ion-icon> Erro
+                <ion-icon name="alert-circle-outline"></ion-icon> {{ 'aghuIntegration.status.error' | translate }}
               </ng-container>
             </ng-container>
           </span>
@@ -74,11 +73,11 @@
 
           <dl class="meta-grid">
             <div>
-              <dt>Última sincronização</dt>
+              <dt>{{ 'aghuIntegration.meta.lastSync' | translate }}</dt>
               <dd>{{ formatDate(card.lastSyncAt) }}</dd>
             </div>
             <div>
-              <dt>Registros importados</dt>
+              <dt>{{ 'aghuIntegration.meta.lastCount' | translate }}</dt>
               <dd>{{ card.lastCount !== undefined ? card.lastCount : '—' }}</dd>
             </div>
           </dl>
@@ -108,13 +107,13 @@
               aria-hidden="true"
             ></ion-icon>
             <span *ngIf="card.status === 'idle'">
-              Integrar {{ card.title.toLowerCase() }}
+              {{ 'aghuIntegration.actions.integrate' | translate }} {{ lowerTitle(card) }}
             </span>
-            <span *ngIf="card.status === 'running'">Aguarde…</span>
+            <span *ngIf="card.status === 'running'">{{ 'aghuIntegration.actions.wait' | translate }}</span>
             <span *ngIf="card.status === 'success'">
-              Sincronizar novamente
+              {{ 'aghuIntegration.actions.retrySuccess' | translate }}
             </span>
-            <span *ngIf="card.status === 'error'">Tentar novamente</span>
+            <span *ngIf="card.status === 'error'">{{ 'aghuIntegration.actions.retryError' | translate }}</span>
           </button>
         </footer>
       </article>

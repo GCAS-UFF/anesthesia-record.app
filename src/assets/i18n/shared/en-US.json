@@ -1,0 +1,127 @@
+{
+  "sharedComponents": {
+    "clinicalItemModal": {
+      "titleAddAgent": "Add Agent",
+      "titleAddEvent": "Add Event",
+      "titleEditEvent": "Edit Event",
+      "titleAddBalance": "Add Fluid Balance",
+      "clearSelection": "Clear selection",
+      "agent": {
+        "medicationLabel": "Medication *",
+        "medicationPlaceholder": "Type the medication name...",
+        "noMedicationFound": "No medication found.",
+        "noMedicationLoaded": "No medication loaded in storage.",
+        "doseLabel": "Dose *",
+        "dosePlaceholder": "e.g.: 100",
+        "unitLabel": "Unit *",
+        "routeLabel": "Route *",
+        "selectPlaceholder": "Select"
+      },
+      "event": {
+        "timeLabel": "Time",
+        "timeAriaLabel": "Event time",
+        "eventLabel": "Event *",
+        "searchPlaceholder": "Search event...",
+        "noEventsRegistered": "No events registered. Ask the administrator to register events in \"Item Maintenance\".",
+        "descriptionLabel": "Description *",
+        "descriptionPlaceholder": "Describe the event..."
+      },
+      "balance": {
+        "typeLabel": "Type *",
+        "gain": "Gain",
+        "loss": "Loss",
+        "itemLabel": "Item *",
+        "searchPlaceholder": "Type to search...",
+        "noItemFound": "No item found.",
+        "detailOtherLabel": "Specify \"Other\" *",
+        "detailPlaceholder": "Specify...",
+        "volumeLabel": "Volume (ml) *"
+      }
+    },
+    "dateFilter": {
+      "dateLabel": "Date:",
+      "allLabel": "All",
+      "clearFilterTitle": "Clear filter",
+      "today": "Today"
+    },
+    "emptyState": {
+      "defaultMessage": "No items found."
+    },
+    "patientInfoCard": {
+      "patientLabel": "PATIENT",
+      "patientNameFallback": "NAME NOT INFORMED",
+      "floorPrefix": "Floor",
+      "bedPrefix": "Bed",
+      "birthDateLabel": "BIRTH DATE",
+      "ageLabel": "AGE",
+      "yearsSuffix": "years",
+      "genderLabel": "GENDER",
+      "genderMale": "Male",
+      "genderFemale": "Female",
+      "weightLabel": "WEIGHT",
+      "procedureLabel": "PROCEDURE",
+      "procedureFallback": "NOT INFORMED",
+      "allergyLabel": "ALLERGY:",
+      "allergiesLabelMini": "Allergies:",
+      "allergyUnspecified": "Allergy (unspecified)"
+    },
+    "procedureCard": {
+      "reopenTicket": "Reopen Record",
+      "abandon": "Abandon",
+      "removeDoctor": "Remove Doctor",
+      "yourPatient": "Your patient",
+      "surgeryRoom": "Operating Room",
+      "statusScheduled": "Scheduled",
+      "statusPreparation": "In preparation",
+      "statusInProgress": "In progress",
+      "statusCompleted": "Completed",
+      "statusCancelled": "Cancelled",
+      "recordPrefix": "Record:",
+      "idPrefix": "ID:",
+      "yearsSuffix": "years",
+      "procedureNotInformed": "Procedure not informed",
+      "viewPreAnesthesia": "View Pre-Anesthesia",
+      "viewRecords": "View Records",
+      "preAnesthesiaDone": "Pre-Anesthesia Completed",
+      "preAnesthesia": "Pre-Anesthesia",
+      "anestheticRecord": "Anesthetic Record",
+      "assumePatient": "Assume Patient",
+      "goToSurgery": "Go to Surgery"
+    },
+    "quickVitalInput": {
+      "autoTitle": "Automatic recording",
+      "manualTitle": "Enter vital signs",
+      "autoCollection": "Automatic collection",
+      "manualRecord": "Manual recording",
+      "fillAvailableSignals": "Fill in the signs available at this moment.",
+      "timeOfRecordLabel": "Recording time",
+      "customFieldsHeader": "Custom fields",
+      "validationMessage": "Enter at least one vital sign to save the record.",
+      "saveRecord": "Save record",
+      "groups": {
+        "bloodPressure": "Blood pressure",
+        "monitoring": "Monitoring",
+        "complementary": "Complementary"
+      },
+      "fields": {
+        "pas": "PAS",
+        "pad": "PAD",
+        "pam": "PAM",
+        "fc": "FC",
+        "spo2": "SpO₂",
+        "etco2": "EtCO₂",
+        "bis": "BIS",
+        "pvc": "PVC",
+        "pcap": "PCAP",
+        "temp": "Temperature"
+      }
+    },
+    "recordViewerModal": {
+      "titleFallback": "Record",
+      "noDataAvailable": "No data available in this record."
+    },
+    "searchBar": {
+      "defaultPlaceholder": "Search..."
+    }
+  }
+}

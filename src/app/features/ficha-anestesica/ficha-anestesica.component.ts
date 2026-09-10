@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, ValidationErrors, Validators } from '@angular/forms';
 
 import { debounceTime, Subscription, timeout, catchError, of } from 'rxjs';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 
 const NETWORK_TIMEOUT_MS = 20000;
@@ -76,6 +77,7 @@ import { maskTimeInput, normalizeTimeInput } from 'src/app/shared/utils/time-inp
     DadosVitaisSectionComponent,
     IonContent,
     IonRefresherContent,
+    TranslatePipe,
   ],
   templateUrl: './ficha-anestesica.component.html',
   styleUrls: ['./ficha-anestesica.component.scss']
@@ -120,78 +122,18 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     if (target && !target.closest('.ddl')) this.openDdl = null;
   }
 
-  viaPreOptions = [
-    { label: 'VO', value: 'VO' },
-    { label: 'IM', value: 'IM' },
-    { label: 'IV', value: 'IV' },
-    { label: 'OUTRAS', value: 'Outras' }
-  ];
+  viaPreOptions: { label: string; value: string }[] = [];
+  posicaoOptions: { label: string; value: string }[] = [];
+  acessoVenosoOptions: { label: string; value: string }[] = [];
+  condicoesAltaOptions: { label: string; value: string }[] = [];
+  yesNoOptions: { label: string; value: string }[] = [];
 
-  posicaoOptions = [
-    { label: 'Supina', value: 'SUPINA' },
-    { label: 'Prona', value: 'PRONA' },
-    { label: 'Sentado', value: 'SENTADO' },
-    { label: 'Lateral Esq.', value: 'LATERAL ESQUERDO' },
-    { label: 'Lateral Dir.', value: 'LATERAL DIREITO' },
-    { label: 'Trendelenburg', value: 'TRENDELENBURG' },
-    { label: 'Litotômica', value: 'LITOTÔMICA' }
-  ];
-
-  acessoVenosoOptions = [
-    { label: 'Periférico', value: 'Periferico' },
-    { label: 'Central', value: 'Central' }
-  ];
-
-  condicoesAltaOptions = [
-    { label: 'Acordado', value: 'Acordado' },
-    { label: 'Sonolento', value: 'Sonolento' },
-    { label: 'Intubado', value: 'Intubado' }
-  ];
-
-  yesNoOptions = [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'nao' }];
-
-  aldereteFields = [
-    {
-      label: 'Consciência', control: 'consciencia', icon: '🧠',
-      options: [
-        { score: 2, text: 'Totalmente desperto' },
-        { score: 1, text: 'Desperta quando chamado' },
-        { score: 0, text: 'Não responde' }
-      ]
-    },
-    {
-      label: 'Atividade', control: 'atividade', icon: '🏃',
-      options: [
-        { score: 2, text: 'Movimento de todas extremidades' },
-        { score: 1, text: 'Movimento de duas extremidades' },
-        { score: 0, text: 'Incapaz de se mover' }
-      ]
-    },
-    {
-      label: 'Circulação', control: 'circulacao', icon: '❤️',
-      options: [
-        { score: 2, text: 'PA ± 20% do pré-anestésico' },
-        { score: 1, text: 'PA 20% a 50% do pré-anestésico' },
-        { score: 0, text: 'PA ± 50% do pré-anestésico' }
-      ]
-    },
-    {
-      label: 'Respiração', control: 'respiracao', icon: '🫁',
-      options: [
-        { score: 2, text: 'Respira profundamente e tosse' },
-        { score: 1, text: 'Dispnéia, hipoventilação' },
-        { score: 0, text: 'Apneia' }
-      ]
-    },
-    {
-      label: 'SpO2', control: 'saturacao', icon: '🩸',
-      options: [
-        { score: 2, text: 'Mantém SpO2 > 90% em ar ambiente' },
-        { score: 1, text: 'Necessita O2 para SpO2 > 90%' },
-        { score: 0, text: 'SpO2 < 90% mesmo com O2' }
-      ]
-    }
-  ];
+  aldereteFields: {
+    label: string;
+    control: string;
+    icon: string;
+    options: { score: number; text: string }[];
+  }[] = [];
 
   antibioticsList: any[] = [];
   isLoading = false;
@@ -210,6 +152,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   private autoSaveSub?: Subscription;
   private conditionalSubs: Subscription[] = [];
+  private langChangeSub?: Subscription;
 
 
   procedimentoLista: { id: string; name: string; codigo?: string }[] = [];
@@ -232,10 +175,142 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     private masterData: MasterDataService,
     private preAnesthesicService: PreAnesthesicRecordService,
     private modalCtrl: ModalController,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private translate: TranslateService
   ) {
     addIcons({ checkmarkCircle, chevronDownOutline, addOutline, trashOutline, returnDownForwardOutline, closeCircleOutline, timeOutline, alertCircleOutline, lockClosedOutline, shieldCheckmarkOutline, syncOutline, printOutline, fitnessOutline, createOutline, medicalSharp, shieldCheckmark, cloudDoneOutline, pencilOutline, saveOutline, arrowBackOutline, closeOutline });
     this.initForm();
+    this.applyTranslations();
+    this.langChangeSub = this.translate.onLangChange.subscribe(() => this.applyTranslations());
+  }
+
+  private applyTranslations(): void {
+    this.viaPreOptions = [
+      { label: this.translate.instant('fichaAnestesica.preInducao.viaOptions.vo'), value: 'VO' },
+      { label: this.translate.instant('fichaAnestesica.preInducao.viaOptions.im'), value: 'IM' },
+      { label: this.translate.instant('fichaAnestesica.preInducao.viaOptions.iv'), value: 'IV' },
+      { label: this.translate.instant('fichaAnestesica.preInducao.viaOptions.outras'), value: 'Outras' }
+    ];
+
+    this.posicaoOptions = [
+      { label: this.translate.instant('fichaAnestesica.posicao.options.supina'), value: 'SUPINA' },
+      { label: this.translate.instant('fichaAnestesica.posicao.options.prona'), value: 'PRONA' },
+      { label: this.translate.instant('fichaAnestesica.posicao.options.sentado'), value: 'SENTADO' },
+      { label: this.translate.instant('fichaAnestesica.posicao.options.lateralEsq'), value: 'LATERAL ESQUERDO' },
+      { label: this.translate.instant('fichaAnestesica.posicao.options.lateralDir'), value: 'LATERAL DIREITO' },
+      { label: this.translate.instant('fichaAnestesica.posicao.options.trendelenburg'), value: 'TRENDELENBURG' },
+      { label: this.translate.instant('fichaAnestesica.posicao.options.litotomica'), value: 'LITOTÔMICA' }
+    ];
+
+    this.acessoVenosoOptions = [
+      { label: this.translate.instant('fichaAnestesica.posicao.acessoOptions.periferico'), value: 'Periferico' },
+      { label: this.translate.instant('fichaAnestesica.posicao.acessoOptions.central'), value: 'Central' }
+    ];
+
+    this.condicoesAltaOptions = [
+      { label: this.translate.instant('fichaAnestesica.alderete.condicoesAltaOptions.acordado'), value: 'Acordado' },
+      { label: this.translate.instant('fichaAnestesica.alderete.condicoesAltaOptions.sonolento'), value: 'Sonolento' },
+      { label: this.translate.instant('fichaAnestesica.alderete.condicoesAltaOptions.intubado'), value: 'Intubado' }
+    ];
+
+    this.yesNoOptions = [
+      { label: this.translate.instant('fichaAnestesica.common.yes'), value: 'sim' },
+      { label: this.translate.instant('fichaAnestesica.common.no'), value: 'nao' }
+    ];
+
+    this.aldereteFields = [
+      {
+        label: this.translate.instant('fichaAnestesica.alderete.fields.consciencia.label'), control: 'consciencia', icon: '🧠',
+        options: [
+          { score: 2, text: this.translate.instant('fichaAnestesica.alderete.fields.consciencia.opt2') },
+          { score: 1, text: this.translate.instant('fichaAnestesica.alderete.fields.consciencia.opt1') },
+          { score: 0, text: this.translate.instant('fichaAnestesica.alderete.fields.consciencia.opt0') }
+        ]
+      },
+      {
+        label: this.translate.instant('fichaAnestesica.alderete.fields.atividade.label'), control: 'atividade', icon: '🏃',
+        options: [
+          { score: 2, text: this.translate.instant('fichaAnestesica.alderete.fields.atividade.opt2') },
+          { score: 1, text: this.translate.instant('fichaAnestesica.alderete.fields.atividade.opt1') },
+          { score: 0, text: this.translate.instant('fichaAnestesica.alderete.fields.atividade.opt0') }
+        ]
+      },
+      {
+        label: this.translate.instant('fichaAnestesica.alderete.fields.circulacao.label'), control: 'circulacao', icon: '❤️',
+        options: [
+          { score: 2, text: this.translate.instant('fichaAnestesica.alderete.fields.circulacao.opt2') },
+          { score: 1, text: this.translate.instant('fichaAnestesica.alderete.fields.circulacao.opt1') },
+          { score: 0, text: this.translate.instant('fichaAnestesica.alderete.fields.circulacao.opt0') }
+        ]
+      },
+      {
+        label: this.translate.instant('fichaAnestesica.alderete.fields.respiracao.label'), control: 'respiracao', icon: '🫁',
+        options: [
+          { score: 2, text: this.translate.instant('fichaAnestesica.alderete.fields.respiracao.opt2') },
+          { score: 1, text: this.translate.instant('fichaAnestesica.alderete.fields.respiracao.opt1') },
+          { score: 0, text: this.translate.instant('fichaAnestesica.alderete.fields.respiracao.opt0') }
+        ]
+      },
+      {
+        label: this.translate.instant('fichaAnestesica.alderete.fields.saturacao.label'), control: 'saturacao', icon: '🩸',
+        options: [
+          { score: 2, text: this.translate.instant('fichaAnestesica.alderete.fields.saturacao.opt2') },
+          { score: 1, text: this.translate.instant('fichaAnestesica.alderete.fields.saturacao.opt1') },
+          { score: 0, text: this.translate.instant('fichaAnestesica.alderete.fields.saturacao.opt0') }
+        ]
+      }
+    ];
+
+    this.fieldLabels = {
+      'seguranca.identificadoAvaliado': this.translate.instant('fichaAnestesica.fieldLabels.seguranca.identificadoAvaliado'),
+      'seguranca.consentimentoAssinado': this.translate.instant('fichaAnestesica.fieldLabels.seguranca.consentimentoAssinado'),
+      'seguranca.equipamentosChecados': this.translate.instant('fichaAnestesica.fieldLabels.seguranca.equipamentosChecados'),
+      'preInducao.recebeuMedPrevia': this.translate.instant('fichaAnestesica.fieldLabels.preInducao.recebeuMedPrevia'),
+      'antibiotico.temAntibiotico': this.translate.instant('fichaAnestesica.fieldLabels.antibiotico.temAntibiotico'),
+      'dadosVitais.pa': this.translate.instant('fichaAnestesica.fieldLabels.dadosVitais.pa'),
+      'dadosVitais.fr': this.translate.instant('fichaAnestesica.fieldLabels.dadosVitais.fr'),
+      'dadosVitais.temp': this.translate.instant('fichaAnestesica.fieldLabels.dadosVitais.temp'),
+      'dadosVitais.spo2': this.translate.instant('fichaAnestesica.fieldLabels.dadosVitais.spo2'),
+      'dadosVitais.peso': this.translate.instant('fichaAnestesica.fieldLabels.dadosVitais.peso'),
+      'dadosVitais.asa': this.translate.instant('fichaAnestesica.fieldLabels.dadosVitais.asa'),
+      'dadosVitais.entradaSala': this.translate.instant('fichaAnestesica.fieldLabels.dadosVitais.entradaSala'),
+      'equipe.cirurgiao': this.translate.instant('fichaAnestesica.fieldLabels.equipe.cirurgiao'),
+      'equipe.assistente': this.translate.instant('fichaAnestesica.fieldLabels.equipe.assistente'),
+      'equipe.diagnosticoPre': this.translate.instant('fichaAnestesica.fieldLabels.equipe.diagnosticoPre'),
+      'equipe.horaInicioAnestesia': this.translate.instant('fichaAnestesica.fieldLabels.equipe.horaInicioAnestesia'),
+      'posicao.usoCoxim': this.translate.instant('fichaAnestesica.fieldLabels.posicao.usoCoxim'),
+      'posicao.dificuldadePuncao': this.translate.instant('fichaAnestesica.fieldLabels.posicao.dificuldadePuncao'),
+      'tecnica.anestesiaGeral': this.translate.instant('fichaAnestesica.fieldLabels.tecnica.anestesiaGeral'),
+      'tecnica.circuitoAbsorvedor': this.translate.instant('fichaAnestesica.fieldLabels.tecnica.circuitoAbsorvedor'),
+      'tecnica.bloqueiosEspinhais': this.translate.instant('fichaAnestesica.fieldLabels.tecnica.bloqueiosEspinhais'),
+      'tecnica.cateter': this.translate.instant('fichaAnestesica.fieldLabels.tecnica.cateter'),
+      'tecnica.opioide': this.translate.instant('fichaAnestesica.fieldLabels.tecnica.opioide'),
+      'tecnica.sedacao': this.translate.instant('fichaAnestesica.fieldLabels.tecnica.sedacao'),
+      'tecnica.suplementacaoO2': this.translate.instant('fichaAnestesica.fieldLabels.tecnica.suplementacaoO2'),
+      'tecnica.bloqueioPlexo': this.translate.instant('fichaAnestesica.fieldLabels.tecnica.bloqueioPlexo'),
+      'tecnica.neuroestimulador': this.translate.instant('fichaAnestesica.fieldLabels.tecnica.neuroestimulador'),
+      'posProcedimento.horaTerminoCirurgia': this.translate.instant('fichaAnestesica.fieldLabels.posProcedimento.horaTerminoCirurgia'),
+      'posProcedimento.diagnosticoPos': this.translate.instant('fichaAnestesica.fieldLabels.posProcedimento.diagnosticoPos'),
+      'posProcedimento.horaTerminoAnestesia': this.translate.instant('fichaAnestesica.fieldLabels.posProcedimento.horaTerminoAnestesia'),
+      'alderete.dor': this.translate.instant('fichaAnestesica.fieldLabels.alderete.dor'),
+      'alderete.dorENV': this.translate.instant('fichaAnestesica.fieldLabels.alderete.dorENV'),
+      'alderete.dorPAINAD': this.translate.instant('fichaAnestesica.fieldLabels.alderete.dorPAINAD'),
+      'alderete.dorBPS': this.translate.instant('fichaAnestesica.fieldLabels.alderete.dorBPS'),
+      'assinaturas.dataAssinatura': this.translate.instant('fichaAnestesica.fieldLabels.assinaturas.dataAssinatura'),
+    };
+
+    this.sectionLabels = {
+      seguranca: this.translate.instant('fichaAnestesica.sectionLabels.seguranca'),
+      preInducao: this.translate.instant('fichaAnestesica.sectionLabels.preInducao'),
+      antibiotico: this.translate.instant('fichaAnestesica.sectionLabels.antibiotico'),
+      dadosVitais: this.translate.instant('fichaAnestesica.sectionLabels.dadosVitais'),
+      equipe: this.translate.instant('fichaAnestesica.sectionLabels.equipe'),
+      posicao: this.translate.instant('fichaAnestesica.sectionLabels.posicao'),
+      tecnica: this.translate.instant('fichaAnestesica.sectionLabels.tecnica'),
+      posProcedimento: this.translate.instant('fichaAnestesica.sectionLabels.posProcedimento'),
+      alderete: this.translate.instant('fichaAnestesica.sectionLabels.alderete'),
+      assinaturas: this.translate.instant('fichaAnestesica.sectionLabels.assinaturas'),
+    };
   }
 
   ngOnInit() {
@@ -279,6 +354,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.openRecordModal?.dismiss().catch(() => { });
     this.conditionalSubs.forEach(sub => sub.unsubscribe());
+    this.langChangeSub?.unsubscribe();
     window.visualViewport?.removeEventListener('resize', this.onViewportChange);
     window.visualViewport?.removeEventListener('scroll', this.onViewportChange);
   }
@@ -627,7 +703,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   confirmAddAtb() {
     if (!this.newAtb.nome?.trim() || !this.newAtb.dose?.trim()) {
-      this.toast('Selecione o antibiótico e informe a Dose.', 'warning');
+      this.toast(this.translate.instant('fichaAnestesica.toasts.selecioneAntibiotico'), 'warning');
       return;
     }
     this.antibioticsList = [
@@ -656,16 +732,16 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   async adicionarRepique(atbIndex: number) {
     const alert = await this.alertController.create({
-      header: 'Novo Repique',
-      subHeader: `Para: ${this.antibioticsList[atbIndex].nome}`,
+      header: this.translate.instant('fichaAnestesica.antibiotico.novoRepiqueHeader'),
+      subHeader: this.translate.instant('fichaAnestesica.antibiotico.paraLabel', { nome: this.antibioticsList[atbIndex].nome }),
       inputs: [
-        { name: 'dose', type: 'text', placeholder: 'Dose do Repique' },
+        { name: 'dose', type: 'text', placeholder: this.translate.instant('fichaAnestesica.antibiotico.doseRepiquePlaceholder') },
         { name: 'hora', type: 'time' }
       ],
       buttons: [
-        { text: 'Cancelar', role: 'cancel' },
+        { text: this.translate.instant('fichaAnestesica.antibiotico.cancelar'), role: 'cancel' },
         {
-          text: 'Adicionar', handler: (data) => {
+          text: this.translate.instant('fichaAnestesica.antibiotico.adicionar'), handler: (data) => {
             if (data.dose) {
               this.antibioticsList[atbIndex].repiques.push({
                 dose: data.dose,
@@ -699,12 +775,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   get aldereteStatus(): { text: string, color: string } {
     const s = this.aldereteTotal;
     if (s >= 8)
-      return { text: 'Apto para Alta', color: '#10b981' };
+      return { text: this.translate.instant('fichaAnestesica.alderete.status.apto'), color: '#10b981' };
 
     if (s >= 5)
-      return { text: 'Em Observação', color: '#f59e0b' };
+      return { text: this.translate.instant('fichaAnestesica.alderete.status.observacao'), color: '#f59e0b' };
 
-    return { text: 'Monitoramento Intenso', color: '#ef4444' };
+    return { text: this.translate.instant('fichaAnestesica.alderete.status.monitoramento'), color: '#ef4444' };
   }
 
   getFormGroup(name: string): FormGroup {
@@ -789,7 +865,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
             this.canEdit = false;
             this.form.disable({ emitEvent: false });
           }
-          this.toast('Rascunho reenviado com sucesso!', 'success');
+          this.toast(this.translate.instant('fichaAnestesica.toasts.rascunhoReenviado'), 'success');
         },
         error: async (error) => {
           this.isSaving = false;
@@ -912,7 +988,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   private onLoadPatientDataFailed() {
-    this.toast('Não foi possível carregar a ficha (sem conexão com o servidor e sem rascunho local). Tente novamente.', 'danger');
+    this.toast(this.translate.instant('fichaAnestesica.toasts.naoFoiPossivelCarregarFicha'), 'danger');
   }
 
   private pesoFromPreAnestesicaOuAghu(): number | string {
@@ -944,12 +1020,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   async confirmarLimpeza() {
     const alert = await this.alertController.create({
-      header: 'Limpar Formulário?',
-      message: 'Isso apagará todos os campos preenchidos. Deseja continuar?',
+      header: this.translate.instant('fichaAnestesica.confirmarLimpezaAlert.header'),
+      message: this.translate.instant('fichaAnestesica.confirmarLimpezaAlert.message'),
       buttons: [
-        { text: 'Cancelar', role: 'cancel' },
+        { text: this.translate.instant('fichaAnestesica.confirmarLimpezaAlert.cancelar'), role: 'cancel' },
         {
-          text: 'Limpar',
+          text: this.translate.instant('fichaAnestesica.confirmarLimpezaAlert.limpar'),
           cssClass: 'alert-button-danger',
           handler: () => this.doLimpar()
         }
@@ -970,11 +1046,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     if (this.cirurgiaId) {
       this.anesthesiaService.clearLatestRecord(this.cirurgiaId).subscribe({
         next: () => { },
-        error: () => this.toast('Rascunho local limpo. Falhou ao limpar no servidor.', 'warning')
+        error: () => this.toast(this.translate.instant('fichaAnestesica.toasts.rascunhoLimpoFalhouServidor'), 'warning')
       });
     }
 
-    this.toast('Formulário limpo.', 'success');
+    this.toast(this.translate.instant('fichaAnestesica.toasts.formularioLimpo'), 'success');
 
     setTimeout(() => {
       document.querySelector('.main-content')?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -994,12 +1070,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       });
 
       const alert = await this.alertController.create({
-        header: 'Campos obrigatórios não preenchidos',
-        subHeader: `${missing.length} pendência(s) encontrada(s)`,
-        message: 'Verifique os campos destacados em vermelho.',
+        header: this.translate.instant('fichaAnestesica.validationAlert.header'),
+        subHeader: this.translate.instant('fichaAnestesica.validationAlert.subHeader', { count: missing.length }),
+        message: this.translate.instant('fichaAnestesica.validationAlert.message'),
         cssClass: 'validation-alert',
         buttons: [{
-          text: 'Entendi',
+          text: this.translate.instant('fichaAnestesica.validationAlert.entendi'),
           role: 'cancel',
           handler: () => {
             setTimeout(() => {
@@ -1051,8 +1127,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         id: 'salvar-ficha',
         icon: 'shield-checkmark-outline',
         color: 'primary',
-        ariaLabel: 'Salvar',
-        label: 'Enviar',
+        ariaLabel: this.translate.instant('fichaAnestesica.header.saveAria'),
+        label: this.translate.instant('fichaAnestesica.header.sendLabel'),
         disabled: this.isSaving || this.isCancelled,
         action: () => this.onEnviarClick()
       });
@@ -1062,8 +1138,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       id: 'ir-para-cirurgia',
       icon: 'fitness-outline',
       color: 'warning',
-      ariaLabel: 'Ir para Cirurgia',
-      label: 'Cirurgia',
+      ariaLabel: this.translate.instant('fichaAnestesica.header.goToSurgeryAria'),
+      label: this.translate.instant('fichaAnestesica.header.surgeryLabel'),
       disabled: this.isSaving || this.isCancelled || !this.canAccessMonitoring,
       action: () => this.irParaCirurgia()
     });
@@ -1074,22 +1150,22 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   confirmarESalvar() {
     this.signatureError = '';
     if (!this.signatureAgreed) {
-      this.signatureError = 'Você precisa marcar a confirmação de veracidade dos dados.';
+      this.signatureError = this.translate.instant('fichaAnestesica.signatureErrors.confirmeVeracidade');
       return;
     }
 
     const typed = this.signatureTypedName.trim();
     const expected = this.expectedSignatureName;
     if (!typed) {
-      this.signatureError = 'Digite seu nome completo para assinar.';
+      this.signatureError = this.translate.instant('fichaAnestesica.signatureErrors.digiteNomeCompleto');
       return;
     }
     if (expected && typed.toLowerCase() !== expected.toLowerCase()) {
-      this.signatureError = `O nome digitado não confere com o do profissional logado (${expected}).`;
+      this.signatureError = this.translate.instant('fichaAnestesica.signatureErrors.nomeNaoConfere', { expected });
       return;
     }
     if (!this.signaturePassword.trim()) {
-      this.signatureError = 'Digite sua senha para confirmar.';
+      this.signatureError = this.translate.instant('fichaAnestesica.signatureErrors.digiteSenha');
       return;
     }
 
@@ -1135,9 +1211,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
           this.fichaFinalizadaEm = new Date().toISOString();
           this.fichaFinalizadaPor = this.signatureTypedName || this.expectedSignatureName;
           this.form.disable({ emitEvent: false });
-          this.toast('Ficha Anestésica assinada e salva com sucesso!', 'success');
+          this.toast(this.translate.instant('fichaAnestesica.toasts.fichaAssinadaSalva'), 'success');
         } else {
-          this.toast('Ficha Anestésica salva com sucesso!', 'success');
+          this.toast(this.translate.instant('fichaAnestesica.toasts.fichaSalva'), 'success');
         }
       },
       error: async (error) => {
@@ -1154,8 +1230,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
         this.toast(
           finalize
-            ? 'Não foi possível enviar a ficha para o servidor nesse momento. Um rascunho foi salvo para tentativa de reenvio.'
-            : 'Não foi possível salvar no servidor nesse momento. Um rascunho foi salvo localmente.',
+            ? this.translate.instant('fichaAnestesica.toasts.naoEnviadaRascunhoSalvo')
+            : this.translate.instant('fichaAnestesica.toasts.naoSalvaRascunhoLocal'),
           'warning'
         );
       }
@@ -1291,7 +1367,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     if (this.selectedSurgery?.id) {
       window.open(this.anesthesiaService.getPdfUrl(this.selectedSurgery.id), '_blank');
     } else {
-      this.toast('Não foi possível identificar a cirurgia para impressão. Recarregue a página e tente novamente.', 'warning');
+      this.toast(this.translate.instant('fichaAnestesica.toasts.naoIdentificouCirurgiaImpressao'), 'warning');
     }
   }
 
@@ -1305,17 +1381,17 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   async irParaCirurgia(): Promise<void> {
     if (!this.selectedSurgery?.id) {
-      await this.toast('Não foi possível identificar a cirurgia. Recarregue a página e tente novamente.', 'warning');
+      await this.toast(this.translate.instant('fichaAnestesica.toasts.naoIdentificouCirurgia'), 'warning');
       return;
     }
 
     if (this.isCancelled) {
-      await this.toast('Paciente cancelado. Não é possível acessar a cirurgia.', 'warning');
+      await this.toast(this.translate.instant('fichaAnestesica.toasts.pacienteCanceladoCirurgia'), 'warning');
       return;
     }
 
     if (!this.canAccessMonitoring) {
-      await this.toast('Monitorização ainda não concluída.', 'warning');
+      await this.toast(this.translate.instant('fichaAnestesica.toasts.monitorizacaoNaoConcluida'), 'warning');
       return;
     }
 
@@ -1499,7 +1575,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
           this.masterData.saveEvents(res.events || []);
           this.loadDropdownLists();
         },
-        error: () => this.toast('Não foi possível carregar as listas do AGHU.', 'warning')
+        error: () => this.toast(this.translate.instant('fichaAnestesica.toasts.naoFoiPossivelCarregarListasAghu'), 'warning')
       });
     }
   }
@@ -1609,7 +1685,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   async openPreAnestesica() {
     const payload = this.preAnesthesicService.getBestAvailable(Number(this.cirurgiaId), this.patientId ?? '');
     if (!payload) {
-      this.toast('Ficha Pré-Anestésica não encontrada (ou offline).', 'warning');
+      this.toast(this.translate.instant('fichaAnestesica.toasts.fichaPreNaoEncontrada'), 'warning');
       return;
     }
 
@@ -1629,61 +1705,14 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       await modal.present();
     } catch (e) {
       console.error('Erro ao abrir Ficha Pré-Anestésica', e);
-      this.toast('Erro ao abrir Ficha Pré-Anestésica', 'danger');
+      this.toast(this.translate.instant('fichaAnestesica.toasts.erroAbrirFichaPre'), 'danger');
     }
   }
 
 
-  private fieldLabels: Record<string, string> = {
-    'seguranca.identificadoAvaliado': 'Paciente identificado e avaliado',
-    'seguranca.consentimentoAssinado': 'Termo de consentimento assinado',
-    'seguranca.equipamentosChecados': 'Equipamentos checados',
-    'preInducao.recebeuMedPrevia': 'Recebeu medicação pré-anestésica',
-    'antibiotico.temAntibiotico': 'Uso de antibiótico profilático',
-    'dadosVitais.pa': 'PA',
-    'dadosVitais.fr': 'FR',
-    'dadosVitais.temp': 'Temperatura',
-    'dadosVitais.spo2': 'SpO₂',
-    'dadosVitais.peso': 'Peso',
-    'dadosVitais.asa': 'ASA',
-    'dadosVitais.entradaSala': 'Entrada na Sala',
-    'equipe.cirurgiao': 'Cirurgião',
-    'equipe.assistente': 'Assistente',
-    'equipe.diagnosticoPre': 'Diagnóstico Pré',
-    'equipe.horaInicioAnestesia': 'Hora de início da anestesia',
-    'posicao.usoCoxim': 'Uso de coxim',
-    'posicao.dificuldadePuncao': 'Dificuldade de punção',
-    'tecnica.anestesiaGeral': 'Anestesia geral (Sim/Não)',
-    'tecnica.circuitoAbsorvedor': 'Circuito absorvedor de CO₂',
-    'tecnica.bloqueiosEspinhais': 'Bloqueios espinhais (Sim/Não)',
-    'tecnica.cateter': 'Cateter (bloqueio espinhal)',
-    'tecnica.opioide': 'Opioide (bloqueio espinhal)',
-    'tecnica.sedacao': 'Sedação (Sim/Não)',
-    'tecnica.suplementacaoO2': 'Suplementação de O₂',
-    'tecnica.bloqueioPlexo': 'Bloqueio de plexo (Sim/Não)',
-    'tecnica.neuroestimulador': 'Neuroestimulador',
-    'posProcedimento.horaTerminoCirurgia': 'Hora de término da cirurgia',
-    'posProcedimento.diagnosticoPos': 'Diagnóstico pós',
-    'posProcedimento.horaTerminoAnestesia': 'Hora de término da anestesia',
-    'alderete.dor': 'Presença de dor (Sim/Não)',
-    'alderete.dorENV': 'Escala ENV (0–10)',
-    'alderete.dorPAINAD': 'Escala PAINAD (0–10)',
-    'alderete.dorBPS': 'Escala BPS (3–12)',
-    'assinaturas.dataAssinatura': 'Data da assinatura',
-  };
+  private fieldLabels: Record<string, string> = {};
 
-  private sectionLabels: Record<string, string> = {
-    seguranca: 'Segurança do Paciente',
-    preInducao: 'Pré-Indução',
-    antibiotico: 'Antibiótico Profilático',
-    dadosVitais: 'Dados Vitais',
-    equipe: 'Equipe Cirúrgica',
-    posicao: 'Posição e Acesso',
-    tecnica: 'Técnica Anestésica',
-    posProcedimento: 'Pós-Procedimento',
-    alderete: 'Aldrete e Dor',
-    assinaturas: 'Assinaturas',
-  };
+  private sectionLabels: Record<string, string> = {};
 
   private getMissingFields(): Array<{ section: string; label: string; path: string }> {
     const missing: Array<{ section: string; label: string; path: string }> = [];
@@ -1712,15 +1741,15 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     const ald = this.form.get('alderete') as FormGroup;
     if (ald?.errors?.['dorScaleRequired']) {
       missing.push({
-        section: 'Aldrete e Dor',
-        label: 'Selecione ao menos uma escala de dor (ENV / PAINAD / BPS)',
+        section: this.sectionLabels['alderete'],
+        label: this.translate.instant('fichaAnestesica.missing.escalaDorRequired'),
         path: 'alderete.escala',
       });
     }
     if (ald?.errors?.['dorScaleInvalid']) {
       missing.push({
-        section: 'Aldrete e Dor',
-        label: 'Valor da escala de dor fora do intervalo permitido',
+        section: this.sectionLabels['alderete'],
+        label: this.translate.instant('fichaAnestesica.missing.escalaDorInvalid'),
         path: 'alderete.escala',
       });
     }
@@ -1728,8 +1757,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     const procs = this.procedimentosArray;
     if (procs.length === 0 || procs.controls.every(c => !c.get('procedimentoId')?.value)) {
       missing.push({
-        section: 'Pós-Procedimento',
-        label: 'Informe ao menos um procedimento realizado',
+        section: this.sectionLabels['posProcedimento'],
+        label: this.translate.instant('fichaAnestesica.missing.procedimentoRequired'),
         path: 'posProcedimento.procedimentos',
       });
     }
@@ -1752,10 +1781,10 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   async handleRefresh(event: any) {
     try {
       await this.refreshData();
-      this.toast('Dados recarregados com sucesso!', 'success');
+      this.toast(this.translate.instant('fichaAnestesica.toasts.dadosRecarregados'), 'success');
     } catch (error) {
       console.error('Erro ao recarregar:', error);
-      this.toast('Falha ao recarregar os dados', 'danger');
+      this.toast(this.translate.instant('fichaAnestesica.toasts.falhaRecarregarDados'), 'danger');
     } finally {
       event.target.complete();
     }

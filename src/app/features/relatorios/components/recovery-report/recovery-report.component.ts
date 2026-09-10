@@ -1,5 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { ReportsService } from 'src/app/core/services/reports.service';
 import { RecoveryReport, ReportFilters } from 'src/app/core/models/reports.model';
@@ -11,7 +12,7 @@ import { DonutChartComponent } from '../charts/donut-chart.component';
 @Component({
   selector: 'app-recovery-report',
   standalone: true,
-  imports: [CommonModule, ReportStateComponent, ReportPdfActionsComponent, BarChartComponent, DonutChartComponent],
+  imports: [CommonModule, ReportStateComponent, ReportPdfActionsComponent, BarChartComponent, DonutChartComponent, TranslatePipe],
   templateUrl: './recovery-report.component.html',
   styleUrls: ['../report-card.scss']
 })
@@ -22,7 +23,10 @@ export class RecoveryReportComponent implements OnChanges {
   loading = false;
   error: string | null = null;
 
-  constructor(private reportsService: ReportsService) { }
+  constructor(
+    private reportsService: ReportsService,
+    private translate: TranslateService,
+  ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['filters']) {
@@ -35,7 +39,7 @@ export class RecoveryReportComponent implements OnChanges {
   }
 
   get scoreLabels(): string[] {
-    return this.report?.scoreDistribution.map(x => 'Score ' + x.score) ?? [];
+    return this.report?.scoreDistribution.map(x => this.translate.instant('relatorios.recovery.scoreLabel', { score: x.score })) ?? [];
   }
 
   get scoreCounts(): number[] {
@@ -64,14 +68,14 @@ export class RecoveryReportComponent implements OnChanges {
     try {
       const response = await firstValueFrom(this.reportsService.getRecovery(this.filters));
       if (response?.valid === false) {
-        this.error = response.message || 'Não foi possível carregar os relatórios. Tente novamente.';
+        this.error = response.message || this.translate.instant('relatorios.common.loadError');
         this.report = null;
         return;
       }
       this.report = response?.data ?? null;
     } catch (error) {
       console.error('Erro ao carregar relatório de recuperação', error);
-      this.error = 'Não foi possível carregar os relatórios. Tente novamente.';
+      this.error = this.translate.instant('relatorios.common.loadError');
       this.report = null;
     } finally {
       this.loading = false;

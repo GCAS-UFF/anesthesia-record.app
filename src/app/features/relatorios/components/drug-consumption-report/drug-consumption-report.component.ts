@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { ReportsService } from 'src/app/core/services/reports.service';
 import { DrugConsumptionReport, ReportFilters } from 'src/app/core/models/reports.model';
@@ -13,7 +14,7 @@ import { DonutChartComponent } from '../charts/donut-chart.component';
 @Component({
   selector: 'app-drug-consumption-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReportStateComponent, ReportPdfActionsComponent, BarChartComponent, DonutChartComponent],
+  imports: [CommonModule, FormsModule, ReportStateComponent, ReportPdfActionsComponent, BarChartComponent, DonutChartComponent, TranslatePipe],
   templateUrl: './drug-consumption-report.component.html',
   styleUrls: ['../report-card.scss']
 })
@@ -30,7 +31,10 @@ export class DrugConsumptionReportComponent implements OnChanges {
     label
   }));
 
-  constructor(private reportsService: ReportsService) { }
+  constructor(
+    private reportsService: ReportsService,
+    private translate: TranslateService,
+  ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['filters']) {
@@ -68,14 +72,14 @@ export class DrugConsumptionReportComponent implements OnChanges {
     try {
       const response = await firstValueFrom(this.reportsService.getDrugConsumption(this.filters, this.category));
       if (response?.valid === false) {
-        this.error = response.message || 'Não foi possível carregar os relatórios. Tente novamente.';
+        this.error = response.message || this.translate.instant('relatorios.common.loadError');
         this.report = null;
         return;
       }
       this.report = response?.data ?? null;
     } catch (error) {
       console.error('Erro ao carregar relatório de consumo de fármacos', error);
-      this.error = 'Não foi possível carregar os relatórios. Tente novamente.';
+      this.error = this.translate.instant('relatorios.common.loadError');
       this.report = null;
     } finally {
       this.loading = false;

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonIcon } from '@ionic/angular/standalone';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
 import {
   analyticsOutline, calendarOutline, checkmarkCircleOutline, closeCircleOutline,
@@ -52,6 +53,7 @@ function toIsoDate(date: Date): string {
     AntibioticProphylaxisReportComponent,
     FluidBalanceReportComponent,
     IntegrationStatusReportComponent,
+    TranslatePipe,
   ]
 })
 export class RelatoriosPage implements OnInit {
@@ -64,7 +66,10 @@ export class RelatoriosPage implements OnInit {
   summaryLoading = false;
   summaryError: string | null = null;
 
-  constructor(private reportsService: ReportsService) {
+  constructor(
+    private reportsService: ReportsService,
+    private translate: TranslateService,
+  ) {
     addIcons({
       analyticsOutline, calendarOutline, checkmarkCircleOutline, closeCircleOutline,
       documentTextOutline, flaskOutline, medkitOutline, pulseOutline, syncOutline
@@ -115,14 +120,14 @@ export class RelatoriosPage implements OnInit {
     try {
       const response = await firstValueFrom(this.reportsService.getSummary(this.filters));
       if (response?.valid === false) {
-        this.summaryError = response.message || 'Não foi possível carregar os relatórios. Tente novamente.';
+        this.summaryError = response.message || this.translate.instant('relatorios.common.loadError');
         this.summary = null;
         return;
       }
       this.summary = response?.data ?? null;
     } catch (error) {
       console.error('Erro ao carregar resumo executivo', error);
-      this.summaryError = 'Não foi possível carregar os relatórios. Tente novamente.';
+      this.summaryError = this.translate.instant('relatorios.common.loadError');
       this.summary = null;
     } finally {
       this.summaryLoading = false;
@@ -130,7 +135,7 @@ export class RelatoriosPage implements OnInit {
   }
 
   formatSyncDate(value: string | null): string {
-    if (!value) return 'Nunca sincronizado';
+    if (!value) return this.translate.instant('relatorios.common.neverSynced');
     return new Date(value).toLocaleString('pt-BR');
   }
 }

@@ -4,32 +4,32 @@
       <div class="ch-title">
         <span class="dot dot-fc"></span>
         <ion-icon name="pulse-outline"></ion-icon>
-        <span>SINAIS VITAIS</span>
+        <span>{{ 'monitorizacao.vitalSigns.title' | translate }}</span>
         <span class="snap-time" *ngIf="currentSnapshot as s">· {{ s.time }}</span>
       </div>
 
       <div class="ch-actions">
-        <ion-button size="small" fill="clear" [disabled]="readonly" (click)="onAddFieldClick()" title="Adicionar campo personalizado">
+        <ion-button size="small" fill="clear" [disabled]="readonly" (click)="onAddFieldClick()" [title]="'monitorizacao.vitalSigns.addFieldTooltip' | translate">
           <ion-icon name="settings-outline" slot="icon-only"></ion-icon>
         </ion-button>
-        <ion-button size="small" fill="clear" (click)="onHistoryClick()" title="Histórico detalhado">
+        <ion-button size="small" fill="clear" (click)="onHistoryClick()" [title]="'monitorizacao.vitalSigns.historyTooltip' | translate">
           <ion-icon name="list-outline" slot="icon-only"></ion-icon>
         </ion-button>
         <ion-button size="small" fill="solid" color="primary" [disabled]="readonly" (click)="onAddClick()">
           <ion-icon name="add-outline" slot="start"></ion-icon>
-          Registro
+          {{ 'monitorizacao.vitalSigns.addRecordButton' | translate }}
         </ion-button>
       </div>
     </div>
 
     <div class="snapshot" *ngIf="currentSnapshot as s">
-      <div class="chip fc"    title="Frequência Cardíaca">FC <b>{{ s.fc ?? '--' }}</b></div>
-      <div class="chip pa"    title="PA Sistólica/Diastólica (PAM)">PA <b>{{ s.pas ?? '--' }}/{{ s.pad ?? '--' }}</b>
+      <div class="chip fc"    [title]="'monitorizacao.vitalSigns.chips.heartRate' | translate">FC <b>{{ s.fc ?? '--' }}</b></div>
+      <div class="chip pa"    [title]="'monitorizacao.vitalSigns.chips.bloodPressure' | translate">PA <b>{{ s.pas ?? '--' }}/{{ s.pad ?? '--' }}</b>
         <span class="pam">({{ s.pam ?? '--' }})</span>
       </div>
-      <div class="chip spo2"  title="Saturação">SpO₂ <b>{{ s.spo2 ?? '--' }}</b></div>
+      <div class="chip spo2"  [title]="'monitorizacao.vitalSigns.chips.saturation' | translate">SpO₂ <b>{{ s.spo2 ?? '--' }}</b></div>
       <div class="chip etco2" title="EtCO₂" *ngIf="s.etco2 != null">EtCO₂ <b>{{ s.etco2 }}</b></div>
-      <div class="chip temp"  title="Temperatura" *ngIf="($any(s).temperatura ?? $any(s).temp) != null">T° <b>{{ $any(s).temperatura ?? $any(s).temp }}</b></div>
+      <div class="chip temp"  [title]="'monitorizacao.vitalSigns.chips.temperature' | translate" *ngIf="($any(s).temperatura ?? $any(s).temp) != null">T° <b>{{ $any(s).temperatura ?? $any(s).temp }}</b></div>
       <div class="chip bis"   title="BIS" *ngIf="s.bis != null">BIS <b>{{ s.bis }}</b></div>
 
       <ng-container *ngFor="let f of customFields">
@@ -50,8 +50,8 @@
     <span class="lg-group"><span class="sym sym-spo2">●</span><span class="lbl">SpO₂</span></span>
     <span class="lg-group"><span class="sym sym-temp">●</span><span class="lbl">T°C</span></span>
     <span class="lg-sep"></span>
-    <span class="lg-group"><span class="sym" style="color:#7c3aed;font-weight:900">✕</span><span class="lbl">Anestesia</span></span>
-    <span class="lg-group"><span class="sym" style="color:#0ea5e9;font-weight:900">⊙</span><span class="lbl">Cirurgia</span></span>
+    <span class="lg-group"><span class="sym" style="color:#7c3aed;font-weight:900">✕</span><span class="lbl">{{ 'monitorizacao.vitalSigns.markers.anesthesia' | translate }}</span></span>
+    <span class="lg-group"><span class="sym" style="color:#0ea5e9;font-weight:900">⊙</span><span class="lbl">{{ 'monitorizacao.vitalSigns.markers.surgery' | translate }}</span></span>
     
     <ng-container *ngFor="let cf of customFields; let i = index">
       <span class="lg-sep"></span>
@@ -64,17 +64,17 @@
   </div>
 
   <div class="chart-scrollbar" [class.locked]="readonly">
-    <ion-icon name="pulse-outline" class="scrollbar-hint" *ngIf="readonly" title="Arraste/zoom desabilitados — cirurgia finalizada"></ion-icon>
+    <ion-icon name="pulse-outline" class="scrollbar-hint" *ngIf="readonly" [title]="'monitorizacao.vitalSigns.scrollbar.disabledHint' | translate"></ion-icon>
     <input
       type="range"
       class="scrollbar-input"
-      title="Navegar pelo período do gráfico"
-      aria-label="Navegar pelo período do gráfico"
+      [title]="'monitorizacao.vitalSigns.scrollbar.navigate' | translate"
+      [attr.aria-label]="'monitorizacao.vitalSigns.scrollbar.navigate' | translate"
       min="0" max="100" step="0.5"
       [value]="scrollbarValue"
       (input)="onScrollbarInput($any($event.target).valueAsNumber)" />
-    <button type="button" class="scrollbar-reset" (click)="resetToLatest()" title="Voltar ao mais recente">
-      Recente
+    <button type="button" class="scrollbar-reset" (click)="resetToLatest()" [title]="'monitorizacao.vitalSigns.scrollbar.reset' | translate">
+      {{ 'monitorizacao.vitalSigns.scrollbar.resetButton' | translate }}
     </button>
   </div>
 </div>

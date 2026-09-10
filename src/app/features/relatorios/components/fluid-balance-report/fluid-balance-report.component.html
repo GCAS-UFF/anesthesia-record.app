@@ -1,8 +1,8 @@
 <div class="report-card">
   <div class="report-card-header">
     <div>
-      <h3 class="report-title">Balanço Hídrico</h3>
-      <p class="report-subtitle">Ganhos e perdas de volume registrados durante as cirurgias.</p>
+      <h3 class="report-title">{{ 'relatorios.fluidBalance.title' | translate }}</h3>
+      <p class="report-subtitle">{{ 'relatorios.fluidBalance.subtitle' | translate }}</p>
     </div>
     <app-report-pdf-actions reportKey="fluid-balance" [filters]="filters"></app-report-pdf-actions>
   </div>
@@ -12,34 +12,34 @@
       <div class="kpi-row">
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.totalGainMl }} mL</span>
-          <span class="kpi-label">Volume ganho</span>
+          <span class="kpi-label">{{ 'relatorios.fluidBalance.kpiVolumeGained' | translate }}</span>
         </div>
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.totalLossMl }} mL</span>
-          <span class="kpi-label">Volume perdido</span>
+          <span class="kpi-label">{{ 'relatorios.fluidBalance.kpiVolumeLost' | translate }}</span>
         </div>
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.balance }} mL</span>
-          <span class="kpi-label">Balanço</span>
+          <span class="kpi-label">{{ 'relatorios.fluidBalance.kpiBalance' | translate }}</span>
         </div>
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.bleedingMl }} mL</span>
-          <span class="kpi-label">Sangramento</span>
+          <span class="kpi-label">{{ 'relatorios.fluidBalance.kpiBleeding' | translate }}</span>
         </div>
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.bloodProductMl }} mL</span>
-          <span class="kpi-label">Hemocomponentes</span>
+          <span class="kpi-label">{{ 'relatorios.fluidBalance.kpiBloodProducts' | translate }}</span>
         </div>
       </div>
 
       <div class="charts-grid">
         <div class="chart-block">
-          <h4>Por categoria</h4>
+          <h4>{{ 'relatorios.fluidBalance.chartByCategory' | translate }}</h4>
           <app-donut-chart [labels]="categoryLabels" [data]="categoryVolumes"></app-donut-chart>
         </div>
         <div class="chart-block">
-          <h4>Por tipo de procedimento</h4>
-          <app-bar-chart [labels]="procedureLabels" [data]="procedureVolumes" datasetLabel="Volume (mL)" [horizontal]="true"></app-bar-chart>
+          <h4>{{ 'relatorios.fluidBalance.chartByProcedureType' | translate }}</h4>
+          <app-bar-chart [labels]="procedureLabels" [data]="procedureVolumes" [datasetLabel]="'relatorios.fluidBalance.datasetVolume' | translate" [horizontal]="true"></app-bar-chart>
         </div>
       </div>
 
@@ -47,8 +47,8 @@
         <table class="report-table">
           <thead>
             <tr>
-              <th>Categoria</th>
-              <th class="num">Volume (mL)</th>
+              <th>{{ 'relatorios.fluidBalance.tableCategory' | translate }}</th>
+              <th class="num">{{ 'relatorios.fluidBalance.tableVolume' | translate }}</th>
             </tr>
           </thead>
           <tbody>

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MasterDataService } from 'src/app/core/services/master-data.service';
 import { ModalController, IonicModule } from '@ionic/angular';
+import { TranslatePipe } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
 import { closeOutline, searchOutline, closeCircle, checkmarkOutline, chevronDownOutline } from 'ionicons/icons';
 import {
@@ -27,7 +28,7 @@ interface BalanceItem { id: string; label: string; needsDetail?: boolean; catego
 @Component({
   selector: 'app-clinical-item-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule, TranslatePipe],
   templateUrl: './clinical-item-modal.component.html',
   styleUrls: ['./clinical-item-modal.component.scss'],
 })

@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
+import { TranslatePipe } from '@ngx-translate/core';
 
 export interface RecordSection {
   title: string;
@@ -15,7 +16,7 @@ export interface RecordData {
 @Component({
   selector: 'app-record-viewer-modal',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, TranslatePipe],
   templateUrl: './record-viewer-modal.component.html',
   styleUrls: ['./record-viewer-modal.component.scss'],
 })

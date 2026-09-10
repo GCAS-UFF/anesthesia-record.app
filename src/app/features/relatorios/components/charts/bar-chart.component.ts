@@ -3,6 +3,7 @@ import {
   OnChanges, OnDestroy, SimpleChanges, ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateService } from '@ngx-translate/core';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -21,13 +22,15 @@ Chart.register(...registerables);
 export class BarChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() labels: string[] = [];
   @Input() data: number[] = [];
-  @Input() datasetLabel = 'Quantidade';
+  @Input() datasetLabel = this.translate.instant('relatorios.charts.quantityDataset');
   @Input() color = '#3b82f6';
   @Input() horizontal = false;
 
   @ViewChild('chartCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
   private chart?: Chart;
   private resizeObs?: ResizeObserver;
+
+  constructor(private translate: TranslateService) { }
 
   ngAfterViewInit(): void {
     this.buildChart();

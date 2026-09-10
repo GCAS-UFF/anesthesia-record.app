@@ -1,0 +1,195 @@
+{
+  "monitorizacao": {
+    "common": {
+      "expand": "Expandir",
+      "collapse": "Recolher",
+      "agentFallback": "Agente",
+      "medicationFallback": "Medicação #{{id}}",
+      "eventFallback": "Evento",
+      "otherItem": "Outro",
+      "gain": "Ganho",
+      "loss": "Perda"
+    },
+    "page": {
+      "readonlyBanner": "Você não é o médico responsável por este atendimento. Monitorização somente leitura.",
+      "anestesicaButtonLabel": "Anestésica",
+      "alerts": {
+        "patientCancelled": "Este paciente está cancelado. Não é possível iniciar ou alterar a cirurgia.",
+        "accessDenied": "Monitorização ainda não concluída. Apenas o médico responsável pode acessá-la neste momento.",
+        "editAnesthesiaStartTitle": "Editar Início Anestesia",
+        "editSurgeryStartTitle": "Editar Início Cirurgia",
+        "initialPositionTitle": "Posição inicial do paciente",
+        "initialPositionSubtitle": "Selecione a posição em que a monitorização foi iniciada",
+        "frequencyTitle": "Frequência de monitorização",
+        "minutesPlaceholder": "Minutos",
+        "newCustomFieldTitle": "Novo campo personalizado",
+        "customFieldLabelPlaceholder": "Ex: Glicemia",
+        "customFieldUnitPlaceholder": "Ex: mg/dL",
+        "editAgentTitle": "Editar agente",
+        "editAgentNamePlaceholder": "Nome",
+        "editAgentDosePlaceholder": "Dose",
+        "editAgentRoutePlaceholder": "Via",
+        "editBalanceTitle": "Editar balanço",
+        "editBalanceItemPlaceholder": "Item",
+        "editBalanceVolumePlaceholder": "Volume (ml)",
+        "finalizeSurgeryTitle": "Finalizar Cirurgia",
+        "finalizeSurgerySubtitle": "Deseja marcar o fim da cirurgia?",
+        "finalizeAnesthesiaTitle": "Finalizar Anestesia",
+        "finalizeAnesthesiaSubtitle": "Esta ação encerrará toda a monitorização.",
+        "finalizeAnesthesiaTimeLabel": "Tempo de anestesia:",
+        "finalizeSurgeryTimeLabel": "Tempo de cirurgia:",
+        "finalizeRecordsLabel": "Registros lançados:",
+        "finalizePendingSyncLabel": "Pendentes de sincronização:",
+        "finalizeConfirmQuestion": "Deseja confirmar o encerramento?",
+        "deleteTitle": "Excluir",
+        "confirmRemoveVitalAt": "Remover lançamento das {{time}}?",
+        "confirmRemoveAgent": "Remover {{name}}?",
+        "confirmRemoveEvent": "Remover evento \"{{description}}\"?",
+        "confirmRemoveBalance": "Remover {{item}} ({{volume}}ml)?"
+      },
+      "actions": {
+        "confirm": "Confirmar",
+        "add": "Adicionar",
+        "finalize": "Finalizar",
+        "delete": "Excluir"
+      },
+      "toasts": {
+        "vitalSaved": "Sinais vitais salvos no rascunho local.",
+        "sendingFinalRecord": "Enviando registro final…",
+        "finalizeSuccess": "✅ Anestesia encerrada e enviada com sucesso.",
+        "offlineSaved": "⚠️ Sem conexão. Registro salvo localmente e será enviado automaticamente.",
+        "finalizeErrorGeneric": "Erro ao enviar o registro final.",
+        "finalizeErrorWrap": "⚠️ {{msg}} O registro permanece salvo localmente e será reenviado automaticamente."
+      },
+      "fichaAnestesica": {
+        "title": "Ficha Anestésica",
+        "summarySectionTitle": "Resumo da Monitorização",
+        "anesthesiaTimeLabel": "Tempo de Anestesia",
+        "surgeryTimeLabel": "Tempo de Cirurgia",
+        "vitalRecordsCountLabel": "Sinais Vitais Registrados",
+        "teamSectionTitle": "Equipe e Sala",
+        "surgeonLabel": "Cirurgião",
+        "procedureLabel": "Procedimento",
+        "statusSectionTitle": "Status",
+        "statusLabel": "Status",
+        "updatedAtLabel": "Atualizado em",
+        "agentsSectionTitle": "Agentes Administrados",
+        "eventsSectionTitle": "Eventos Clínicos",
+        "fluidBalanceSectionTitle": "Balanço Hídrico"
+      }
+    },
+    "vitalSigns": {
+      "title": "SINAIS VITAIS",
+      "addFieldTooltip": "Adicionar campo personalizado",
+      "historyTooltip": "Histórico detalhado",
+      "addRecordButton": "Registro",
+      "chips": {
+        "heartRate": "Frequência Cardíaca",
+        "bloodPressure": "PA Sistólica/Diastólica (PAM)",
+        "saturation": "Saturação",
+        "temperature": "Temperatura"
+      },
+      "markers": {
+        "anesthesia": "Anestesia",
+        "surgery": "Cirurgia",
+        "end": "Fim",
+        "endAnesthesia": "Fim Anes"
+      },
+      "scrollbar": {
+        "disabledHint": "Arraste/zoom desabilitados — cirurgia finalizada",
+        "navigate": "Navegar pelo período do gráfico",
+        "reset": "Voltar ao mais recente",
+        "resetButton": "Recente"
+      }
+    },
+    "agentsChart": {
+      "title": "AGENTES",
+      "empty": "Nenhum agente lançado"
+    },
+    "events": {
+      "title": "EVENTOS",
+      "expandAria": "Expandir eventos",
+      "collapseAria": "Recolher eventos",
+      "empty": "Nenhum evento registrado",
+      "positionChangeFallback": "Mudança de posição"
+    },
+    "fluidBalance": {
+      "title": "GANHOS E PERDAS",
+      "gainsLane": "GANHOS",
+      "lossesLane": "PERDAS",
+      "balanceLabel": "Balanço",
+      "empty": "Nenhum balanço lançado"
+    },
+    "historyDrawer": {
+      "title": "Histórico detalhado",
+      "tabs": {
+        "vitals": "Sinais",
+        "agents": "Agentes",
+        "events": "Eventos",
+        "balance": "Balanço"
+      },
+      "customFieldButton": "Campo personalizado",
+      "newRecordButton": "Novo registro",
+      "columns": {
+        "time": "Hora",
+        "name": "Nome",
+        "dose": "Dose",
+        "route": "Via",
+        "presentation": "Apresentação",
+        "type": "Tipo",
+        "description": "Descrição",
+        "item": "Item",
+        "volume": "Volume (ml)"
+      },
+      "empty": {
+        "vitals": "Sem registros",
+        "agents": "Sem agentes",
+        "events": "Sem eventos",
+        "balance": "Sem lançamentos"
+      },
+      "autoTag": "auto",
+      "eventCategories": {
+        "intubation": "Intubação",
+        "extubation": "Extubação",
+        "incision": "Incisão",
+        "block": "Bloqueio",
+        "tourniquetOn": "Garrote ON",
+        "tourniquetOff": "Garrote OFF",
+        "position": "Posição",
+        "complication": "Complicação",
+        "incident": "Incidente"
+      }
+    },
+    "quickActions": {
+      "anesthesiaLabel": "ANESTESIA",
+      "surgeryLabel": "CIRURGIA",
+      "anesthesiaStartedLabel": "Início Anestesia",
+      "startAnesthesiaButton": "Iniciar Anestesia",
+      "surgeryStartedLabel": "Início Cirurgia",
+      "startSurgeryButton": "Iniciar Cirurgia",
+      "vitalSignButton": "Sinal Vital",
+      "agentButton": "Agente",
+      "eventButton": "Evento",
+      "balanceButton": "Balanço",
+      "positionLabel": "Posição",
+      "changeButton": "Mudar",
+      "historyTitle": "Histórico",
+      "freqAutoLabel": "Freq. auto",
+      "minUnit": "min",
+      "recentActivityLabel": "Atividade recente",
+      "viewAllLabel": "Ver tudo"
+    },
+    "finalizeBar": {
+      "noDraftSaved": "Sem rascunho salvo",
+      "draftSavedAt": "Rascunho salvo {{time}}",
+      "allSynced": "Tudo sincronizado",
+      "pendingSingular": "pendente",
+      "pendingPlural": "pendentes",
+      "syncing": "Sincronizando…",
+      "syncNow": "Sincronizar agora",
+      "history": "Histórico",
+      "finalizeAnesthesia": "Anestesia",
+      "finalizeSurgery": "Cirurgia"
+    }
+  }
+}

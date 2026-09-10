@@ -6,6 +6,7 @@ import {
   ModalController, AlertController, ToastController,
 } from '@ionic/angular/standalone';
 import { finalize, firstValueFrom, Subscription } from 'rxjs';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AnesthesiaRecordService } from 'src/app/core/services/anesthesia-record.service';
 import { AuthService } from 'src/app/core/services/auth.service';
@@ -106,6 +107,7 @@ const MONITORING_DRAFT_KEY = (surgeryId: string) => `draft_monitoring_${surgeryI
     VitalSignsChartComponent, AgentsChartComponent, EventsChartComponent,
     FluidBalanceChartComponent, QuickActionSidebarComponent,
     FinalizeAnesthesiaBarComponent, HistoryDrawerComponent,
+    TranslatePipe,
   ],
 })
 export class MonitorizacaoComponent implements OnInit, OnDestroy {
@@ -221,6 +223,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private settingsService: SettingsService,
     private cdr: ChangeDetectorRef,
+    private translate: TranslateService,
   ) { }
 
   private encerramentoTimeout?: any;
@@ -344,7 +347,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         this.isSurgeryFinished = true;
         this.isAnesthesiaFinished = true;
         const toast = await this.toastController.create({
-          message: 'Este paciente está cancelado. Não é possível iniciar ou alterar a cirurgia.',
+          message: this.translate.instant('monitorizacao.page.alerts.patientCancelled'),
           duration: 3000,
           color: 'warning',
           position: 'top',
@@ -436,7 +439,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       if (err?.status === 403) {
         this.accessDenied = true;
         const toast = await this.toastController.create({
-          message: 'Monitorização ainda não concluída. Apenas o médico responsável pode acessá-la neste momento.',
+          message: this.translate.instant('monitorizacao.page.alerts.accessDenied'),
           duration: 3500,
           color: 'warning',
           position: 'top',
@@ -537,7 +540,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   private async blockIfCancelled(): Promise<boolean> {
     if (!this.isCancelled) return false;
     const toast = await this.toastController.create({
-      message: 'Este paciente está cancelado. Não é possível iniciar ou alterar a cirurgia.',
+      message: this.translate.instant('monitorizacao.page.alerts.patientCancelled'),
       duration: 2500,
       color: 'warning',
       position: 'top',
@@ -551,14 +554,14 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     if (this.isAnesthesiaStarted) {
       if (this.isAnesthesiaFinished) return;
       const alert = await this.alertController.create({
-        header: 'Editar Início Anestesia',
+        header: this.translate.instant('monitorizacao.page.alerts.editAnesthesiaStartTitle'),
         inputs: [
           { name: 'time', type: 'time', value: this.formatHM(this.startTimeAnesthesia as Date) }
         ],
         buttons: [
-          { text: 'Cancelar', role: 'cancel' },
+          { text: this.translate.instant('common.cancel'), role: 'cancel' },
           {
-            text: 'Salvar', handler: (d) => {
+            text: this.translate.instant('common.save'), handler: (d) => {
               if (!d.time) return;
               const oldIso = (this.startTimeAnesthesia as Date).toISOString();
               const iso = this.replaceTimeInIso(oldIso, d.time);
@@ -611,14 +614,14 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.isPositionAlertOpen = true;
     return new Promise(async (resolve) => {
       const alert = await this.alertController.create({
-        header: 'Posição inicial do paciente',
-        subHeader: 'Selecione a posição em que a monitorização foi iniciada',
+        header: this.translate.instant('monitorizacao.page.alerts.initialPositionTitle'),
+        subHeader: this.translate.instant('monitorizacao.page.alerts.initialPositionSubtitle'),
         backdropDismiss: false,
         inputs: this.posicoesPossiveis.map((p, i) => ({
           type: 'radio', label: p, value: p, checked: i === 0,
         })),
         buttons: [{
-          text: 'Confirmar',
+          text: this.translate.instant('monitorizacao.page.actions.confirm'),
           handler: (value: string) => {
             const pos = value || this.posicoesPossiveis[0];
             this.registerPositionChange(pos);
@@ -642,14 +645,14 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     if (this.isSurgeryStarted) {
       if (this.isAnesthesiaFinished || this.isSurgeryFinished) return;
       const alert = await this.alertController.create({
-        header: 'Editar Início Cirurgia',
+        header: this.translate.instant('monitorizacao.page.alerts.editSurgeryStartTitle'),
         inputs: [
           { name: 'time', type: 'time', value: this.formatHM(this.startTimeSurgery as Date) }
         ],
         buttons: [
-          { text: 'Cancelar', role: 'cancel' },
+          { text: this.translate.instant('common.cancel'), role: 'cancel' },
           {
-            text: 'Salvar', handler: (d) => {
+            text: this.translate.instant('common.save'), handler: (d) => {
               if (!d.time) return;
               const oldIso = (this.startTimeSurgery as Date).toISOString();
               const iso = this.replaceTimeInIso(oldIso, d.time);
@@ -747,16 +750,16 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   reconfigurarFrequencia() {
     if (!this.canEdit) return;
     this.alertController.create({
-      header: 'Frequência de monitorização',
+      header: this.translate.instant('monitorizacao.page.alerts.frequencyTitle'),
       inputs: [{
         name: 'minutes', type: 'number', min: 1, max: 60,
         value: this.autoMonitoringIntervalMinutes,
-        placeholder: 'Minutos',
+        placeholder: this.translate.instant('monitorizacao.page.alerts.minutesPlaceholder'),
       }],
       buttons: [
-        { text: 'Cancelar', role: 'cancel' },
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
         {
-          text: 'Salvar',
+          text: this.translate.instant('common.save'),
           handler: (data) => {
             const n = Number(data.minutes);
             if (n >= 1 && n <= 60) {
@@ -786,7 +789,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       if (role !== 'confirm' || !data) return;
 
       this.addVitalRecord(data);
-      await this.toast('Sinais vitais salvos no rascunho local.', 'success');
+      await this.toast(this.translate.instant('monitorizacao.page.toasts.vitalSaved'), 'success');
     } finally {
       this.isVitalModalOpen = false;
     }
@@ -809,15 +812,15 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   async addCustomField() {
     if (!this.canEdit) return;
     const alert = await this.alertController.create({
-      header: 'Novo campo personalizado',
+      header: this.translate.instant('monitorizacao.page.alerts.newCustomFieldTitle'),
       inputs: [
-        { name: 'label', type: 'text', placeholder: 'Ex: Glicemia' },
-        { name: 'unit', type: 'text', placeholder: 'Ex: mg/dL' },
+        { name: 'label', type: 'text', placeholder: this.translate.instant('monitorizacao.page.alerts.customFieldLabelPlaceholder') },
+        { name: 'unit', type: 'text', placeholder: this.translate.instant('monitorizacao.page.alerts.customFieldUnitPlaceholder') },
       ],
       buttons: [
-        { text: 'Cancelar', role: 'cancel' },
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
         {
-          text: 'Adicionar',
+          text: this.translate.instant('monitorizacao.page.actions.add'),
           handler: (data) => {
             if (!data.label?.trim()) return false;
             const safeLabel = data.label.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
@@ -910,7 +913,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
   async onDeleteVital(record: VitalRecord) {
     if (!this.canEdit) return;
-    const ok = await this.confirmDelete(`Remover lançamento das ${record.time}?`);
+    const ok = await this.confirmDelete(this.translate.instant('monitorizacao.page.alerts.confirmRemoveVitalAt', { time: record.time }));
     if (!ok) return;
     this.vitalRecords = this.vitalRecords.filter(r => r.clientId !== record.clientId);
     this.persistDraft();
@@ -922,18 +925,18 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   private async buildFichaAnestesicaRecordData(): Promise<RecordData> {
     const sections: RecordData['sections'] = [
       {
-        title: 'Resumo da Monitorização',
+        title: this.translate.instant('monitorizacao.page.fichaAnestesica.summarySectionTitle'),
         fields: [
-          { label: 'Tempo de Anestesia', value: this.anesthesiaTimer },
-          { label: 'Tempo de Cirurgia', value: this.surgeryTimer },
-          { label: 'Sinais Vitais Registrados', value: this.vitalRecords.length }
+          { label: this.translate.instant('monitorizacao.page.fichaAnestesica.anesthesiaTimeLabel'), value: this.anesthesiaTimer },
+          { label: this.translate.instant('monitorizacao.page.fichaAnestesica.surgeryTimeLabel'), value: this.surgeryTimer },
+          { label: this.translate.instant('monitorizacao.page.fichaAnestesica.vitalRecordsCountLabel'), value: this.vitalRecords.length }
         ]
       },
       {
-        title: 'Equipe e Sala',
+        title: this.translate.instant('monitorizacao.page.fichaAnestesica.teamSectionTitle'),
         fields: [
-          { label: 'Cirurgião', value: this.selectedSurgery?.surgeonName || '--' },
-          { label: 'Procedimento', value: this.selectedProcedure?.name || '--' }
+          { label: this.translate.instant('monitorizacao.page.fichaAnestesica.surgeonLabel'), value: this.selectedSurgery?.surgeonName || '--' },
+          { label: this.translate.instant('monitorizacao.page.fichaAnestesica.procedureLabel'), value: this.selectedProcedure?.name || '--' }
         ]
       }
     ];
@@ -959,16 +962,16 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       const cachedFinalized = this.anesthesiaRecordService.getFinalizedMonitoringRecord(this.surgeryId);
       if (cachedFinalized?.status !== undefined) {
         sections.push({
-          title: 'Status',
+          title: this.translate.instant('monitorizacao.page.fichaAnestesica.statusSectionTitle'),
           fields: [
-            { label: 'Status', value: SURGERY_STATUS_LABELS[cachedFinalized.status as SurgeryStatusEnum] ?? cachedFinalized.status ?? '--' },
-            { label: 'Atualizado em', value: formatDateTimeBR(cachedFinalized.monitoringUpdatedAt) ?? '--' },
+            { label: this.translate.instant('monitorizacao.page.fichaAnestesica.statusLabel'), value: SURGERY_STATUS_LABELS[cachedFinalized.status as SurgeryStatusEnum] ?? cachedFinalized.status ?? '--' },
+            { label: this.translate.instant('monitorizacao.page.fichaAnestesica.updatedAtLabel'), value: formatDateTimeBR(cachedFinalized.monitoringUpdatedAt) ?? '--' },
           ]
         });
       }
     }
 
-    const data: RecordData = { title: 'Ficha Anestésica', sections };
+    const data: RecordData = { title: this.translate.instant('monitorizacao.page.fichaAnestesica.title'), sections };
 
     const cacheKey = `${this.FICHA_ANESTESICA_CACHE_KEY}${this.surgeryId}`;
     const previousRaw = localStorage.getItem(cacheKey);
@@ -993,17 +996,17 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
     if (this.agents.length > 0) {
       sections.push({
-        title: 'Agentes Administrados',
+        title: this.translate.instant('monitorizacao.page.fichaAnestesica.agentsSectionTitle'),
         fields: this.agents.map(a => ({
           label: a.time || '--',
-          value: [a.name || (a.medicationId != null ? `Medicação #${a.medicationId}` : 'Agente'), a.dose, a.route].filter(Boolean).join(' · '),
+          value: [a.name || (a.medicationId != null ? this.translate.instant('monitorizacao.common.medicationFallback', { id: a.medicationId }) : this.translate.instant('monitorizacao.common.agentFallback')), a.dose, a.route].filter(Boolean).join(' · '),
         })),
       });
     }
 
     if (this.clinicalEvents.length > 0) {
       sections.push({
-        title: 'Eventos Clínicos',
+        title: this.translate.instant('monitorizacao.page.fichaAnestesica.eventsSectionTitle'),
         fields: this.clinicalEvents.map(e => {
           const categoria = (e as any).categoryLabel
             || (e.eventTypeId != null ? CLINICAL_EVENT_TYPE_LABELS[e.eventTypeId] : null)
@@ -1019,10 +1022,10 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
     if (this.fluidBalance.length > 0) {
       sections.push({
-        title: 'Balanço Hídrico',
+        title: this.translate.instant('monitorizacao.page.fichaAnestesica.fluidBalanceSectionTitle'),
         fields: this.fluidBalance.map(b => ({
           label: b.time || '--',
-          value: `${b.type === 'gain' ? 'Ganho' : 'Perda'} · ${b.item} · ${b.volumeMl}ml`,
+          value: `${b.type === 'gain' ? this.translate.instant('monitorizacao.common.gain') : this.translate.instant('monitorizacao.common.loss')} · ${b.item} · ${b.volumeMl}ml`,
         })),
       });
     }
@@ -1068,17 +1071,17 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   async onEditAgent(a: Agent) {
     if (!this.canEdit) return;
     const alert = await this.alertController.create({
-      header: 'Editar agente',
+      header: this.translate.instant('monitorizacao.page.alerts.editAgentTitle'),
       inputs: [
         { name: 'time', type: 'time', value: a.time, placeholder: 'HH:mm' },
-        { name: 'name', type: 'text', value: a.name, placeholder: 'Nome' },
-        { name: 'dose', type: 'text', value: a.dose || '', placeholder: 'Dose' },
-        { name: 'route', type: 'text', value: a.route || '', placeholder: 'Via' },
+        { name: 'name', type: 'text', value: a.name, placeholder: this.translate.instant('monitorizacao.page.alerts.editAgentNamePlaceholder') },
+        { name: 'dose', type: 'text', value: a.dose || '', placeholder: this.translate.instant('monitorizacao.page.alerts.editAgentDosePlaceholder') },
+        { name: 'route', type: 'text', value: a.route || '', placeholder: this.translate.instant('monitorizacao.page.alerts.editAgentRoutePlaceholder') },
       ],
       buttons: [
-        { text: 'Cancelar', role: 'cancel' },
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
         {
-          text: 'Salvar',
+          text: this.translate.instant('common.save'),
           handler: (d) => {
             const ts = this.replaceTimeInIso(a.timestamp, d.time);
             this.agents = this.agents.map(x => x.clientId === a.clientId
@@ -1094,7 +1097,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
   async onDeleteAgent(a: Agent) {
     if (!this.canEdit) return;
-    if (!await this.confirmDelete(`Remover ${a.name}?`)) return;
+    if (!await this.confirmDelete(this.translate.instant('monitorizacao.page.alerts.confirmRemoveAgent', { name: a.name }))) return;
     this.agents = this.agents.filter(x => x.clientId !== a.clientId);
     this.persistDraft();
     this.rebuildRecentActivity();
@@ -1136,7 +1139,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
   async onDeleteEvent(e: ClinicalEvent) {
     if (!this.canEdit) return;
-    if (!await this.confirmDelete(`Remover evento "${e.description || e.type}"?`)) return;
+    if (!await this.confirmDelete(this.translate.instant('monitorizacao.page.alerts.confirmRemoveEvent', { description: e.description || e.type }))) return;
     this.clinicalEvents = this.clinicalEvents.filter(x => x.clientId !== e.clientId);
     if ((e.type || '').toLowerCase() === 'position') {
       this.positionHistory = this.positionHistory.filter(p => p.clientId !== e.clientId);
@@ -1149,16 +1152,16 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   async onEditBalance(b: FluidBalance) {
     if (!this.canEdit) return;
     const alert = await this.alertController.create({
-      header: 'Editar balanço',
+      header: this.translate.instant('monitorizacao.page.alerts.editBalanceTitle'),
       inputs: [
         { name: 'time', type: 'time', value: b.time, placeholder: 'HH:mm' },
-        { name: 'item', type: 'text', value: b.item, placeholder: 'Item' },
-        { name: 'volumeMl', type: 'number', value: String(b.volumeMl), placeholder: 'Volume (ml)' },
+        { name: 'item', type: 'text', value: b.item, placeholder: this.translate.instant('monitorizacao.page.alerts.editBalanceItemPlaceholder') },
+        { name: 'volumeMl', type: 'number', value: String(b.volumeMl), placeholder: this.translate.instant('monitorizacao.page.alerts.editBalanceVolumePlaceholder') },
       ],
       buttons: [
-        { text: 'Cancelar', role: 'cancel' },
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
         {
-          text: 'Salvar',
+          text: this.translate.instant('common.save'),
           handler: (d) => {
             const ts = this.replaceTimeInIso(b.timestamp, d.time);
             this.fluidBalance = this.fluidBalance.map(x => x.clientId === b.clientId
@@ -1174,7 +1177,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
   async onDeleteBalance(b: FluidBalance) {
     if (!this.canEdit) return;
-    if (!await this.confirmDelete(`Remover ${b.item} (${b.volumeMl}ml)?`)) return;
+    if (!await this.confirmDelete(this.translate.instant('monitorizacao.page.alerts.confirmRemoveBalance', { item: b.item, volume: b.volumeMl }))) return;
     this.fluidBalance = this.fluidBalance.filter(x => x.clientId !== b.clientId);
     this.persistDraft();
     this.rebuildRecentActivity();
@@ -1416,7 +1419,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     const merged: any[] = [
       ...this.agents.map(a => ({
         time: a.time, icon: '💊',
-        label: a.name || (a.medicationId != null ? `Medicação #${a.medicationId}` : 'Agente'),
+        label: a.name || (a.medicationId != null ? this.translate.instant('monitorizacao.common.medicationFallback', { id: a.medicationId }) : this.translate.instant('monitorizacao.common.agentFallback')),
         color: '#8b5cf6',
         ts: new Date(a.timestamp || 0).getTime(),
       })),
@@ -1425,16 +1428,17 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         return {
           time: e.time,
           icon: (e.type || '').toLowerCase() === 'position' ? '🧍' : '🔔',
-          label: e.description || eventTypeLabel || e.type || 'Evento',
+          label: e.description || eventTypeLabel || e.type || this.translate.instant('monitorizacao.common.eventFallback'),
           color: (e.type || '').toLowerCase() === 'position' ? '#16a34a' : '#f97316',
           ts: new Date(e.timestamp || 0).getTime(),
         };
       }),
       ...this.fluidBalance.map(b => {
 
+        const otherLabel = this.translate.instant('monitorizacao.common.otherItem');
         const categoryLabel = b.categoryId != null ? FLUID_CATEGORY_LABELS[b.categoryId] : null;
-        let displayName = b.item || categoryLabel || 'Outro';
-        if (displayName === 'Outro' && b.detail) {
+        let displayName = b.item || categoryLabel || otherLabel;
+        if (displayName === otherLabel && b.detail) {
           displayName = b.detail;
         } else if (b.detail) {
           displayName = `${displayName} (${b.detail})`;
@@ -1551,12 +1555,12 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
   async encerrarCirurgia() {
     const alert = await this.alertController.create({
-      header: 'Finalizar Cirurgia',
-      subHeader: 'Deseja marcar o fim da cirurgia?',
+      header: this.translate.instant('monitorizacao.page.alerts.finalizeSurgeryTitle'),
+      subHeader: this.translate.instant('monitorizacao.page.alerts.finalizeSurgerySubtitle'),
       buttons: [
-        { text: 'Cancelar', role: 'cancel' },
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
         {
-          text: 'Finalizar', handler: () => {
+          text: this.translate.instant('monitorizacao.page.actions.finalize'), handler: () => {
             this.isSurgeryFinished = true;
             this.surgeryEndTime = new Date();
 
@@ -1583,17 +1587,17 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       this.fluidBalance.length;
 
     const alert = await this.alertController.create({
-      header: 'Finalizar Anestesia',
-      subHeader: 'Esta ação encerrará toda a monitorização.',
+      header: this.translate.instant('monitorizacao.page.alerts.finalizeAnesthesiaTitle'),
+      subHeader: this.translate.instant('monitorizacao.page.alerts.finalizeAnesthesiaSubtitle'),
       message:
-        `Tempo de anestesia: ${this.anesthesiaTimer}\n` +
-        `Tempo de cirurgia: ${this.surgeryTimer}\n` +
-        `Registros lançados: ${totalLancamentos}\n` +
-        `Pendentes de sincronização: ${this.pendingSyncCount}\n\n` +
-        `Deseja confirmar o encerramento?`,
+        `${this.translate.instant('monitorizacao.page.alerts.finalizeAnesthesiaTimeLabel')} ${this.anesthesiaTimer}\n` +
+        `${this.translate.instant('monitorizacao.page.alerts.finalizeSurgeryTimeLabel')} ${this.surgeryTimer}\n` +
+        `${this.translate.instant('monitorizacao.page.alerts.finalizeRecordsLabel')} ${totalLancamentos}\n` +
+        `${this.translate.instant('monitorizacao.page.alerts.finalizePendingSyncLabel')} ${this.pendingSyncCount}\n\n` +
+        `${this.translate.instant('monitorizacao.page.alerts.finalizeConfirmQuestion')}`,
       buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        { text: 'Finalizar', role: 'destructive', handler: () => this.executarEncerramento() },
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
+        { text: this.translate.instant('monitorizacao.page.actions.finalize'), role: 'destructive', handler: () => this.executarEncerramento() },
       ],
     });
 
@@ -1619,7 +1623,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.persistDraft();
 
     const loading = await this.toastController.create({
-      message: 'Enviando registro final…', duration: 0, position: 'top',
+      message: this.translate.instant('monitorizacao.page.toasts.sendingFinalRecord'), duration: 0, position: 'top',
     });
     await loading.present();
 
@@ -1642,18 +1646,18 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
       this.anesthesiaRecordService.updatePendingStatus();
 
-      await this.toast('✅ Anestesia encerrada e enviada com sucesso.', 'success', 3000);
+      await this.toast(this.translate.instant('monitorizacao.page.toasts.finalizeSuccess'), 'success', 3000);
     } catch (err: any) {
       console.error('[Encerramento] falha ao enviar, mantendo rascunho local', err);
       await loading.dismiss();
 
       const isNetworkError = !navigator.onLine || err?.status === 0 || !err?.status;
       if (isNetworkError) {
-        await this.toast('⚠️ Sem conexão. Registro salvo localmente e será enviado automaticamente.',
+        await this.toast(this.translate.instant('monitorizacao.page.toasts.offlineSaved'),
           'warning', 4000);
       } else {
-        const msg = err?.error?.message || err?.message || 'Erro ao enviar o registro final.';
-        await this.toast(`⚠️ ${msg} O registro permanece salvo localmente e será reenviado automaticamente.`,
+        const msg = err?.error?.message || err?.message || this.translate.instant('monitorizacao.page.toasts.finalizeErrorGeneric');
+        await this.toast(this.translate.instant('monitorizacao.page.toasts.finalizeErrorWrap', { msg }),
           'danger', 5000);
       }
     } finally {
@@ -1669,10 +1673,10 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   private async confirmDelete(msg: string): Promise<boolean> {
     return new Promise(async (resolve) => {
       const alert = await this.alertController.create({
-        header: 'Excluir', message: msg,
+        header: this.translate.instant('monitorizacao.page.alerts.deleteTitle'), message: msg,
         buttons: [
-          { text: 'Cancelar', role: 'cancel', handler: () => resolve(false) },
-          { text: 'Excluir', role: 'destructive', handler: () => resolve(true) },
+          { text: this.translate.instant('common.cancel'), role: 'cancel', handler: () => resolve(false) },
+          { text: this.translate.instant('monitorizacao.page.actions.delete'), role: 'destructive', handler: () => resolve(true) },
         ],
       });
       await alert.present();

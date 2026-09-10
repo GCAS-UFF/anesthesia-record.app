@@ -8,11 +8,12 @@ import {
   saveOutline, cloudUploadOutline, cloudDoneOutline, cloudOfflineOutline,
   powerOutline, listOutline, refreshOutline, flagOutline
 } from 'ionicons/icons';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-finalize-anesthesia-bar',
   standalone: true,
-  imports: [CommonModule, IonIcon],
+  imports: [CommonModule, IonIcon, TranslatePipe],
   templateUrl: './finalize-anesthesia-bar.component.html',
   styleUrls: ['./finalize-anesthesia-bar.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -33,17 +34,17 @@ export class FinalizeAnesthesiaBarComponent {
     return this.isAnesthesiaFinished;
   }
 
-  constructor() {
+  constructor(private translate: TranslateService) {
     addIcons({ saveOutline, cloudUploadOutline, cloudDoneOutline, cloudOfflineOutline,
       powerOutline, listOutline, refreshOutline });
   }
 
   get savedLabel(): string {
-    if (!this.draftSavedAt) return 'Sem rascunho salvo';
+    if (!this.draftSavedAt) return this.translate.instant('monitorizacao.finalizeBar.noDraftSaved');
     const d = this.draftSavedAt;
     const hh = String(d.getHours()).padStart(2, '0');
     const mm = String(d.getMinutes()).padStart(2, '0');
     const ss = String(d.getSeconds()).padStart(2, '0');
-    return `Rascunho salvo ${hh}:${mm}:${ss}`;
+    return this.translate.instant('monitorizacao.finalizeBar.draftSavedAt', { time: `${hh}:${mm}:${ss}` });
   }
 }

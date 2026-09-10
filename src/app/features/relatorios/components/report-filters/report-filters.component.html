@@ -1,44 +1,44 @@
 <div class="filters-bar">
   <div class="field date-field">
-    <label>De</label>
+    <label>{{ 'relatorios.filters.from' | translate }}</label>
     <input type="date" [ngModel]="filters.startDate" (ngModelChange)="onStartDateChange($event)" />
   </div>
 
   <div class="field date-field">
-    <label>Até</label>
+    <label>{{ 'relatorios.filters.to' | translate }}</label>
     <input type="date" [ngModel]="filters.endDate" (ngModelChange)="onEndDateChange($event)" />
   </div>
 
   <div class="quick-ranges">
-    <button type="button" (click)="setQuickRange('today')">Hoje</button>
-    <button type="button" (click)="setQuickRange('last7')">7 dias</button>
-    <button type="button" (click)="setQuickRange('thisMonth')">Este mês</button>
+    <button type="button" (click)="setQuickRange('today')">{{ 'relatorios.filters.today' | translate }}</button>
+    <button type="button" (click)="setQuickRange('last7')">{{ 'relatorios.filters.last7Days' | translate }}</button>
+    <button type="button" (click)="setQuickRange('thisMonth')">{{ 'relatorios.filters.thisMonth' | translate }}</button>
   </div>
 
   <div class="field" *ngIf="showAnesthetistFilter">
-    <label>Anestesista</label>
+    <label>{{ 'relatorios.filters.anesthetist' | translate }}</label>
     <select
       [ngModel]="filters.anesthesiologistId"
       (ngModelChange)="onAnesthesiologistChange($event)"
     >
-      <option [ngValue]="null">Todos</option>
+      <option [ngValue]="null">{{ 'relatorios.filters.allAnesthetists' | translate }}</option>
       <option *ngFor="let a of anesthetistOptions" [ngValue]="a.id">{{ a.name }}</option>
     </select>
   </div>
 
   <div class="field" *ngIf="showStatusFilter">
-    <label>Status</label>
+    <label>{{ 'relatorios.filters.status' | translate }}</label>
     <select
       [ngModel]="filters.status"
       (ngModelChange)="onStatusChange($event)"
     >
-      <option [ngValue]="null">Todos</option>
+      <option [ngValue]="null">{{ 'relatorios.filters.allStatuses' | translate }}</option>
       <option *ngFor="let s of statusOptions" [ngValue]="s.id">{{ s.label }}</option>
     </select>
   </div>
 
   <button type="button" class="refresh-btn" (click)="refresh.emit()">
     <ion-icon name="refresh-outline"></ion-icon>
-    Atualizar
+    {{ 'relatorios.filters.refresh' | translate }}
   </button>
 </div>

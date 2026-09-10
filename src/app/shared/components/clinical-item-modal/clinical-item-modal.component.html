@@ -2,9 +2,9 @@
   <ion-toolbar>
     <ion-title>
       <ng-container [ngSwitch]="type">
-        <span *ngSwitchCase="'agent'">Adicionar Agente</span>
-        <span *ngSwitchCase="'event'">{{ isEditMode ? 'Editar Evento' : 'Adicionar Evento' }}</span>
-        <span *ngSwitchCase="'balance'">Adicionar Balanço</span>
+        <span *ngSwitchCase="'agent'">{{ 'sharedComponents.clinicalItemModal.titleAddAgent' | translate }}</span>
+        <span *ngSwitchCase="'event'">{{ (isEditMode ? 'sharedComponents.clinicalItemModal.titleEditEvent' : 'sharedComponents.clinicalItemModal.titleAddEvent') | translate }}</span>
+        <span *ngSwitchCase="'balance'">{{ 'sharedComponents.clinicalItemModal.titleAddBalance' | translate }}</span>
       </ng-container>
     </ion-title>
     <ion-buttons slot="end">
@@ -22,14 +22,14 @@
 
       <!-- Busca de medicação por nome -->
       <div class="field">
-        <label class="field-label">Medicação *</label>
+        <label class="field-label">{{ 'sharedComponents.clinicalItemModal.agent.medicationLabel' | translate }}</label>
         <div class="custom-search" [class.open]="medDropdownOpen">
           <div class="custom-input-wrap">
             <ion-icon name="search-outline" class="custom-icon"></ion-icon>
             <input
               type="text"
               class="custom-input"
-              placeholder="Digite o nome da medicação..."
+              [placeholder]="'sharedComponents.clinicalItemModal.agent.medicationPlaceholder' | translate"
               [value]="medSearchTerm"
               (input)="onMedSearchInput($any($event.target).value)"
               (focus)="onMedFocus()"
@@ -40,7 +40,7 @@
               *ngIf="medSearchTerm"
               type="button"
               class="custom-clear"
-              aria-label="Limpar seleção"
+              [attr.aria-label]="'sharedComponents.clinicalItemModal.clearSelection' | translate"
               (mousedown)="$event.preventDefault()"
               (click)="clearMedication()">
               <ion-icon name="close-circle"></ion-icon>
@@ -65,23 +65,23 @@
 
           <div class="custom-empty"
                *ngIf="medDropdownOpen && !medSuggestions.length && medSearchTerm">
-            Nenhuma medicação encontrada.
+            {{ 'sharedComponents.clinicalItemModal.agent.noMedicationFound' | translate }}
           </div>
         </div>
         <ion-note *ngIf="!medications.length" color="warning" class="ion-margin-top">
-          Nenhuma medicação carregada no storage.
+          {{ 'sharedComponents.clinicalItemModal.agent.noMedicationLoaded' | translate }}
         </ion-note>
       </div>
 
       <div class="field dose-row">
         <div class="dose-value">
-          <label class="field-label">Dose *</label>
+          <label class="field-label">{{ 'sharedComponents.clinicalItemModal.agent.doseLabel' | translate }}</label>
           <div class="custom-input-wrap">
-            <input class="custom-input" type="number" inputmode="decimal" min="0" step="any" [(ngModel)]="agent.doseValue" placeholder="ex: 100" />
+            <input class="custom-input" type="number" inputmode="decimal" min="0" step="any" [(ngModel)]="agent.doseValue" [placeholder]="'sharedComponents.clinicalItemModal.agent.dosePlaceholder' | translate" />
           </div>
         </div>
         <div class="dose-unit">
-          <label class="field-label">Unidade *</label>
+          <label class="field-label">{{ 'sharedComponents.clinicalItemModal.agent.unitLabel' | translate }}</label>
           <div class="custom-input-wrap select-wrap">
             <select class="custom-input" [(ngModel)]="agent.doseUnit">
               <option *ngFor="let u of unitOptions" [ngValue]="u.id">{{ u.label }}</option>
@@ -92,10 +92,10 @@
       </div>
 
       <div class="field">
-        <label class="field-label">Via *</label>
+        <label class="field-label">{{ 'sharedComponents.clinicalItemModal.agent.routeLabel' | translate }}</label>
         <div class="custom-input-wrap select-wrap">
           <select class="custom-input" [(ngModel)]="agent.routeId">
-            <option [ngValue]="null" disabled selected hidden>Selecione</option>
+            <option [ngValue]="null" disabled selected hidden>{{ 'sharedComponents.clinicalItemModal.agent.selectPlaceholder' | translate }}</option>
             <option *ngFor="let r of routeOptions" [ngValue]="r.id">{{ r.label }}</option>
           </select>
           <ion-icon name="chevron-down-outline" class="select-icon"></ion-icon>
@@ -105,21 +105,21 @@
     
     <ng-container *ngIf="type === 'event'">
       <div class="field" *ngIf="isEditMode">
-        <label class="field-label">Horário</label>
+        <label class="field-label">{{ 'sharedComponents.clinicalItemModal.event.timeLabel' | translate }}</label>
         <div class="custom-input-wrap">
-          <input class="custom-input" type="time" [(ngModel)]="event.time" aria-label="Horário do evento" placeholder="HH:mm" />
+          <input class="custom-input" type="time" [(ngModel)]="event.time" [attr.aria-label]="'sharedComponents.clinicalItemModal.event.timeAriaLabel' | translate" placeholder="HH:mm" />
         </div>
       </div>
 
       <div class="field">
-        <label class="field-label">Evento *</label>
+        <label class="field-label">{{ 'sharedComponents.clinicalItemModal.event.eventLabel' | translate }}</label>
 
         <div class="custom-input-wrap event-search-wrap" *ngIf="eventTypes.length > 6">
           <ion-icon name="search-outline" class="custom-icon"></ion-icon>
           <input
             type="text"
             class="custom-input"
-            placeholder="Buscar evento..."
+            [placeholder]="'sharedComponents.clinicalItemModal.event.searchPlaceholder' | translate"
             [value]="eventSearchTerm"
             (input)="onEventSearchInput($any($event.target).value)"
             autocomplete="off" />
@@ -139,45 +139,45 @@
 
         <ng-template #noEvents>
           <ion-note color="warning" class="ion-margin-top">
-            Nenhum evento cadastrado. Peça ao administrador para cadastrar eventos em "Manutenção de Itens".
+            {{ 'sharedComponents.clinicalItemModal.event.noEventsRegistered' | translate }}
           </ion-note>
         </ng-template>
       </div>
 
       <div class="field">
-        <label class="field-label">Descrição *</label>
+        <label class="field-label">{{ 'sharedComponents.clinicalItemModal.event.descriptionLabel' | translate }}</label>
         <textarea
           class="custom-input custom-textarea"
           rows="4"
           [(ngModel)]="event.description"
-          placeholder="Descreva o evento..."></textarea>
+          [placeholder]="'sharedComponents.clinicalItemModal.event.descriptionPlaceholder' | translate"></textarea>
       </div>
     </ng-container>
     
     <ng-container *ngIf="type === 'balance'">
       <div class="field">
-        <label class="field-label">Tipo *</label>
+        <label class="field-label">{{ 'sharedComponents.clinicalItemModal.balance.typeLabel' | translate }}</label>
         <div class="seg-row">
           <ion-button
             [fill]="balance.type === 'gain' ? 'solid' : 'outline'"
             color="success"
-            (click)="onBalanceTypeChange('gain')">Ganho</ion-button>
+            (click)="onBalanceTypeChange('gain')">{{ 'sharedComponents.clinicalItemModal.balance.gain' | translate }}</ion-button>
           <ion-button
             [fill]="balance.type === 'loss' ? 'solid' : 'outline'"
             color="danger"
-            (click)="onBalanceTypeChange('loss')">Perda</ion-button>
+            (click)="onBalanceTypeChange('loss')">{{ 'sharedComponents.clinicalItemModal.balance.loss' | translate }}</ion-button>
         </div>
       </div>
 
       <div class="field">
-        <label class="field-label">Item *</label>
+        <label class="field-label">{{ 'sharedComponents.clinicalItemModal.balance.itemLabel' | translate }}</label>
         <div class="custom-search" [class.open]="balanceDropdownOpen">
           <div class="custom-input-wrap">
             <ion-icon name="search-outline" class="custom-icon"></ion-icon>
             <input
               type="text"
               class="custom-input"
-              placeholder="Digite para buscar..."
+              [placeholder]="'sharedComponents.clinicalItemModal.balance.searchPlaceholder' | translate"
               [value]="balanceSearchTerm"
               (input)="onBalanceSearchInput($any($event.target).value)"
               (focus)="onBalanceFocus()"
@@ -188,7 +188,7 @@
               *ngIf="balanceSearchTerm"
               type="button"
               class="custom-clear"
-              aria-label="Limpar seleção"
+              [attr.aria-label]="'sharedComponents.clinicalItemModal.clearSelection' | translate"
               (mousedown)="$event.preventDefault()"
               (click)="clearBalanceItem()">
               <ion-icon name="close-circle"></ion-icon>
@@ -213,20 +213,20 @@
 
           <div class="custom-empty"
                *ngIf="balanceDropdownOpen && !balanceSuggestions.length && balanceSearchTerm">
-            Nenhum item encontrado.
+            {{ 'sharedComponents.clinicalItemModal.balance.noItemFound' | translate }}
           </div>
         </div>
       </div>
 
       <div class="field" *ngIf="needsDetail">
-        <label class="field-label">Detalhar "Outro" *</label>
+        <label class="field-label">{{ 'sharedComponents.clinicalItemModal.balance.detailOtherLabel' | translate }}</label>
         <div class="custom-input-wrap">
-          <input class="custom-input" type="text" [(ngModel)]="balance.detail" placeholder="Especifique..." />
+          <input class="custom-input" type="text" [(ngModel)]="balance.detail" [placeholder]="'sharedComponents.clinicalItemModal.balance.detailPlaceholder' | translate" />
         </div>
       </div>
 
       <div class="field">
-        <label class="field-label">Volume (ml) *</label>
+        <label class="field-label">{{ 'sharedComponents.clinicalItemModal.balance.volumeLabel' | translate }}</label>
         <div class="custom-input-wrap">
           <input class="custom-input" type="number" inputmode="numeric" [(ngModel)]="balance.volumeMl" placeholder="0" />
         </div>
@@ -238,9 +238,9 @@
 
 <ion-footer class="ion-no-border">
   <div class="modal-footer">
-    <button type="button" class="btn-cancel" (click)="cancel()">Cancelar</button>
+    <button type="button" class="btn-cancel" (click)="cancel()">{{ 'common.cancel' | translate }}</button>
     <button type="button" class="btn-save" [disabled]="!canSave" (click)="save()">
-      <ion-icon name="checkmark-outline"></ion-icon> Salvar
+      <ion-icon name="checkmark-outline"></ion-icon> {{ 'common.save' | translate }}
     </button>
   </div>
 </ion-footer>

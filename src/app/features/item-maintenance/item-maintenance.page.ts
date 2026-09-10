@@ -13,6 +13,7 @@ import { EventTypeService } from 'src/app/core/services/event-type.service';
 import { DrugAdmin } from 'src/app/core/models/drug.model';
 import { EventType } from 'src/app/core/models/event-type.model';
 import { DrugCategoryEnum, DRUG_CATEGORY_LABELS } from 'src/app/core/models/api-enums.model';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 type Tab = 'drugs' | 'events';
 
@@ -27,6 +28,7 @@ type Tab = 'drugs' | 'events';
     IonIcon,
     StatusBarComponent,
     HeaderInstitucionalComponent,
+    TranslatePipe,
   ],
 })
 export class ItemMaintenancePage implements OnInit {
@@ -62,7 +64,8 @@ export class ItemMaintenancePage implements OnInit {
   constructor(
     private drugAdminService: DrugAdminService,
     private eventTypeService: EventTypeService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private translate: TranslateService
   ) {
     addIcons({ layersOutline, pricetagOutline, calendarOutline, createOutline, addOutline, closeOutline, checkmarkOutline, searchOutline, chevronBackOutline, chevronForwardOutline });
   }
@@ -79,7 +82,7 @@ export class ItemMaintenancePage implements OnInit {
   }
 
   categoryLabel(id: DrugCategoryEnum): string {
-    return DRUG_CATEGORY_LABELS[id] ?? 'Outros';
+    return DRUG_CATEGORY_LABELS[id] ?? this.translate.instant('itemMaintenance.drugs.otherCategory');
   }
 
   // ---------- Drugs ----------
@@ -96,7 +99,7 @@ export class ItemMaintenancePage implements OnInit {
       this.drugsTotalPages = Math.ceil(this.drugsTotalItems / this.drugsPageSize) || 1;
     } catch (error) {
       console.error('Erro ao carregar itens', error);
-      await this.showToast('Não foi possível carregar os itens.', 'danger');
+      await this.showToast(this.translate.instant('itemMaintenance.drugs.loadError'), 'danger');
     } finally {
       this.drugsLoading = false;
     }
@@ -149,7 +152,7 @@ export class ItemMaintenancePage implements OnInit {
       );
 
       if (response?.valid === false) {
-        await this.showToast(response.message || 'Não foi possível salvar a categoria.', 'danger');
+        await this.showToast(response.message || this.translate.instant('itemMaintenance.drugs.saveCategoryError'), 'danger');
         return;
       }
 
@@ -157,10 +160,10 @@ export class ItemMaintenancePage implements OnInit {
       drug.categoryLabel = this.categoryLabel(this.editingDrugCategory);
       this.editingDrugId = null;
       this.editingDrugCategory = null;
-      await this.showToast('Categoria atualizada com sucesso.', 'success');
+      await this.showToast(this.translate.instant('itemMaintenance.drugs.saveCategorySuccess'), 'success');
     } catch (error) {
       console.error('Erro ao salvar categoria', error);
-      await this.showToast('Não foi possível salvar a categoria.', 'danger');
+      await this.showToast(this.translate.instant('itemMaintenance.drugs.saveCategoryError'), 'danger');
     } finally {
       this.savingDrugId = null;
     }
@@ -180,7 +183,7 @@ export class ItemMaintenancePage implements OnInit {
       this.eventsTotalPages = Math.ceil(this.eventsTotalItems / this.eventsPageSize) || 1;
     } catch (error) {
       console.error('Erro ao carregar eventos', error);
-      await this.showToast('Não foi possível carregar os eventos.', 'danger');
+      await this.showToast(this.translate.instant('itemMaintenance.events.loadError'), 'danger');
     } finally {
       this.eventsLoading = false;
     }
@@ -226,7 +229,7 @@ export class ItemMaintenancePage implements OnInit {
     const { id, name, description, active } = this.eventForm;
 
     if (!name?.trim() || !description?.trim()) {
-      await this.showToast('Preencha nome e descrição.', 'danger');
+      await this.showToast(this.translate.instant('itemMaintenance.events.nameDescriptionRequired'), 'danger');
       return;
     }
 
@@ -237,16 +240,16 @@ export class ItemMaintenancePage implements OnInit {
         : await firstValueFrom(this.eventTypeService.create(name.trim(), description.trim()));
 
       if (response?.valid === false) {
-        await this.showToast(response.message || 'Não foi possível salvar o evento.', 'danger');
+        await this.showToast(response.message || this.translate.instant('itemMaintenance.events.saveError'), 'danger');
         return;
       }
 
       this.eventForm = null;
       await this.loadEvents();
-      await this.showToast('Evento salvo com sucesso.', 'success');
+      await this.showToast(this.translate.instant('itemMaintenance.events.saveSuccess'), 'success');
     } catch (error) {
       console.error('Erro ao salvar evento', error);
-      await this.showToast('Não foi possível salvar o evento.', 'danger');
+      await this.showToast(this.translate.instant('itemMaintenance.events.saveError'), 'danger');
     } finally {
       this.savingEvent = false;
     }

@@ -8,11 +8,11 @@
       <div class="header-text">
         <span class="eyebrow">
           <ion-icon name="layers-outline" aria-hidden="true"></ion-icon>
-          Administração
+          {{ 'itemMaintenance.eyebrow' | translate }}
         </span>
-        <h1 class="page-title">Manutenção de Itens</h1>
+        <h1 class="page-title">{{ 'itemMaintenance.pageTitle' | translate }}</h1>
         <p class="page-subtitle">
-          Classifique os itens sincronizados do AGHU e mantenha o catálogo de eventos clínicos utilizados na Monitorização.
+          {{ 'itemMaintenance.pageSubtitle' | translate }}
         </p>
       </div>
     </section>
@@ -20,11 +20,11 @@
     <nav class="tabs">
       <button class="tab-btn" [class.active]="activeTab === 'drugs'" (click)="selectTab('drugs')">
         <ion-icon name="pricetag-outline" aria-hidden="true"></ion-icon>
-        Manutenção de Itens
+        {{ 'itemMaintenance.tabs.drugs' | translate }}
       </button>
       <button class="tab-btn" [class.active]="activeTab === 'events'" (click)="selectTab('events')">
         <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>
-        Manutenção de Eventos
+        {{ 'itemMaintenance.tabs.events' | translate }}
       </button>
     </nav>
 
@@ -36,33 +36,33 @@
           <input
             type="text"
             class="search-input"
-            placeholder="Buscar por nome do item"
+            [placeholder]="'itemMaintenance.drugs.searchPlaceholder' | translate"
             [ngModel]="drugsTerm"
             (ngModelChange)="onDrugsSearchChange($event)"
           />
         </div>
 
         <select class="category-filter" [ngModel]="drugsCategoryFilter" (ngModelChange)="drugsCategoryFilter = $event; onDrugsCategoryFilterChange()">
-          <option [ngValue]="null">Todas as categorias</option>
+          <option [ngValue]="null">{{ 'itemMaintenance.drugs.allCategories' | translate }}</option>
           <option *ngFor="let c of categoryOptions" [ngValue]="c.id">{{ c.label }}</option>
         </select>
       </div>
 
       <div class="list-card">
         <div class="list-header">
-          <span class="col-name">Nome</span>
-          <span class="col-unit">Unidade</span>
-          <span class="col-category">Categoria</span>
-          <span class="col-actions">Ações</span>
+          <span class="col-name">{{ 'itemMaintenance.drugs.columnName' | translate }}</span>
+          <span class="col-unit">{{ 'itemMaintenance.drugs.columnUnit' | translate }}</span>
+          <span class="col-category">{{ 'itemMaintenance.drugs.columnCategory' | translate }}</span>
+          <span class="col-actions">{{ 'itemMaintenance.drugs.columnActions' | translate }}</span>
         </div>
 
-        <p class="empty-state" *ngIf="!drugsLoading && drugs.length === 0">Nenhum item encontrado.</p>
-        <p class="loading-state" *ngIf="drugsLoading">Carregando...</p>
+        <p class="empty-state" *ngIf="!drugsLoading && drugs.length === 0">{{ 'itemMaintenance.drugs.empty' | translate }}</p>
+        <p class="loading-state" *ngIf="drugsLoading">{{ 'itemMaintenance.drugs.loading' | translate }}</p>
 
         <div class="list-row" *ngFor="let drug of drugs">
           <span class="col-name">
             {{ drug.description }}
-            <span class="inactive-badge" *ngIf="!drug.active">Inativo</span>
+            <span class="inactive-badge" *ngIf="!drug.active">{{ 'itemMaintenance.drugs.inactiveBadge' | translate }}</span>
           </span>
           <span class="col-unit">{{ drug.defaultUnit }}</span>
 
@@ -77,15 +77,15 @@
 
           <span class="col-actions">
             <ng-container *ngIf="editingDrugId !== drug.id">
-              <button class="icon-btn" (click)="startEditDrug(drug)" title="Alterar categoria">
+              <button class="icon-btn" (click)="startEditDrug(drug)" [title]="'itemMaintenance.drugs.editCategoryTitle' | translate">
                 <ion-icon name="create-outline"></ion-icon>
               </button>
             </ng-container>
             <ng-container *ngIf="editingDrugId === drug.id">
-              <button class="icon-btn confirm" [disabled]="savingDrugId === drug.id" (click)="saveDrugCategory(drug)" title="Salvar">
+              <button class="icon-btn confirm" [disabled]="savingDrugId === drug.id" (click)="saveDrugCategory(drug)" [title]="'itemMaintenance.drugs.saveTitle' | translate">
                 <ion-icon name="checkmark-outline"></ion-icon>
               </button>
-              <button class="icon-btn" [disabled]="savingDrugId === drug.id" (click)="cancelEditDrug()" title="Cancelar">
+              <button class="icon-btn" [disabled]="savingDrugId === drug.id" (click)="cancelEditDrug()" [title]="'itemMaintenance.drugs.cancelTitle' | translate">
                 <ion-icon name="close-outline"></ion-icon>
               </button>
             </ng-container>
@@ -95,11 +95,11 @@
 
       <div class="pagination-container" *ngIf="drugsTotalItems > drugsPageSize">
         <button (click)="drugsPrevPage()" [disabled]="drugsPage === 1" class="page-btn">
-          <ion-icon name="chevron-back-outline"></ion-icon> Anterior
+          <ion-icon name="chevron-back-outline"></ion-icon> {{ 'itemMaintenance.pagination.prev' | translate }}
         </button>
-        <span class="page-info">Página <strong>{{ drugsPage }}</strong> de {{ drugsTotalPages }}</span>
+        <span class="page-info">{{ 'itemMaintenance.pagination.page' | translate }} <strong>{{ drugsPage }}</strong> {{ 'itemMaintenance.pagination.of' | translate }} {{ drugsTotalPages }}</span>
         <button (click)="drugsNextPage()" [disabled]="drugsPage === drugsTotalPages" class="page-btn">
-          Próximo <ion-icon name="chevron-forward-outline"></ion-icon>
+          {{ 'itemMaintenance.pagination.next' | translate }} <ion-icon name="chevron-forward-outline"></ion-icon>
         </button>
       </div>
     </section>
@@ -112,7 +112,7 @@
           <input
             type="text"
             class="search-input"
-            placeholder="Buscar por nome do evento"
+            [placeholder]="'itemMaintenance.events.searchPlaceholder' | translate"
             [ngModel]="eventsTerm"
             (ngModelChange)="onEventsSearchChange($event)"
           />
@@ -120,48 +120,48 @@
 
         <button class="btn btn-primary" (click)="startCreateEvent()">
           <ion-icon name="add-outline"></ion-icon>
-          Novo evento
+          {{ 'itemMaintenance.events.newButton' | translate }}
         </button>
       </div>
 
       <div class="event-form" *ngIf="eventForm">
-        <h3>{{ eventForm.id ? 'Editar evento' : 'Novo evento' }}</h3>
+        <h3>{{ (eventForm.id ? 'itemMaintenance.events.formTitleEdit' : 'itemMaintenance.events.formTitleNew') | translate }}</h3>
 
-        <label class="field-label">Nome</label>
-        <input type="text" class="form-input" [(ngModel)]="eventForm.name" placeholder="Ex: Intubação orotraqueal" />
+        <label class="field-label">{{ 'itemMaintenance.events.fieldName' | translate }}</label>
+        <input type="text" class="form-input" [(ngModel)]="eventForm.name" [placeholder]="'itemMaintenance.events.namePlaceholder' | translate" />
 
-        <label class="field-label">Descrição</label>
-        <textarea class="form-input" rows="3" [(ngModel)]="eventForm.description" placeholder="Ex: Realizada intubação orotraqueal sem intercorrências."></textarea>
+        <label class="field-label">{{ 'itemMaintenance.events.fieldDescription' | translate }}</label>
+        <textarea class="form-input" rows="3" [(ngModel)]="eventForm.description" [placeholder]="'itemMaintenance.events.descriptionPlaceholder' | translate"></textarea>
 
         <label class="field-label toggle-label" *ngIf="eventForm.id">
           <input type="checkbox" [(ngModel)]="eventForm.active" />
-          Evento ativo
+          {{ 'itemMaintenance.events.activeLabel' | translate }}
         </label>
 
         <div class="form-actions">
-          <button class="btn btn-secondary" [disabled]="savingEvent" (click)="cancelEventForm()">Cancelar</button>
-          <button class="btn btn-primary" [disabled]="savingEvent" (click)="saveEvent()">Salvar</button>
+          <button class="btn btn-secondary" [disabled]="savingEvent" (click)="cancelEventForm()">{{ 'itemMaintenance.events.cancel' | translate }}</button>
+          <button class="btn btn-primary" [disabled]="savingEvent" (click)="saveEvent()">{{ 'itemMaintenance.events.save' | translate }}</button>
         </div>
       </div>
 
       <div class="list-card">
         <div class="list-header events-header">
-          <span class="col-name">Nome</span>
-          <span class="col-description">Descrição</span>
-          <span class="col-actions">Ações</span>
+          <span class="col-name">{{ 'itemMaintenance.events.columnName' | translate }}</span>
+          <span class="col-description">{{ 'itemMaintenance.events.columnDescription' | translate }}</span>
+          <span class="col-actions">{{ 'itemMaintenance.events.columnActions' | translate }}</span>
         </div>
 
-        <p class="empty-state" *ngIf="!eventsLoading && events.length === 0">Nenhum evento cadastrado.</p>
-        <p class="loading-state" *ngIf="eventsLoading">Carregando...</p>
+        <p class="empty-state" *ngIf="!eventsLoading && events.length === 0">{{ 'itemMaintenance.events.empty' | translate }}</p>
+        <p class="loading-state" *ngIf="eventsLoading">{{ 'itemMaintenance.events.loading' | translate }}</p>
 
         <div class="list-row events-row" *ngFor="let event of events">
           <span class="col-name">
             {{ event.name }}
-            <span class="inactive-badge" *ngIf="!event.active">Inativo</span>
+            <span class="inactive-badge" *ngIf="!event.active">{{ 'itemMaintenance.events.inactiveBadge' | translate }}</span>
           </span>
           <span class="col-description">{{ event.description }}</span>
           <span class="col-actions">
-            <button class="icon-btn" (click)="startEditEvent(event)" title="Editar evento">
+            <button class="icon-btn" (click)="startEditEvent(event)" [title]="'itemMaintenance.events.editTitle' | translate">
               <ion-icon name="create-outline"></ion-icon>
             </button>
           </span>
@@ -170,11 +170,11 @@
 
       <div class="pagination-container" *ngIf="eventsTotalItems > eventsPageSize">
         <button (click)="eventsPrevPage()" [disabled]="eventsPage === 1" class="page-btn">
-          <ion-icon name="chevron-back-outline"></ion-icon> Anterior
+          <ion-icon name="chevron-back-outline"></ion-icon> {{ 'itemMaintenance.pagination.prev' | translate }}
         </button>
-        <span class="page-info">Página <strong>{{ eventsPage }}</strong> de {{ eventsTotalPages }}</span>
+        <span class="page-info">{{ 'itemMaintenance.pagination.page' | translate }} <strong>{{ eventsPage }}</strong> {{ 'itemMaintenance.pagination.of' | translate }} {{ eventsTotalPages }}</span>
         <button (click)="eventsNextPage()" [disabled]="eventsPage === eventsTotalPages" class="page-btn">
-          Próximo <ion-icon name="chevron-forward-outline"></ion-icon>
+          {{ 'itemMaintenance.pagination.next' | translate }} <ion-icon name="chevron-forward-outline"></ion-icon>
         </button>
       </div>
     </section>

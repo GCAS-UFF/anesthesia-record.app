@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonIcon } from '@ionic/angular/standalone';
+import { TranslatePipe } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
 import { calendarOutline, refreshOutline } from 'ionicons/icons';
 import { AnesthetistOption, ReportFilters } from 'src/app/core/models/reports.model';
@@ -10,7 +11,7 @@ import { SURGERY_STATUS_LABELS, SurgeryStatusEnum } from 'src/app/core/models/ap
 @Component({
   selector: 'app-report-filters',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonIcon],
+  imports: [CommonModule, FormsModule, IonIcon, TranslatePipe],
   templateUrl: './report-filters.component.html',
   styleUrls: ['./report-filters.component.scss']
 })

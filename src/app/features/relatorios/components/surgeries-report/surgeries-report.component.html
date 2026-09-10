@@ -1,8 +1,8 @@
 <div class="report-card">
   <div class="report-card-header">
     <div>
-      <h3 class="report-title">Volume e Tempo de Cirurgias</h3>
-      <p class="report-subtitle">Duração calculada apenas para cirurgias com registro de início e fim na monitorização.</p>
+      <h3 class="report-title">{{ 'relatorios.surgeries.title' | translate }}</h3>
+      <p class="report-subtitle">{{ 'relatorios.surgeries.subtitle' | translate }}</p>
     </div>
     <app-report-pdf-actions reportKey="surgeries" [filters]="filters"></app-report-pdf-actions>
   </div>
@@ -12,32 +12,32 @@
       <div class="kpi-row">
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.totalSurgeries }}</span>
-          <span class="kpi-label">Total de cirurgias</span>
+          <span class="kpi-label">{{ 'relatorios.surgeries.kpiTotalSurgeries' | translate }}</span>
         </div>
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.averageDurationMinutes != null ? (r.averageDurationMinutes + ' min') : '—' }}</span>
-          <span class="kpi-label">Duração média</span>
+          <span class="kpi-label">{{ 'relatorios.surgeries.kpiAvgDuration' | translate }}</span>
         </div>
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.minDurationMinutes != null ? (r.minDurationMinutes + ' min') : '—' }}</span>
-          <span class="kpi-label">Duração mínima</span>
+          <span class="kpi-label">{{ 'relatorios.surgeries.kpiMinDuration' | translate }}</span>
         </div>
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.maxDurationMinutes != null ? (r.maxDurationMinutes + ' min') : '—' }}</span>
-          <span class="kpi-label">Duração máxima</span>
+          <span class="kpi-label">{{ 'relatorios.surgeries.kpiMaxDuration' | translate }}</span>
         </div>
       </div>
 
-      <p class="report-subtitle">{{ r.surgeriesWithDurationData }} de {{ r.totalSurgeries }} cirurgias com dados de duração</p>
+      <p class="report-subtitle">{{ 'relatorios.surgeries.durationDataInfo' | translate: { withData: r.surgeriesWithDurationData, total: r.totalSurgeries } }}</p>
 
       <div class="charts-grid">
         <div class="chart-block" *ngIf="dayLabels.length">
-          <h4>Cirurgias por dia</h4>
-          <app-line-chart [labels]="dayLabels" [data]="dayCounts" datasetLabel="Cirurgias"></app-line-chart>
+          <h4>{{ 'relatorios.surgeries.chartByDay' | translate }}</h4>
+          <app-line-chart [labels]="dayLabels" [data]="dayCounts" [datasetLabel]="'relatorios.surgeries.datasetSurgeries' | translate"></app-line-chart>
         </div>
         <div class="chart-block">
-          <h4>Cirurgias por tipo de procedimento</h4>
-          <app-bar-chart [labels]="procedureLabels" [data]="procedureCounts" datasetLabel="Cirurgias" [horizontal]="true"></app-bar-chart>
+          <h4>{{ 'relatorios.surgeries.chartByProcedureType' | translate }}</h4>
+          <app-bar-chart [labels]="procedureLabels" [data]="procedureCounts" [datasetLabel]="'relatorios.surgeries.datasetSurgeries' | translate" [horizontal]="true"></app-bar-chart>
         </div>
       </div>
 
@@ -45,9 +45,9 @@
         <table class="report-table">
           <thead>
             <tr>
-              <th>Turno</th>
-              <th class="num">Cirurgias</th>
-              <th class="num">Duração média (min)</th>
+              <th>{{ 'relatorios.surgeries.tableShift' | translate }}</th>
+              <th class="num">{{ 'relatorios.surgeries.tableSurgeries' | translate }}</th>
+              <th class="num">{{ 'relatorios.surgeries.tableAvgDuration' | translate }}</th>
             </tr>
           </thead>
           <tbody>

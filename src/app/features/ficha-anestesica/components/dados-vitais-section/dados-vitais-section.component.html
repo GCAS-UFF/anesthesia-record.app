@@ -1,28 +1,28 @@
-<app-form-section title="Dados Vitais e Antropométricos" icon="📊" subtitle="Antes da indução anestésica" [formGroup]="formGroup">
+<app-form-section [title]="'fichaAnestesica.dadosVitais.title' | translate" icon="📊" [subtitle]="'fichaAnestesica.dadosVitais.subtitle' | translate" [formGroup]="formGroup">
     <div class="vitals-grid">
-        <app-form-field label="PA" [required]="true">
+        <app-form-field [label]="'fichaAnestesica.dadosVitais.pa' | translate" [required]="true">
             <input type="text" formControlName="pa" placeholder="120/80">
         </app-form-field>
-        <app-form-field label="FR" [required]="true">
+        <app-form-field [label]="'fichaAnestesica.dadosVitais.fr' | translate" [required]="true">
             <input type="text" formControlName="fr" placeholder="irpm">
         </app-form-field>
-        <app-form-field label="T (°C)" [required]="true">
+        <app-form-field [label]="'fichaAnestesica.dadosVitais.temp' | translate" [required]="true">
             <input type="text" formControlName="temp" placeholder="36.5">
         </app-form-field>
-        <app-form-field label="SpO2" [required]="true">
+        <app-form-field [label]="'fichaAnestesica.dadosVitais.spo2' | translate" [required]="true">
             <input type="text" formControlName="spo2" placeholder="98%">
         </app-form-field>
-        <app-form-field label="Peso (kg)" [required]="true">
+        <app-form-field [label]="'fichaAnestesica.dadosVitais.peso' | translate" [required]="true">
             <input type="text" formControlName="peso">
         </app-form-field>
-        <app-form-field label="ASA" [required]="true">
-            <ion-select formControlName="asa" interface="popover" placeholder="Selecione">
+        <app-form-field [label]="'fichaAnestesica.dadosVitais.asa' | translate" [required]="true">
+            <ion-select formControlName="asa" interface="popover" [placeholder]="'fichaAnestesica.dadosVitais.selecionePlaceholder' | translate">
                 <ion-select-option *ngFor="let opt of asaOptions" [value]="opt.value">
                     {{ opt.label }}
                 </ion-select-option>
             </ion-select>
         </app-form-field>
-        <app-form-field label="Entrada na Sala" [required]="true">
+        <app-form-field [label]="'fichaAnestesica.dadosVitais.entradaSala' | translate" [required]="true">
             <input
                 type="text"
                 inputmode="numeric"

@@ -1,8 +1,8 @@
 <div class="report-card">
   <div class="report-card-header">
     <div>
-      <h3 class="report-title">Eventos Clínicos</h3>
-      <p class="report-subtitle">Eventos registrados durante a monitorização intraoperatória.</p>
+      <h3 class="report-title">{{ 'relatorios.clinicalEvents.title' | translate }}</h3>
+      <p class="report-subtitle">{{ 'relatorios.clinicalEvents.subtitle' | translate }}</p>
     </div>
     <app-report-pdf-actions reportKey="clinical-events" [filters]="filters"></app-report-pdf-actions>
   </div>
@@ -12,30 +12,30 @@
       <div class="kpi-row">
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.totalEvents }}</span>
-          <span class="kpi-label">Total de eventos</span>
+          <span class="kpi-label">{{ 'relatorios.clinicalEvents.kpiTotalEvents' | translate }}</span>
         </div>
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.distinctEventTypes }}</span>
-          <span class="kpi-label">Tipos diferentes</span>
+          <span class="kpi-label">{{ 'relatorios.clinicalEvents.kpiDistinctTypes' | translate }}</span>
         </div>
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.surgeriesWithEvents }}</span>
-          <span class="kpi-label">Cirurgias com evento</span>
+          <span class="kpi-label">{{ 'relatorios.clinicalEvents.kpiSurgeriesWithEvent' | translate }}</span>
         </div>
       </div>
 
       <div class="charts-grid">
         <div class="chart-block">
-          <h4>Eventos por tipo</h4>
-          <app-bar-chart [labels]="typeLabels" [data]="typeCounts" datasetLabel="Eventos"></app-bar-chart>
+          <h4>{{ 'relatorios.clinicalEvents.chartByType' | translate }}</h4>
+          <app-bar-chart [labels]="typeLabels" [data]="typeCounts" [datasetLabel]="'relatorios.clinicalEvents.datasetEvents' | translate"></app-bar-chart>
         </div>
         <div class="chart-block" *ngIf="anesthetistLabels.length">
-          <h4>Eventos por anestesista</h4>
+          <h4>{{ 'relatorios.clinicalEvents.chartByAnesthetist' | translate }}</h4>
           <app-donut-chart [labels]="anesthetistLabels" [data]="anesthetistCounts"></app-donut-chart>
         </div>
         <div class="chart-block" *ngIf="dayLabels.length">
-          <h4>Eventos ao longo do tempo</h4>
-          <app-line-chart [labels]="dayLabels" [data]="dayCounts" datasetLabel="Eventos"></app-line-chart>
+          <h4>{{ 'relatorios.clinicalEvents.chartOverTime' | translate }}</h4>
+          <app-line-chart [labels]="dayLabels" [data]="dayCounts" [datasetLabel]="'relatorios.clinicalEvents.datasetEvents' | translate"></app-line-chart>
         </div>
       </div>
 
@@ -43,9 +43,9 @@
         <table class="report-table">
           <thead>
             <tr>
-              <th>Tipo do evento</th>
-              <th class="num">Quantidade</th>
-              <th class="num">Percentual</th>
+              <th>{{ 'relatorios.clinicalEvents.tableEventType' | translate }}</th>
+              <th class="num">{{ 'relatorios.clinicalEvents.tableQuantity' | translate }}</th>
+              <th class="num">{{ 'relatorios.clinicalEvents.tablePercentage' | translate }}</th>
             </tr>
           </thead>
           <tbody>

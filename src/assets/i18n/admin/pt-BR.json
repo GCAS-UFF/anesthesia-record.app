@@ -1,0 +1,200 @@
+{
+  "itemMaintenance": {
+    "eyebrow": "Administração",
+    "pageTitle": "Manutenção de Itens",
+    "pageSubtitle": "Classifique os itens sincronizados do AGHU e mantenha o catálogo de eventos clínicos utilizados na Monitorização.",
+    "tabs": {
+      "drugs": "Manutenção de Itens",
+      "events": "Manutenção de Eventos"
+    },
+    "pagination": {
+      "prev": "Anterior",
+      "next": "Próximo",
+      "page": "Página",
+      "of": "de"
+    },
+    "drugs": {
+      "searchPlaceholder": "Buscar por nome do item",
+      "allCategories": "Todas as categorias",
+      "columnName": "Nome",
+      "columnUnit": "Unidade",
+      "columnCategory": "Categoria",
+      "columnActions": "Ações",
+      "empty": "Nenhum item encontrado.",
+      "loading": "Carregando...",
+      "inactiveBadge": "Inativo",
+      "editCategoryTitle": "Alterar categoria",
+      "saveTitle": "Salvar",
+      "cancelTitle": "Cancelar",
+      "otherCategory": "Outros",
+      "loadError": "Não foi possível carregar os itens.",
+      "saveCategoryError": "Não foi possível salvar a categoria.",
+      "saveCategorySuccess": "Categoria atualizada com sucesso."
+    },
+    "events": {
+      "searchPlaceholder": "Buscar por nome do evento",
+      "newButton": "Novo evento",
+      "formTitleNew": "Novo evento",
+      "formTitleEdit": "Editar evento",
+      "fieldName": "Nome",
+      "namePlaceholder": "Ex: Intubação orotraqueal",
+      "fieldDescription": "Descrição",
+      "descriptionPlaceholder": "Ex: Realizada intubação orotraqueal sem intercorrências.",
+      "activeLabel": "Evento ativo",
+      "cancel": "Cancelar",
+      "save": "Salvar",
+      "columnName": "Nome",
+      "columnDescription": "Descrição",
+      "columnActions": "Ações",
+      "empty": "Nenhum evento cadastrado.",
+      "loading": "Carregando...",
+      "inactiveBadge": "Inativo",
+      "editTitle": "Editar evento",
+      "loadError": "Não foi possível carregar os eventos.",
+      "nameDescriptionRequired": "Preencha nome e descrição.",
+      "saveError": "Não foi possível salvar o evento.",
+      "saveSuccess": "Evento salvo com sucesso."
+    }
+  },
+  "aghuIntegration": {
+    "eyebrow": "Integração de dados",
+    "pageTitle": "Integração com AGHU",
+    "pageSubtitle": "Traga os dados do sistema hospitalar (AGHU) para o app — medicamentos e funcionários usados durante o atendimento anestésico.",
+    "runAllButton": "Integrar tudo",
+    "cards": {
+      "medications": {
+        "title": "Medicamentos",
+        "description": "Sincroniza o catálogo de medicamentos do AGHU (princípio ativo, apresentação, dose padrão)."
+      },
+      "employees": {
+        "title": "Funcionários",
+        "description": "Sincroniza a base de profissionais (anestesistas, cirurgiões, enfermagem) vinda do AGHU."
+      },
+      "procedures": {
+        "title": "Procedimentos",
+        "description": "Sincroniza os procedimentos cirúrgicos cadastrados no AGHU para utilização no sistema."
+      }
+    },
+    "status": {
+      "idle": "Aguardando",
+      "running": "Integrando…",
+      "success": "Concluído",
+      "error": "Erro"
+    },
+    "meta": {
+      "lastSync": "Última sincronização",
+      "lastCount": "Registros importados"
+    },
+    "neverSynced": "Nunca sincronizado",
+    "actions": {
+      "integrate": "Integrar",
+      "wait": "Aguarde…",
+      "retrySuccess": "Sincronizar novamente",
+      "retryError": "Tentar novamente"
+    },
+    "toast": {
+      "syncSuccess": "{{item}} sincronizados com sucesso ({{count}} registros).",
+      "syncError": "Falha ao integrar com o AGHU. Tente novamente."
+    },
+    "loadingMasterData": "Baixando medicamentos, profissionais e procedimentos..."
+  },
+  "integracoesFichas": {
+    "eyebrow": "Sincronização local",
+    "pageTitle": "Acompanhamento de Integrações",
+    "pageSubtitle": "Dados registrados neste dispositivo que ainda não foram integrados ao servidor.",
+    "sendAllButton": "Enviar todos",
+    "loadingPending": "Carregando integrações pendentes...",
+    "summary": {
+      "pending": "Pendentes",
+      "error": "Com erro",
+      "sent": "Enviados",
+      "sentTitle": "Contabiliza os envios feitos manualmente a partir desta tela"
+    },
+    "filters": {
+      "status": {
+        "all": "Todos",
+        "pending": "Pendentes",
+        "error": "Com erro",
+        "integrated": "Integrados"
+      },
+      "searchPlaceholder": "Buscar por paciente ou prontuário"
+    },
+    "types": {
+      "all": "Todos",
+      "preAnesthesia": "Ficha Pré-Anestésica",
+      "anesthesia": "Ficha Anestésica",
+      "monitoring": "Monitorização"
+    },
+    "errorBanner": {
+      "singular": "integração apresentou erro e precisa de atenção.",
+      "plural": "integrações apresentaram erro e precisam de atenção."
+    },
+    "sentLog": {
+      "emptyTitle": "Nenhum envio registrado ainda",
+      "emptyText": "Os envios feitos manualmente por esta tela aparecerão aqui."
+    },
+    "emptyState": {
+      "title": "Tudo sincronizado",
+      "text": "Não existem registros aguardando integração neste dispositivo."
+    },
+    "card": {
+      "medicalRecord": "Prontuário",
+      "surgery": "Cirurgia",
+      "statusPending": "Aguardando envio",
+      "statusError": "Erro",
+      "lastAttempt": "Última tentativa",
+      "attempts": "Tentativas",
+      "viewData": "Ver dados / Dados que serão enviados",
+      "viewDetails": "Ver detalhes técnicos",
+      "remove": "Remover",
+      "signAndSend": "Assinar e enviar",
+      "send": "Enviar",
+      "retry": "Tentar novamente"
+    },
+    "patientUnknown": "Paciente não identificado",
+    "surgeryLabel": "Cirurgia nº {{id}}",
+    "toast": {
+      "sendSuccess": "Integração realizada com sucesso.",
+      "sendError": "Não foi possível realizar a integração.",
+      "sendAllResult": "Integração concluída: {{success}} enviado(s) com sucesso, {{failed}} com erro.",
+      "itemRemoved": "Registro removido."
+    },
+    "removeConfirm": {
+      "title": "Remover Registro",
+      "message": "Deseja realmente remover este registro ({{type}} - {{patient}}) da fila de integrações? Os dados serão apagados deste dispositivo e não poderão ser recuperados.",
+      "cancel": "Cancelar",
+      "confirm": "Remover"
+    },
+    "details": {
+      "title": "Detalhes da Integração",
+      "sectionTitle": "Diagnóstico técnico",
+      "patient": "Paciente",
+      "type": "Tipo",
+      "medicalRecord": "Prontuário",
+      "surgery": "Cirurgia",
+      "lastAttempt": "Última tentativa",
+      "attempts": "Tentativas",
+      "endpoint": "Endpoint",
+      "httpStatus": "Status HTTP",
+      "message": "Mensagem"
+    }
+  },
+  "serverConfig": {
+    "title": "Configuração do servidor",
+    "subtitleFirstAccess": "Para começar, informe o endereço da API SIGA deste hospital.",
+    "subtitleReconfigure": "Informe o novo endereço da API SIGA deste hospital.",
+    "fieldLabel": "Endereço do servidor",
+    "validationError": "Informe um endereço válido, iniciando com http:// ou https://.",
+    "connectionErrorLine1": "Não foi possível conectar ao servidor SIGA.",
+    "connectionErrorLine2": "Verifique o endereço informado, a porta e a conexão com a rede do hospital.",
+    "cancelButton": "Cancelar",
+    "testingButton": "Testando conexão...",
+    "retryButton": "Tentar novamente",
+    "testButton": "Testar conexão",
+    "successTitle": "Servidor conectado",
+    "successPrefix": "API SIGA disponível em",
+    "continueButton": "Continuar",
+    "footerLine1": "Sistema de Gerenciamento Anestésico - v1",
+    "footerLine2": "UFF - Universidade Federal Fluminense"
+  }
+}

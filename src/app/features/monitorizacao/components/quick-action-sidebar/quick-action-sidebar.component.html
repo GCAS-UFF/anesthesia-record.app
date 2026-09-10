@@ -1,13 +1,13 @@
 <aside class="sidebar">
   <section class="timers">
     <div class="timer-row">
-      <span class="lbl">ANESTESIA</span>
+      <span class="lbl">{{ 'monitorizacao.quickActions.anesthesiaLabel' | translate }}</span>
       <span class="val" [class.on]="isAnesthesiaStarted">{{
         anesthesiaTimer
       }}</span>
     </div>
     <div class="timer-row">
-      <span class="lbl">CIRURGIA</span>
+      <span class="lbl">{{ 'monitorizacao.quickActions.surgeryLabel' | translate }}</span>
       <span class="val" [class.on]="isSurgeryStarted">{{ surgeryTimer }}</span>
     </div>
 
@@ -27,8 +27,8 @@
         ></ion-icon>
         {{
           isAnesthesiaStarted
-            ? "Início Anestesia " + (startTimeAnesthesia | date: "HH:mm")
-            : "Iniciar Anestesia"
+            ? ('monitorizacao.quickActions.anesthesiaStartedLabel' | translate) + " " + (startTimeAnesthesia | date: "HH:mm")
+            : ('monitorizacao.quickActions.startAnesthesiaButton' | translate)
         }}
       </ion-button>
 
@@ -45,8 +45,8 @@
         ></ion-icon>
         {{
           isSurgeryStarted
-            ? "Início Cirurgia " + (startTimeSurgery | date: "HH:mm")
-            : "Iniciar Cirurgia"
+            ? ('monitorizacao.quickActions.surgeryStartedLabel' | translate) + " " + (startTimeSurgery | date: "HH:mm")
+            : ('monitorizacao.quickActions.startSurgeryButton' | translate)
         }}
       </ion-button>
     </div>
@@ -59,7 +59,7 @@
       [disabled]="!isAnesthesiaStarted || isAnesthesiaFinished"
     >
       <ion-icon name="pulse-outline"></ion-icon>
-      <span>Sinal Vital</span>
+      <span>{{ 'monitorizacao.quickActions.vitalSignButton' | translate }}</span>
     </button>
     <button
       class="qa qa-agent"
@@ -67,7 +67,7 @@
       [disabled]="!isAnesthesiaStarted || isAnesthesiaFinished"
     >
       <ion-icon name="medkit-outline"></ion-icon>
-      <span>Agente</span>
+      <span>{{ 'monitorizacao.quickActions.agentButton' | translate }}</span>
     </button>
     <button
       class="qa qa-event"
@@ -75,7 +75,7 @@
       [disabled]="!isAnesthesiaStarted || isAnesthesiaFinished"
     >
       <ion-icon name="warning-outline"></ion-icon>
-      <span>Evento</span>
+      <span>{{ 'monitorizacao.quickActions.eventButton' | translate }}</span>
     </button>
     <button
       class="qa qa-fluid"
@@ -83,19 +83,19 @@
       [disabled]="!isAnesthesiaStarted || isAnesthesiaFinished"
     >
       <ion-icon name="water-outline"></ion-icon>
-      <span>Balanço</span>
+      <span>{{ 'monitorizacao.quickActions.balanceButton' | translate }}</span>
     </button>
   </section>
 
   <section class="position-block">
     <div class="pos-head">
-      <span class="lbl">🛌 Posição</span>
+      <span class="lbl">🛌 {{ 'monitorizacao.quickActions.positionLabel' | translate }}</span>
       <button
         class="btn-change"
         (click)="togglePos()"
         [disabled]="!isSurgeryStarted || isAnesthesiaFinished"
       >
-        Mudar
+        {{ 'monitorizacao.quickActions.changeButton' | translate }}
       </button>
     </div>
     <div class="pos-current">{{ posicaoAtual || "—" }}</div>
@@ -112,7 +112,7 @@
     </div>
 
     <div class="pos-history" *ngIf="positionHistory?.length">
-      <div class="ph-title">Histórico</div>
+      <div class="ph-title">{{ 'monitorizacao.quickActions.historyTitle' | translate }}</div>
       <div
         class="ph-item"
         *ngFor="let h of positionHistory.slice(-3).reverse()"
@@ -130,16 +130,16 @@
       <ion-icon name="time-outline"></ion-icon>
       {{
         autoMonitoringIntervalMinutes
-          ? autoMonitoringIntervalMinutes + " min"
-          : "Freq. auto"
+          ? autoMonitoringIntervalMinutes + " " + ('monitorizacao.quickActions.minUnit' | translate)
+          : ('monitorizacao.quickActions.freqAutoLabel' | translate)
       }}
     </button>
   </section>
 
   <section class="recent" *ngIf="recentActivity?.length">
     <div class="rec-head">
-      <span>Atividade recente</span>
-      <button class="lnk" (click)="openHistoryFull.emit()">Ver tudo</button>
+      <span>{{ 'monitorizacao.quickActions.recentActivityLabel' | translate }}</span>
+      <button class="lnk" (click)="openHistoryFull.emit()">{{ 'monitorizacao.quickActions.viewAllLabel' | translate }}</button>
     </div>
     <div class="rec-item" *ngFor="let r of recentActivity.slice(0, 3)">
       <span class="rec-time">{{ r.time }}</span>

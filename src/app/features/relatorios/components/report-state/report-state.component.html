@@ -1,6 +1,6 @@
 <div class="state-box loading" *ngIf="loading">
   <ion-spinner name="crescent"></ion-spinner>
-  <p>Carregando relatório...</p>
+  <p>{{ 'relatorios.state.loading' | translate }}</p>
 </div>
 
 <div class="state-box error" *ngIf="!loading && error">
@@ -8,7 +8,7 @@
   <p>{{ error }}</p>
   <button class="retry-btn" (click)="retry.emit()">
     <ion-icon name="refresh-outline"></ion-icon>
-    Atualizar
+    {{ 'relatorios.state.retry' | translate }}
   </button>
 </div>
 

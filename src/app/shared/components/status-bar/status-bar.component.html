@@ -9,7 +9,7 @@
       [class.synced]="syncStatus === SyncStatus.Synced"
       [class.pending]="syncStatus === SyncStatus.Pending"
       [class.syncing]="syncStatus === SyncStatus.Syncing"
-      title="Sincronização das fichas"
+      [title]="'statusBar.syncTitle' | translate"
     >
       <span class="badge" *ngIf="pendingDrafts > 0">
         +{{ pendingDrafts }}
@@ -22,27 +22,27 @@
         "
       >
       </ion-icon>
-      <span>FICHAS</span>
+      <span>{{ 'statusBar.records' | translate }}</span>
     </div>
 
     <div
       class="status-item"
       [class.connected]="serverConnected"
       [class.disconnected]="!serverConnected"
-      title="Conexão com a rede"
+      [title]="'statusBar.networkTitle' | translate"
     >
       <ion-icon name="wifi-outline"></ion-icon>
-      <span>REDE</span>
+      <span>{{ 'statusBar.network' | translate }}</span>
     </div>
 
     <div
       class="status-item"
       [class.connected]="aghuConnected"
       [class.disconnected]="!aghuConnected"
-      title="Integração AGHU"
+      [title]="'statusBar.aghuTitle' | translate"
     >
       <ion-icon name="cloud-outline"></ion-icon>
-      <span>AGHU</span>
+      <span>{{ 'statusBar.aghu' | translate }}</span>
     </div>
   </div>
 </div>

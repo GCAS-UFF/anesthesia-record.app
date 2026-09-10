@@ -9,14 +9,15 @@ import { HeaderInstitucionalComponent } from '../../shared/components/header-ins
 import { IntegrationService } from 'src/app/core/services/integration.service';
 import { firstValueFrom } from 'rxjs';
 import { MasterDataService } from 'src/app/core/services/master-data.service';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 type IntegrationKey = 'medications' | 'employees' | 'procedures';
 type IntegrationStatus = 'idle' | 'running' | 'success' | 'error';
 
 interface IntegrationCardState {
   key: IntegrationKey;
-  title: string;
-  description: string;
+  titleKey: string;
+  descriptionKey: string;
   icon: string;
   status: IntegrationStatus;
   progress: number;
@@ -36,6 +37,7 @@ interface IntegrationCardState {
     IonIcon,
     StatusBarComponent,
     HeaderInstitucionalComponent,
+    TranslatePipe,
   ],
   providers: [DatePipe],
 })
@@ -43,24 +45,24 @@ export class AghuIntegrationPage implements OnDestroy, OnInit {
   cards: IntegrationCardState[] = [
     {
       key: 'medications',
-      title: 'Medicamentos',
-      description: 'Sincroniza o catálogo de medicamentos do AGHU (princípio ativo, apresentação, dose padrão).',
+      titleKey: 'aghuIntegration.cards.medications.title',
+      descriptionKey: 'aghuIntegration.cards.medications.description',
       icon: 'medkit-outline',
       status: 'idle',
       progress: 0,
     },
     {
       key: 'employees',
-      title: 'Funcionários',
-      description: 'Sincroniza a base de profissionais (anestesistas, cirurgiões, enfermagem) vinda do AGHU.',
+      titleKey: 'aghuIntegration.cards.employees.title',
+      descriptionKey: 'aghuIntegration.cards.employees.description',
       icon: 'people-outline',
       status: 'idle',
       progress: 0,
     },
     {
       key: 'procedures',
-      title: 'Procedimentos',
-      description: 'Sincroniza os procedimentos cirúrgicos cadastrados no AGHU para utilização no sistema.',
+      titleKey: 'aghuIntegration.cards.procedures.title',
+      descriptionKey: 'aghuIntegration.cards.procedures.description',
       icon: 'clipboard-outline',
       status: 'idle',
       progress: 0,
@@ -69,8 +71,14 @@ export class AghuIntegrationPage implements OnDestroy, OnInit {
 
   private timers = new Map<IntegrationKey, any>();
 
-  constructor(private toastController: ToastController, private integrationService: IntegrationService, private datePipe: DatePipe, private masterDataService: MasterDataService,
-    private loadingController: LoadingController) {
+  constructor(
+    private toastController: ToastController,
+    private integrationService: IntegrationService,
+    private datePipe: DatePipe,
+    private masterDataService: MasterDataService,
+    private loadingController: LoadingController,
+    private translate: TranslateService,
+  ) {
     addIcons({ serverOutline, cloudDownloadOutline, cloudOutline, cloudDoneOutline, timeOutline, checkmarkCircle, alertCircleOutline, medkitOutline, peopleOutline, refreshOutline, medicalOutline, clipboardOutline });
   }
 
@@ -88,8 +96,12 @@ export class AghuIntegrationPage implements OnDestroy, OnInit {
   }
 
   formatDate(iso?: string): string {
-    if (!iso) return 'Nunca sincronizado';
+    if (!iso) return this.translate.instant('aghuIntegration.neverSynced');
     return this.datePipe.transform(iso, "dd/MM/yyyy 'às' HH:mm") ?? '';
+  }
+
+  lowerTitle(card: IntegrationCardState): string {
+    return this.translate.instant(card.titleKey).toLowerCase();
   }
 
   async runIntegration(card: IntegrationCardState) {
@@ -130,12 +142,18 @@ export class AghuIntegrationPage implements OnDestroy, OnInit {
       card.lastCount = result?.data;
       await this.getLastIntegration();
 
-      await this.showToast(`${card.title} sincronizados com sucesso (${card.lastCount} registros).`, 'success',);
+      await this.showToast(
+        this.translate.instant('aghuIntegration.toast.syncSuccess', {
+          item: this.translate.instant(card.titleKey),
+          count: card.lastCount,
+        }),
+        'success',
+      );
     } catch (err: any) {
       card.status = 'error';
       card.progress = 0;
       card.errorMessage =
-        err?.message ?? 'Falha ao integrar com o AGHU. Tente novamente.';
+        err?.message ?? this.translate.instant('aghuIntegration.toast.syncError');
       await this.showToast(card.errorMessage!, 'danger');
     } finally {
       const t = this.timers.get(card.key);
@@ -156,7 +174,7 @@ export class AghuIntegrationPage implements OnDestroy, OnInit {
   private async updateMasterData() {
     const loading = await this.loadingController.create({
       spinner: 'crescent',
-      message: 'Baixando medicamentos, profissionais e procedimentos...',
+      message: this.translate.instant('aghuIntegration.loadingMasterData'),
       backdropDismiss: false
     });
 

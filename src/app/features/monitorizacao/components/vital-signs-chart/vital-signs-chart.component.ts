@@ -10,6 +10,7 @@ import { Chart, ChartConfiguration, Plugin, registerables } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 import { ptBR } from 'date-fns/locale';
 import zoomPlugin from 'chartjs-plugin-zoom';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 type MonitoringRecord = any;
 
@@ -64,10 +65,11 @@ const clinicalMarkersPlugin: Plugin<'line'> = {
       ctx.restore();
     };
 
-    draw(getXForTime(opts.anesthesiaStartTime), 'x', '#7c3aed', 'Anestesia');
-    draw(getXForTime(opts.surgeryStartTime), 'o', '#0ea5e9', 'Cirurgia');
-    draw(getXForTime(opts.surgeryEndTime), 'dot', '#0f172a', 'Fim');
-    draw(getXForTime(opts.anesthesiaEndTime), 'x', '#0f172a', 'Fim Anes');
+    const labels = opts.labels || {};
+    draw(getXForTime(opts.anesthesiaStartTime), 'x', '#7c3aed', labels.anesthesia ?? 'Anestesia');
+    draw(getXForTime(opts.surgeryStartTime), 'o', '#0ea5e9', labels.surgery ?? 'Cirurgia');
+    draw(getXForTime(opts.surgeryEndTime), 'dot', '#0f172a', labels.end ?? 'Fim');
+    draw(getXForTime(opts.anesthesiaEndTime), 'x', '#0f172a', labels.endAnesthesia ?? 'Fim Anes');
   }
 };
 
@@ -76,7 +78,7 @@ Chart.register(clinicalMarkersPlugin);
 @Component({
   selector: 'app-vital-signs-chart',
   standalone: true,
-  imports: [CommonModule, IonButton, IonIcon],
+  imports: [CommonModule, IonButton, IonIcon, TranslatePipe],
   templateUrl: './vital-signs-chart.component.html',
   styleUrls: ['./vital-signs-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -107,7 +109,7 @@ export class VitalSignsChartComponent implements AfterViewInit, OnChanges, OnDes
   private resizeObs?: ResizeObserver;
   currentSnapshot: any = null;
 
-  constructor() {
+  constructor(private translate: TranslateService) {
     addIcons({ pulseOutline, addOutline, listOutline, settingsOutline });
   }
 
@@ -320,7 +322,13 @@ export class VitalSignsChartComponent implements AfterViewInit, OnChanges, OnDes
       anesthesiaStartTime: this.anesthesiaStartTime,
       anesthesiaEndTime: this.anesthesiaEndTime,
       surgeryStartTime: this.surgeryStartTime,
-      surgeryEndTime: this.surgeryEndTime
+      surgeryEndTime: this.surgeryEndTime,
+      labels: {
+        anesthesia: this.translate.instant('monitorizacao.vitalSigns.markers.anesthesia'),
+        surgery: this.translate.instant('monitorizacao.vitalSigns.markers.surgery'),
+        end: this.translate.instant('monitorizacao.vitalSigns.markers.end'),
+        endAnesthesia: this.translate.instant('monitorizacao.vitalSigns.markers.endAnesthesia'),
+      },
     };
     this.chart.update('none');
 

@@ -1,0 +1,110 @@
+{
+  "patientList": {
+    "title": "Todos los Pacientes",
+    "filters": {
+      "toggle": "Filtros",
+      "statusAriaLabel": "Filtro de estado",
+      "searchPlaceholder": "Buscar por paciente o historia clínica"
+    },
+    "refresh": {
+      "label": "Actualizar lista"
+    },
+    "countSuffix": "procedimientos hoy",
+    "status": {
+      "all": "Todos",
+      "scheduled": "Programados",
+      "completed": "Realizados",
+      "cancelled": "Cancelados"
+    },
+    "date": {
+      "allDates": "Todas las fechas",
+      "today": "Hoy"
+    },
+    "emptyState": "No se encontraron procedimientos para los filtros seleccionados.",
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "pageLabel": "Página",
+      "of": "de"
+    },
+    "loadingMasterData": "Descargando medicamentos, profesionales y procedimientos...",
+    "procedureNotInformed": "Procedimiento no informado",
+    "common": {
+      "confirm": "Confirmar"
+    },
+    "assume": {
+      "title": "Asumir Paciente",
+      "confirmMessage": "¿Desea realmente asumir este paciente e iniciar la preparación anestésica?",
+      "loading": "Asumiendo paciente...",
+      "success": "¡Paciente asumido con éxito!",
+      "error": "Fallo de comunicación con la API. No fue posible asumir al paciente."
+    },
+    "abandon": {
+      "removeDoctorTitle": "Quitar Médico",
+      "leaveTitle": "Dejar Paciente",
+      "removeDoctorMessage": "¿Desea realmente quitar al médico responsable de este paciente?",
+      "leaveMessage": "¿Desea realmente dejar a este paciente?",
+      "removingDoctor": "Quitando médico...",
+      "leaving": "Dejando paciente...",
+      "removeDoctorSuccess": "¡Médico eliminado con éxito!",
+      "leaveSuccess": "¡Paciente liberado con éxito!",
+      "removeDoctorError": "Fallo de comunicación con la API. No fue posible quitar al médico.",
+      "leaveError": "Fallo de comunicación con la API. No fue posible liberar al paciente."
+    },
+    "reopen": {
+      "title": "Reabrir Ficha",
+      "confirmMessage": "¿Desea reabrir esta ficha finalizada? El médico responsable podrá editarla y guardarla nuevamente.",
+      "confirm": "Reabrir",
+      "loading": "Reabriendo ficha...",
+      "success": "¡Ficha reabierta con éxito!",
+      "error": "Fallo de comunicación con la API. No fue posible reabrir la ficha."
+    }
+  },
+  "myPatients": {
+    "title": "Mis Pacientes",
+    "filters": {
+      "toggle": "Filtros",
+      "statusAriaLabel": "Filtro de estado",
+      "searchPlaceholder": "Buscar por paciente o historia clínica"
+    },
+    "refresh": {
+      "label": "Actualizar lista"
+    },
+    "countSuffix": "paciente(s) suyo(s)",
+    "status": {
+      "all": "Todos",
+      "inProgress": "En Atención",
+      "completed": "Realizados"
+    },
+    "date": {
+      "allDates": "Todas las fechas",
+      "today": "Hoy"
+    },
+    "emptyState": "Aún no tiene pacientes para los filtros seleccionados.",
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "pageLabel": "Página",
+      "of": "de"
+    },
+    "loadError": "Error al cargar sus pacientes.",
+    "procedureNotInformed": "Procedimiento no informado",
+    "you": "Usted",
+    "monitorization": {
+      "continue": "Continuar Monitorización",
+      "start": "Iniciar Monitorización",
+      "access": "Acceder a Monitorización",
+      "default": "Monitorización"
+    },
+    "common": {
+      "confirm": "Confirmar"
+    },
+    "abandon": {
+      "title": "Dejar Paciente",
+      "confirmMessage": "¿Desea realmente dejar a este paciente?",
+      "loading": "Dejando paciente...",
+      "success": "¡Paciente liberado con éxito!",
+      "error": "Fallo de comunicación con la API. No fue posible liberar al paciente."
+    }
+  }
+}

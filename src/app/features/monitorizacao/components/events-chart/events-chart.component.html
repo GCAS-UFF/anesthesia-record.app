@@ -3,7 +3,7 @@
     <div class="ch-title">
       <span class="dot"></span>
       <ion-icon name="warning-outline"></ion-icon>
-      <span class="ch-name">EVENTOS</span>
+      <span class="ch-name">{{ 'monitorizacao.events.title' | translate }}</span>
       <span class="count" *ngIf="totalCount">{{ totalCount }}</span>
     </div>
 
@@ -12,7 +12,7 @@
         size="small"
         fill="clear"
         (click)="toggle($event)"
-        [attr.aria-label]="collapsed ? 'Expandir eventos' : 'Recolher eventos'"
+        [attr.aria-label]="(collapsed ? 'monitorizacao.events.expandAria' : 'monitorizacao.events.collapseAria') | translate"
       >
         <ion-icon [name]="collapsed ? 'chevron-down-outline' : 'chevron-up-outline'" slot="icon-only"></ion-icon>
       </ion-button>
@@ -32,6 +32,6 @@
       <span class="ev-desc">{{ desc(row.item) }}</span>
     </div>
 
-    <div class="events-empty" *ngIf="!sortedItems.length">Nenhum evento registrado</div>
+    <div class="events-empty" *ngIf="!sortedItems.length">{{ 'monitorizacao.events.empty' | translate }}</div>
   </div>
 </div>

@@ -1,6 +1,6 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>{{ data?.title || 'Ficha' }}</ion-title>
+    <ion-title>{{ data?.title || ('sharedComponents.recordViewerModal.titleFallback' | translate) }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="close()">
         <ion-icon name="close-outline" slot="icon-only"></ion-icon>
@@ -13,7 +13,7 @@
   <div class="sheet-body">
     <div class="empty-state" *ngIf="!data?.sections?.length">
       <ion-icon name="document-text-outline"></ion-icon>
-      <p>Nenhum dado disponível nesta ficha.</p>
+      <p>{{ 'sharedComponents.recordViewerModal.noDataAvailable' | translate }}</p>
     </div>
 
     <div class="section-block" *ngFor="let sec of data?.sections">

@@ -8,11 +8,11 @@
       <div class="header-text">
         <span class="eyebrow">
           <ion-icon name="cloud-outline" aria-hidden="true"></ion-icon>
-          Sincronização local
+          {{ 'integracoesFichas.eyebrow' | translate }}
         </span>
-        <h1 class="page-title">Acompanhamento de Integrações</h1>
+        <h1 class="page-title">{{ 'integracoesFichas.pageTitle' | translate }}</h1>
         <p class="page-subtitle">
-          Dados registrados neste dispositivo que ainda não foram integrados ao servidor.
+          {{ 'integracoesFichas.pageSubtitle' | translate }}
         </p>
       </div>
 
@@ -23,22 +23,22 @@
       >
         <ion-spinner *ngIf="isSendingAll" name="crescent"></ion-spinner>
         <ion-icon *ngIf="!isSendingAll" name="cloud-upload-outline" aria-hidden="true"></ion-icon>
-        Enviar todos
+        {{ 'integracoesFichas.sendAllButton' | translate }}
       </button>
     </section>
 
     <section class="summary-row">
       <div class="summary-card">
         <span class="summary-value">{{ pendingCount }}</span>
-        <span class="summary-label">Pendentes</span>
+        <span class="summary-label">{{ 'integracoesFichas.summary.pending' | translate }}</span>
       </div>
       <div class="summary-card" [class.has-error]="errorCount > 0">
         <span class="summary-value">{{ errorCount }}</span>
-        <span class="summary-label">Com erro</span>
+        <span class="summary-label">{{ 'integracoesFichas.summary.error' | translate }}</span>
       </div>
-      <div class="summary-card" title="Contabiliza os envios feitos manualmente a partir desta tela">
+      <div class="summary-card" [title]="'integracoesFichas.summary.sentTitle' | translate">
         <span class="summary-value">{{ sentCount }}</span>
-        <span class="summary-label">Enviados</span>
+        <span class="summary-label">{{ 'integracoesFichas.summary.sent' | translate }}</span>
       </div>
     </section>
 
@@ -49,7 +49,7 @@
           class="chip"
           [class.active]="statusFilter === f.value"
           (click)="statusFilter = f.value; applyFilters()"
-        >{{ f.label }}</button>
+        >{{ f.labelKey | translate }}</button>
       </div>
 
       <div class="chip-group">
@@ -58,14 +58,14 @@
           class="chip"
           [class.active]="typeFilter === f.value"
           (click)="typeFilter = f.value; applyFilters()"
-        >{{ f.label }}</button>
+        >{{ f.labelKey | translate }}</button>
       </div>
 
       <div class="search-box">
         <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
         <input
           type="text"
-          placeholder="Buscar por paciente ou prontuário"
+          [placeholder]="'integracoesFichas.filters.searchPlaceholder' | translate"
           [(ngModel)]="searchTerm"
           (ngModelChange)="applyFilters()"
         />
@@ -76,29 +76,29 @@
       <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
       <span>
         {{ errorCount }}
-        {{ errorCount === 1 ? 'integração apresentou erro e precisa de atenção.' : 'integrações apresentaram erro e precisam de atenção.' }}
+        {{ (errorCount === 1 ? 'integracoesFichas.errorBanner.singular' : 'integracoesFichas.errorBanner.plural') | translate }}
       </span>
     </section>
 
     <section class="sent-log" *ngIf="statusFilter === 'integrated'">
       <div class="empty-state" *ngIf="!sentLog.length">
         <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
-        <h2>Nenhum envio registrado ainda</h2>
-        <p>Os envios feitos manualmente por esta tela aparecerão aqui.</p>
+        <h2>{{ 'integracoesFichas.sentLog.emptyTitle' | translate }}</h2>
+        <p>{{ 'integracoesFichas.sentLog.emptyText' | translate }}</p>
       </div>
 
       <div class="sent-row" *ngFor="let s of sentLog">
         <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
         <span class="sent-type">{{ typeLabel(s.type) }}</span>
-        <span class="sent-patient">{{ s.patientName || 'Paciente não identificado' }}</span>
+        <span class="sent-patient">{{ s.patientName || ('integracoesFichas.patientUnknown' | translate) }}</span>
         <span class="sent-date">{{ formatDate(s.sentAt) }}</span>
       </div>
     </section>
 
     <section class="empty-state" *ngIf="statusFilter !== 'integrated' && !isLoading && filteredItems.length === 0">
       <ion-icon name="checkmark-done-circle-outline" aria-hidden="true"></ion-icon>
-      <h2>Tudo sincronizado</h2>
-      <p>Não existem registros aguardando integração neste dispositivo.</p>
+      <h2>{{ 'integracoesFichas.emptyState.title' | translate }}</h2>
+      <p>{{ 'integracoesFichas.emptyState.text' | translate }}</p>
     </section>
 
     <section class="cards-grid" *ngIf="statusFilter !== 'integrated' && filteredItems.length">
@@ -116,19 +116,19 @@
             <h2 class="card-title">{{ typeLabel(item.type) }}</h2>
             <p class="card-desc">{{ patientLabel(item) }}</p>
             <p class="card-sub" *ngIf="item.patient.medicalRecordNumber">
-              Prontuário: {{ item.patient.medicalRecordNumber }}
+              {{ 'integracoesFichas.card.medicalRecord' | translate }}: {{ item.patient.medicalRecordNumber }}
             </p>
             <p class="card-sub" *ngIf="item.surgeryId && item.patient.name">
-              Cirurgia: {{ item.surgeryId }}
+              {{ 'integracoesFichas.card.surgery' | translate }}: {{ item.surgeryId }}
             </p>
           </div>
           <span class="status-chip" [attr.data-status]="item.status">
             <ng-container [ngSwitch]="item.status">
               <ng-container *ngSwitchCase="'pending'">
-                <ion-icon name="time-outline"></ion-icon> Aguardando envio
+                <ion-icon name="time-outline"></ion-icon> {{ 'integracoesFichas.card.statusPending' | translate }}
               </ng-container>
               <ng-container *ngSwitchCase="'error'">
-                <ion-icon name="alert-circle-outline"></ion-icon> Erro
+                <ion-icon name="alert-circle-outline"></ion-icon> {{ 'integracoesFichas.card.statusError' | translate }}
               </ng-container>
             </ng-container>
           </span>
@@ -137,11 +137,11 @@
         <div class="card-body">
           <dl class="meta-grid">
             <div>
-              <dt>Última tentativa</dt>
+              <dt>{{ 'integracoesFichas.card.lastAttempt' | translate }}</dt>
               <dd>{{ formatDate(item.updatedAt || item.error?.lastAttemptAt) }}</dd>
             </div>
             <div *ngIf="item.error?.attempts">
-              <dt>Tentativas</dt>
+              <dt>{{ 'integracoesFichas.card.attempts' | translate }}</dt>
               <dd>{{ item.error?.attempts }}</dd>
             </div>
           </dl>
@@ -159,7 +159,7 @@
           <ion-accordion-group>
             <ion-accordion value="data">
               <ion-item slot="header" lines="none">
-                <ion-label>Ver dados / Dados que serão enviados</ion-label>
+                <ion-label>{{ 'integracoesFichas.card.viewData' | translate }}</ion-label>
               </ion-item>
               <div slot="content" class="json-viewer">
                 <pre>{{ jsonFor(item) }}</pre>
@@ -175,7 +175,7 @@
             (click)="viewDetails(item)"
           >
             <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
-            Ver detalhes técnicos
+            {{ 'integracoesFichas.card.viewDetails' | translate }}
           </button>
 
           <button
@@ -184,7 +184,7 @@
             (click)="removeItem(item)"
           >
             <ion-icon name="trash-outline" aria-hidden="true"></ion-icon>
-            Remover
+            {{ 'integracoesFichas.card.remove' | translate }}
           </button>
 
           <button
@@ -193,7 +193,7 @@
             (click)="openForm(item)"
           >
             <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
-            Assinar e enviar
+            {{ 'integracoesFichas.card.signAndSend' | translate }}
           </button>
 
           <button
@@ -208,7 +208,7 @@
               [name]="item.status === 'error' ? 'refresh-outline' : 'cloud-upload-outline'"
               aria-hidden="true"
             ></ion-icon>
-            <span>{{ item.status === 'error' ? 'Tentar novamente' : 'Enviar' }}</span>
+            <span>{{ (item.status === 'error' ? 'integracoesFichas.card.retry' : 'integracoesFichas.card.send') | translate }}</span>
           </button>
         </footer>
       </article>

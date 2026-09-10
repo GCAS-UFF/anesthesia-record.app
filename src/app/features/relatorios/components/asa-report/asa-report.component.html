@@ -1,8 +1,8 @@
 <div class="report-card">
   <div class="report-card-header">
     <div>
-      <h3 class="report-title">Classificação ASA</h3>
-      <p class="report-subtitle">Distribuição de risco anestésico das cirurgias avaliadas.</p>
+      <h3 class="report-title">{{ 'relatorios.asa.title' | translate }}</h3>
+      <p class="report-subtitle">{{ 'relatorios.asa.subtitle' | translate }}</p>
     </div>
     <app-report-pdf-actions reportKey="asa" [filters]="filters"></app-report-pdf-actions>
   </div>
@@ -12,22 +12,22 @@
       <div class="kpi-row">
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.totalEvaluated }}</span>
-          <span class="kpi-label">Total avaliado</span>
+          <span class="kpi-label">{{ 'relatorios.asa.kpiTotalEvaluated' | translate }}</span>
         </div>
       </div>
 
       <div class="charts-grid">
         <div class="chart-block">
-          <h4>Distribuição ASA</h4>
+          <h4>{{ 'relatorios.asa.chartDistribution' | translate }}</h4>
           <app-donut-chart [labels]="distributionLabels" [data]="distributionCounts"></app-donut-chart>
         </div>
         <div class="chart-block">
-          <h4>Por anestesista</h4>
-          <app-bar-chart [labels]="anesthetistLabels" [data]="anesthetistCounts" datasetLabel="Avaliações" [horizontal]="true"></app-bar-chart>
+          <h4>{{ 'relatorios.asa.chartByAnesthetist' | translate }}</h4>
+          <app-bar-chart [labels]="anesthetistLabels" [data]="anesthetistCounts" [datasetLabel]="'relatorios.asa.datasetEvaluations' | translate" [horizontal]="true"></app-bar-chart>
         </div>
         <div class="chart-block" *ngIf="weekLabels.length">
-          <h4>Evolução por semana</h4>
-          <app-line-chart [labels]="weekLabels" [data]="weekCounts" datasetLabel="Avaliações"></app-line-chart>
+          <h4>{{ 'relatorios.asa.chartByWeek' | translate }}</h4>
+          <app-line-chart [labels]="weekLabels" [data]="weekCounts" [datasetLabel]="'relatorios.asa.datasetEvaluations' | translate"></app-line-chart>
         </div>
       </div>
 
@@ -35,9 +35,9 @@
         <table class="report-table">
           <thead>
             <tr>
-              <th>Classificação</th>
-              <th class="num">Quantidade</th>
-              <th class="num">Percentual</th>
+              <th>{{ 'relatorios.asa.tableClassification' | translate }}</th>
+              <th class="num">{{ 'relatorios.asa.tableQuantity' | translate }}</th>
+              <th class="num">{{ 'relatorios.asa.tablePercentage' | translate }}</th>
             </tr>
           </thead>
           <tbody>

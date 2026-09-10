@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { ReportsService } from 'src/app/core/services/reports.service';
 import { IntegrationStatusReport } from 'src/app/core/models/reports.model';
@@ -9,7 +10,7 @@ import { ReportPdfActionsComponent } from '../report-pdf-actions/report-pdf-acti
 @Component({
   selector: 'app-integration-status-report',
   standalone: true,
-  imports: [CommonModule, ReportStateComponent, ReportPdfActionsComponent],
+  imports: [CommonModule, ReportStateComponent, ReportPdfActionsComponent, TranslatePipe],
   templateUrl: './integration-status-report.component.html',
   styleUrls: ['../report-card.scss']
 })
@@ -18,14 +19,17 @@ export class IntegrationStatusReportComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
-  constructor(private reportsService: ReportsService) { }
+  constructor(
+    private reportsService: ReportsService,
+    private translate: TranslateService,
+  ) { }
 
   ngOnInit(): void {
     this.load();
   }
 
   formatDate(value: string | null): string {
-    if (!value) return 'Nunca sincronizado';
+    if (!value) return this.translate.instant('relatorios.common.neverSynced');
     const date = new Date(value);
     return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR');
   }
@@ -36,14 +40,14 @@ export class IntegrationStatusReportComponent implements OnInit {
     try {
       const response = await firstValueFrom(this.reportsService.getIntegrationStatus());
       if (response?.valid === false) {
-        this.error = response.message || 'Não foi possível carregar os relatórios. Tente novamente.';
+        this.error = response.message || this.translate.instant('relatorios.common.loadError');
         this.report = null;
         return;
       }
       this.report = response?.data ?? null;
     } catch (error) {
       console.error('Erro ao carregar status da integração', error);
-      this.error = 'Não foi possível carregar os relatórios. Tente novamente.';
+      this.error = this.translate.instant('relatorios.common.loadError');
       this.report = null;
     } finally {
       this.loading = false;

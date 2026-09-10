@@ -12,11 +12,12 @@ import { catchError, interval, of, startWith, Subscription, switchMap } from 'rx
 import { HealthService } from 'src/app/core/services/health.service';
 import { SyncStatus } from 'src/app/core/enums/sync-statut.enum';
 import { AnesthesiaRecordService } from 'src/app/core/services/anesthesia-record.service';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-status-bar',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, TranslatePipe],
   templateUrl: './status-bar.component.html',
   styleUrls: ['./status-bar.component.scss']
 })

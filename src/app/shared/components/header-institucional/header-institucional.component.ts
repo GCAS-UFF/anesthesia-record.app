@@ -24,10 +24,11 @@ import {
 import { Subscription } from 'rxjs';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { HeaderActionButton } from './header-action-button.model';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 interface NavItem {
   icon: string;
-  label: string;
+  labelKey: string;
   route?: string;
   active?: boolean;
   admin?: boolean;
@@ -37,7 +38,7 @@ interface NavItem {
 @Component({
   selector: 'app-header-institucional',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, TranslatePipe],
   templateUrl: './header-institucional.component.html',
   styleUrls: ['./header-institucional.component.scss'],
 })
@@ -68,56 +69,57 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
   menuOpen = false;
   userMenuOpen = false;
 
-  navItems: NavItem[] = [    
+  navItems: NavItem[] = [
     {
       icon: 'people-outline',
-      label: 'Todos os Pacientes',
+      labelKey: 'header.nav.allPatients',
       route: '/pacientes',
       active: true
     },
     {
       icon: 'person-outline',
-      label: 'Meus Pacientes',
+      labelKey: 'header.nav.myPatients',
       route: '/meus-pacientes',
       hideForAdmin: true
     },
     // Admin
       {
       icon: 'cloud-outline',
-      label: 'Acompanhamento de Integrações',
+      labelKey: 'header.nav.integrationsTracking',
       route: '/integracoes/fichas'
     },
     {
       icon: 'layers-outline',
-      label: 'Manutenção de Itens (Admin)',
+      labelKey: 'header.nav.itemMaintenanceAdmin',
       route: '/admin/manutencao-itens',
       admin: true
     },
     {
       icon: 'download-outline',
-      label: 'Obter dados AGHU (Admin)',
+      labelKey: 'header.nav.fetchAghuDataAdmin',
       route: '/admin/integracoes',
       admin: true
-    },  
+    },
     {
       icon: 'analytics-outline',
-      label: 'Relatórios (Admin)',
+      labelKey: 'header.nav.reportsAdmin',
       route: '/admin/relatorios',
       admin: true
     },
     // {
     //   icon: 'file-tray-full-outline',
-    //   label: 'Histórico de Fichas (Admin)',
+    //   labelKey: 'header.nav.recordHistoryAdmin',
     //   route: '/admin/historico-fichas',
     //   admin: true
-    // }    
+    // }
   ];
 
   constructor(
     private router: Router,
     private location: Location,
     private authService: AuthService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private translate: TranslateService
   ) {
     addIcons({
       arrowBackOutline,
@@ -246,15 +248,15 @@ export class HeaderInstitucionalComponent implements OnInit, OnDestroy {
     }
 
     const alert = await this.alertController.create({
-      header: 'Sair',
-      message: 'Deseja realmente sair da aplicação?',
+      header: this.translate.instant('header.logoutConfirmTitle'),
+      message: this.translate.instant('header.logoutConfirmMessage'),
       buttons: [
         {
-          text: 'Cancelar',
+          text: this.translate.instant('common.cancel'),
           role: 'cancel'
         },
         {
-          text: 'Sair',
+          text: this.translate.instant('header.logout'),
           role: 'destructive',
           handler: () => {
             this.isLoggingOut = true;

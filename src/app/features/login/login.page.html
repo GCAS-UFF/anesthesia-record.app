@@ -9,7 +9,7 @@
             class="login-logo-img"
           />
         </div>
-        <h1 class="login-system-name">Sistema de Gerenciamento Anestésico</h1>
+        <h1 class="login-system-name">{{ 'login.systemName' | translate }}</h1>
       </div>
 
       <app-error-message [message]="error || ''"></app-error-message>
@@ -19,28 +19,28 @@
           class="status-item"
           [class.connected]="serverConnected"
           [class.disconnected]="!serverConnected"
-          title="Conexão com a rede"
+          [title]="'login.networkTitle' | translate"
         >
           <ion-icon name="wifi-outline"></ion-icon>
-          <span>Rede</span>
+          <span>{{ 'login.networkLabel' | translate }}</span>
         </div>
 
         <div
           class="status-item"
           [class.connected]="aghuConnected"
           [class.disconnected]="!aghuConnected"
-          title="Integração AGHU"
+          [title]="'login.aghuTitle' | translate"
         >
           <ion-icon name="cloud-outline"></ion-icon>
-          <span>AGHU</span>
+          <span>{{ 'login.aghuLabel' | translate }}</span>
         </div>
       </div>
 
       <form [formGroup]="form" (ngSubmit)="submit()" autocomplete="off">
         <app-custom-input
-          label="Usuário"
+          [label]="'login.usernameLabel' | translate"
           type="text"
-          placeholder="Digite seu usuário"
+          [placeholder]="'login.usernamePlaceholder' | translate"
           [required]="true"
           autocomplete="nope"
           (focused)="clearError()"
@@ -49,9 +49,9 @@
         </app-custom-input>
 
         <app-custom-input
-          label="Senha"
+          [label]="'login.passwordLabel' | translate"
           type="password"
-          placeholder="Digite sua senha"
+          [placeholder]="'login.passwordPlaceholder' | translate"
           [required]="true"
           autocomplete="new-password"
           (focused)="clearError()"
@@ -61,7 +61,7 @@
 
         <div class="form-options">
           <a href="#" class="forgot-link" (click)="esqueceuSenha($event)"
-            >Esqueceu a senha?</a
+            >{{ 'login.forgotPassword' | translate }}</a
           >
         </div>
 
@@ -70,14 +70,12 @@
           [disabled]="form.invalid"
           type="submit"
         >
-          <span>ENTRAR</span>
+          <span>{{ 'login.submit' | translate }}</span>
         </app-loading-button>
 
         <div class="login-notice">
           <ion-icon name="information-circle-outline"></ion-icon>
-          <span
-            >Utilize o mesmo usuário e senha do sistema AGHU para acessar.</span
-          >
+          <span>{{ 'login.notice' | translate }}</span>
         </div>
       </form>
     </div>
@@ -85,8 +83,8 @@
 
   <div class="footer">
     <div class="footer-text">
-      Sistema de Gerenciamento Anestésico - v1 <br />
-      UFF - Universidade Federal Fluminense
+      {{ 'login.footerLine1' | translate }} <br />
+      {{ 'login.footerLine2' | translate }}
     </div>
   </div>
 </div>

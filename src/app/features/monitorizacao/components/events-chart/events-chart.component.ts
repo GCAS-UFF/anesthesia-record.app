@@ -14,6 +14,7 @@ import {
   chevronDownOutline,
   chevronUpOutline,
 } from 'ionicons/icons';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 type AnyEvent = any;
 
@@ -29,7 +30,7 @@ interface EventLane {
 @Component({
   selector: 'app-events-chart',
   standalone: true,
-  imports: [CommonModule, IonButton, IonIcon],
+  imports: [CommonModule, IonButton, IonIcon, TranslatePipe],
   templateUrl: './events-chart.component.html',
   styleUrls: ['./events-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -58,7 +59,7 @@ export class EventsChartComponent {
     { key: 'position', label: 'PS', color: '#22c55e', icon: '↺' },
   ];
 
-  constructor() {
+  constructor(private translate: TranslateService) {
     addIcons({
       warningOutline,
       addOutline,
@@ -101,7 +102,7 @@ export class EventsChartComponent {
       item?.observation ||
       item?.position ||
       item?.type ||
-      'Evento'
+      this.translate.instant('monitorizacao.common.eventFallback')
     );
   }
 
@@ -129,7 +130,7 @@ export class EventsChartComponent {
           ...positionItem,
           category: 'position',
           type: positionItem?.type || 'position',
-          description: positionItem?.description || positionItem?.position || positionItem?.label || 'Mudança de posição',
+          description: positionItem?.description || positionItem?.position || positionItem?.label || this.translate.instant('monitorizacao.events.positionChangeFallback'),
         }));
 
       return [...positionsFromHistory, ...positionsFromEvents].sort((a, b) => this.itemTime(a) - this.itemTime(b));

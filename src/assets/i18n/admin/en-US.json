@@ -1,0 +1,200 @@
+{
+  "itemMaintenance": {
+    "eyebrow": "Administration",
+    "pageTitle": "Item Maintenance",
+    "pageSubtitle": "Classify items synced from AGHU and maintain the catalog of clinical events used in Monitoring.",
+    "tabs": {
+      "drugs": "Item Maintenance",
+      "events": "Event Maintenance"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next",
+      "page": "Page",
+      "of": "of"
+    },
+    "drugs": {
+      "searchPlaceholder": "Search by item name",
+      "allCategories": "All categories",
+      "columnName": "Name",
+      "columnUnit": "Unit",
+      "columnCategory": "Category",
+      "columnActions": "Actions",
+      "empty": "No items found.",
+      "loading": "Loading...",
+      "inactiveBadge": "Inactive",
+      "editCategoryTitle": "Change category",
+      "saveTitle": "Save",
+      "cancelTitle": "Cancel",
+      "otherCategory": "Other",
+      "loadError": "Unable to load items.",
+      "saveCategoryError": "Unable to save the category.",
+      "saveCategorySuccess": "Category updated successfully."
+    },
+    "events": {
+      "searchPlaceholder": "Search by event name",
+      "newButton": "New event",
+      "formTitleNew": "New event",
+      "formTitleEdit": "Edit event",
+      "fieldName": "Name",
+      "namePlaceholder": "E.g.: Orotracheal intubation",
+      "fieldDescription": "Description",
+      "descriptionPlaceholder": "E.g.: Orotracheal intubation performed without complications.",
+      "activeLabel": "Active event",
+      "cancel": "Cancel",
+      "save": "Save",
+      "columnName": "Name",
+      "columnDescription": "Description",
+      "columnActions": "Actions",
+      "empty": "No events registered.",
+      "loading": "Loading...",
+      "inactiveBadge": "Inactive",
+      "editTitle": "Edit event",
+      "loadError": "Unable to load events.",
+      "nameDescriptionRequired": "Fill in name and description.",
+      "saveError": "Unable to save the event.",
+      "saveSuccess": "Event saved successfully."
+    }
+  },
+  "aghuIntegration": {
+    "eyebrow": "Data integration",
+    "pageTitle": "AGHU Integration",
+    "pageSubtitle": "Bring data from the hospital system (AGHU) into the app — medications and staff used during anesthesia care.",
+    "runAllButton": "Integrate all",
+    "cards": {
+      "medications": {
+        "title": "Medications",
+        "description": "Syncs the AGHU medication catalog (active ingredient, presentation, standard dose)."
+      },
+      "employees": {
+        "title": "Staff",
+        "description": "Syncs the staff directory (anesthesiologists, surgeons, nursing) from AGHU."
+      },
+      "procedures": {
+        "title": "Procedures",
+        "description": "Syncs the surgical procedures registered in AGHU for use in the system."
+      }
+    },
+    "status": {
+      "idle": "Waiting",
+      "running": "Integrating…",
+      "success": "Completed",
+      "error": "Error"
+    },
+    "meta": {
+      "lastSync": "Last synchronization",
+      "lastCount": "Records imported"
+    },
+    "neverSynced": "Never synchronized",
+    "actions": {
+      "integrate": "Integrate",
+      "wait": "Please wait…",
+      "retrySuccess": "Sync again",
+      "retryError": "Try again"
+    },
+    "toast": {
+      "syncSuccess": "{{item}} synced successfully ({{count}} records).",
+      "syncError": "Failed to integrate with AGHU. Please try again."
+    },
+    "loadingMasterData": "Downloading medications, staff and procedures..."
+  },
+  "integracoesFichas": {
+    "eyebrow": "Local synchronization",
+    "pageTitle": "Integration Tracking",
+    "pageSubtitle": "Data recorded on this device that has not yet been integrated with the server.",
+    "sendAllButton": "Send all",
+    "loadingPending": "Loading pending integrations...",
+    "summary": {
+      "pending": "Pending",
+      "error": "With errors",
+      "sent": "Sent",
+      "sentTitle": "Counts submissions sent manually from this screen"
+    },
+    "filters": {
+      "status": {
+        "all": "All",
+        "pending": "Pending",
+        "error": "With errors",
+        "integrated": "Integrated"
+      },
+      "searchPlaceholder": "Search by patient or medical record"
+    },
+    "types": {
+      "all": "All",
+      "preAnesthesia": "Pre-Anesthesia Record",
+      "anesthesia": "Anesthesia Record",
+      "monitoring": "Monitoring"
+    },
+    "errorBanner": {
+      "singular": "integration reported an error and needs attention.",
+      "plural": "integrations reported errors and need attention."
+    },
+    "sentLog": {
+      "emptyTitle": "No submissions recorded yet",
+      "emptyText": "Submissions sent manually from this screen will appear here."
+    },
+    "emptyState": {
+      "title": "All synchronized",
+      "text": "There are no records awaiting integration on this device."
+    },
+    "card": {
+      "medicalRecord": "Medical record",
+      "surgery": "Surgery",
+      "statusPending": "Awaiting submission",
+      "statusError": "Error",
+      "lastAttempt": "Last attempt",
+      "attempts": "Attempts",
+      "viewData": "View data / Data to be sent",
+      "viewDetails": "View technical details",
+      "remove": "Remove",
+      "signAndSend": "Sign and send",
+      "send": "Send",
+      "retry": "Try again"
+    },
+    "patientUnknown": "Unidentified patient",
+    "surgeryLabel": "Surgery No. {{id}}",
+    "toast": {
+      "sendSuccess": "Integration completed successfully.",
+      "sendError": "Unable to complete the integration.",
+      "sendAllResult": "Integration completed: {{success}} sent successfully, {{failed}} with errors.",
+      "itemRemoved": "Record removed."
+    },
+    "removeConfirm": {
+      "title": "Remove Record",
+      "message": "Do you really want to remove this record ({{type}} - {{patient}}) from the integration queue? The data will be deleted from this device and cannot be recovered.",
+      "cancel": "Cancel",
+      "confirm": "Remove"
+    },
+    "details": {
+      "title": "Integration Details",
+      "sectionTitle": "Technical diagnosis",
+      "patient": "Patient",
+      "type": "Type",
+      "medicalRecord": "Medical record",
+      "surgery": "Surgery",
+      "lastAttempt": "Last attempt",
+      "attempts": "Attempts",
+      "endpoint": "Endpoint",
+      "httpStatus": "HTTP Status",
+      "message": "Message"
+    }
+  },
+  "serverConfig": {
+    "title": "Server Configuration",
+    "subtitleFirstAccess": "To get started, enter this hospital's SIGA API address.",
+    "subtitleReconfigure": "Enter the new SIGA API address for this hospital.",
+    "fieldLabel": "Server address",
+    "validationError": "Enter a valid address, starting with http:// or https://.",
+    "connectionErrorLine1": "Unable to connect to the SIGA server.",
+    "connectionErrorLine2": "Check the address entered, the port, and the hospital network connection.",
+    "cancelButton": "Cancel",
+    "testingButton": "Testing connection...",
+    "retryButton": "Try again",
+    "testButton": "Test connection",
+    "successTitle": "Server connected",
+    "successPrefix": "SIGA API available at",
+    "continueButton": "Continue",
+    "footerLine1": "Anesthesia Management System - v1",
+    "footerLine2": "UFF - Fluminense Federal University"
+  }
+}

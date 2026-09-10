@@ -14,6 +14,7 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { closeOutline, pulseOutline, saveOutline, timeOutline } from 'ionicons/icons';
+import { TranslatePipe } from '@ngx-translate/core';
 
 type CustomVitalField = {
   key: string;
@@ -35,6 +36,7 @@ type CustomVitalField = {
     IonIcon,
     IonTitle,
     IonToolbar,
+    TranslatePipe,
   ],
   templateUrl: './quick-vital-input.component.html',
   styleUrls: ['./quick-vital-input.component.scss'],
@@ -60,28 +62,28 @@ export class QuickVitalInputComponent implements OnInit {
 
   readonly vitalGroups = [
     {
-      title: 'Pressão arterial',
+      title: 'sharedComponents.quickVitalInput.groups.bloodPressure',
       fields: [
-        { key: 'pas', label: 'PAS', unit: 'mmHg', min: 40, max: 260 },
-        { key: 'pad', label: 'PAD', unit: 'mmHg', min: 20, max: 180 },
-        { key: 'pam', label: 'PAM', unit: 'mmHg', min: 20, max: 220 },
+        { key: 'pas', label: 'sharedComponents.quickVitalInput.fields.pas', unit: 'mmHg', min: 40, max: 260 },
+        { key: 'pad', label: 'sharedComponents.quickVitalInput.fields.pad', unit: 'mmHg', min: 20, max: 180 },
+        { key: 'pam', label: 'sharedComponents.quickVitalInput.fields.pam', unit: 'mmHg', min: 20, max: 220 },
       ],
     },
     {
-      title: 'Monitorização',
+      title: 'sharedComponents.quickVitalInput.groups.monitoring',
       fields: [
-        { key: 'fc', label: 'FC', unit: 'bpm', min: 20, max: 240 },
-        { key: 'spo2', label: 'SpO₂', unit: '%', min: 0, max: 100 },
-        { key: 'etco2', label: 'EtCO₂', unit: 'mmHg', min: 0, max: 100 },
+        { key: 'fc', label: 'sharedComponents.quickVitalInput.fields.fc', unit: 'bpm', min: 20, max: 240 },
+        { key: 'spo2', label: 'sharedComponents.quickVitalInput.fields.spo2', unit: '%', min: 0, max: 100 },
+        { key: 'etco2', label: 'sharedComponents.quickVitalInput.fields.etco2', unit: 'mmHg', min: 0, max: 100 },
       ],
     },
     {
-      title: 'Complementares',
+      title: 'sharedComponents.quickVitalInput.groups.complementary',
       fields: [
-        { key: 'bis', label: 'BIS', unit: '', min: 0, max: 100 },
-        { key: 'pvc', label: 'PVC', unit: 'cmH₂O', min: -10, max: 50 },
-        { key: 'pcap', label: 'PCAP', unit: 'mmHg', min: 0, max: 60 },
-        { key: 'temp', label: 'Temperatura', unit: '°C', min: 25, max: 45, step: '0.1' },
+        { key: 'bis', label: 'sharedComponents.quickVitalInput.fields.bis', unit: '', min: 0, max: 100 },
+        { key: 'pvc', label: 'sharedComponents.quickVitalInput.fields.pvc', unit: 'cmH₂O', min: -10, max: 50 },
+        { key: 'pcap', label: 'sharedComponents.quickVitalInput.fields.pcap', unit: 'mmHg', min: 0, max: 60 },
+        { key: 'temp', label: 'sharedComponents.quickVitalInput.fields.temp', unit: '°C', min: 25, max: 45, step: '0.1' },
       ],
     },
   ];

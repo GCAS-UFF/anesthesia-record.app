@@ -1,0 +1,181 @@
+{
+  "relatorios": {
+    "common": {
+      "loadError": "Unable to load the reports. Please try again.",
+      "neverSynced": "Never synced"
+    },
+    "page": {
+      "eyebrow": "Administration",
+      "title": "Reports",
+      "subtitle": "Consolidated indicators for the surgical center and anesthesia operations, based on data recorded in SIGA.",
+      "summary": {
+        "surgeriesInPeriod": "Surgeries in period",
+        "completed": "Completed",
+        "canceled": "Canceled",
+        "signedRecords": "Signed records",
+        "clinicalEvents": "Clinical events",
+        "medicationsAdministered": "Medications administered"
+      },
+      "tabs": {
+        "operational": "Operational",
+        "clinical": "Clinical",
+        "medications": "Medications",
+        "integrations": "Integrations"
+      }
+    },
+    "filters": {
+      "from": "From",
+      "to": "To",
+      "today": "Today",
+      "last7Days": "7 days",
+      "thisMonth": "This month",
+      "anesthetist": "Anesthesiologist",
+      "allAnesthetists": "All",
+      "status": "Status",
+      "allStatuses": "All",
+      "refresh": "Refresh"
+    },
+    "state": {
+      "loading": "Loading report...",
+      "retry": "Refresh",
+      "emptyDefault": "No data found for the selected filters."
+    },
+    "pdfActions": {
+      "generating": "Generating...",
+      "viewPrint": "View / Print",
+      "generateError": "Unable to generate the report. Please try again."
+    },
+    "charts": {
+      "quantityDataset": "Quantity"
+    },
+    "anesthetists": {
+      "title": "Anesthesiologist Productivity",
+      "subtitle": "Operational workload indicator — does not represent an individual performance evaluation.",
+      "kpiAnesthetistsInPeriod": "Anesthesiologists in period",
+      "chartSurgeriesByAnesthetist": "Surgeries by anesthesiologist",
+      "datasetSurgeries": "Surgeries",
+      "tableAnesthetist": "Anesthesiologist",
+      "tableSurgeries": "Surgeries",
+      "tableSignedRecords": "Signed records",
+      "tableAvgDuration": "Average duration (min)"
+    },
+    "antibioticProphylaxis": {
+      "title": "Antibiotic Prophylaxis",
+      "subtitle": "Considers all records in the period — the system does not record eligibility criteria or surgical incision time.",
+      "kpiTotalSurgeries": "Total surgeries",
+      "kpiWithProphylaxis": "With prophylaxis recorded",
+      "kpiWithoutRecord": "No record",
+      "kpiAdherence": "Adherence",
+      "chartTopMedications": "Most used medications",
+      "datasetAdministrations": "Administrations",
+      "tableMedication": "Medication",
+      "tableQuantity": "Quantity"
+    },
+    "asa": {
+      "title": "ASA Classification",
+      "subtitle": "Anesthetic risk distribution of evaluated surgeries.",
+      "kpiTotalEvaluated": "Total evaluated",
+      "chartDistribution": "ASA Distribution",
+      "chartByAnesthetist": "By anesthesiologist",
+      "datasetEvaluations": "Evaluations",
+      "chartByWeek": "Weekly trend",
+      "tableClassification": "Classification",
+      "tableQuantity": "Quantity",
+      "tablePercentage": "Percentage"
+    },
+    "cancellations": {
+      "title": "Cancellations",
+      "subtitle": "Surgeries canceled in the period.",
+      "kpiTotalSurgeries": "Total surgeries",
+      "kpiCanceled": "Canceled",
+      "chartByAnesthetist": "Cancellations by anesthesiologist",
+      "datasetCancellations": "Cancellations",
+      "chartByWeekday": "Cancellations by weekday",
+      "tableAnesthetist": "Anesthesiologist",
+      "tableCancellations": "Cancellations"
+    },
+    "clinicalEvents": {
+      "title": "Clinical Events",
+      "subtitle": "Events recorded during intraoperative monitoring.",
+      "kpiTotalEvents": "Total events",
+      "kpiDistinctTypes": "Distinct types",
+      "kpiSurgeriesWithEvent": "Surgeries with event",
+      "chartByType": "Events by type",
+      "datasetEvents": "Events",
+      "chartByAnesthetist": "Events by anesthesiologist",
+      "chartOverTime": "Events over time",
+      "tableEventType": "Event type",
+      "tableQuantity": "Quantity",
+      "tablePercentage": "Percentage"
+    },
+    "drugConsumption": {
+      "title": "Drug and Supply Consumption",
+      "subtitle": "Medications and supplies administered in the period.",
+      "allCategories": "All categories",
+      "kpiTotalAdministrations": "Total administrations",
+      "kpiDistinctDrugs": "Distinct drugs",
+      "kpiTopDrug": "Most used drug",
+      "kpiTopCategory": "Most used category",
+      "chartTopMedications": "Top medications used",
+      "datasetAdministrations": "Administrations",
+      "chartByCategory": "By category",
+      "tableMedication": "Medication",
+      "tableCategory": "Category",
+      "tableQuantity": "Quantity"
+    },
+    "fluidBalance": {
+      "title": "Fluid Balance",
+      "subtitle": "Volume gains and losses recorded during surgeries.",
+      "kpiVolumeGained": "Volume gained",
+      "kpiVolumeLost": "Volume lost",
+      "kpiBalance": "Balance",
+      "kpiBleeding": "Bleeding",
+      "kpiBloodProducts": "Blood products",
+      "chartByCategory": "By category",
+      "chartByProcedureType": "By procedure type",
+      "datasetVolume": "Volume (mL)",
+      "tableCategory": "Category",
+      "tableVolume": "Volume (mL)"
+    },
+    "integrationStatus": {
+      "title": "AGHU/SIGA Integration Health",
+      "subtitle": "Current synchronization status with AGHU. No history is stored — only the most recent sync time for each item.",
+      "checkNow": "Check now",
+      "database": "Database",
+      "medicines": "Medications",
+      "procedures": "Procedures",
+      "professionals": "Professionals",
+      "outdated": "Outdated",
+      "updated": "Updated"
+    },
+    "recovery": {
+      "title": "Recovery / Aldrete",
+      "subtitle": "There is no record of PACU admission/discharge time in the system. The time below is between the end of anesthesia and the Aldrete evaluation.",
+      "kpiPatientsEvaluated": "Patients evaluated",
+      "kpiAvgTimeToAldrete": "Average time to Aldrete evaluation",
+      "nEvaluations": "(n = {{count}})",
+      "chartScoreDistribution": "Aldrete score distribution",
+      "datasetPatients": "Patients",
+      "chartDestination": "Patient destination",
+      "chartDischargeCondition": "Discharge condition",
+      "tableScore": "Score",
+      "tableQuantity": "Quantity",
+      "scoreLabel": "Score {{score}}"
+    },
+    "surgeries": {
+      "title": "Surgical Volume and Duration",
+      "subtitle": "Duration calculated only for surgeries with start and end records in monitoring.",
+      "kpiTotalSurgeries": "Total surgeries",
+      "kpiAvgDuration": "Average duration",
+      "kpiMinDuration": "Minimum duration",
+      "kpiMaxDuration": "Maximum duration",
+      "durationDataInfo": "{{withData}} of {{total}} surgeries with duration data",
+      "chartByDay": "Surgeries by day",
+      "datasetSurgeries": "Surgeries",
+      "chartByProcedureType": "Surgeries by procedure type",
+      "tableShift": "Shift",
+      "tableSurgeries": "Surgeries",
+      "tableAvgDuration": "Average duration (min)"
+    }
+  }
+}

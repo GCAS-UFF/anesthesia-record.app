@@ -16,6 +16,7 @@ import {
   IonCheckbox,
   ToastController,
 } from '@ionic/angular/standalone';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { addIcons } from 'ionicons';
 import {
@@ -32,6 +33,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { ApiUrlService } from '../../core/services/api-url.service';
 import { HealthService } from '../../core/services/health.service';
+import { LanguageService } from '../../core/services/language.service';
 import { HeaderActionButton } from '../../shared/components/header-institucional/header-action-button.model';
 import {
   InstitutionSettingsCommand,
@@ -42,7 +44,7 @@ import {
 
 interface SettingsSection {
   id: string;
-  title: string;
+  titleKey: string;
   icon: string;
   admin: boolean;
 }
@@ -70,6 +72,7 @@ type ConnectionState = 'idle' | 'running' | 'ok' | 'fail';
     IonCheckbox,
     HeaderInstitucionalComponent,
     StatusBarComponent,
+    TranslatePipe,
   ],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss'],
@@ -111,11 +114,11 @@ export class SettingComponent implements OnInit {
   readonly intervalos = [1, 3, 5, 10, 15];
 
   readonly sections: SettingsSection[] = [
-    { id: 'geral', title: 'Preferências gerais', icon: 'language-outline', admin: false },
-    { id: 'afericao', title: 'Aferição automática', icon: 'timer-outline', admin: false },
-    { id: 'integracoes', title: 'Integrações e APIs', icon: 'server-outline', admin: true },
-    { id: 'admin-conta', title: 'Conta ADMIN', icon: 'person-circle-outline', admin: true },
-    { id: 'hospital', title: 'Dados do hospital', icon: 'business-outline', admin: true },
+    { id: 'geral', titleKey: 'settings.sections.general', icon: 'language-outline', admin: false },
+    { id: 'afericao', titleKey: 'settings.sections.measurement', icon: 'timer-outline', admin: false },
+    { id: 'integracoes', titleKey: 'settings.sections.integrations', icon: 'server-outline', admin: true },
+    { id: 'admin-conta', titleKey: 'settings.sections.adminAccount', icon: 'person-circle-outline', admin: true },
+    { id: 'hospital', titleKey: 'settings.sections.hospital', icon: 'business-outline', admin: true },
   ];
 
   constructor(
@@ -125,6 +128,8 @@ export class SettingComponent implements OnInit {
     private settingsService: SettingsService,
     private apiUrlService: ApiUrlService,
     private healthService: HealthService,
+    private languageService: LanguageService,
+    private translate: TranslateService,
     private cdr: ChangeDetectorRef,
   ) {
     addIcons({
@@ -197,8 +202,8 @@ export class SettingComponent implements OnInit {
         id: 'salvar-config',
         icon: 'save-outline',
         color: 'primary',
-        ariaLabel: 'Salvar configurações',
-        label: 'Salvar',
+        ariaLabel: this.translate.instant('common.save'),
+        label: this.translate.instant('common.save'),
         disabled: this.saving || this.loading,
         action: () => this.abrirAssinatura(),
       },
@@ -212,6 +217,7 @@ export class SettingComponent implements OnInit {
 
   setIdioma(v: string): void {
     this.form.get('idioma')!.setValue(v);
+    this.translate.use(v);
   }
 
   setIntervalo(control: string, v: number): void {
@@ -260,7 +266,7 @@ export class SettingComponent implements OnInit {
         this.apiUrlService.setUrl(raw);
         this.sigaUrl = this.apiUrlService.getRawUrl() ?? raw;
         this.testing.siga = 'ok';
-        await this.toastMsg('Conexão com a API SIGA validada e salva neste dispositivo.', 'success');
+        await this.toastMsg(this.translate.instant('settings.sigaConnectSuccess'), 'success');
       } else {
         const result = await firstValueFrom(this.settingsService.testAghuConnection({ aghuBaseUrl: raw }));
 
@@ -275,12 +281,12 @@ export class SettingComponent implements OnInit {
         this.institution = dto.institution;
         this.aghuUrl = dto.institution?.aghuApiUrl ?? raw;
         this.testing.aghu = 'ok';
-        await this.toastMsg('Conexão com o AGHU validada e salva.', 'success');
+        await this.toastMsg(this.translate.instant('settings.aghu.connectSuccess'), 'success');
       }
     } catch {
       this.testing[alvo] = 'fail';
       if (alvo === 'aghu') {
-        await this.toastMsg('Não foi possível conectar ao AGHU. A configuração anterior foi mantida.', 'danger');
+        await this.toastMsg(this.translate.instant('settings.aghu.connectFail'), 'danger');
       }
     }
   }
@@ -354,9 +360,9 @@ export class SettingComponent implements OnInit {
       );
 
       this.passwordForm.reset();
-      await this.toastMsg('Senha atualizada com sucesso.', 'success');
+      await this.toastMsg(this.translate.instant('settings.adminAccount.changeSuccess'), 'success');
     } catch (err: any) {
-      const message = err?.error?.message || 'Não foi possível alterar a senha. Verifique a senha atual.';
+      const message = err?.error?.message || this.translate.instant('settings.adminAccount.changeError');
       await this.toastMsg(message, 'danger');
     } finally {
       this.changingPassword = false;
@@ -374,7 +380,7 @@ export class SettingComponent implements OnInit {
       },
       error: async () => {
         this.loading = false;
-        await this.toastMsg('Não foi possível carregar as configurações.', 'danger');
+        await this.toastMsg(this.translate.instant('settings.loadError'), 'danger');
       },
     });
   }
@@ -465,10 +471,11 @@ export class SettingComponent implements OnInit {
       }
 
       this.applyDto(dto);
+      await this.languageService.setLanguage(dto.language);
       this.savedAt = new Date();
-      await this.toastMsg('Configurações salvas com sucesso.', 'success');
+      await this.toastMsg(this.translate.instant('settings.saveSuccess'), 'success');
     } catch (err: any) {
-      const message = err?.error?.message || 'Não foi possível salvar. Tente novamente.';
+      const message = err?.error?.message || this.translate.instant('settings.saveError');
       await this.toastMsg(message, 'danger');
     } finally {
       this.saving = false;

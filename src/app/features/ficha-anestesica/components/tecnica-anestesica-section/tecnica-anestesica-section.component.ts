@@ -1,7 +1,9 @@
-import { Component, Input, OnInit, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { IonCheckbox } from '@ionic/angular/standalone';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
 import { FormSectionComponent } from '../../../../shared/components/form-section/form-section.component';
 import { RadioGroupComponent } from '../../../../shared/components/radio-group/radio-group.component';
 import { CheckboxGroupComponent } from '../../../../shared/components/checkbox-group/checkbox-group.component';
@@ -15,58 +17,88 @@ import { CheckboxGroupComponent } from '../../../../shared/components/checkbox-g
     IonCheckbox,
     FormSectionComponent,
     RadioGroupComponent,
-    CheckboxGroupComponent
+    CheckboxGroupComponent,
+    TranslatePipe
   ],
   templateUrl: './tecnica-anestesica-section.component.html',
   styleUrls: ['./tecnica-anestesica-section.component.scss'],
   changeDetection: ChangeDetectionStrategy.Default
 })
-export class TecnicaAnestesicaSectionComponent implements OnInit, AfterViewInit {
+export class TecnicaAnestesicaSectionComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() formGroup!: FormGroup;
 
-  yesNoOptions = [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'nao' }];
+  yesNoOptions: { label: string; value: string }[] = [];
+  assistidaOptions: { label: string; value: string }[] = [];
+  controladaOptions: { label: string; value: string }[] = [];
+  nivelPuncaoOptions: { label: string; value: string }[] = [];
+  posicaoPuncaoOptions: { label: string; value: string }[] = [];
+  nervosEstimuladosOptions: { label: string; value: string }[] = [];
+  suplementacaoO2Options: { label: string; value: string }[] = [];
 
-  assistidaOptions = [
-    { label: 'Espontânea', value: 'Espontanea' },
-    { label: 'Manual', value: 'Manual' }
-  ];
+  private langChangeSub?: Subscription;
 
-  controladaOptions = [
-    { label: 'Volume', value: 'Volume' },
-    { label: 'Pressão', value: 'Pressao' }
-  ];
+  constructor(private cdr: ChangeDetectorRef, private translate: TranslateService) {
+    this.applyTranslations();
+    this.langChangeSub = this.translate.onLangChange.subscribe(() => this.applyTranslations());
+  }
 
-  nivelPuncaoOptions = [
-    { label: 'L1-L2', value: 'L1-L2' },
-    { label: 'L2-L3', value: 'L2-L3' },
-    { label: 'L3-L4', value: 'L3-L4' },
-    { label: 'L4-L5', value: 'L4-L5' },
-    { label: 'Hiato Sacro', value: 'Hiato Sacro' }
-  ];
+  private applyTranslations(): void {
+    this.yesNoOptions = [
+      { label: this.translate.instant('fichaAnestesica.tecnica.yesNo.sim'), value: 'sim' },
+      { label: this.translate.instant('fichaAnestesica.tecnica.yesNo.nao'), value: 'nao' }
+    ];
 
-  nervosEstimuladosOptions = [
-    { label: 'Femoral', value: 'Femoral' },
-    { label: 'Ciático', value: 'Ciatico' },
-    { label: 'Iliohipogástrico', value: 'Iliohipogastrico' },
-    { label: 'Ilioinguinal', value: 'Ilioinguinal' },
-    { label: 'Retrobulbar', value: 'Retrobulbar' },
-    { label: 'Peribulbar', value: 'Peribulbar' }
-  ];
+    this.assistidaOptions = [
+      { label: this.translate.instant('fichaAnestesica.tecnica.respiracaoAssistidaOptions.espontanea'), value: 'Espontanea' },
+      { label: this.translate.instant('fichaAnestesica.tecnica.respiracaoAssistidaOptions.manual'), value: 'Manual' }
+    ];
 
-  suplementacaoO2Options = [
-    { label: 'Catéter Nasal', value: 'Cateter Nasal' },
-    { label: 'Máscara Facial', value: 'Mascara Facial' },
-    { label: 'Guedel', value: 'Guedel' },
-    { label: 'Nasofaringe', value: 'Nasofaringe' }
-  ];
+    this.controladaOptions = [
+      { label: this.translate.instant('fichaAnestesica.tecnica.respiracaoControladaOptions.volume'), value: 'Volume' },
+      { label: this.translate.instant('fichaAnestesica.tecnica.respiracaoControladaOptions.pressao'), value: 'Pressao' }
+    ];
 
-  constructor(private cdr: ChangeDetectorRef) { }
+    this.nivelPuncaoOptions = [
+      { label: this.translate.instant('fichaAnestesica.tecnica.nivelPuncaoOptions.l1l2'), value: 'L1-L2' },
+      { label: this.translate.instant('fichaAnestesica.tecnica.nivelPuncaoOptions.l2l3'), value: 'L2-L3' },
+      { label: this.translate.instant('fichaAnestesica.tecnica.nivelPuncaoOptions.l3l4'), value: 'L3-L4' },
+      { label: this.translate.instant('fichaAnestesica.tecnica.nivelPuncaoOptions.l4l5'), value: 'L4-L5' },
+      { label: this.translate.instant('fichaAnestesica.tecnica.nivelPuncaoOptions.hiatoSacro'), value: 'Hiato Sacro' }
+    ];
+
+    this.posicaoPuncaoOptions = [
+      { label: this.translate.instant('fichaAnestesica.tecnica.posicaoPuncaoOptions.sentada'), value: 'Sentada' },
+      { label: this.translate.instant('fichaAnestesica.tecnica.posicaoPuncaoOptions.decubitoLateral'), value: 'Decubito' }
+    ];
+
+    this.nervosEstimuladosOptions = [
+      { label: this.translate.instant('fichaAnestesica.tecnica.nervosEstimuladosOptions.femoral'), value: 'Femoral' },
+      { label: this.translate.instant('fichaAnestesica.tecnica.nervosEstimuladosOptions.ciatico'), value: 'Ciatico' },
+      { label: this.translate.instant('fichaAnestesica.tecnica.nervosEstimuladosOptions.iliohipogastrico'), value: 'Iliohipogastrico' },
+      { label: this.translate.instant('fichaAnestesica.tecnica.nervosEstimuladosOptions.ilioinguinal'), value: 'Ilioinguinal' },
+      { label: this.translate.instant('fichaAnestesica.tecnica.nervosEstimuladosOptions.retrobulbar'), value: 'Retrobulbar' },
+      { label: this.translate.instant('fichaAnestesica.tecnica.nervosEstimuladosOptions.peribulbar'), value: 'Peribulbar' }
+    ];
+
+    this.suplementacaoO2Options = [
+      { label: this.translate.instant('fichaAnestesica.tecnica.suplementacaoO2Options.cateterNasal'), value: 'Cateter Nasal' },
+      { label: this.translate.instant('fichaAnestesica.tecnica.suplementacaoO2Options.mascaraFacial'), value: 'Mascara Facial' },
+      { label: this.translate.instant('fichaAnestesica.tecnica.suplementacaoO2Options.guedel'), value: 'Guedel' },
+      { label: this.translate.instant('fichaAnestesica.tecnica.suplementacaoO2Options.nasofaringe'), value: 'Nasofaringe' }
+    ];
+
+    this.cdr.markForCheck();
+  }
 
   ngOnInit() {
     this.clearNumberWhenUnchecked('vaGuedel', 'guedelNo');
     this.clearNumberWhenUnchecked('vaMascLaringea', 'mascLaringeaNo');
     this.clearNumberWhenUnchecked('vaMascFacial', 'mascFacialNo');
     this.clearNumberWhenUnchecked('vaTubo', 'tuboNo');
+  }
+
+  ngOnDestroy() {
+    this.langChangeSub?.unsubscribe();
   }
 
   ngAfterViewInit() {

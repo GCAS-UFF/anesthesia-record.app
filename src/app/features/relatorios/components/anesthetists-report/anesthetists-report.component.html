@@ -1,8 +1,8 @@
 <div class="report-card">
   <div class="report-card-header">
     <div>
-      <h3 class="report-title">Produtividade por Anestesista</h3>
-      <p class="report-subtitle">Indicador operacional de volume de trabalho — não representa avaliação de desempenho individual.</p>
+      <h3 class="report-title">{{ 'relatorios.anesthetists.title' | translate }}</h3>
+      <p class="report-subtitle">{{ 'relatorios.anesthetists.subtitle' | translate }}</p>
     </div>
     <app-report-pdf-actions reportKey="anesthetists" [filters]="filters"></app-report-pdf-actions>
   </div>
@@ -12,14 +12,14 @@
       <div class="kpi-row">
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.anesthetists.length }}</span>
-          <span class="kpi-label">Anestesistas no período</span>
+          <span class="kpi-label">{{ 'relatorios.anesthetists.kpiAnesthetistsInPeriod' | translate }}</span>
         </div>
       </div>
 
       <div class="charts-grid">
         <div class="chart-block">
-          <h4>Cirurgias por anestesista</h4>
-          <app-bar-chart [labels]="anesthetistLabels" [data]="anesthetistCounts" datasetLabel="Cirurgias" [horizontal]="true"></app-bar-chart>
+          <h4>{{ 'relatorios.anesthetists.chartSurgeriesByAnesthetist' | translate }}</h4>
+          <app-bar-chart [labels]="anesthetistLabels" [data]="anesthetistCounts" [datasetLabel]="'relatorios.anesthetists.datasetSurgeries' | translate" [horizontal]="true"></app-bar-chart>
         </div>
       </div>
 
@@ -27,10 +27,10 @@
         <table class="report-table">
           <thead>
             <tr>
-              <th>Anestesista</th>
-              <th class="num">Cirurgias</th>
-              <th class="num">Fichas assinadas</th>
-              <th class="num">Duração média (min)</th>
+              <th>{{ 'relatorios.anesthetists.tableAnesthetist' | translate }}</th>
+              <th class="num">{{ 'relatorios.anesthetists.tableSurgeries' | translate }}</th>
+              <th class="num">{{ 'relatorios.anesthetists.tableSignedRecords' | translate }}</th>
+              <th class="num">{{ 'relatorios.anesthetists.tableAvgDuration' | translate }}</th>
             </tr>
           </thead>
           <tbody>

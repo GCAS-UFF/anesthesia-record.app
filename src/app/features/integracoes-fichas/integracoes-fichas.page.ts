@@ -43,6 +43,7 @@ import {
   RecordViewerModalComponent,
   RecordData,
 } from 'src/app/shared/components/record-viewer-modal/record-viewer-modal.component';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 type StatusFilter = 'all' | IntegrationStatus;
 type TypeFilter = 'all' | IntegrationType;
@@ -63,6 +64,7 @@ type TypeFilter = 'all' | IntegrationType;
     IonLabel,
     StatusBarComponent,
     HeaderInstitucionalComponent,
+    TranslatePipe,
   ],
   providers: [DatePipe],
 })
@@ -80,18 +82,18 @@ export class IntegracoesFichasPage implements OnInit, OnDestroy {
   typeFilter: TypeFilter = 'all';
   searchTerm = '';
 
-  readonly statusFilters: { value: StatusFilter; label: string }[] = [
-    { value: 'all', label: 'Todos' },
-    { value: 'pending', label: 'Pendentes' },
-    { value: 'error', label: 'Com erro' },
-    { value: 'integrated', label: 'Integrados' },
+  readonly statusFilters: { value: StatusFilter; labelKey: string }[] = [
+    { value: 'all', labelKey: 'integracoesFichas.filters.status.all' },
+    { value: 'pending', labelKey: 'integracoesFichas.filters.status.pending' },
+    { value: 'error', labelKey: 'integracoesFichas.filters.status.error' },
+    { value: 'integrated', labelKey: 'integracoesFichas.filters.status.integrated' },
   ];
 
-  readonly typeFilters: { value: TypeFilter; label: string }[] = [
-    { value: 'all', label: 'Todos' },
-    { value: 'preAnesthesia', label: 'Ficha Pré-Anestésica' },
-    { value: 'anesthesia', label: 'Ficha Anestésica' },
-    { value: 'monitoring', label: 'Monitorização' },
+  readonly typeFilters: { value: TypeFilter; labelKey: string }[] = [
+    { value: 'all', labelKey: 'integracoesFichas.types.all' },
+    { value: 'preAnesthesia', labelKey: 'integracoesFichas.types.preAnesthesia' },
+    { value: 'anesthesia', labelKey: 'integracoesFichas.types.anesthesia' },
+    { value: 'monitoring', labelKey: 'integracoesFichas.types.monitoring' },
   ];
 
   private sub = new Subscription();
@@ -107,6 +109,7 @@ export class IntegracoesFichasPage implements OnInit, OnDestroy {
     private router: Router,
     private datePipe: DatePipe,
     private ngZone: NgZone,
+    private translate: TranslateService,
   ) {
     addIcons({
       cloudOutline,
@@ -147,7 +150,7 @@ export class IntegracoesFichasPage implements OnInit, OnDestroy {
   private async refreshWithLoading(): Promise<void> {
     const loading = await this.loadingController.create({
       spinner: 'crescent',
-      message: 'Carregando integrações pendentes...',
+      message: this.translate.instant('integracoesFichas.loadingPending'),
       backdropDismiss: false,
     });
     await loading.present();
@@ -200,11 +203,11 @@ export class IntegracoesFichasPage implements OnInit, OnDestroy {
   typeLabel(type: IntegrationType): string {
     switch (type) {
       case 'preAnesthesia':
-        return 'Ficha Pré-Anestésica';
+        return this.translate.instant('integracoesFichas.types.preAnesthesia');
       case 'anesthesia':
-        return 'Ficha Anestésica';
+        return this.translate.instant('integracoesFichas.types.anesthesia');
       case 'monitoring':
-        return 'Monitorização';
+        return this.translate.instant('integracoesFichas.types.monitoring');
     }
   }
 
@@ -220,7 +223,12 @@ export class IntegracoesFichasPage implements OnInit, OnDestroy {
   }
 
   patientLabel(item: PendingIntegration): string {
-    return item.patient.name || (item.surgeryId ? `Cirurgia nº ${item.surgeryId}` : 'Paciente não identificado');
+    return (
+      item.patient.name ||
+      (item.surgeryId
+        ? this.translate.instant('integracoesFichas.surgeryLabel', { id: item.surgeryId })
+        : this.translate.instant('integracoesFichas.patientUnknown'))
+    );
   }
 
   formatDate(iso?: string): string {
@@ -240,7 +248,9 @@ export class IntegracoesFichasPage implements OnInit, OnDestroy {
     this.sendingId = null;
 
     await this.toast(
-      result.ok ? 'Integração realizada com sucesso.' : 'Não foi possível realizar a integração.',
+      result.ok
+        ? this.translate.instant('integracoesFichas.toast.sendSuccess')
+        : this.translate.instant('integracoesFichas.toast.sendError'),
       result.ok ? 'success' : 'danger',
     );
 
@@ -258,7 +268,10 @@ export class IntegracoesFichasPage implements OnInit, OnDestroy {
     this.isSendingAll = false;
 
     await this.toast(
-      `Integração concluída: ${result.success} enviado(s) com sucesso, ${result.failed} com erro.`,
+      this.translate.instant('integracoesFichas.toast.sendAllResult', {
+        success: result.success,
+        failed: result.failed,
+      }),
       result.failed ? 'warning' : 'success',
       3600,
     );
@@ -268,16 +281,19 @@ export class IntegracoesFichasPage implements OnInit, OnDestroy {
 
   async removeItem(item: PendingIntegration): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Remover Registro',
-      message: `Deseja realmente remover este registro (${this.typeLabel(item.type)} - ${this.patientLabel(item)}) da fila de integrações? Os dados serão apagados deste dispositivo e não poderão ser recuperados.`,
+      header: this.translate.instant('integracoesFichas.removeConfirm.title'),
+      message: this.translate.instant('integracoesFichas.removeConfirm.message', {
+        type: this.typeLabel(item.type),
+        patient: this.patientLabel(item),
+      }),
       buttons: [
-        { text: 'Cancelar', role: 'cancel', cssClass: 'secondary' },
+        { text: this.translate.instant('integracoesFichas.removeConfirm.cancel'), role: 'cancel', cssClass: 'secondary' },
         {
-          text: 'Remover',
+          text: this.translate.instant('integracoesFichas.removeConfirm.confirm'),
           role: 'destructive',
           handler: async () => {
             this.pendingIntegrationsService.removeItem(item);
-            await this.toast('Registro removido.', 'warning');
+            await this.toast(this.translate.instant('integracoesFichas.toast.itemRemoved'), 'warning');
             await this.reload();
           },
         },
@@ -298,21 +314,21 @@ export class IntegracoesFichasPage implements OnInit, OnDestroy {
 
   async viewDetails(item: PendingIntegration): Promise<void> {
     const fields: { label: string; value: string | number | null }[] = [
-      { label: 'Paciente', value: this.patientLabel(item) },
-      { label: 'Tipo', value: this.typeLabel(item.type) },
+      { label: this.translate.instant('integracoesFichas.details.patient'), value: this.patientLabel(item) },
+      { label: this.translate.instant('integracoesFichas.details.type'), value: this.typeLabel(item.type) },
     ];
 
-    if (item.patient.medicalRecordNumber) fields.push({ label: 'Prontuário', value: item.patient.medicalRecordNumber });
-    if (item.surgeryId) fields.push({ label: 'Cirurgia', value: item.surgeryId });
-    if (item.error?.lastAttemptAt) fields.push({ label: 'Última tentativa', value: this.formatDate(item.error.lastAttemptAt) });
-    if (item.error?.attempts) fields.push({ label: 'Tentativas', value: item.error.attempts });
-    if (item.error?.endpoint) fields.push({ label: 'Endpoint', value: item.error.endpoint });
-    if (item.error?.httpStatus) fields.push({ label: 'Status HTTP', value: item.error.httpStatus });
-    if (item.error?.message) fields.push({ label: 'Mensagem', value: item.error.message });
+    if (item.patient.medicalRecordNumber) fields.push({ label: this.translate.instant('integracoesFichas.details.medicalRecord'), value: item.patient.medicalRecordNumber });
+    if (item.surgeryId) fields.push({ label: this.translate.instant('integracoesFichas.details.surgery'), value: item.surgeryId });
+    if (item.error?.lastAttemptAt) fields.push({ label: this.translate.instant('integracoesFichas.details.lastAttempt'), value: this.formatDate(item.error.lastAttemptAt) });
+    if (item.error?.attempts) fields.push({ label: this.translate.instant('integracoesFichas.details.attempts'), value: item.error.attempts });
+    if (item.error?.endpoint) fields.push({ label: this.translate.instant('integracoesFichas.details.endpoint'), value: item.error.endpoint });
+    if (item.error?.httpStatus) fields.push({ label: this.translate.instant('integracoesFichas.details.httpStatus'), value: item.error.httpStatus });
+    if (item.error?.message) fields.push({ label: this.translate.instant('integracoesFichas.details.message'), value: item.error.message });
 
     const data: RecordData = {
-      title: 'Detalhes da Integração',
-      sections: [{ title: 'Diagnóstico técnico', fields }],
+      title: this.translate.instant('integracoesFichas.details.title'),
+      sections: [{ title: this.translate.instant('integracoesFichas.details.sectionTitle'), fields }],
     };
 
     const modal = await this.modalController.create({

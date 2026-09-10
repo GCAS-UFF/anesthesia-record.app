@@ -3,7 +3,7 @@
   <app-header-institucional
     [showBackButton]="true"
     [showPreAnestesicaButton]="true"
-    [preAnestesicaButtonLabel]="'Pre Anest.'"
+    [preAnestesicaButtonLabel]="'fichaAnestesica.header.preAnestesicaButton' | translate"
     [actionButtons]="headerActionButtons"
     (openPreAnestesica)="openPreAnestesica()"
   >
@@ -13,22 +13,22 @@
     <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
       <ion-refresher-content
         pullingIcon="chevron-down-outline"
-        pullingText="Puxe para recarregar"
+        [pullingText]="'fichaAnestesica.page.pullingText' | translate"
         refreshingSpinner="circles"
-        refreshingText="Recarregando..."
+        [refreshingText]="'fichaAnestesica.page.refreshingText' | translate"
       >
       </ion-refresher-content>
     </ion-refresher>
 
     <div class="navigation-header">
       <div class="title-block">
-        <span class="eyebrow">Registro perioperatório</span>
-        <h1 class="page-title">Ficha Anestésica</h1>
+        <span class="eyebrow">{{ 'fichaAnestesica.page.eyebrow' | translate }}</span>
+        <h1 class="page-title">{{ 'fichaAnestesica.page.title' | translate }}</h1>
       </div>
       <div class="header-actions">
         <span class="autosave-tag" *ngIf="!isLoading">
           <ion-icon name="checkmark-circle"></ion-icon>
-          Rascunho salvo
+          {{ 'fichaAnestesica.page.autosaveTag' | translate }}
         </span>
       </div>
     </div>
@@ -70,7 +70,7 @@
     >
       <div class="form-grid-2col">
         <app-form-section
-          title="Segurança do Paciente"
+          [title]="'fichaAnestesica.seguranca.title' | translate"
           icon="🛡️"
           formGroupName="seguranca"
           [class.shake-error]="
@@ -79,26 +79,26 @@
         >
           <div class="stack-md">
             <app-radio-group
-              label="Paciente identificado e avaliado antes da indução?"
+              [label]="'fichaAnestesica.seguranca.identificadoAvaliado' | translate"
               [options]="yesNoOptions"
               formControlName="identificadoAvaliado"
               [required]="true"
             ></app-radio-group>
             <app-radio-group
-              label="Termo de consentimento anestésico assinado?"
+              [label]="'fichaAnestesica.seguranca.consentimentoAssinado' | translate"
               [options]="yesNoOptions"
               formControlName="consentimentoAssinado"
               [required]="true"
             ></app-radio-group>
             <app-radio-group
-              label="Equipamento de anestesia e acessórios checados?"
+              [label]="'fichaAnestesica.seguranca.equipamentosChecados' | translate"
               [options]="yesNoOptions"
               formControlName="equipamentosChecados"
               [required]="true"
             ></app-radio-group>
             <div class="field-block">
               <label class="field-label"
-                >Atenção (Observações de Segurança)</label
+                >{{ 'fichaAnestesica.seguranca.atencaoLabel' | translate }}</label
               >
               <textarea
                 formControlName="atencao"
@@ -110,7 +110,7 @@
         </app-form-section>
 
         <app-form-section
-          title="Pré-Indução"
+          [title]="'fichaAnestesica.preInducao.title' | translate"
           icon="💉"
           formGroupName="preInducao"
           [class.shake-error]="
@@ -118,7 +118,7 @@
           "
         >
           <app-radio-group
-            label="Medicação pré-anestésica?"
+            [label]="'fichaAnestesica.preInducao.recebeuMedPrevia' | translate"
             [options]="yesNoOptions"
             formControlName="recebeuMedPrevia"
             [required]="true"
@@ -130,7 +130,7 @@
           >
             <div class="grid-hora-farmaco">
               <div class="field-block">
-                <label class="field-label">Hora</label>
+                <label class="field-label">{{ 'fichaAnestesica.preInducao.horaLabel' | translate }}</label>
                 <input
                   type="text"
                   inputmode="numeric"
@@ -143,7 +143,7 @@
                 />
               </div>
               <div class="field-block">
-                <label class="field-label">Fármaco</label>
+                <label class="field-label">{{ 'fichaAnestesica.preInducao.farmacoLabel' | translate }}</label>
                 <div class="ddl" [class.open]="isDdlOpen('preFarmaco')">
                   <button
                     type="button"
@@ -161,7 +161,7 @@
                         getSelectedLabel(
                           medicationsLista,
                           form.get("preInducao.farmacoId")?.value
-                        ) || "Selecionar fármaco..."
+                        ) || ('fichaAnestesica.preInducao.selecionarFarmaco' | translate)
                       }}
                     </span>
                     <ion-icon name="chevron-down-outline"></ion-icon>
@@ -182,7 +182,7 @@
                     <input
                       class="ddl-search"
                       type="text"
-                      placeholder="Buscar fármaco..."
+                      [placeholder]="'fichaAnestesica.preInducao.buscarFarmaco' | translate"
                       [ngModel]="ddlFilter['preFarmaco']"
                       (ngModelChange)="setDdlFilter('preFarmaco', $event)"
                       [ngModelOptions]="{ standalone: true }"
@@ -206,7 +206,7 @@
                         "
                         class="ddl-empty"
                       >
-                        Nenhum fármaco encontrado
+                        {{ 'fichaAnestesica.preInducao.nenhumFarmacoEncontrado' | translate }}
                       </li>
                     </ul>
                   </div>
@@ -214,7 +214,7 @@
               </div>
             </div>
             <app-radio-group
-              label="Via"
+              [label]="'fichaAnestesica.preInducao.viaLabel' | translate"
               [options]="viaPreOptions"
               formControlName="via"
             ></app-radio-group>
@@ -222,7 +222,7 @@
               class="field-block"
               *ngIf="form.get('preInducao.via')?.value === 'Outras'"
             >
-              <label class="field-label">Especifique via</label>
+              <label class="field-label">{{ 'fichaAnestesica.preInducao.especifiqueVia' | translate }}</label>
               <input
                 type="text"
                 formControlName="outrasVia"
@@ -234,12 +234,12 @@
       </div>
 
       <app-form-section
-        title="Antibiótico Profilático"
+        [title]="'fichaAnestesica.antibiotico.title' | translate"
         icon="💊"
         formGroupName="antibiotico"
       >
         <app-radio-group
-          label="Fez uso de Antibiótico Profilático?"
+          [label]="'fichaAnestesica.antibiotico.temAntibiotico' | translate"
           [options]="yesNoOptions"
           formControlName="temAntibiotico"
           [required]="true"
@@ -263,7 +263,7 @@
                 </div>
                 <div class="atb-actions">
                   <div class="atb-repique-inline">
-                    <span class="inline-label">Repique?</span>
+                    <span class="inline-label">{{ 'fichaAnestesica.antibiotico.repiqueLabel' | translate }}</span>
                     <div class="inline-radios">
                       <button
                         type="button"
@@ -271,7 +271,7 @@
                         [class.active]="atb.temRepique === 'sim'"
                         (click)="toggleRepique(i, 'sim')"
                       >
-                        SIM
+                        {{ 'fichaAnestesica.antibiotico.sim' | translate }}
                       </button>
                       <button
                         type="button"
@@ -279,7 +279,7 @@
                         [class.active]="atb.temRepique === 'nao'"
                         (click)="toggleRepique(i, 'nao')"
                       >
-                        NÃO
+                        {{ 'fichaAnestesica.antibiotico.nao' | translate }}
                       </button>
                     </div>
                   </div>
@@ -289,7 +289,7 @@
                     color="success"
                     size="small"
                     (click)="adicionarRepique(i)"
-                    title="Adicionar Repique"
+                    [title]="'fichaAnestesica.antibiotico.addRepiqueTitle' | translate"
                   >
                     <ion-icon name="add-outline" slot="icon-only"></ion-icon>
                   </ion-button>
@@ -310,7 +310,7 @@
                 >
                   <div class="repique-info">
                     <ion-icon name="return-down-forward-outline"></ion-icon>
-                    <span>Repique: {{ rep.dose }} • {{ rep.hora }}</span>
+                    <span>{{ 'fichaAnestesica.antibiotico.repiquePrefix' | translate }} {{ rep.dose }} • {{ rep.hora }}</span>
                   </div>
                   <ion-button
                     fill="clear"
@@ -331,14 +331,14 @@
           <div *ngIf="!addingAtb" class="atb-empty">
             <button type="button" class="btn-add-atb" (click)="startAddAtb()">
               <ion-icon name="add-outline"></ion-icon>
-              Adicionar Antibiótico
+              {{ 'fichaAnestesica.antibiotico.addAntibioticoButton' | translate }}
             </button>
           </div>
 
           <div *ngIf="addingAtb" class="atb-add-form">
             <div class="atb-add-grid">
               <div class="field-block">
-                <label class="field-label">Antibiótico *</label>
+                <label class="field-label">{{ 'fichaAnestesica.antibiotico.antibioticoLabel' | translate }}</label>
                 <div class="ddl" [class.open]="isDdlOpen('atb-new')">
                   <button
                     type="button"
@@ -354,7 +354,7 @@
                         getSelectedLabel(
                           medicationsLista,
                           newAtb.medicationId
-                        ) || "Selecionar antibiótico..."
+                        ) || ('fichaAnestesica.antibiotico.selecionarAntibiotico' | translate)
                       }}
                     </span>
                     <ion-icon name="chevron-down-outline"></ion-icon>
@@ -375,7 +375,7 @@
                     <input
                       class="ddl-search"
                       type="text"
-                      placeholder="Buscar antibiótico..."
+                      [placeholder]="'fichaAnestesica.antibiotico.buscarAntibiotico' | translate"
                       [ngModel]="ddlFilter['atb-new']"
                       (ngModelChange)="setDdlFilter('atb-new', $event)"
                       [ngModelOptions]="{ standalone: true }"
@@ -398,34 +398,34 @@
                         "
                         class="ddl-empty"
                       >
-                        Nenhum antibiótico encontrado
+                        {{ 'fichaAnestesica.antibiotico.nenhumAntibioticoEncontrado' | translate }}
                       </li>
                     </ul>
                   </div>
                 </div>
               </div>
               <div class="field-block">
-                <label class="field-label">Dose *</label>
+                <label class="field-label">{{ 'fichaAnestesica.antibiotico.doseLabel' | translate }}</label>
                 <input
                   type="text"
                   [(ngModel)]="newAtb.dose"
                   [ngModelOptions]="{ standalone: true }"
-                  placeholder="Ex: 2g"
+                  [placeholder]="'fichaAnestesica.antibiotico.dosePlaceholder' | translate"
                   class="text-input"
                 />
               </div>
               <div class="field-block">
-                <label class="field-label">Via</label>
+                <label class="field-label">{{ 'fichaAnestesica.antibiotico.viaLabel' | translate }}</label>
                 <input
                   type="text"
                   [(ngModel)]="newAtb.via"
                   [ngModelOptions]="{ standalone: true }"
-                  placeholder="IV"
+                  [placeholder]="'fichaAnestesica.antibiotico.viaPlaceholder' | translate"
                   class="text-input"
                 />
               </div>
               <div class="field-block">
-                <label class="field-label">Hora</label>
+                <label class="field-label">{{ 'fichaAnestesica.antibiotico.horaLabel' | translate }}</label>
                 <input
                   type="text"
                   inputmode="numeric"
@@ -441,10 +441,10 @@
             </div>
             <div class="atb-add-actions">
               <button type="button" class="btn-ghost" (click)="cancelAddAtb()">
-                Cancelar
+                {{ 'fichaAnestesica.antibiotico.cancelar' | translate }}
               </button>
               <button type="button" class="btn-solid" (click)="confirmAddAtb()">
-                <ion-icon name="add-outline"></ion-icon> Adicionar
+                <ion-icon name="add-outline"></ion-icon> {{ 'fichaAnestesica.antibiotico.adicionar' | translate }}
               </button>
             </div>
           </div>
@@ -460,7 +460,7 @@
       </app-dados-vitais-section>
 
       <app-form-section
-        title="Equipe Cirúrgica e Pré-Procedimento"
+        [title]="'fichaAnestesica.equipe.title' | translate"
         icon="👨‍⚕️"
         formGroupName="equipe"
         [class.shake-error]="showValidationErrors && isSectionInvalid('equipe')"
@@ -468,7 +468,7 @@
         <div class="grid-equipe">
           <!-- Cirurgião e Assistente: DDL pesquisável (nome ou código). Salva o ID. -->
           <div class="field-block">
-            <label class="field-label">Cirurgião *</label>
+            <label class="field-label">{{ 'fichaAnestesica.equipe.cirurgiao' | translate }}</label>
             <div class="ddl" [class.open]="isDdlOpen('cirurgiao')">
               <button
                 type="button"
@@ -484,7 +484,7 @@
                     getSelectedLabel(
                       equipeLista,
                       form.get("equipe.cirurgiao")?.value
-                    ) || "Selecionar cirurgião..."
+                    ) || ('fichaAnestesica.equipe.selecionarCirurgiao' | translate)
                   }}
                 </span>
                 <ion-icon name="chevron-down-outline"></ion-icon>
@@ -505,7 +505,7 @@
                 <input
                   class="ddl-search"
                   type="text"
-                  placeholder="Buscar por nome ou código..."
+                  [placeholder]="'fichaAnestesica.common.searchByNameOrCode' | translate"
                   [ngModel]="ddlFilter['cirurgiao']"
                   (ngModelChange)="setDdlFilter('cirurgiao', $event)"
                   [ngModelOptions]="{ standalone: true }"
@@ -531,14 +531,14 @@
                     *ngIf="filterList(equipeLista, 'cirurgiao').length === 0"
                     class="ddl-empty"
                   >
-                    Nenhum resultado
+                    {{ 'fichaAnestesica.common.noResults' | translate }}
                   </li>
                 </ul>
               </div>
             </div>
           </div>
           <div class="field-block">
-            <label class="field-label">Assistente *</label>
+            <label class="field-label">{{ 'fichaAnestesica.equipe.assistente' | translate }}</label>
             <div class="ddl" [class.open]="isDdlOpen('assistente')">
               <button
                 type="button"
@@ -554,7 +554,7 @@
                     getSelectedLabel(
                       equipeLista,
                       form.get("equipe.assistente")?.value
-                    ) || "Selecionar assistente..."
+                    ) || ('fichaAnestesica.equipe.selecionarAssistente' | translate)
                   }}
                 </span>
                 <ion-icon name="chevron-down-outline"></ion-icon>
@@ -575,7 +575,7 @@
                 <input
                   class="ddl-search"
                   type="text"
-                  placeholder="Buscar por nome ou código..."
+                  [placeholder]="'fichaAnestesica.common.searchByNameOrCode' | translate"
                   [ngModel]="ddlFilter['assistente']"
                   (ngModelChange)="setDdlFilter('assistente', $event)"
                   [ngModelOptions]="{ standalone: true }"
@@ -601,14 +601,14 @@
                     *ngIf="filterList(equipeLista, 'assistente').length === 0"
                     class="ddl-empty"
                   >
-                    Nenhum resultado
+                    {{ 'fichaAnestesica.common.noResults' | translate }}
                   </li>
                 </ul>
               </div>
             </div>
           </div>
           <div class="field-block col-span-2">
-            <label class="field-label">Diagnóstico pré-operatório *</label>
+            <label class="field-label">{{ 'fichaAnestesica.equipe.diagnosticoPre' | translate }}</label>
             <input
               type="text"
               formControlName="diagnosticoPre"
@@ -616,7 +616,7 @@
             />
           </div>
           <div class="field-block">
-            <label class="field-label">Hora início da anestesia *</label>
+            <label class="field-label">{{ 'fichaAnestesica.equipe.horaInicioAnestesia' | translate }}</label>
             <input
               type="text"
               inputmode="numeric"
@@ -632,7 +632,7 @@
       </app-form-section>
 
       <app-form-section
-        title="Posição Operatória"
+        [title]="'fichaAnestesica.posicao.title' | translate"
         icon="📐"
         formGroupName="posicao"
         [class.shake-error]="
@@ -640,7 +640,7 @@
         "
       >
         <app-checkbox-group
-          label="Posição"
+          [label]="'fichaAnestesica.posicao.posicaoLabel' | translate"
           [options]="posicaoOptions"
           formControlName="posicoes"
         ></app-checkbox-group>
@@ -649,7 +649,7 @@
           class="field-block"
           *ngIf="form.get('posicao.posicoes')?.value?.includes('Outra')"
         >
-          <label class="field-label">Especifique posição</label>
+          <label class="field-label">{{ 'fichaAnestesica.posicao.especifiquePosicao' | translate }}</label>
           <input
             type="text"
             formControlName="outrasPosicao"
@@ -661,7 +661,7 @@
           <div class="row-flex">
             <div class="min-235">
               <app-radio-group
-                label="Uso de coxins?"
+                [label]="'fichaAnestesica.posicao.usoCoxim' | translate"
                 [options]="yesNoOptions"
                 formControlName="usoCoxim"
                 [required]="true"
@@ -671,11 +671,11 @@
               class="field-block flex-1"
               *ngIf="form.get('posicao.usoCoxim')?.value === 'sim'"
             >
-              <label class="field-label">Local dos coxins</label>
+              <label class="field-label">{{ 'fichaAnestesica.posicao.localCoxim' | translate }}</label>
               <input
                 type="text"
                 formControlName="localCoxim"
-                placeholder="Ex: Cabeça, ombros..."
+                [placeholder]="'fichaAnestesica.posicao.localCoximPlaceholder' | translate"
                 class="text-input"
               />
             </div>
@@ -687,24 +687,24 @@
             <div class="row-flex">
               <div class="min-235">
                 <app-checkbox-group
-                  label="Acesso venoso"
+                  [label]="'fichaAnestesica.posicao.acessoVenoso' | translate"
                   [options]="acessoVenosoOptions"
                   formControlName="acessoVenoso"
                 ></app-checkbox-group>
               </div>
               <div class="field-block flex-1">
-                <label class="field-label">Local do acesso</label>
+                <label class="field-label">{{ 'fichaAnestesica.posicao.localAcesso' | translate }}</label>
                 <input
                   type="text"
                   formControlName="localAcesso"
-                  placeholder="Ex: MSD, Jugular..."
+                  [placeholder]="'fichaAnestesica.posicao.localAcessoPlaceholder' | translate"
                   class="text-input"
                 />
               </div>
             </div>
             <div class="dificuldade-row">
               <app-radio-group
-                label="Dificuldade de punção?"
+                [label]="'fichaAnestesica.posicao.dificuldadePuncao' | translate"
                 [options]="yesNoOptions"
                 formControlName="dificuldadePuncao"
                 [required]="true"
@@ -723,7 +723,7 @@
       </app-tecnica-anestesica-section>
 
       <app-form-section
-        title="Pós-Procedimento"
+        [title]="'fichaAnestesica.posProcedimento.title' | translate"
         icon="🔄"
         formGroupName="posProcedimento"
         [class.shake-error]="
@@ -738,7 +738,7 @@
           >
             <div class="proc-index">#{{ i + 1 }}</div>
             <div class="field-block proc-nome">
-              <label class="field-label">Cirurgia realizada *</label>
+              <label class="field-label">{{ 'fichaAnestesica.posProcedimento.cirurgiaRealizada' | translate }}</label>
               <div class="ddl" [class.open]="isDdlOpen('proc-' + i)">
                 <button
                   type="button"
@@ -754,7 +754,7 @@
                       getSelectedLabel(
                         procedimentoLista,
                         row.get("procedimentoId")?.value
-                      ) || "Selecionar procedimento..."
+                      ) || ('fichaAnestesica.posProcedimento.selecionarProcedimento' | translate)
                     }}
                   </span>
                   <ion-icon name="chevron-down-outline"></ion-icon>
@@ -775,7 +775,7 @@
                   <input
                     class="ddl-search"
                     type="text"
-                    placeholder="Buscar procedimento..."
+                    [placeholder]="'fichaAnestesica.posProcedimento.buscarProcedimento' | translate"
                     [ngModel]="ddlFilter['proc-' + i]"
                     (ngModelChange)="setDdlFilter('proc-' + i, $event)"
                     [ngModelOptions]="{ standalone: true }"
@@ -805,14 +805,14 @@
                       "
                       class="ddl-empty"
                     >
-                      Nenhum resultado
+                      {{ 'fichaAnestesica.common.noResults' | translate }}
                     </li>
                   </ul>
                 </div>
               </div>
             </div>
             <div class="field-block proc-hora">
-              <label class="field-label">Hora *</label>
+              <label class="field-label">{{ 'fichaAnestesica.posProcedimento.horaLabel' | translate }}</label>
               <input
                 type="text"
                 inputmode="numeric"
@@ -832,7 +832,7 @@
                   [disabled]="!canEdit"
                   (change)="setPrincipal(i, $any($event.target).checked)"
                 />
-                <span>Principal</span>
+                <span>{{ 'fichaAnestesica.posProcedimento.principalLabel' | translate }}</span>
               </label>
             </div>
             <button
@@ -840,7 +840,7 @@
               class="proc-remove-btn"
               [disabled]="!canEdit"
               (click)="removeProcedimento(i)"
-              aria-label="Remover procedimento"
+              [attr.aria-label]="'fichaAnestesica.posProcedimento.removerProcedimentoAria' | translate"
             >
               <ion-icon name="trash-outline"></ion-icon>
             </button>
@@ -852,13 +852,13 @@
             (click)="addProcedimento()"
           >
             <ion-icon name="add-outline"></ion-icon>
-            Adicionar procedimento
+            {{ 'fichaAnestesica.posProcedimento.adicionarProcedimento' | translate }}
           </button>
         </div>
 
         <div class="grid-pos">
           <div class="field-block">
-            <label class="field-label">Hora término cirurgia *</label>
+            <label class="field-label">{{ 'fichaAnestesica.posProcedimento.horaTerminoCirurgia' | translate }}</label>
             <input
               type="text"
               inputmode="numeric"
@@ -871,7 +871,7 @@
             />
           </div>
           <div class="field-block">
-            <label class="field-label">Diagnóstico pós-operatório *</label>
+            <label class="field-label">{{ 'fichaAnestesica.posProcedimento.diagnosticoPos' | translate }}</label>
             <input
               type="text"
               formControlName="diagnosticoPos"
@@ -879,7 +879,7 @@
             />
           </div>
           <div class="field-block">
-            <label class="field-label">Hora término anestesia *</label>
+            <label class="field-label">{{ 'fichaAnestesica.posProcedimento.horaTerminoAnestesia' | translate }}</label>
             <input
               type="text"
               inputmode="numeric"
@@ -895,9 +895,9 @@
       </app-form-section>
 
       <app-form-section
-        title="Índice de Alderete e Kroulik"
+        [title]="'fichaAnestesica.alderete.title' | translate"
         icon="📋"
-        subtitle="Avaliação para alta da sala"
+        [subtitle]="'fichaAnestesica.alderete.subtitle' | translate"
         formGroupName="alderete"
       >
         <div class="alderete-stations">
@@ -928,7 +928,7 @@
         <div class="alderete-total-centered-container">
           <div class="aldrete-total-premium-card">
             <div class="alderete-card-header">
-              <span class="aldrete-total-label">Total Alderete & Kroulik</span>
+              <span class="aldrete-total-label">{{ 'fichaAnestesica.alderete.totalLabel' | translate }}</span>
             </div>
             <div class="alderete-card-body">
               <div
@@ -975,7 +975,7 @@
 
         <div class="dest-row">
           <app-checkbox-group
-            label="Condições clínicas na alta"
+            [label]="'fichaAnestesica.alderete.condicoesAltaTitle' | translate"
             [options]="condicoesAltaOptions"
             formControlName="condicoesClinicasAlta"
           ></app-checkbox-group>
@@ -988,14 +988,13 @@
           <div class="dor-header">
             <div *ngIf="isDorSectionInvalid()" class="dor-error-msg">
               <ion-icon name="alert-circle-outline"></ion-icon>
-              Se marcar “Sim”, selecione pelo menos uma escala e preencha o
-              valor.
+              {{ 'fichaAnestesica.alderete.dorErrorMsg' | translate }}
             </div>
-            <span class="dor-title">Presença de dor? <strong>*</strong></span>
+            <span class="dor-title">{{ 'fichaAnestesica.alderete.dorTitle' | translate }} <strong>*</strong></span>
             <div
               class="dor-choice-group"
               role="radiogroup"
-              aria-label="Presença de dor"
+              [attr.aria-label]="'fichaAnestesica.alderete.dorAriaLabel' | translate"
             >
               <button
                 type="button"
@@ -1004,7 +1003,7 @@
                 (click)="setDor('sim')"
               >
                 <span class="choice-dot"></span>
-                Sim
+                {{ 'fichaAnestesica.alderete.dorSim' | translate }}
               </button>
               <button
                 type="button"
@@ -1013,7 +1012,7 @@
                 (click)="setDor('nao')"
               >
                 <span class="choice-dot"></span>
-                Não
+                {{ 'fichaAnestesica.alderete.dorNao' | translate }}
               </button>
             </div>
           </div>
@@ -1041,7 +1040,7 @@
               >
                 <span class="fake-checkbox"></span>
                 <span class="scale-name"> ENV </span>
-                <span class="scale-hint">0 a 10</span>
+                <span class="scale-hint">{{ 'fichaAnestesica.alderete.scaleHint010' | translate }}</span>
               </button>
               <input
                 type="number"
@@ -1077,7 +1076,7 @@
               >
                 <span class="fake-checkbox"></span>
                 <span class="scale-name"> PAINAD </span>
-                <span class="scale-hint">0 a 10</span>
+                <span class="scale-hint">{{ 'fichaAnestesica.alderete.scaleHint010' | translate }}</span>
               </button>
               <input
                 type="number"
@@ -1113,7 +1112,7 @@
               >
                 <span class="fake-checkbox"></span>
                 <span class="scale-name"> BPS </span>
-                <span class="scale-hint">3 a 12</span>
+                <span class="scale-hint">{{ 'fichaAnestesica.alderete.scaleHint312' | translate }}</span>
               </button>
               <input
                 type="number"
@@ -1131,12 +1130,12 @@
 
           <div class="dor-conduta-row" *ngIf="isDorPresente()">
             <div class="field-block">
-              <label class="field-label">Conduta tomada</label>
+              <label class="field-label">{{ 'fichaAnestesica.alderete.condutaLabel' | translate }}</label>
               <textarea
                 formControlName="conduta"
                 rows="2"
                 class="textarea-input"
-                placeholder="Descreva a conduta realizada..."
+                [placeholder]="'fichaAnestesica.alderete.condutaPlaceholder' | translate"
               ></textarea>
             </div>
           </div>
@@ -1144,7 +1143,7 @@
       </app-form-section>
 
       <app-form-section
-        title="Assinaturas"
+        [title]="'fichaAnestesica.assinaturas.title' | translate"
         icon="✍️"
         formGroupName="assinaturas"
         [class.shake-error]="
@@ -1154,25 +1153,24 @@
         <div class="signature-notice">
           <ion-icon name="lock-closed-outline"></ion-icon>
           <span
-            >Ao clicar em <strong>Assinar e Salvar</strong> uma confirmação
-            digital será solicitada, e o campo do 1º anestesista será preenchido
-            automaticamente com o nome do profissional logado.</span
+            >{{ 'fichaAnestesica.assinaturas.noticeBefore' | translate }} <strong>{{ 'fichaAnestesica.assinaturas.noticeStrong' | translate }}</strong>
+            {{ 'fichaAnestesica.assinaturas.noticeAfter' | translate }}</span
           >
         </div>
 
         <div class="grid-assinaturas">
           <div class="field-block">
-            <label class="field-label">1º Anestesiologista *</label>
+            <label class="field-label">{{ 'fichaAnestesica.assinaturas.primeiroLabel' | translate }}</label>
             <input
               type="text"
               formControlName="primeiroAnestesista"
-              placeholder="Preenchido pela assinatura digital"
+              [placeholder]="'fichaAnestesica.assinaturas.primeiroPlaceholder' | translate"
               class="text-input"
               readonly
             />
           </div>
           <div class="field-block">
-            <label class="field-label">2º Anestesiologista</label>
+            <label class="field-label">{{ 'fichaAnestesica.assinaturas.segundoLabel' | translate }}</label>
             <div class="ddl" [class.open]="isDdlOpen('segundoAnestesista')">
               <button
                 type="button"
@@ -1190,7 +1188,7 @@
                     getSelectedLabel(
                       anestesistasLista,
                       form.get("assinaturas.segundoAnestesista")?.value
-                    ) || "Selecionar anestesiologista..."
+                    ) || ('fichaAnestesica.assinaturas.selecionarAnestesiologista' | translate)
                   }}
                 </span>
                 <ion-icon name="chevron-down-outline"></ion-icon>
@@ -1211,7 +1209,7 @@
                 <input
                   class="ddl-search"
                   type="text"
-                  placeholder="Buscar por nome ou código..."
+                  [placeholder]="'fichaAnestesica.common.searchByNameOrCode' | translate"
                   [ngModel]="ddlFilter['segundoAnestesista']"
                   (ngModelChange)="setDdlFilter('segundoAnestesista', $event)"
                   [ngModelOptions]="{ standalone: true }"
@@ -1245,14 +1243,14 @@
                     "
                     class="ddl-empty"
                   >
-                    Nenhum resultado
+                    {{ 'fichaAnestesica.common.noResults' | translate }}
                   </li>
                 </ul>
               </div>
             </div>
           </div>
           <div class="field-block">
-            <label class="field-label">Data *</label>
+            <label class="field-label">{{ 'fichaAnestesica.assinaturas.dataLabel' | translate }}</label>
             <input
               type="date"
               formControlName="dataAssinatura"
@@ -1270,7 +1268,7 @@
           [disabled]="isSaving || isCancelled || !canEdit"
         >
           <ion-icon name="sync-outline" slot="start"></ion-icon>
-          Limpar Formulário
+          {{ 'fichaAnestesica.formActions.limparFormulario' | translate }}
         </ion-button>
 
         <ion-button
@@ -1279,7 +1277,7 @@
           class="btn-secondary-pill"
         >
           <ion-icon name="print-outline" slot="start"></ion-icon>
-          Imprimir
+          {{ 'fichaAnestesica.formActions.imprimir' | translate }}
         </ion-button>
       </div>
 
@@ -1290,32 +1288,31 @@
         </div>
 
         <div class="signature-watermark-content">
-          <div class="signature-title">Documento assinado digitalmente</div>
+          <div class="signature-title">{{ 'fichaAnestesica.signatureWatermark.documentoAssinado' | translate }}</div>
 
           <div class="signature-text">
-            Esta ficha anestésica foi enviada em
+            {{ 'fichaAnestesica.signatureWatermark.textPart1' | translate }}
             <strong>{{ fichaFinalizadaEm | date:'dd/MM/yyyy' }}</strong>
-            às
+            {{ 'fichaAnestesica.signatureWatermark.textPart2' | translate }}
             <strong>{{ fichaFinalizadaEm | date:'HH:mm' }}</strong>
-            e assinada por
-            <strong>{{ fichaFinalizadaPor }}</strong>, mediante autenticação
-            com senha pessoal do profissional.
+            {{ 'fichaAnestesica.signatureWatermark.textPart3' | translate }}
+            <strong>{{ fichaFinalizadaPor }}</strong>{{ 'fichaAnestesica.signatureWatermark.textPart4' | translate }}
           </div>
 
           <div class="signature-meta">
             <span>
               <ion-icon name="time-outline"></ion-icon>
-              Registro nº FA-{{ cirurgiaId }}
+              {{ 'fichaAnestesica.signatureWatermark.registroPrefix' | translate }}{{ cirurgiaId }}
             </span>
 
             <span>
               <ion-icon name="cloud-done-outline"></ion-icon>
-              Sincronizado com o servidor
+              {{ 'fichaAnestesica.signatureWatermark.sincronizado' | translate }}
             </span>
 
             <span>
               <ion-icon name="lock-closed-outline"></ion-icon>
-              Assinatura válida
+              {{ 'fichaAnestesica.signatureWatermark.assinaturaValida' | translate }}
             </span>
           </div>
         </div>
@@ -1333,13 +1330,10 @@
         <div class="sign-modal-icon">
           <ion-icon name="shield-checkmark-outline"></ion-icon>
         </div>
-        <h2 class="sign-modal-title">Confirmar e Assinar Digitalmente</h2>
+        <h2 class="sign-modal-title">{{ 'fichaAnestesica.signModal.title' | translate }}</h2>
         <p class="sign-modal-subtitle">
-          O monitoramento desta cirurgia já foi finalizado. Ao assinar, você
-          declara que revisou todos os dados desta ficha anestésica e assume
-          responsabilidade profissional pelas informações registradas.
-          <strong>Este será o último salvamento — depois de confirmado, a
-          ficha não poderá mais ser editada.</strong>
+          {{ 'fichaAnestesica.signModal.subtitleText' | translate }}
+          <strong>{{ 'fichaAnestesica.signModal.subtitleStrong' | translate }}</strong>
         </p>
 
         <div class="sign-check-row">
@@ -1350,36 +1344,35 @@
             class="sign-check"
           >
             <span class="sign-check-label">
-              Confirmo que revisei e estou de acordo com todos os dados
-              preenchidos.
+              {{ 'fichaAnestesica.signModal.checkLabel' | translate }}
             </span>
           </ion-checkbox>
         </div>
 
         <div class="sign-name-block">
           <label class="field-label"
-            >Digite seu nome completo para assinar</label
+            >{{ 'fichaAnestesica.signModal.nomeCompletoLabel' | translate }}</label
           >
           <input
             type="text"
             class="text-input sign-input"
             [(ngModel)]="signatureTypedName"
-            [placeholder]="expectedSignatureName || 'Nome completo'"
+            [placeholder]="expectedSignatureName || ('fichaAnestesica.signModal.nomeCompletoPlaceholder' | translate)"
             autocomplete="off"
             spellcheck="false"
           />
           <p class="sign-hint" *ngIf="expectedSignatureName">
-            Profissional logado: <strong>{{ expectedSignatureName }}</strong>
+            {{ 'fichaAnestesica.signModal.profissionalLogadoPrefix' | translate }} <strong>{{ expectedSignatureName }}</strong>
           </p>
         </div>
 
         <div class="sign-name-block">
-          <label class="field-label">Digite sua senha para assinar</label>
+          <label class="field-label">{{ 'fichaAnestesica.signModal.senhaLabel' | translate }}</label>
           <input
             type="password"
             class="text-input sign-input"
             [(ngModel)]="signaturePassword"
-            placeholder="Senha de acesso"
+            [placeholder]="'fichaAnestesica.signModal.senhaPlaceholder' | translate"
             autocomplete="current-password"
             (keyup.enter)="confirmarESalvar()"
           />
@@ -1394,7 +1387,7 @@
             fill="outline"
             class="btn-secondary-pill"
             (click)="closeSignModal()"
-            >Cancelar</ion-button
+            >{{ 'fichaAnestesica.signModal.cancelar' | translate }}</ion-button
           >
           <ion-button
             color="primary"
@@ -1403,7 +1396,7 @@
             [disabled]="!signatureAgreed || !signatureTypedName.trim() || !signaturePassword.trim()"
           >
             <ion-icon name="create-outline" slot="start"></ion-icon>
-            Assinar e Salvar
+            {{ 'fichaAnestesica.signModal.assinarSalvar' | translate }}
           </ion-button>
         </div>
       </div>

@@ -1,0 +1,195 @@
+{
+  "monitorizacao": {
+    "common": {
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "agentFallback": "Agent",
+      "medicationFallback": "Medication #{{id}}",
+      "eventFallback": "Event",
+      "otherItem": "Other",
+      "gain": "Gain",
+      "loss": "Loss"
+    },
+    "page": {
+      "readonlyBanner": "You are not the physician responsible for this patient. Monitoring is read-only.",
+      "anestesicaButtonLabel": "Anesthesia",
+      "alerts": {
+        "patientCancelled": "This patient is cancelled. It is not possible to start or change the surgery.",
+        "accessDenied": "Monitoring has not been completed yet. Only the responsible physician can access it at this time.",
+        "editAnesthesiaStartTitle": "Edit Anesthesia Start",
+        "editSurgeryStartTitle": "Edit Surgery Start",
+        "initialPositionTitle": "Initial patient position",
+        "initialPositionSubtitle": "Select the position in which monitoring was started",
+        "frequencyTitle": "Monitoring frequency",
+        "minutesPlaceholder": "Minutes",
+        "newCustomFieldTitle": "New custom field",
+        "customFieldLabelPlaceholder": "E.g.: Glucose",
+        "customFieldUnitPlaceholder": "E.g.: mg/dL",
+        "editAgentTitle": "Edit agent",
+        "editAgentNamePlaceholder": "Name",
+        "editAgentDosePlaceholder": "Dose",
+        "editAgentRoutePlaceholder": "Route",
+        "editBalanceTitle": "Edit fluid balance entry",
+        "editBalanceItemPlaceholder": "Item",
+        "editBalanceVolumePlaceholder": "Volume (mL)",
+        "finalizeSurgeryTitle": "Finish Surgery",
+        "finalizeSurgerySubtitle": "Do you want to mark the end of the surgery?",
+        "finalizeAnesthesiaTitle": "Finish Anesthesia",
+        "finalizeAnesthesiaSubtitle": "This action will end the whole monitoring session.",
+        "finalizeAnesthesiaTimeLabel": "Anesthesia time:",
+        "finalizeSurgeryTimeLabel": "Surgery time:",
+        "finalizeRecordsLabel": "Records entered:",
+        "finalizePendingSyncLabel": "Pending synchronization:",
+        "finalizeConfirmQuestion": "Do you want to confirm the completion?",
+        "deleteTitle": "Delete",
+        "confirmRemoveVitalAt": "Remove entry from {{time}}?",
+        "confirmRemoveAgent": "Remove {{name}}?",
+        "confirmRemoveEvent": "Remove event \"{{description}}\"?",
+        "confirmRemoveBalance": "Remove {{item}} ({{volume}}mL)?"
+      },
+      "actions": {
+        "confirm": "Confirm",
+        "add": "Add",
+        "finalize": "Finish",
+        "delete": "Delete"
+      },
+      "toasts": {
+        "vitalSaved": "Vital signs saved to the local draft.",
+        "sendingFinalRecord": "Sending final record…",
+        "finalizeSuccess": "✅ Anesthesia successfully completed and sent.",
+        "offlineSaved": "⚠️ No connection. Record saved locally and will be sent automatically.",
+        "finalizeErrorGeneric": "Error sending the final record.",
+        "finalizeErrorWrap": "⚠️ {{msg}} The record remains saved locally and will be resent automatically."
+      },
+      "fichaAnestesica": {
+        "title": "Anesthesia Record",
+        "summarySectionTitle": "Monitoring Summary",
+        "anesthesiaTimeLabel": "Anesthesia Time",
+        "surgeryTimeLabel": "Surgery Time",
+        "vitalRecordsCountLabel": "Vital Signs Recorded",
+        "teamSectionTitle": "Team and Room",
+        "surgeonLabel": "Surgeon",
+        "procedureLabel": "Procedure",
+        "statusSectionTitle": "Status",
+        "statusLabel": "Status",
+        "updatedAtLabel": "Updated at",
+        "agentsSectionTitle": "Agents Administered",
+        "eventsSectionTitle": "Clinical Events",
+        "fluidBalanceSectionTitle": "Fluid Balance"
+      }
+    },
+    "vitalSigns": {
+      "title": "VITAL SIGNS",
+      "addFieldTooltip": "Add custom field",
+      "historyTooltip": "Detailed history",
+      "addRecordButton": "Record",
+      "chips": {
+        "heartRate": "Heart Rate",
+        "bloodPressure": "Systolic/Diastolic BP (MAP)",
+        "saturation": "Saturation",
+        "temperature": "Temperature"
+      },
+      "markers": {
+        "anesthesia": "Anesthesia",
+        "surgery": "Surgery",
+        "end": "End",
+        "endAnesthesia": "End Anes."
+      },
+      "scrollbar": {
+        "disabledHint": "Drag/zoom disabled — surgery finished",
+        "navigate": "Navigate through the chart timeline",
+        "reset": "Return to latest",
+        "resetButton": "Latest"
+      }
+    },
+    "agentsChart": {
+      "title": "AGENTS",
+      "empty": "No agents recorded"
+    },
+    "events": {
+      "title": "EVENTS",
+      "expandAria": "Expand events",
+      "collapseAria": "Collapse events",
+      "empty": "No events recorded",
+      "positionChangeFallback": "Position change"
+    },
+    "fluidBalance": {
+      "title": "GAINS AND LOSSES",
+      "gainsLane": "GAINS",
+      "lossesLane": "LOSSES",
+      "balanceLabel": "Balance",
+      "empty": "No fluid balance entries recorded"
+    },
+    "historyDrawer": {
+      "title": "Detailed history",
+      "tabs": {
+        "vitals": "Vitals",
+        "agents": "Agents",
+        "events": "Events",
+        "balance": "Balance"
+      },
+      "customFieldButton": "Custom field",
+      "newRecordButton": "New record",
+      "columns": {
+        "time": "Time",
+        "name": "Name",
+        "dose": "Dose",
+        "route": "Route",
+        "presentation": "Presentation",
+        "type": "Type",
+        "description": "Description",
+        "item": "Item",
+        "volume": "Volume (mL)"
+      },
+      "empty": {
+        "vitals": "No records",
+        "agents": "No agents",
+        "events": "No events",
+        "balance": "No entries"
+      },
+      "autoTag": "auto",
+      "eventCategories": {
+        "intubation": "Intubation",
+        "extubation": "Extubation",
+        "incision": "Incision",
+        "block": "Block",
+        "tourniquetOn": "Tourniquet ON",
+        "tourniquetOff": "Tourniquet OFF",
+        "position": "Position",
+        "complication": "Complication",
+        "incident": "Incident"
+      }
+    },
+    "quickActions": {
+      "anesthesiaLabel": "ANESTHESIA",
+      "surgeryLabel": "SURGERY",
+      "anesthesiaStartedLabel": "Anesthesia Start",
+      "startAnesthesiaButton": "Start Anesthesia",
+      "surgeryStartedLabel": "Surgery Start",
+      "startSurgeryButton": "Start Surgery",
+      "vitalSignButton": "Vital Sign",
+      "agentButton": "Agent",
+      "eventButton": "Event",
+      "balanceButton": "Balance",
+      "positionLabel": "Position",
+      "changeButton": "Change",
+      "historyTitle": "History",
+      "freqAutoLabel": "Auto freq.",
+      "minUnit": "min",
+      "recentActivityLabel": "Recent activity",
+      "viewAllLabel": "View all"
+    },
+    "finalizeBar": {
+      "noDraftSaved": "No draft saved",
+      "draftSavedAt": "Draft saved {{time}}",
+      "allSynced": "All synced",
+      "pendingSingular": "pending",
+      "pendingPlural": "pending",
+      "syncing": "Syncing…",
+      "syncNow": "Sync now",
+      "history": "History",
+      "finalizeAnesthesia": "Anesthesia",
+      "finalizeSurgery": "Surgery"
+    }
+  }
+}

@@ -3,8 +3,8 @@
   <div class="date-filter" (click)="openPicker(dateInput)">
     <ion-icon name="calendar-outline" class="calendar-icon"></ion-icon>
     <label>
-      <span class="label-text">Data:</span>
-      <strong class="date-text">{{ formattedDate || 'Todos' }}</strong>
+      <span class="label-text">{{ 'sharedComponents.dateFilter.dateLabel' | translate }}</span>
+      <strong class="date-text">{{ formattedDate || ('sharedComponents.dateFilter.allLabel' | translate) }}</strong>
     </label>
     <ion-icon name="chevron-down-outline" class="chevron-icon"></ion-icon>
     <input 
@@ -17,20 +17,20 @@
   </div>
   
   <div class="filter-actions">
-    <button 
-      *ngIf="date" 
-      class="clear-btn" 
+    <button
+      *ngIf="date"
+      class="clear-btn"
       (click)="clearFilter(); $event.stopPropagation()"
-      title="Limpar filtro"
+      [title]="'sharedComponents.dateFilter.clearFilterTitle' | translate"
     >
       <ion-icon name="close-circle"></ion-icon>
     </button>
-    <button 
-      class="today-btn" 
+    <button
+      class="today-btn"
       (click)="setToday(); $event.stopPropagation()"
-      title="Hoje"
+      [title]="'sharedComponents.dateFilter.today' | translate"
     >
-      Hoje
+      {{ 'sharedComponents.dateFilter.today' | translate }}
     </button>
   </div>
 </div>

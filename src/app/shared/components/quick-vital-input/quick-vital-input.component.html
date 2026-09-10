@@ -3,11 +3,11 @@
     <ion-title>
       <span class="title-wrap">
         <ion-icon name="pulse-outline"></ion-icon>
-        {{ isAuto ? 'Registro automático' : 'Lançar sinais vitais' }}
+        {{ (isAuto ? 'sharedComponents.quickVitalInput.autoTitle' : 'sharedComponents.quickVitalInput.manualTitle') | translate }}
       </span>
     </ion-title>
     <ion-buttons slot="end">
-      <ion-button fill="clear" (click)="cancel()" aria-label="Fechar">
+      <ion-button fill="clear" (click)="cancel()" [attr.aria-label]="'common.close' | translate">
         <ion-icon name="close-outline" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -19,31 +19,31 @@
     <section class="time-banner" *ngIf="!isEdit">
       <ion-icon name="time-outline"></ion-icon>
       <div>
-        <strong>{{ isAuto ? 'Coleta automática' : 'Registro manual' }}</strong>
-        <span>Preencha os sinais disponíveis neste momento.</span>
+        <strong>{{ (isAuto ? 'sharedComponents.quickVitalInput.autoCollection' : 'sharedComponents.quickVitalInput.manualRecord') | translate }}</strong>
+        <span>{{ 'sharedComponents.quickVitalInput.fillAvailableSignals' | translate }}</span>
       </div>
     </section>
 
     <section class="time-banner time-banner-edit" *ngIf="isEdit">
       <ion-icon name="time-outline"></ion-icon>
       <label class="time-edit-field">
-        <span class="field-label">Horário do lançamento</span>
+        <span class="field-label">{{ 'sharedComponents.quickVitalInput.timeOfRecordLabel' | translate }}</span>
         <input
           class="custom-input"
           type="time"
-          aria-label="Horário do lançamento"
+          [attr.aria-label]="'sharedComponents.quickVitalInput.timeOfRecordLabel' | translate"
           [value]="form.time"
           (input)="setTime($any($event.target).value)">
       </label>
     </section>
 
     <section class="vital-group" *ngFor="let group of vitalGroups">
-      <header>{{ group.title }}</header>
+      <header>{{ group.title | translate }}</header>
 
       <div class="vital-grid">
         <label class="vital-field" *ngFor="let field of group.fields">
           <span class="field-label">
-            {{ field.label }}
+            {{ field.label | translate }}
             <small class="unit-chip" *ngIf="field.unit">{{ field.unit }}</small>
           </span>
           <input
@@ -61,7 +61,7 @@
     </section>
 
     <section class="vital-group" *ngIf="customFields?.length">
-      <header>Campos personalizados</header>
+      <header>{{ 'sharedComponents.quickVitalInput.customFieldsHeader' | translate }}</header>
 
       <div class="vital-grid">
         <label class="vital-field" *ngFor="let field of customFields">
@@ -81,16 +81,16 @@
     </section>
 
     <p class="validation-message" *ngIf="touched && !hasAnyRequiredSignal()">
-      Informe pelo menos um sinal vital para salvar o registro.
+      {{ 'sharedComponents.quickVitalInput.validationMessage' | translate }}
     </p>
   </div>
 </ion-content>
 
 <ion-footer class="ion-no-border">
   <div class="modal-footer">
-    <button class="btn-cancel" (click)="cancel()">Cancelar</button>
+    <button class="btn-cancel" (click)="cancel()">{{ 'common.cancel' | translate }}</button>
     <button class="btn-save" [disabled]="!hasAnyRequiredSignal()" (click)="save()">
-      <ion-icon name="save-outline"></ion-icon> Salvar registro
+      <ion-icon name="save-outline"></ion-icon> {{ 'sharedComponents.quickVitalInput.saveRecord' | translate }}
     </button>
   </div>
 </ion-footer>

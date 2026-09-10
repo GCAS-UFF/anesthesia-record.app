@@ -1,8 +1,8 @@
 <div class="report-card">
   <div class="report-card-header">
     <div>
-      <h3 class="report-title">Recuperação / Aldrete</h3>
-      <p class="report-subtitle">Não há registro de horário de entrada/alta da RPA no sistema. O tempo abaixo é entre o fim da anestesia e a avaliação de Aldrete.</p>
+      <h3 class="report-title">{{ 'relatorios.recovery.title' | translate }}</h3>
+      <p class="report-subtitle">{{ 'relatorios.recovery.subtitle' | translate }}</p>
     </div>
     <app-report-pdf-actions reportKey="recovery" [filters]="filters"></app-report-pdf-actions>
   </div>
@@ -12,26 +12,26 @@
       <div class="kpi-row">
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.patientsEvaluated }}</span>
-          <span class="kpi-label">Pacientes avaliados</span>
+          <span class="kpi-label">{{ 'relatorios.recovery.kpiPatientsEvaluated' | translate }}</span>
         </div>
         <div class="kpi-tile">
           <span class="kpi-value">{{ r.averageMinutesToAldreteEvaluation != null ? (r.averageMinutesToAldreteEvaluation + ' min') : '—' }}</span>
-          <span class="kpi-label">Tempo médio até avaliação de Aldrete</span>
+          <span class="kpi-label">{{ 'relatorios.recovery.kpiAvgTimeToAldrete' | translate }}</span>
         </div>
       </div>
-      <p class="report-subtitle">(n = {{ r.evaluationsConsideredForTiming }})</p>
+      <p class="report-subtitle">{{ 'relatorios.recovery.nEvaluations' | translate: { count: r.evaluationsConsideredForTiming } }}</p>
 
       <div class="charts-grid">
         <div class="chart-block">
-          <h4>Distribuição do score de Aldrete</h4>
-          <app-bar-chart [labels]="scoreLabels" [data]="scoreCounts" datasetLabel="Pacientes"></app-bar-chart>
+          <h4>{{ 'relatorios.recovery.chartScoreDistribution' | translate }}</h4>
+          <app-bar-chart [labels]="scoreLabels" [data]="scoreCounts" [datasetLabel]="'relatorios.recovery.datasetPatients' | translate"></app-bar-chart>
         </div>
         <div class="chart-block">
-          <h4>Destino do paciente</h4>
+          <h4>{{ 'relatorios.recovery.chartDestination' | translate }}</h4>
           <app-donut-chart [labels]="destinationLabels" [data]="destinationCounts"></app-donut-chart>
         </div>
         <div class="chart-block">
-          <h4>Condição de alta</h4>
+          <h4>{{ 'relatorios.recovery.chartDischargeCondition' | translate }}</h4>
           <app-donut-chart [labels]="dischargeConditionLabels" [data]="dischargeConditionCounts"></app-donut-chart>
         </div>
       </div>
@@ -40,8 +40,8 @@
         <table class="report-table">
           <thead>
             <tr>
-              <th>Score</th>
-              <th class="num">Quantidade</th>
+              <th>{{ 'relatorios.recovery.tableScore' | translate }}</th>
+              <th class="num">{{ 'relatorios.recovery.tableQuantity' | translate }}</th>
             </tr>
           </thead>
           <tbody>
