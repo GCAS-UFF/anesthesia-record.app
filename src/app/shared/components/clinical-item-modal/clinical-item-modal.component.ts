@@ -237,7 +237,7 @@ export class ClinicalItemModalComponent implements OnInit {
       this.balance = {
         type: this.initial.type ?? 'gain',
         itemId: this.initial.itemId ?? null,
-        itemLabel: this.initial.itemLabel ?? this.initial.label ?? '',
+        itemLabel: this.initial.itemLabel ?? this.initial.label ?? this.initial.item ?? '',
         detail: this.initial.detail ?? '',
         volumeMl: this.initial.volumeMl ?? this.initial.volume ?? null,
       };

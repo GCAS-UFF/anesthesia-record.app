@@ -301,6 +301,21 @@ ion-radio {
   }
 }
 
+.quick-vital-modal {
+  --height: 90vh;
+  --max-height: 720px;
+  --width: 92%;
+  --max-width: 560px;
+  --border-radius: 20px;
+  align-items: center;
+  justify-content: center;
+
+  &::part(content) {
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+}
+
 
 @media print {
   app-status-bar,

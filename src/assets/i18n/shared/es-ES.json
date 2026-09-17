@@ -2,9 +2,11 @@
   "sharedComponents": {
     "clinicalItemModal": {
       "titleAddAgent": "Agregar Agente",
+      "titleEditAgent": "Editar Agente",
       "titleAddEvent": "Agregar Evento",
       "titleEditEvent": "Editar Evento",
       "titleAddBalance": "Agregar Balance",
+      "titleEditBalance": "Editar Balance",
       "clearSelection": "Limpiar selección",
       "timeLabel": "Hora del registro",
       "agent": {
@@ -104,11 +106,6 @@
       "customFieldsHeader": "Campos personalizados",
       "validationMessage": "Indique al menos un signo vital para guardar el registro.",
       "saveRecord": "Guardar registro",
-      "groups": {
-        "bloodPressure": "Presión arterial",
-        "monitoring": "Monitorización",
-        "complementary": "Complementarios"
-      },
       "fields": {
         "pas": "PAS",
         "pad": "PAD",

@@ -113,6 +113,27 @@
 
   &__scroll {
     overflow-x: auto;
+    position: relative;
+  }
+
+  // Wrapper de largura/altura zero — não soma nada ao scrollWidth do
+  // .vcc__scroll — mas com overflow visível, o <svg> filho (com o tamanho
+  // real do eixo) continua sendo desenhado e, por ser sticky, fica sempre
+  // visível à esquerda: sem isso os rótulos 30/60/90 saem de vista ao rolar
+  // para a direita e o médico perde a referência de onde cada marcador caiu.
+  &__yaxis {
+    position: sticky;
+    left: 0;
+    top: 0;
+    z-index: 2;
+    width: 0;
+    height: 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  &__yaxis-bg {
+    fill: t.$surface-card;
   }
 
   &__canvas {

@@ -57,11 +57,17 @@
       <div class="vs__row">
         <span class="vs__row-label">{{ 'monitorizacao.shell.vitals.rows.hydration' | translate }}</span>
         <div class="vs__row-track">
-          <span
-            class="vs__cell vs__cell--static"
+          <button
+            type="button"
+            class="vs__cell vs__cell--hydration"
             *ngFor="let record of vitalRecords; let i = index"
             [style.left.%]="xPercentAt(i)"
-          >{{ hydrationAt(record) }}</span>
+            [disabled]="readonly"
+            (click)="hydrationCellTap.emit(record)"
+          >
+            <span class="vs__cell-value">{{ hydrationAt(record) }}</span>
+            <span class="vs__hydration-icon" *ngIf="hasGainAt(record, i)" aria-hidden="true">💧</span>
+          </button>
         </div>
       </div>
 

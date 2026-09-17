@@ -47,6 +47,7 @@ export class VitalsSectionComponent implements OnChanges {
   @Output() addRecord = new EventEmitter<void>();
   @Output() addCustomField = new EventEmitter<void>();
   @Output() cellTap = new EventEmitter<{ record: VitalRecord; field: VitalCellField }>();
+  @Output() hydrationCellTap = new EventEmitter<VitalRecord>();
   @Output() deleteRecord = new EventEmitter<VitalRecord>();
   @Output() editTime = new EventEmitter<VitalRecord>();
   @Output() scrollRatioChange = new EventEmitter<number>();
@@ -110,5 +111,16 @@ export class VitalsSectionComponent implements OnChanges {
     return this.fluidBalance
       .filter((f) => f.type === 'gain' && new Date(f.timestamp).getTime() <= ts)
       .reduce((sum, f) => sum + (f.volumeMl || 0), 0);
+  }
+
+  
+  hasGainAt(record: VitalRecord, index: number): boolean {
+    const ts = new Date(record.timestamp).getTime();
+    const prevTs = index > 0 ? new Date(this.vitalRecords[index - 1].timestamp).getTime() : -Infinity;
+    return this.fluidBalance.some((f) => {
+      if (f.type !== 'gain') return false;
+      const fts = new Date(f.timestamp).getTime();
+      return fts > prevTs && fts <= ts;
+    });
   }
 }

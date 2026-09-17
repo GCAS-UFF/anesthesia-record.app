@@ -2,9 +2,11 @@
   "sharedComponents": {
     "clinicalItemModal": {
       "titleAddAgent": "Add Agent",
+      "titleEditAgent": "Edit Agent",
       "titleAddEvent": "Add Event",
       "titleEditEvent": "Edit Event",
       "titleAddBalance": "Add Fluid Balance",
+      "titleEditBalance": "Edit Fluid Balance",
       "clearSelection": "Clear selection",
       "timeLabel": "Record time",
       "agent": {
@@ -104,11 +106,6 @@
       "customFieldsHeader": "Custom fields",
       "validationMessage": "Enter at least one vital sign to save the record.",
       "saveRecord": "Save record",
-      "groups": {
-        "bloodPressure": "Blood pressure",
-        "monitoring": "Monitoring",
-        "complementary": "Complementary"
-      },
       "fields": {
         "pas": "PAS",
         "pad": "PAD",

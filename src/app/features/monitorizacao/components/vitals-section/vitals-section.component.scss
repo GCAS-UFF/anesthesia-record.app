@@ -165,6 +165,21 @@
       font-family: t.$font-body;
       font-size: t.$fs-12;
     }
+
+    &--hydration {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: t.$text-ink;
+      font-family: t.$font-body;
+      font-size: t.$fs-12;
+    }
+  }
+
+  &__hydration-icon {
+    font-size: t.$fs-13;
+    line-height: 1;
   }
 
   &__delete {

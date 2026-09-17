@@ -2,9 +2,9 @@
   <ion-toolbar>
     <ion-title>
       <ng-container [ngSwitch]="type">
-        <span *ngSwitchCase="'agent'">{{ 'sharedComponents.clinicalItemModal.titleAddAgent' | translate }}</span>
+        <span *ngSwitchCase="'agent'">{{ (isEditMode ? 'sharedComponents.clinicalItemModal.titleEditAgent' : 'sharedComponents.clinicalItemModal.titleAddAgent') | translate }}</span>
         <span *ngSwitchCase="'event'">{{ (isEditMode ? 'sharedComponents.clinicalItemModal.titleEditEvent' : 'sharedComponents.clinicalItemModal.titleAddEvent') | translate }}</span>
-        <span *ngSwitchCase="'balance'">{{ 'sharedComponents.clinicalItemModal.titleAddBalance' | translate }}</span>
+        <span *ngSwitchCase="'balance'">{{ (isEditMode ? 'sharedComponents.clinicalItemModal.titleEditBalance' : 'sharedComponents.clinicalItemModal.titleAddBalance') | translate }}</span>
       </ng-container>
     </ion-title>
     <ion-buttons slot="end">
@@ -87,6 +87,7 @@
           (click)="toggleBolus()"
         >{{ 'sharedComponents.clinicalItemModal.agent.bolusToggle' | translate }}</ion-button>
         <ion-button
+          *ngIf="!isEditMode"
           [fill]="agent.isInfusionPump ? 'solid' : 'outline'"
           color="tertiary"
           (click)="toggleInfusionPump()"

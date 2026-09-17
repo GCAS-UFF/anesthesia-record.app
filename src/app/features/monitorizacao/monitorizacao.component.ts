@@ -592,10 +592,6 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     }).then((alert) => alert.present());
   }
 
-  // ---------------------------------------------------------------------------
-  // Sinais vitais
-  // ---------------------------------------------------------------------------
-
   async onAddVital(): Promise<void> {
     if (!this.canEdit || this.isVitalModalOpen) return;
     this.isVitalModalOpen = true;
@@ -690,6 +686,42 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     await alert.present();
   }
 
+  async onHydrationCellTap(record: VitalRecord): Promise<void> {
+    if (!this.canEdit) return;
+    const alert = await this.alertController.create({
+      header: this.translate.instant('monitorizacao.shell.vitals.editHydrationTitle'),
+      inputs: [
+        { name: 'volumeMl', type: 'number', placeholder: this.translate.instant('monitorizacao.shell.vitals.hydrationVolumePlaceholder') },
+      ],
+      buttons: [
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
+        {
+          text: this.translate.instant('common.save'),
+          handler: (d) => {
+            const volumeMl = Number(d.volumeMl);
+            if (!Number.isFinite(volumeMl) || volumeMl <= 0) return false;
+            const entry: FluidBalance = {
+              clientId: this.newClientId(),
+              timestamp: record.timestamp,
+              time: record.time,
+              type: 'gain',
+              item: this.translate.instant('monitorizacao.shell.vitals.rows.hydration'),
+              volumeMl,
+              itemId: null,
+              detail: null,
+              categoryId: null,
+              balanceTypeId: null,
+            };
+            this.fluidBalance = [...this.fluidBalance, entry].sort(this.byTs);
+            this.persistDraft();
+            return true;
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
   private updateVitalField(clientId: string | undefined, field: 'temp' | 'spo2' | 'etco2' | 'bis', value: number | undefined): void {
     this.vitalRecords = this.vitalRecords.map((r) => (r.clientId === clientId ? { ...r, [field]: value } : r));
     this.persistDraft();
@@ -767,8 +799,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  /** Desloca os lançamentos seguintes pelo mesmo delta, preservando o espaçamento
-   * relativo entre eles (e evitando colisão de minuto entre dois registros). */
+ 
   private cascadeVitalTimeShift(editedClientId: string, updatedRecord: VitalRecord, deltaMinutes: number): VitalRecord[] {
     const deltaMs = deltaMinutes * 60000;
     const originalSorted = [...this.vitalRecords].sort(this.byTs);
@@ -802,10 +833,6 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     }
     return result.sort(this.byTs);
   }
-
-  // ---------------------------------------------------------------------------
-  // Agentes
-  // ---------------------------------------------------------------------------
 
   async onAddAgent(): Promise<void> {
     if (!this.canEdit || this.isAgentModalOpen) return;
@@ -857,15 +884,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Só dá pra calcular a duração real quando a unidade é volumétrica (mL/h —
-   * duração = volume/velocidade). Para mcg/kg/min, mcg/min, mg/h e UI/h,
-   * precisaríamos do peso do paciente e/ou da concentração da droga na bolsa
-   * pra converter em mL/h — informação que não temos aqui. Nesses casos, usa
-   * uma janela padrão de 2h só pra a barra ter um fim visível, sem pretender
-   * ser uma previsão real. TODO(monitorizacao-migration): revisar com a PO se
-   * vale pedir a concentração/peso pra calcular de verdade.
-   */
+
   private computeInfusionEndAt(startIso: string, rate: number, rateUnit: number, volumeMl: number): string {
     const DEFAULT_WINDOW_MS = 2 * 60 * 60 * 1000;
     const MILLILITERS_PER_HOUR = 1;
@@ -878,30 +897,37 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async onEditAgent(a: Agent): Promise<void> {
-    if (!this.canEdit) return;
-    const alert = await this.alertController.create({
-      header: this.translate.instant('monitorizacao.page.alerts.editAgentTitle'),
-      inputs: [
-        { name: 'time', type: 'time', value: a.time, placeholder: 'HH:mm' },
-        { name: 'name', type: 'text', value: a.name, placeholder: this.translate.instant('monitorizacao.page.alerts.editAgentNamePlaceholder') },
-        { name: 'dose', type: 'text', value: a.dose || '', placeholder: this.translate.instant('monitorizacao.page.alerts.editAgentDosePlaceholder') },
-        { name: 'route', type: 'text', value: a.route || '', placeholder: this.translate.instant('monitorizacao.page.alerts.editAgentRoutePlaceholder') },
-      ],
-      buttons: [
-        { text: this.translate.instant('common.cancel'), role: 'cancel' },
-        {
-          text: this.translate.instant('common.save'),
-          handler: (d) => {
-            const ts = this.replaceTimeInIso(a.timestamp, d.time);
-            this.agents = this.agents
-              .map((x) => (x.clientId === a.clientId ? { ...x, ...d, timestamp: ts, time: d.time || x.time } : x))
-              .sort(this.byTs);
-            this.persistDraft();
-          },
-        },
-      ],
-    });
-    await alert.present();
+    if (!this.canEdit || this.isAgentModalOpen) return;
+    this.isAgentModalOpen = true;
+    try {
+      const modal = await this.modalController.create({
+        component: ClinicalItemModalComponent,
+        componentProps: { type: 'agent', initial: { ...a, time: a.time } },
+        cssClass: 'clinical-item-modal',
+      });
+      await modal.present();
+      const { data } = await modal.onDidDismiss();
+      if (!data || data.type !== 'agent') return;
+      const ts = data.time ? this.replaceTimeInIso(a.timestamp, data.time) : a.timestamp;
+      this.agents = this.agents
+        .map((x) => (x.clientId === a.clientId ? {
+          ...x,
+          medicationId: data.medicationId ?? null,
+          name: data.name,
+          dose: data.dose ?? null,
+          doseValue: data.doseValue ?? null,
+          unit: data.unit ?? null,
+          routeId: data.routeId ?? null,
+          route: data.route ?? null,
+          isBolus: !!data.isBolus,
+          timestamp: ts,
+          time: data.time || x.time,
+        } : x))
+        .sort(this.byTs);
+      this.persistDraft();
+    } finally {
+      this.isAgentModalOpen = false;
+    }
   }
 
   async onDeleteAgent(a: Agent): Promise<void> {
@@ -911,10 +937,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.persistDraft();
   }
 
-  // ---------------------------------------------------------------------------
-  // Eventos clínicos
-  // ---------------------------------------------------------------------------
-
+ 
   async onAddEvent(): Promise<void> {
     if (!this.canEdit || this.isEventModalOpen) return;
     this.isEventModalOpen = true;
@@ -1028,29 +1051,36 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async onEditBalance(b: FluidBalance): Promise<void> {
-    if (!this.canEdit) return;
-    const alert = await this.alertController.create({
-      header: this.translate.instant('monitorizacao.page.alerts.editBalanceTitle'),
-      inputs: [
-        { name: 'time', type: 'time', value: b.time, placeholder: 'HH:mm' },
-        { name: 'item', type: 'text', value: b.item, placeholder: this.translate.instant('monitorizacao.page.alerts.editBalanceItemPlaceholder') },
-        { name: 'volumeMl', type: 'number', value: String(b.volumeMl), placeholder: this.translate.instant('monitorizacao.page.alerts.editBalanceVolumePlaceholder') },
-      ],
-      buttons: [
-        { text: this.translate.instant('common.cancel'), role: 'cancel' },
-        {
-          text: this.translate.instant('common.save'),
-          handler: (d) => {
-            const ts = this.replaceTimeInIso(b.timestamp, d.time);
-            this.fluidBalance = this.fluidBalance
-              .map((x) => (x.clientId === b.clientId ? { ...x, item: d.item, volumeMl: Number(d.volumeMl) || 0, timestamp: ts, time: d.time || x.time } : x))
-              .sort(this.byTs);
-            this.persistDraft();
-          },
-        },
-      ],
-    });
-    await alert.present();
+    if (!this.canEdit || this.isBalanceModalOpen) return;
+    this.isBalanceModalOpen = true;
+    try {
+      const modal = await this.modalController.create({
+        component: ClinicalItemModalComponent,
+        componentProps: { type: 'balance', initial: { ...b, time: b.time } },
+        cssClass: 'clinical-item-modal',
+      });
+      await modal.present();
+      const { data } = await modal.onDidDismiss();
+      if (!data || data.type !== 'balance') return;
+      const ts = data.time ? this.replaceTimeInIso(b.timestamp, data.time) : b.timestamp;
+      this.fluidBalance = this.fluidBalance
+        .map((x) => (x.clientId === b.clientId ? {
+          ...x,
+          type: data.balanceType ?? x.type,
+          item: data.itemLabel || data.label || x.item,
+          volumeMl: Number(data.volumeMl),
+          itemId: data.itemId ?? null,
+          detail: data.detail ?? null,
+          categoryId: data.categoryId ?? x.categoryId,
+          balanceTypeId: data.balanceTypeId ?? x.balanceTypeId,
+          timestamp: ts,
+          time: data.time || x.time,
+        } : x))
+        .sort(this.byTs);
+      this.persistDraft();
+    } finally {
+      this.isBalanceModalOpen = false;
+    }
   }
 
   async onDeleteBalance(b: FluidBalance): Promise<void> {

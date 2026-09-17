@@ -23,6 +23,12 @@
   </div>
 
   <div class="vcc__scroll" #scrollHost (scroll)="onScroll(scrollHost)">
+    <div class="vcc__yaxis">
+      <svg [attr.width]="padL" [attr.height]="chartH" [attr.viewBox]="'0 0 ' + padL + ' ' + chartH">
+        <rect x="0" y="0" [attr.width]="padL" [attr.height]="chartH" class="vcc__yaxis-bg" />
+        <text *ngFor="let tick of yTicks" [attr.x]="4" [attr.y]="yFor(tick) + 3" class="vcc__tick-label">{{ tick }}</text>
+      </svg>
+    </div>
     <div class="vcc__canvas" #canvasEl [style.width]="canvasWidth">
       <svg
         [attr.width]="chartW" [attr.height]="chartH"
@@ -34,7 +40,6 @@
             [attr.y1]="yFor(tick)" [attr.y2]="yFor(tick)"
             class="vcc__gridline"
           />
-          <text [attr.x]="4" [attr.y]="yFor(tick) + 3" class="vcc__tick-label">{{ tick }}</text>
         </g>
 
         <g *ngFor="let m of milestones">
