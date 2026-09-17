@@ -1,3 +1,26 @@
+@use 'sass:color';
+
+// Paleta "SIGA — Azul gelo" (mesma da tela de Monitorização) — cores centrais
+// usadas neste header. Mantidas em hexadecimal puro (não em @use de um
+// arquivo de tokens de feature) porque este é um componente compartilhado,
+// carregado por telas que não têm acesso aos parciais de `monitorizacao`.
+$surface-bg:          #f3f7f9;
+$surface-card:        #fcfdfe;
+$surface-panel:       #dce7ec;
+$surface-accent-soft: #c6e4ed;
+$text-deep: #223740;
+$text-ink:  #4a6572;
+$c-primary: #1b8ba6;
+$c-success: #2f9e6e;
+$c-crimson: #c23a6b;
+$c-warning: #8a5a1f;
+$c-warning-soft: #fbf1de;
+$border:        rgba(34, 55, 64, 0.12);
+$border-strong: rgba(34, 55, 64, 0.22);
+$shadow-card: 0 1px 2px rgba(34, 55, 64, 0.06);
+$radius-base: 10px;
+$radius-lg:   14px;
+
 :host {
   display: block;
 }
@@ -6,11 +29,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  height: 52px;
+  height: 56px;
   padding: 0 16px;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(252, 253, 254, 0.92);
   backdrop-filter: blur(8px);
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid $border;
   position: sticky;
   top: 0;
   z-index: 30;
@@ -28,23 +51,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border: none;
   background: transparent;
-  border-radius: 12px;
-  color: #475569;
+  border-radius: $radius-base;
+  color: $text-ink;
   cursor: pointer;
   transition: background 0.15s;
 
   ion-icon {
-    font-size: 24px;
+    font-size: 22px;
   }
   &:hover {
-    background: #f1f5f9;
+    background: $surface-bg;
   }
   &:active {
-    background: #e2e8f0;
+    background: $surface-panel;
   }
 }
 
@@ -68,9 +91,9 @@
   align-items: center;
   gap: 10px;
   padding: 3px 14px 3px 3px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid $border;
   border-radius: 999px;
-  background: #fff;
+  background: $surface-card;
 
   .avatar {
     display: flex;
@@ -79,7 +102,7 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #3b82f6;
+    background: $c-primary;
     color: #fff;
     font-weight: 600;
     font-size: 13px;
@@ -95,17 +118,17 @@
   .doctor-name {
     font-size: 14px;
     font-weight: 600;
-    color: #0f172a;
+    color: $text-deep;
   }
 
   .doctor-role {
     font-size: 11px;
-    color: #64748b;
+    color: $text-ink;
   }
 
   .chevron {
     font-size: 18px;
-    color: #64748b;
+    color: $text-ink;
     transition: transform 0.2s ease;
     margin-left: 4px;
   }
@@ -119,12 +142,12 @@
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  background: $surface-card;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
   box-shadow:
-    0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    0 10px 15px -3px rgba(34, 55, 64, 0.12),
+    0 4px 6px -4px rgba(34, 55, 64, 0.1);
   min-width: 210px;
   overflow: hidden;
   z-index: 100;
@@ -141,7 +164,7 @@
     background: transparent;
     text-align: left;
     font-size: 15px;
-    color: #475569;
+    color: $text-ink;
     cursor: pointer;
     transition: background 0.15s;
 
@@ -151,13 +174,13 @@
     }
 
     &:hover {
-      background: #f8fafc;
+      background: $surface-bg;
     }
 
     &.logout {
-      color: #dc2626;
+      color: $c-crimson;
       &:hover {
-        background: #fef2f2;
+        background: rgba(194, 58, 107, 0.08);
       }
     }
   }
@@ -189,7 +212,7 @@
 .drawer-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(34, 55, 64, 0.4);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
@@ -208,13 +231,13 @@
   bottom: 0;
   width: 320px;
   max-width: 85vw;
-  background: #fff;
+  background: $surface-card;
   z-index: 50;
   display: flex;
   flex-direction: column;
   transform: translateX(-100%);
   transition: transform 0.25s ease;
-  box-shadow: 4px 0 24px rgba(15, 23, 42, 0.08);
+  box-shadow: 4px 0 24px rgba(34, 55, 64, 0.1);
 
   &.open {
     transform: translateX(0);
@@ -227,7 +250,7 @@
   align-items: center;
   justify-content: center;
   padding: 32px 44px 24px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid $border;
 
   .drawer-logos {
     display: flex;
@@ -248,7 +271,7 @@
     .drawer-title {
       font-size: 12px;
       font-weight: 700;
-      color: #0f172a;
+      color: $text-deep;
       line-height: 1.3;
       word-break: break-word;
     }
@@ -262,15 +285,15 @@
     height: 36px;
     border: none;
     background: transparent;
-    border-radius: 8px;
-    color: #64748b;
+    border-radius: $radius-base;
+    color: $text-ink;
     cursor: pointer;
 
     ion-icon {
       font-size: 22px;
     }
     &:hover {
-      background: #f1f5f9;
+      background: $surface-bg;
     }
   }
 }
@@ -292,11 +315,11 @@
   padding: 14px 16px;
   border: none;
   background: transparent;
-  border-radius: 12px;
+  border-radius: $radius-base;
   text-align: left;
   font-size: 15px;
   font-weight: 600;
-  color: #475569;
+  color: $text-ink;
   cursor: pointer;
   transition:
     background 0.15s,
@@ -308,69 +331,63 @@
   }
 
   &:hover {
-    background: #f8fafc;
+    background: $surface-bg;
   }
 
   &.active {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
+    background: $surface-accent-soft;
+    color: $c-primary;
   }
 
   &.logout {
-    color: #dc2626;
+    color: $c-crimson;
     &:hover {
-      background: #fef2f2;
+      background: rgba(194, 58, 107, 0.08);
     }
   }
 }
 
+// Botão de voltar — de propósito simples (só o ícone, sem pílula colorida
+// nem sombra pesada): é a ação mais usada do header, então quanto mais leve
+// visualmente, menos compete com o conteúdo da própria página.
 .header-back-btn {
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
-  gap: 6px;
 
+  width: 36px;
   height: 36px;
-  padding: 0 14px;
+  padding: 0;
   margin: 0;
 
-  background: #3b82f6;
-  border: 1px solid #3b82f6;
+  background: $surface-accent-soft;
+  border: none;
   border-radius: 999px;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1;
-  white-space: nowrap;
+  color: $c-primary;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(59, 130, 246, 0.25);
 
   transition:
     background 0.2s ease,
-    border-color 0.2s ease,
     transform 0.15s ease,
-    opacity 0.2s ease,
-    box-shadow 0.2s ease;
+    opacity 0.2s ease;
 
   ion-icon {
-    font-size: 18px;
+    font-size: 20px;
   }
   span {
-    display: inline-block;
+    display: none;
   }
 
   &:hover {
-    background: #2563eb;
-    border-color: #2563eb;
-    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+    background: $surface-panel;
   }
 
   &:active {
-    transform: scale(0.96);
+    transform: scale(0.94);
   }
 
   &:focus-visible {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid $c-primary;
     outline-offset: 2px;
   }
 
@@ -378,20 +395,6 @@
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-  }
-}
-
-@media (max-width: 520px) {
-  .header-back-btn {
-    padding: 0 10px;
-    height: 36px;
-
-    span {
-      display: none;
-    }
-    ion-icon {
-      font-size: 20px;
-    }
   }
 }
 
@@ -425,7 +428,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid $c-primary;
     outline-offset: 2px;
   }
 
@@ -444,7 +447,7 @@
   height: 34px;
   border: 1px solid transparent;
   border-radius: 999px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+  box-shadow: $shadow-card;
   transition:
     background 0.2s ease,
     border-color 0.2s ease,
@@ -455,76 +458,78 @@
   }
 
   &--primary {
-    background: #3b82f6;
-    border-color: #3b82f6;
+    background: $c-primary;
+    border-color: $c-primary;
     color: #fff;
   }
 
   &--success {
-    background: #16a34a;
-    border-color: #16a34a;
+    background: $c-success;
+    border-color: $c-success;
     color: #fff;
   }
 
   &--warning {
-    background: #f59e0b;
-    border-color: #f59e0b;
+    background: $c-warning;
+    border-color: $c-warning;
     color: #fff;
   }
 
   &--danger {
-    background: #ef4444;
-    border-color: #ef4444;
+    background: $c-crimson;
+    border-color: $c-crimson;
     color: #fff;
   }
 
   &--muted {
-    background: #eef1f6;
-    border-color: #cbd5e1;
-    color: #334155;
+    background: $surface-panel;
+    border-color: $border-strong;
+    color: $text-deep;
   }
 
+  // Botões de atalho pra abrir a Pré-anestésica/Anestésica — tom suave (não
+  // sólido) porque são atalhos secundários, não a ação principal do header.
   &--pre {
-    background: #e0f2fe;
-    border-color: #e0f2fe;
-    color: #0284c7;
+    background: $surface-accent-soft;
+    border-color: $surface-accent-soft;
+    color: $c-primary;
   }
 
   &--anes {
-    background: #ecfdf5;
-    border-color: #ecfdf5;
-    color: #059669;
+    background: rgba(47, 158, 110, 0.16);
+    border-color: rgba(47, 158, 110, 0.16);
+    color: $c-success;
   }
 }
 
 .header-icon-btn:hover:not(:disabled) {
   .header-icon-btn-icon--primary {
-    background: #2563eb;
-    border-color: #2563eb;
+    background: color.adjust($c-primary, $lightness: -8%);
+    border-color: color.adjust($c-primary, $lightness: -8%);
   }
   .header-icon-btn-icon--success {
-    background: #15803d;
-    border-color: #15803d;
+    background: color.adjust($c-success, $lightness: -8%);
+    border-color: color.adjust($c-success, $lightness: -8%);
   }
   .header-icon-btn-icon--pre {
-    background: #bae6fd;
-    border-color: #bae6fd;
+    background: $surface-panel;
+    border-color: $surface-panel;
   }
   .header-icon-btn-icon--anes {
-    background: #d1fae5;
-    border-color: #d1fae5;
+    background: rgba(47, 158, 110, 0.26);
+    border-color: rgba(47, 158, 110, 0.26);
   }
   .header-icon-btn-icon--warning {
-    background: #d97706;
-    border-color: #d97706;
+    background: color.adjust($c-warning, $lightness: -8%);
+    border-color: color.adjust($c-warning, $lightness: -8%);
   }
   .header-icon-btn-icon--danger {
-    background: #dc2626;
-    border-color: #dc2626;
+    background: color.adjust($c-crimson, $lightness: -8%);
+    border-color: color.adjust($c-crimson, $lightness: -8%);
   }
   .header-icon-btn-icon--muted {
-    background: #e2e8f0;
-    border-color: #94a3b8;
+    background: $surface-panel;
+    border-color: $text-ink;
   }
 }
 
@@ -534,7 +539,7 @@
   text-transform: uppercase;
   letter-spacing: 0.4px;
   line-height: 1;
-  color: #64748b;
+  color: $text-ink;
   white-space: nowrap;
 }
 

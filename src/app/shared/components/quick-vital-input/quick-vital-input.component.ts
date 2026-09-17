@@ -95,7 +95,7 @@ export class QuickVitalInputComponent implements OnInit {
   ngOnInit(): void {
     if (this.initialValue) {
       const initCustom: Record<string, any> = { ...(this.initialValue.custom ?? {}) };
-      
+
       for (const f of this.customFields || []) {
         if (initCustom[f.key] == null && this.initialValue[f.key] != null) {
           initCustom[f.key] = this.initialValue[f.key];
@@ -108,6 +108,9 @@ export class QuickVitalInputComponent implements OnInit {
         time: this.initialValue.time ?? null,
         custom: initCustom,
       };
+    } else {    
+      const now = new Date();
+      this.form.time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     }
   }
 
@@ -163,7 +166,7 @@ export class QuickVitalInputComponent implements OnInit {
     if (Object.keys(custom).length > 0)
       payload.custom = custom;
 
-    if (this.isEdit && this.form.time) {
+    if (this.form.time) {
       payload.time = this.form.time;
     }
 

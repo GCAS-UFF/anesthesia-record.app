@@ -1,0 +1,157 @@
+@use '../styles/monitoring-tokens' as t;
+@use '../styles/monitoring-fonts';
+
+.psc {
+  background: t.$surface-card;
+  border-radius: t.$radius-2xl;
+  box-shadow: t.$shadow-card;
+  border: 1px solid t.$border;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  &__patient {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  &__avatar {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    background: t.$c-primary;
+    color: #fff;
+    font-family: t.$font-display;
+    font-weight: 700;
+    font-size: t.$fs-12;
+    display: grid;
+    place-items: center;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__name {
+    font-family: t.$font-display;
+    font-weight: 700;
+    font-size: t.$fs-13;
+    color: t.$text-deep;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__meta {
+    font-family: t.$font-body;
+    font-size: t.$fs-10;
+    color: t.$text-ink;
+  }
+
+  &__timers {
+    display: flex;
+    flex: none;
+    gap: 14px;
+  }
+
+  &__timer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+  }
+
+  &__timer-label {
+    font-family: t.$font-body;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: t.$text-ink;
+  }
+
+  &__timer-value {
+    font-family: t.$font-display;
+    font-weight: 700;
+    font-size: t.$fs-15;
+    font-variant-numeric: tabular-nums;
+
+    &--primary { color: t.$c-primary; }
+    &--success { color: t.$c-success; }
+  }
+
+  &__actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  &__action {
+    min-height: 34px;
+    padding: 0 8px;
+    border-radius: t.$radius-base;
+    font-family: t.$font-display;
+    font-weight: 700;
+    font-size: t.$fs-11;
+    border: none;
+    background: t.$surface-accent-soft;
+    color: t.$c-primary;
+
+    &:disabled {
+      opacity: 0.4;
+    }
+
+    &:active:not(:disabled) {
+      filter: brightness(0.96);
+    }
+
+    &--primary {
+      background: t.$c-primary;
+      color: #fff;
+    }
+
+    &--success {
+      background: t.$c-success;
+      color: #fff;
+    }
+
+    &--static {
+      background: t.$surface-panel;
+      color: t.$text-ink;
+    }
+
+    &--done {
+      justify-self: start;
+      width: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 12px;
+      background: t.$surface-accent-soft;
+      color: t.$c-primary;
+
+      &:disabled {
+        opacity: 1;
+      }
+    }
+  }
+
+  &__action-check {
+    font-size: t.$fs-11;
+    line-height: 1;
+  }
+}

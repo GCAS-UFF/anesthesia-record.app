@@ -1,0 +1,83 @@
+<section class="vs" [style.--row-label-gutter.px]="rowLabelGutterPx">
+  <header class="vs__header">
+    <h2 class="vs__title">{{ 'monitorizacao.shell.vitals.title' | translate }}</h2>
+    <div class="vs__header-actions">
+      <button
+        type="button"
+        class="vs__add-field"
+        [disabled]="readonly"
+        [attr.aria-label]="'monitorizacao.vitalSigns.addFieldTooltip' | translate"
+        (click)="addCustomField.emit()"
+      >⚙</button>
+      <button
+        type="button"
+        class="vs__add"
+        [disabled]="readonly"
+        (click)="addRecord.emit()"
+      >
+        + {{ 'monitorizacao.shell.vitals.addButton' | translate }}
+      </button>
+    </div>
+  </header>
+
+  <p class="vs__empty" *ngIf="!vitalRecords.length">
+    {{ 'monitorizacao.shell.vitals.empty' | translate }}
+  </p>
+
+  <div class="vs__scroll" *ngIf="vitalRecords.length" #scrollHost (scroll)="onScroll(scrollHost)">
+    <div class="vs__canvas" [style.width]="canvasWidth">
+      <div class="vs__row vs__row--header">
+        <span class="vs__row-label"></span>
+        <div class="vs__row-track">
+          <button
+            type="button"
+            class="vs__time-btn"
+            *ngFor="let record of vitalRecords; let i = index"
+            [style.left.%]="xPercentAt(i)"
+            [disabled]="readonly"
+            (click)="editTime.emit(record)"
+          >{{ record.time }}</button>
+        </div>
+      </div>
+
+      <div class="vs__row" *ngFor="let row of rows">
+        <span class="vs__row-label">{{ row.label || (row.labelKey | translate) }}</span>
+        <div class="vs__row-track">
+          <button
+            type="button"
+            class="vs__cell"
+            *ngFor="let record of vitalRecords; let i = index"
+            [style.left.%]="xPercentAt(i)"
+            [disabled]="readonly"
+            (click)="cellTap.emit({ record: record, field: row.field })"
+          >{{ valueFor(record, row.field) ?? '—' }}</button>
+        </div>
+      </div>
+
+      <div class="vs__row">
+        <span class="vs__row-label">{{ 'monitorizacao.shell.vitals.rows.hydration' | translate }}</span>
+        <div class="vs__row-track">
+          <span
+            class="vs__cell vs__cell--static"
+            *ngFor="let record of vitalRecords; let i = index"
+            [style.left.%]="xPercentAt(i)"
+          >{{ hydrationAt(record) }}</span>
+        </div>
+      </div>
+
+      <div class="vs__row" *ngIf="!readonly">
+        <span class="vs__row-label"></span>
+        <div class="vs__row-track">
+          <button
+            type="button"
+            class="vs__delete"
+            *ngFor="let record of vitalRecords; let i = index"
+            [style.left.%]="xPercentAt(i)"
+            [attr.aria-label]="'monitorizacao.shell.vitals.deleteColumnAria' | translate: { time: record.time }"
+            (click)="deleteRecord.emit(record)"
+          >×</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

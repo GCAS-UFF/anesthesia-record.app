@@ -775,12 +775,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   get aldereteStatus(): { text: string, color: string } {
     const s = this.aldereteTotal;
     if (s >= 8)
-      return { text: this.translate.instant('fichaAnestesica.alderete.status.apto'), color: '#10b981' };
+      return { text: this.translate.instant('fichaAnestesica.alderete.status.apto'), color: '#2f9e6e' };
 
     if (s >= 5)
-      return { text: this.translate.instant('fichaAnestesica.alderete.status.observacao'), color: '#f59e0b' };
+      return { text: this.translate.instant('fichaAnestesica.alderete.status.observacao'), color: '#8a5a1f' };
 
-    return { text: this.translate.instant('fichaAnestesica.alderete.status.monitoramento'), color: '#ef4444' };
+    return { text: this.translate.instant('fichaAnestesica.alderete.status.monitoramento'), color: '#c23a6b' };
   }
 
   getFormGroup(name: string): FormGroup {

@@ -1,0 +1,42 @@
+<section class="ac" [style.--row-label-gutter.px]="rowLabelGutterPx">
+  <header class="ac__header">
+    <h2 class="ac__title">{{ 'monitorizacao.shell.agents.title' | translate }}</h2>
+    <button type="button" class="ac__add" [disabled]="readonly" (click)="addAgent.emit()">
+      + {{ 'monitorizacao.shell.agents.addButton' | translate }}
+    </button>
+  </header>
+
+  <p class="ac__empty" *ngIf="!agents.length">
+    {{ 'monitorizacao.shell.agents.empty' | translate }}
+  </p>
+
+  <div class="ac__scroll" *ngIf="agents.length" #scrollHost (scroll)="onScroll(scrollHost)">
+    <div class="ac__canvas" [style.width]="canvasWidth">
+      <div class="ac__row">
+        <span class="ac__row-label"></span>
+        <div class="ac__row-track">
+          <div
+            class="ac__item"
+            *ngFor="let agent of agents; let i = index"
+            [style.left.%]="agentPercents[i]"
+          >
+            <button type="button" class="ac__marker" [disabled]="readonly" (click)="editAgent.emit(agent)">
+              <span class="ac__marker-time">{{ agent.time }}</span>
+              <span class="ac__marker-body">
+                <span class="ac__marker-name">{{ agent.name }}</span>
+                <span class="ac__marker-dose" *ngIf="agent.dose">{{ agent.dose }}</span>
+              </span>
+            </button>
+            <button
+              type="button"
+              class="ac__delete"
+              *ngIf="!readonly"
+              [attr.aria-label]="'monitorizacao.shell.agents.deleteAria' | translate"
+              (click)="deleteAgent.emit(agent)"
+            >×</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,18 @@
+// Fontes auto-hospedadas (app roda offline em tablet — sem CDN de fontes).
+// Escopo: apenas a feature Ficha Anestésica, para não alterar a tipografia do resto do app.
+// Reaproveita os mesmos arquivos já usados por Monitorização (src/assets/fonts/).
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('../../../../assets/fonts/sora/Sora-Variable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('../../../../assets/fonts/manrope/Manrope-Variable.woff2') format('woff2');
+}

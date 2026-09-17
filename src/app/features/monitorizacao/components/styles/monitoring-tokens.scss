@@ -1,52 +1,36 @@
+// Paleta "SIGA — Azul gelo", portada do protótipo Lovable (Siga Monitor Rx).
+// Superfícies
+$surface-bg:          #f3f7f9;
+$surface-card:        #fcfdfe;
+$surface-panel:       #dce7ec;
+$surface-accent-soft: #c6e4ed;
 
-$c-fc:     #ef4444;   // Frequência cardíaca
-$c-pa:     #3b82f6;   // Pressão arterial (PAS/PAD/PAM)
-$c-spo2:   #10b981;   // Saturação
-$c-temp:   #f59e0b;   // Temperatura
-$c-etco2:  #a855f7;   // EtCO₂
-$c-bis:    #14b8a6;   // BIS
+// Texto
+$text-deep: #223740; // títulos, valores, ícones principais
+$text-ink:  #4a6572; // texto secundário
 
-$c-agent:  #8b5cf6;   // Agentes
-$c-event:  #f97316;   // Eventos
-$c-fluid:  #06b6d4;   // Balanço
-$c-gain:   #22c55e;   // Ganho
-$c-loss:   #dc2626;   // Perda
-$c-pos:    #16a34a;   // Posição
+// Marca / estado
+$c-primary: #1b8ba6; // ação principal, timer de anestesia, PAS/PAD
+$c-success: #2f9e6e; // timer de cirurgia, marcador de início/fim de cirurgia
+$c-crimson: #c23a6b; // FC, ações destrutivas (excluir, finalizar)
+$c-warning-soft: #fbf1de;
+$c-warning-ink:  #8a5a1f;
 
-// ---- Ação crítica ----
-$c-danger-solid: #991b1b;
-$c-danger-hover: #7f1d1d;
-$c-primary:      #6366f1;
-$c-primary-soft: #eef2ff;
+$border: rgba(34, 55, 64, 0.12);
+$border-strong: rgba(34, 55, 64, 0.22);
 
-// ---- Superfícies ----
-$surface-0: #f1f5f9;  
-$surface-1: #ffffff;  
-$surface-2: #f8fafc;  
-$surface-3: #f1f5f9;
-$border:    #e2e8f0;
-$border-strong: #cbd5e1;
+// Tipografia
+$font-display: 'Sora', system-ui, -apple-system, sans-serif;
+$font-body:    'Manrope', system-ui, -apple-system, sans-serif;
 
-$text-0: #0f172a;
-$text-1: #1e293b;
-$text-2: #475569;
-$text-3: #94a3b8;
+$fs-9: 9px; $fs-10: 10px; $fs-11: 11px; $fs-12: 12px;
+$fs-13: 13px; $fs-15: 15px; $fs-16: 16px; $fs-18: 18px;
 
-// ---- Sombras ----
-$shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
-$shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
-$shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.08);
+// Raio / toque
+$radius-base: 0.625rem; // 10px
+$radius-lg:   0.875rem; // 14px
+$radius-2xl:  1.25rem;  // 20px
+$touch-min:   44px;
 
-// ---- Tipografia ----
-$font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
-$font-ui:   'Inter', system-ui, -apple-system, sans-serif;
-
-// ---- Toque (tablet + luva cirúrgica) ----
-$touch-min: 48px;
-$touch-comfort: 56px;
-
-// ---- Raios ----
-$r-sm: 8px;
-$r-md: 12px;
-$r-lg: 16px;
-$r-xl: 20px;
+// Sombra de card
+$shadow-card: 0 1px 2px rgba(34, 55, 64, 0.06);

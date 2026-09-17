@@ -32,23 +32,24 @@ import { CommonModule } from '@angular/common';
       width: 100%;
     }
     .field-label {
+      font-family: 'Manrope', system-ui, -apple-system, sans-serif;
       font-size: 11px;
       font-weight: 800;
-      color: #64748b;
+      color: #4a6572;
       letter-spacing: 1px;
       text-transform: uppercase;
       padding-left: 4px;
       margin-bottom: 2px;
     }
     .required {
-      color: #ef4444;
+      color: #c23a6b;
       margin-left: 2px;
     }
     .field-wrapper {
       width: 100%;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
+      background: #f3f7f9;
+      border: 1px solid rgba(34, 55, 64, 0.12);
+      border-radius: 0.625rem;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
@@ -56,9 +57,9 @@ import { CommonModule } from '@angular/common';
       min-height: 42px;
 
       &:focus-within {
-        background: white;
-        border-color: #cbd5e1;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        background: #fcfdfe;
+        border-color: #1b8ba6;
+        box-shadow: 0 0 0 3px rgba(27, 139, 166, 0.14);
       }
 
       /* Quando contém input de tempo, encolhe o wrapper */
@@ -78,9 +79,10 @@ import { CommonModule } from '@angular/common';
         border: none !important;
         padding: 8px 14px !important;
         width: 100% !important;
+        font-family: 'Manrope', system-ui, -apple-system, sans-serif !important;
         font-size: 14px !important;
         font-weight: 600 !important;
-        color: #1e293b !important;
+        color: #223740 !important;
         outline: none !important;
         box-shadow: none !important;
         --background: transparent !important;
@@ -117,26 +119,25 @@ import { CommonModule } from '@angular/common';
 
     .error-text {
       font-size: 11px;
-      color: #ef4444;
+      color: #c23a6b;
       margin-top: 4px;
       padding-left: 4px;
     }
     .error .field-wrapper {
-      border-color: #ef4444;
-      background: #fef2f2;
+      border-color: #c23a6b;
+      background: #fbf1de;
     }
     .error .field-label {
-      color: #ef4444;
+      color: #c23a6b;
     }
 
-    /* Validação automática sênior */
     :host:has(.ng-invalid.ng-touched) .field-wrapper {
-      border-color: #ef4444 !important;
-      background: #fef2f2 !important;
+      border-color: #c23a6b !important;
+      background: #fbf1de !important;
       animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
     }
     :host:has(.ng-invalid.ng-touched) .field-label {
-      color: #ef4444 !important;
+      color: #c23a6b !important;
     }
 
     @keyframes shake {

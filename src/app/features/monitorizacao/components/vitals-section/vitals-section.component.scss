@@ -1,0 +1,179 @@
+@use '../styles/monitoring-tokens' as t;
+@use '../styles/monitoring-fonts';
+
+.vs {
+  background: t.$surface-card;
+  border-radius: t.$radius-2xl;
+  box-shadow: t.$shadow-card;
+  border: 1px solid t.$border;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__title {
+    margin: 0;
+    font-family: t.$font-display;
+    font-weight: 700;
+    font-size: t.$fs-13;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: t.$text-deep;
+  }
+
+  &__header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__add {
+    min-height: 36px;
+    padding: 0 12px;
+    border: none;
+    border-radius: t.$radius-lg;
+    background: t.$surface-accent-soft;
+    color: t.$c-primary;
+    font-family: t.$font-display;
+    font-weight: 700;
+    font-size: t.$fs-12;
+
+    &:disabled { opacity: 0.4; }
+  }
+
+  &__add-field {
+    min-height: 36px;
+    min-width: 36px;
+    border: none;
+    border-radius: t.$radius-lg;
+    background: t.$surface-bg;
+    color: t.$text-ink;
+    font-size: t.$fs-13;
+
+    &:disabled { opacity: 0.4; }
+  }
+
+  &__empty {
+    margin: 8px 0;
+    text-align: center;
+    font-family: t.$font-body;
+    font-size: t.$fs-12;
+    color: t.$text-ink;
+  }
+
+  &__scroll {
+    overflow-x: auto;
+    min-width: 0;
+  }
+
+  // Mesma largura lógica que .vcc__canvas no vitals-chart-card (mesmo `zoom`,
+  // aplicado igual nos dois) — é isso que garante que uma célula em X% aqui
+  // caia exatamente sob o ponto em X% no gráfico.
+  &__canvas {
+    min-width: 100%;
+  }
+
+  // O rótulo reserva uma largura FIXA (--row-label-gutter, igual à folga em
+  // branco que o vitals-chart-card deixa antes do próprio canvas) — assim a
+  // trilha (.vs__row-track) sobra com a MESMA largura em px do canvas do
+  // gráfico, e uma célula em X% cai exatamente sob o ponto em X% lá.
+  &__row {
+    display: flex;
+    align-items: stretch;
+    min-height: 30px;
+    border-top: 1px solid t.$border;
+
+    &:first-child { border-top: none; }
+
+    &--header {
+      min-height: 22px;
+    }
+  }
+
+  &__row-label {
+    flex: 0 0 var(--row-label-gutter, 64px);
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding-right: 6px;
+    background: t.$surface-card;
+    font-family: t.$font-body;
+    font-size: t.$fs-11;
+    font-weight: 600;
+    color: t.$text-deep;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__row-track {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__time-btn,
+  &__cell,
+  &__delete {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border: none;
+    background: transparent;
+    white-space: nowrap;
+  }
+
+  &__time-btn {
+    font-family: t.$font-body;
+    font-size: t.$fs-10;
+    font-weight: 600;
+    color: t.$text-ink;
+    min-height: 22px;
+    padding: 0 4px;
+    font-variant-numeric: tabular-nums;
+
+    &:disabled { opacity: 0.8; }
+    &:active:not(:disabled) { color: t.$c-primary; }
+  }
+
+  &__cell {
+    min-height: t.$touch-min;
+    min-width: t.$touch-min;
+    padding: 0 4px;
+    font-family: t.$font-display;
+    font-weight: 600;
+    font-size: t.$fs-13;
+    color: t.$text-deep;
+    font-variant-numeric: tabular-nums;
+
+    &:disabled { opacity: 0.6; }
+
+    &--static {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: t.$text-ink;
+      font-family: t.$font-body;
+      font-size: t.$fs-12;
+    }
+  }
+
+  &__delete {
+    min-height: 28px;
+    min-width: 28px;
+    color: t.$text-ink;
+    font-size: t.$fs-13;
+    line-height: 1;
+
+    &:active { color: t.$c-crimson; }
+  }
+}

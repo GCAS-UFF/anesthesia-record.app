@@ -6,6 +6,7 @@
       "titleEditEvent": "Editar Evento",
       "titleAddBalance": "Adicionar Balanço",
       "clearSelection": "Limpar seleção",
+      "timeLabel": "Hora do lançamento",
       "agent": {
         "medicationLabel": "Medicação *",
         "medicationPlaceholder": "Digite o nome da medicação...",
@@ -15,7 +16,12 @@
         "dosePlaceholder": "ex: 100",
         "unitLabel": "Unidade *",
         "routeLabel": "Via *",
-        "selectPlaceholder": "Selecione"
+        "selectPlaceholder": "Selecione",
+        "bolusToggle": "Bolus",
+        "infusionPumpToggle": "Bomba de Infusão",
+        "infusionRateLabel": "Velocidade *",
+        "infusionRateUnitLabel": "Unidade *",
+        "infusionVolumeLabel": "Volume (mL) *"
       },
       "event": {
         "timeLabel": "Horário",

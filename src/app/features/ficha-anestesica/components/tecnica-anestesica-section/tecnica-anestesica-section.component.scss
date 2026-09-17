@@ -1,56 +1,60 @@
+@use '../../styles/ficha-tokens' as t;
+@use '../../styles/ficha-fonts';
+
 .tec-grid-3col {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 14px;
 }
 .mt-24 {
-  margin-top: 20px;
+  margin-top: 16px;
 }
 .mt-12 {
   margin-top: 12px;
 }
 
 .technique-card {
-  background: #f8fafc;
-  padding: 18px;
-  border-radius: 18px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  background: t.$surface-bg;
+  padding: 14px;
+  border-radius: t.$radius-lg;
+  border: 1px solid t.$border;
   display: flex;
   flex-direction: column;
   gap: 12px;
 
   .card-header-simple {
+    font-family: t.$font-display;
     font-size: 11px;
     font-weight: 800;
-    color: #2563eb;
+    color: t.$c-primary;
     text-transform: uppercase;
     letter-spacing: 1px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #dbeafe;
+    padding-bottom: 8px;
+    border-bottom: 1px solid t.$border;
   }
   .group-title {
+    font-family: t.$font-body;
     font-size: 13px;
     font-weight: 800;
-    color: #475569;
-    letter-spacing: 0.4px;
+    color: t.$text-deep;
+    letter-spacing: 0.2px;
     &.mini {
       font-size: 10px;
-      color: #94a3b8;
+      color: t.$text-ink;
       text-transform: uppercase;
       letter-spacing: 0.6px;
     }
   }
   .divider {
     height: 1px;
-    background: #e2e8f0;
+    background: t.$border;
     &.light {
-      background: #eef2f7;
+      background: t.$border;
     }
   }
   .sub-group {
     padding-left: 12px;
-    border-left: 2px solid #dbeafe;
+    border-left: 2px solid t.$surface-accent-soft;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -58,7 +62,7 @@
     .sub-label {
       font-size: 11px;
       font-weight: 700;
-      color: #64748b;
+      color: t.$text-ink;
     }
   }
   .cond-block {
@@ -68,7 +72,7 @@
   }
   .cond-sub {
     padding-left: 12px;
-    border-left: 2px solid #3b82f6;
+    border-left: 2px solid t.$c-primary;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -85,23 +89,24 @@
     justify-content: space-between;
     align-items: center;
     gap: 10px;
-    padding: 12px 14px;
-    background: #fff;
-    border-radius: 12px;
-    border: 1.5px solid #e2e8f0;
-    min-height: 52px;
+    padding: 10px 14px;
+    background: t.$surface-card;
+    border-radius: t.$radius-base;
+    border: 1px solid t.$border;
+    min-height: 48px;
     transition: all 0.2s ease;
     &:hover {
-      border-color: #93c5fd;
+      border-color: t.$c-primary;
     }
 
     ion-checkbox {
       --size: 22px;
-      --checkbox-background-checked: #2563eb;
-      --border-color-checked: #2563eb;
+      --checkbox-background-checked: #{t.$c-primary};
+      --border-color-checked: #{t.$c-primary};
+      font-family: t.$font-body;
       font-size: 14px;
       font-weight: 700;
-      color: #1e293b;
+      color: t.$text-deep;
       flex: 1;
     }
 
@@ -112,22 +117,22 @@
       span {
         font-size: 10px;
         font-weight: 800;
-        color: #94a3b8;
+        color: t.$text-ink;
         text-transform: uppercase;
       }
       .va-small-input {
         width: 70px;
-        height: 38px;
-        border: 1.5px solid #e2e8f0;
+        height: 36px;
+        border: 1px solid t.$border;
         border-radius: 8px;
         padding: 0 8px;
         font-size: 14px;
         font-weight: 700;
         text-align: center;
-        color: #0f172a;
+        color: t.$text-deep;
         outline: none;
         &:focus {
-          border-color: #2563eb;
+          border-color: t.$c-primary;
         }
       }
     }
@@ -139,8 +144,8 @@
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   padding: 12px;
-  background: #eff6ff;
-  border-radius: 12px;
+  background: t.$surface-accent-soft;
+  border-radius: t.$radius-base;
   margin-top: 6px;
   animation: fadeIn 0.2s ease;
 
@@ -152,7 +157,7 @@
   }
   .iot-sub {
     padding-left: 12px;
-    border-left: 2px solid #3b82f6;
+    border-left: 2px solid t.$c-primary;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -162,35 +167,36 @@
 .checkbox-tile {
   display: flex;
   align-items: center;
-  min-height: 48px;
+  min-height: 44px;
   padding: 10px 14px;
-  background: #fff;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 10px;
+  background: t.$surface-card;
+  border: 1px solid t.$border;
+  border-radius: t.$radius-base;
   transition: all 0.2s ease;
   cursor: pointer;
 
   ion-checkbox {
     --size: 22px;
-    --checkbox-background-checked: #2563eb;
-    --border-color-checked: #2563eb;
+    --checkbox-background-checked: #{t.$c-primary};
+    --border-color-checked: #{t.$c-primary};
+    font-family: t.$font-body;
     font-size: 13px;
     font-weight: 700;
-    color: #334155;
+    color: t.$text-deep;
     flex: 1;
   }
 
   &:hover {
-    border-color: #93c5fd;
-    background: #f8fafc;
+    border-color: t.$c-primary;
+    background: t.$surface-bg;
   }
 }
 
 .iot-title {
-  background: #dbeafe;
-  border-color: #93c5fd;
+  background: t.$surface-accent-soft;
+  border-color: t.$c-primary;
   ion-checkbox {
-    color: #1e40af;
+    color: t.$text-deep;
   }
 }
 
@@ -207,15 +213,16 @@
     width: 100%;
     padding: 10px 14px;
     min-height: 44px;
-    border: 1.5px solid #2563eb;
-    border-radius: 10px;
-    background: #eff6ff;
+    border: 1px solid t.$c-primary;
+    border-radius: t.$radius-base;
+    background: t.$surface-accent-soft;
+    font-family: t.$font-body;
     font-size: 14px;
     font-weight: 600;
-    color: #0f172a;
+    color: t.$text-deep;
     outline: none;
     &:focus {
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      box-shadow: 0 0 0 3px rgba(27, 139, 166, 0.15);
     }
   }
 }
@@ -226,9 +233,10 @@
   gap: 6px;
 }
 .field-label {
+  font-family: t.$font-body;
   font-size: 11px;
   font-weight: 800;
-  color: #64748b;
+  color: t.$text-ink;
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }

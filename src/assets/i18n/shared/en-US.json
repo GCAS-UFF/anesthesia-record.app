@@ -6,6 +6,7 @@
       "titleEditEvent": "Edit Event",
       "titleAddBalance": "Add Fluid Balance",
       "clearSelection": "Clear selection",
+      "timeLabel": "Record time",
       "agent": {
         "medicationLabel": "Medication *",
         "medicationPlaceholder": "Type the medication name...",
@@ -15,7 +16,12 @@
         "dosePlaceholder": "e.g.: 100",
         "unitLabel": "Unit *",
         "routeLabel": "Route *",
-        "selectPlaceholder": "Select"
+        "selectPlaceholder": "Select",
+        "bolusToggle": "Bolus",
+        "infusionPumpToggle": "Infusion Pump",
+        "infusionRateLabel": "Rate *",
+        "infusionRateUnitLabel": "Unit *",
+        "infusionVolumeLabel": "Volume (mL) *"
       },
       "event": {
         "timeLabel": "Time",

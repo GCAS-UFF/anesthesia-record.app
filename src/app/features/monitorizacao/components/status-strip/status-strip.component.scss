@@ -1,0 +1,30 @@
+@use '../styles/monitoring-tokens' as t;
+@use '../styles/monitoring-fonts';
+
+.ss {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 2px;
+  font-family: t.$font-body;
+  font-size: t.$fs-11;
+  color: t.$text-ink;
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    &--pending { color: t.$c-warning-ink; }
+  }
+
+  &__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: t.$c-success;
+    display: inline-block;
+
+    &--pending { background: t.$c-crimson; }
+  }
+}

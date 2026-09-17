@@ -1,0 +1,85 @@
+<section class="rfc" [style.--row-label-gutter.px]="rowLabelGutterPx">
+  <header class="rfc__header">
+    <h2 class="rfc__title">{{ 'monitorizacao.shell.resources.title' | translate }}</h2>
+    <div class="rfc__header-actions" *ngIf="!readonly">
+      <button type="button" class="rfc__add" (click)="addResource.emit('o2')">
+        {{ (isOxygenActive ? 'monitorizacao.shell.resources.turnOffO2' : 'monitorizacao.shell.resources.turnOnO2') | translate }}
+      </button>
+      <button type="button" class="rfc__add" (click)="addResource.emit('air')">
+        {{ (isAirActive ? 'monitorizacao.shell.resources.turnOffAir' : 'monitorizacao.shell.resources.turnOnAir') | translate }}
+      </button>
+    </div>
+  </header>
+
+  <p class="rfc__empty" *ngIf="!hasAnyResourceData">
+    {{ 'monitorizacao.shell.resources.comingSoon' | translate }}
+  </p>
+
+  <div class="rfc__scroll" *ngIf="hasAnyResourceData" #scrollHost (scroll)="onScroll(scrollHost)">
+    <div class="rfc__canvas" [style.width]="canvasWidth">
+
+      <div class="rfc__row" *ngIf="oxygenFlows.length">
+        <span class="rfc__row-label">{{ 'monitorizacao.shell.resources.o2Label' | translate }}</span>
+        <div class="rfc__row-track">
+          <span
+            class="rfc__bar rfc__bar--o2"
+            *ngFor="let seg of oxygenSegments"
+            [style.left.%]="seg.startPct"
+            [style.width.%]="seg.endPct - seg.startPct"
+          ></span>
+        </div>
+      </div>
+
+      <div class="rfc__row" *ngIf="compressedAirFlows.length">
+        <span class="rfc__row-label">{{ 'monitorizacao.shell.resources.airLabel' | translate }}</span>
+        <div class="rfc__row-track">
+          <span
+            class="rfc__bar rfc__bar--air"
+            *ngFor="let seg of airSegments"
+            [style.left.%]="seg.startPct"
+            [style.width.%]="seg.endPct - seg.startPct"
+          ></span>
+        </div>
+      </div>
+
+      <div class="rfc__row" *ngIf="infusionPumps.length" [style.min-height.px]="infusionRowHeightPx">
+        <span class="rfc__row-label">{{ 'monitorizacao.shell.resources.infusionPumpLabel' | translate }}</span>
+        <div class="rfc__row-track">
+          <span
+            class="rfc__bar rfc__bar--infusion"
+            [class.rfc__bar--infusion-alt]="seg.lane % 2 === 1"
+            *ngFor="let seg of infusionSegments"
+            [style.left.%]="seg.startPct"
+            [style.width.%]="seg.endPct - seg.startPct"
+            [style.top.%]="laneCenterPct(seg.lane)"
+            [title]="seg.medicationName"
+          >{{ seg.medicationName }}</span>
+        </div>
+      </div>
+
+      <div class="rfc__row rfc__row--position" *ngIf="positionHistory.length">
+        <span class="rfc__row-label">{{ 'monitorizacao.shell.resources.positionLabel' | translate }}</span>
+        <div class="rfc__row-track">
+          <div
+            class="rfc__position-marker"
+            *ngFor="let pos of positionHistory; let i = index"
+            [style.left.%]="positionPercents[i]"
+          >
+            <span class="rfc__position-time">{{ pos.time }}</span>
+            <app-position-figure class="rfc__position-figure" [position]="pos.position"></app-position-figure>
+            <span class="rfc__position-name">{{ pos.position }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rfc__position-current" *ngIf="!readonly">
+    <span class="rfc__position-current-label">{{ 'monitorizacao.shell.resources.positionLabel' | translate }}</span>
+    <span class="rfc__position-current-value" *ngIf="posicaoAtual">{{ posicaoAtual }}</span>
+    <span class="rfc__position-current-empty" *ngIf="!posicaoAtual">{{ 'monitorizacao.shell.resources.positionEmpty' | translate }}</span>
+    <button type="button" class="rfc__position-change" (click)="positionChange.emit(posicaoAtual)">
+      {{ 'monitorizacao.shell.resources.positionChangeButton' | translate }}
+    </button>
+  </div>
+</section>

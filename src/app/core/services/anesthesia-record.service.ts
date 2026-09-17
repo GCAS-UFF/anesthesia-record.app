@@ -274,21 +274,22 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     this.syncing = true;
     this.startSync();
 
-    const drafts = this.getPendingDrafts().filter(draft => this.canSyncDraft(draft));
+    const entries = this.getPendingDraftEntries().filter(({ draft }) => this.canSyncDraft(draft));
 
-    if (drafts.length === 0) {
+    if (entries.length === 0) {
       this.syncing = false;
       this.finishSync();
       return;
     }
 
-    from(drafts)
+    from(entries)
       .pipe(
-        concatMap(draft =>
+        concatMap(({ key, draft }) =>
           this.saveRecord(draft).pipe(
             map(result => ({ ...result, isMonitoringDraft: !!draft.isMonitoringDraft })),
             catchError(error => {
               console.error('Erro ao sincronizar ficha', draft, error);
+              this.recordSyncFailure(key, error);
               return of(null);
             })
           )
@@ -333,6 +334,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       delete draft._lastError;
       delete draft._retryCount;
       delete draft._httpStatus;
+      delete draft._lastSyncError;
       draft._lastSyncedAt = new Date().toISOString();
       localStorage.setItem(key, JSON.stringify(draft));
     } catch {
@@ -340,11 +342,11 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     }
   }
 
-  private getPendingDrafts(): any[] {
+  private getPendingDraftEntries(): { key: string; draft: any }[] {
     return Object.keys(localStorage)
       .filter(key => key.startsWith(this.DRAFT_PREFIX) || key.startsWith('draft_monitoring_'))
-      .map(key => this.safeJsonParse(localStorage.getItem(key)))
-      .filter((draft): draft is any => !!draft);
+      .map(key => ({ key, draft: this.safeJsonParse(localStorage.getItem(key)) }))
+      .filter((entry): entry is { key: string; draft: any } => !!entry.draft);
   }
 
   private safeJsonParse(value: string | null): any | null {
@@ -355,6 +357,39 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     } catch (error) {
       console.warn('Rascunho de anestesia inválido no storage:', error);
       return null;
+    }
+  }
+
+  private readonly NON_RETRYABLE_SYNC_STATUSES = new Set([400, 401, 403, 404, 409, 422]);
+
+ 
+  private recordSyncFailure(key: string, error: any): void {
+    const status = error?.status;
+    if (!this.NON_RETRYABLE_SYNC_STATUSES.has(status)) return;
+
+    try {
+      const raw = localStorage.getItem(key);
+      const current = raw ? this.safeJsonParse(raw) : null;
+      if (!current) return;
+
+      current._lastSyncError = {
+        status,
+        message: error?.error?.message || error?.message || 'Falha de validação ao sincronizar',
+        at: new Date().toISOString(),
+        signature: this.computeDraftSignature(current),
+      };
+      localStorage.setItem(key, JSON.stringify(current));
+    } catch {
+      // melhor esforço — se não conseguir marcar, a próxima tentativa só repete o mesmo erro
+    }
+  }
+
+  private computeDraftSignature(draft: any): string {
+    const { _lastSyncError, ...content } = draft;
+    try {
+      return JSON.stringify(content);
+    } catch {
+      return '';
     }
   }
 
@@ -370,6 +405,10 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       draft._lastSyncedAt && draft.monitoringUpdatedAt &&
       draft._lastSyncedAt >= draft.monitoringUpdatedAt
     ) {
+      return false;
+    }
+
+    if (draft._lastSyncError && draft._lastSyncError.signature === this.computeDraftSignature(draft)) {
       return false;
     }
 
@@ -624,6 +663,9 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         const mapped = this.mapPositionsToApp(api.positions ?? [], fallbackDateIso);
         return mapped[mapped.length - 1]?.position ?? null;
       })(),
+      oxygenFlows: this.mapOxygenOrAirFlowsToApp(api.oxygenFlows ?? [], 'o2', fallbackDateIso),
+      compressedAirFlows: this.mapOxygenOrAirFlowsToApp(api.compressedAirFlows ?? [], 'air', fallbackDateIso),
+      infusionPumps: this.mapInfusionPumpsToApp(api.infusionPumps ?? [], fallbackDateIso),
     };
   }
 
@@ -795,7 +837,37 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         dose: record.doseValue != null ? this.parseNumber(record.doseValue) : this.parseNumber(record.dose),
         unit: typeof record.unit === 'number' ? record.unit : MedicationUnitEnum.Milligram,
         route: mapRoute(record),
-        drugId: record.medicationId ?? record.drugId ?? record.id ?? 0
+        drugId: record.medicationId ?? record.drugId ?? record.id ?? 0,
+        isBolus: this.parseBoolean(record.isBolus),
+      };
+    });
+  }
+
+  private mapOxygenOrAirFlows(records: any[]): any[] {
+    if (!Array.isArray(records)) return [];
+    return records.map(record => {
+      const dt = new Date(this.normalizeIso(record.timestamp) ?? new Date().toISOString());
+      return {
+        time: dt.toISOString().split('T')[1].substring(0, 8),
+        date: dt.toISOString().split('T')[0] + 'T00:00:00.000Z',
+        flowRateLPerMin: record.flowRateLPerMin != null ? this.parseNumber(record.flowRateLPerMin) : null,
+        isActive: this.parseBoolean(record.isActive),
+      };
+    });
+  }
+
+  private mapInfusionPumps(records: any[]): any[] {
+    if (!Array.isArray(records)) return [];
+    return records.map(record => {
+      const dt = new Date(this.normalizeIso(record.timestamp) ?? new Date().toISOString());
+      return {
+        time: dt.toISOString().split('T')[1].substring(0, 8),
+        date: dt.toISOString().split('T')[0] + 'T00:00:00.000Z',
+        drugId: record.medicationId ?? record.drugId ?? 0,
+        rate: this.parseNumber(record.rate),
+        rateUnit: typeof record.rateUnit === 'number' ? record.rateUnit : 1,
+        volumeMl: this.parseNumber(record.volumeMl),
+        endAt: this.normalizeIso(record.endAt) ?? dt.toISOString(),
       };
     });
   }
@@ -896,11 +968,13 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       clinicalEvents: this.mapMonitoringEvents(app.events ?? app.clinicalEvents),
       fluidBalances: this.mapFluidBalance(app.fluidBalance),
       positions: this.mapPositions(app.positions ?? app.positionHistory),
+      oxygenFlows: this.mapOxygenOrAirFlows(app.oxygenFlows),
+      compressedAirFlows: this.mapOxygenOrAirFlows(app.compressedAirFlows),
+      infusionPumps: this.mapInfusionPumps(app.infusionPumps),
       status: finalize ? SurgeryStatusEnum.Concluido : SurgeryStatusEnum.EmProgresso,
     };
   }
-
-  /** Finaliza a monitorização (ação explícita "Finalizar Anestesia") — PATCH, mapeia pro FinalizePatientAsync do backend. */
+  
   submitMonitoringRecord(app: any, surgeryId: number): Observable<any> {
     const payload = this.buildMonitoringRecordPayload(app, surgeryId, true);
     return this.api.patch(`MonitoringRecord/${surgeryId}`, payload);
@@ -1777,7 +1851,41 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         via: routeLabel,
         route: routeLabel,
         routeId: record.route ?? null,
-        medicationId: record.drugId
+        medicationId: record.drugId,
+        isBolus: !!record.isBolus,
+      };
+    });
+  }
+
+  private mapOxygenOrAirFlowsToApp(records: any[], kind: 'o2' | 'air', fallbackDateIso: string | null = null): any[] {
+    if (!Array.isArray(records)) return [];
+    return records.map(record => {
+      const fullIsoString = this.resolveRecordTimestamp(record, fallbackDateIso);
+      return {
+        clientId: this.pick(record.id?.toString(), undefined),
+        timestamp: fullIsoString,
+        time: this.formatLocalTimeFromIso(fullIsoString) || this.formatTimeForApp(record.time || record.timestamp),
+        kind,
+        flowRateLPerMin: record.flowRateLPerMin ?? null,
+        isActive: !!record.isActive,
+      };
+    });
+  }
+
+  private mapInfusionPumpsToApp(records: any[], fallbackDateIso: string | null = null): any[] {
+    if (!Array.isArray(records)) return [];
+    return records.map(record => {
+      const fullIsoString = this.resolveRecordTimestamp(record, fallbackDateIso);
+      return {
+        clientId: this.pick(record.id?.toString(), undefined),
+        timestamp: fullIsoString,
+        time: this.formatLocalTimeFromIso(fullIsoString) || this.formatTimeForApp(record.time || record.timestamp),
+        medicationId: record.drugId,
+        medicationName: record.drugName ?? '',
+        rate: record.rate ?? 0,
+        rateUnit: record.rateUnit ?? 1,
+        volumeMl: record.volumeMl ?? 0,
+        endAt: this.normalizeIso(record.endAt) ?? fullIsoString,
       };
     });
   }

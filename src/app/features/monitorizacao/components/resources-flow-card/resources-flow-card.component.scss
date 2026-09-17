@@ -1,0 +1,227 @@
+@use '../styles/monitoring-tokens' as t;
+@use '../styles/monitoring-fonts';
+
+.rfc {
+  background: t.$surface-card;
+  border-radius: t.$radius-2xl;
+  box-shadow: t.$shadow-card;
+  border: 1px solid t.$border;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  &__title {
+    margin: 0;
+    font-family: t.$font-display;
+    font-weight: 700;
+    font-size: t.$fs-13;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: t.$text-deep;
+  }
+
+  &__header-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  &__add {
+    min-height: 32px;
+    padding: 0 10px;
+    border: none;
+    border-radius: t.$radius-base;
+    background: t.$surface-accent-soft;
+    color: t.$c-primary;
+    font-family: t.$font-display;
+    font-weight: 700;
+    font-size: t.$fs-10;
+  }
+
+  &__empty {
+    margin: 4px 0;
+    font-family: t.$font-body;
+    font-size: t.$fs-12;
+    color: t.$text-ink;
+  }
+
+  &__scroll {
+    overflow-x: auto;
+  }
+
+  &__canvas {
+    min-width: 100%;
+  }
+
+  // Rótulo com largura FIXA (--row-label-gutter, igual à folga do
+  // vitals-section/vitals-chart-card) antes da trilha — sem isso, a barra/
+  // ícone do primeiro lançamento cai colada embaixo do próprio texto do
+  // rótulo (label e conteúdo dividindo o mesmo espaço).
+  &__row {
+    display: flex;
+    align-items: stretch;
+    min-height: 34px;
+    border-top: 1px solid t.$border;
+
+    &:first-child { border-top: none; }
+
+    // A trilha de posição empilha hora + boneco + nome (3 linhas) — precisa de
+    // mais altura que uma trilha de barra simples (O2/Ar/Bomba), senão o
+    // conjunto fica mais alto que a linha e o scroll horizontal (que também
+    // vira `overflow-y:auto` por regra do CSS) corta o topo/base do bonequinho.
+    &--position {
+      min-height: 64px;
+    }
+  }
+
+  &__row-label {
+    flex: 0 0 var(--row-label-gutter, 64px);
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding-right: 6px;
+    background: t.$surface-card;
+    font-family: t.$font-body;
+    font-size: t.$fs-11;
+    font-weight: 600;
+    line-height: 1.15;
+    color: t.$text-deep;
+    // Rótulos maiores (ex.: "Bomba de Infusão") quebram em 2 linhas em vez de
+    // cortar com reticências — a folga (--row-label-gutter) já é larga o
+    // bastante pra caber confortável mesmo assim.
+    white-space: normal;
+  }
+
+  &__row-track {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__bar {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    min-height: 14px;
+    border-radius: 999px;
+    min-width: 8px;
+
+    &--o2 { background: t.$c-primary; opacity: 0.75; }
+    &--air { background: t.$c-success; opacity: 0.75; }
+
+    &--infusion {
+      min-height: 18px;
+      background: t.$surface-accent-soft;
+      color: t.$c-primary;
+      border: 1px solid t.$c-primary;
+      font-family: t.$font-body;
+      font-size: t.$fs-9;
+      font-weight: 700;
+      padding: 0 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+
+      // Raia alternada (2ª, 4ª...) — cor diferente pra distinguir bombas que
+      // rodam ao mesmo tempo mesmo quando as barras ficam próximas.
+      &.rfc__bar--infusion-alt {
+        background: t.$surface-panel;
+        color: t.$text-deep;
+        border-color: t.$text-ink;
+      }
+    }
+  }
+
+  &__position-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    min-width: t.$touch-min;
+  }
+
+  &__position-time {
+    font-family: t.$font-body;
+    font-size: t.$fs-9;
+    font-weight: 600;
+    color: t.$text-ink;
+    white-space: nowrap;
+  }
+
+  &__position-figure {
+    display: block;
+    color: t.$text-deep;
+  }
+
+  &__position-name {
+    font-family: t.$font-body;
+    font-size: 8px;
+    color: t.$text-ink;
+    white-space: nowrap;
+    max-width: 64px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__position-current {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid t.$border;
+  }
+
+  &__position-current-label {
+    font-family: t.$font-body;
+    font-size: t.$fs-10;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: t.$text-ink;
+  }
+
+  &__position-current-value {
+    font-family: t.$font-display;
+    font-weight: 700;
+    font-size: t.$fs-12;
+    color: #fff;
+    background: t.$c-success;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+
+  &__position-current-empty {
+    font-family: t.$font-body;
+    font-size: t.$fs-12;
+    color: t.$text-ink;
+  }
+
+  &__position-change {
+    margin-left: auto;
+    min-height: 32px;
+    padding: 0 12px;
+    border: none;
+    border-radius: t.$radius-base;
+    background: t.$surface-accent-soft;
+    color: t.$c-primary;
+    font-family: t.$font-display;
+    font-weight: 700;
+    font-size: t.$fs-11;
+  }
+}

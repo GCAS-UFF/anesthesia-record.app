@@ -39,6 +39,23 @@ export const ADMINISTRATION_ROUTE_LABELS: Record<AdministrationRouteEnum, string
 };
 
 
+export enum InfusionRateUnitEnum {
+  MillilitersPerHour = 1,      
+  MicrogramsPerKgPerMinute = 2, 
+  MicrogramsPerMinute = 3,     
+  MilligramsPerHour = 4,        
+  InternationalUnitsPerHour = 5
+}
+
+export const INFUSION_RATE_UNIT_LABELS: Record<InfusionRateUnitEnum, string> = {
+  [InfusionRateUnitEnum.MillilitersPerHour]: 'mL/h',
+  [InfusionRateUnitEnum.MicrogramsPerKgPerMinute]: 'mcg/kg/min',
+  [InfusionRateUnitEnum.MicrogramsPerMinute]: 'mcg/min',
+  [InfusionRateUnitEnum.MilligramsPerHour]: 'mg/h',
+  [InfusionRateUnitEnum.InternationalUnitsPerHour]: 'UI/h',
+};
+
+
 export enum MedicationPresentationEnum {
   Ampoule = 0,
   Vial = 1,

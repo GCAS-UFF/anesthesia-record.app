@@ -27,20 +27,21 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@a
       gap: 8px;
     }
     .group-label {
+      font-family: 'Manrope', system-ui, -apple-system, sans-serif;
       font-size: 11px;
       font-weight: 800;
-      color: #64748b;
+      color: #4a6572;
       letter-spacing: 1px;
       text-transform: uppercase;
       padding-left: 4px;
       margin-bottom: 2px;
     }
     .required {
-      color: #dc2626;
+      color: #c23a6b;
     }
     .options-grid {
       display: flex;
-      gap: 12px;
+      gap: 8px;
       flex-wrap: wrap;
     }
     .vertical .options-grid {
@@ -51,55 +52,59 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@a
       align-items: center;
       gap: 8px;
       padding: 10px 16px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
+      min-height: 44px;
+      background: #f3f7f9;
+      border: 1px solid rgba(34, 55, 64, 0.12);
+      border-radius: 0.625rem;
       cursor: pointer;
       transition: all 0.2s ease;
       min-width: 100px;
+      box-sizing: border-box;
     }
     .radio-option:hover {
-      background: #f1f5f9;
+      background: #dce7ec;
     }
     .radio-option.active {
-      background: #f8fafc;
-      border-color: #60a5fa;
-      color: #0f172a;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      background: #c6e4ed;
+      border-color: #1b8ba6;
+      color: #223740;
     }
     .radio-circle {
       width: 18px;
       height: 18px;
-      border: 2px solid #cbd5e1;
+      border: 2px solid rgba(34, 55, 64, 0.22);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: white;
+      background: #fcfdfe;
+      flex-shrink: 0;
     }
     .active .radio-circle {
-      border-color: #60a5fa;
+      border-color: #1b8ba6;
+      background: #fcfdfe;
     }
     .radio-inner {
       width: 10px;
       height: 10px;
-      background: #60a5fa;
+      background: #1b8ba6;
       border-radius: 50%;
     }
     .option-label {
+      font-family: 'Manrope', system-ui, -apple-system, sans-serif;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
     }
     :host.ng-invalid.ng-touched {
       display: block;
       animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
     }
     :host.ng-invalid.ng-touched .radio-option {
-      border-color: #ef4444 !important;
-      background-color: #fef2f2 !important;
+      border-color: #c23a6b !important;
+      background-color: #fbf1de !important;
     }
     :host.ng-invalid.ng-touched .group-label {
-      color: #ef4444 !important;
+      color: #c23a6b !important;
     }
     @keyframes shake {
       10%, 90% { transform: translate3d(-1px, 0, 0); }

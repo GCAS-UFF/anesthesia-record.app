@@ -5,10 +5,7 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="form-section">
       <div class="section-header">
-        <h3 class="section-title">
-          <span class="icon" *ngIf="icon">{{ icon }}</span>
-          {{ title }}
-        </h3>
+        <h3 class="section-title">{{ title }}</h3>
         <p *ngIf="subtitle" class="section-subtitle">{{ subtitle }}</p>
       </div>
       <div class="section-content">
@@ -18,39 +15,34 @@ import { CommonModule } from '@angular/common';
   `,
   styles: [`
     .form-section {
-      background: white;
-      border-radius: 28px;
-      margin-bottom: 24px;
-      border: 1px solid #edf2f7;
+      background: #fcfdfe;
+      border-radius: 1.25rem;
+      margin-bottom: 16px;
+      border: 1px solid rgba(34, 55, 64, 0.12);
       overflow: hidden;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+      box-shadow: 0 1px 2px rgba(34, 55, 64, 0.06);
     }
     .section-header {
-      background: white;
-      padding: 24px 28px 12px 28px;
+      padding: 14px 16px 0 16px;
     }
     .section-title {
       margin: 0;
-      font-size: 18px;
+      font-family: 'Sora', system-ui, -apple-system, sans-serif;
+      font-size: 13px;
       font-weight: 700;
-      color: #0f172a;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid #f1f5f9;
-    }
-    .icon {
-        font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #223740;
     }
     .section-subtitle {
-      margin: 8px 0 0;
-      font-size: 13px;
-      color: #64748b;
+      margin: 4px 0 0;
+      font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+      font-size: 11px;
+      color: #4a6572;
       font-weight: 500;
     }
     .section-content {
-      padding: 20px 28px 28px 28px;
+      padding: 10px 16px 16px 16px;
     }
   `],
   standalone: true,

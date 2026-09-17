@@ -17,7 +17,14 @@
 
 <ion-content class="ion-padding">
   <div class="modal-shell">
-    
+
+    <div class="field">
+      <label class="field-label">{{ 'sharedComponents.clinicalItemModal.timeLabel' | translate }}</label>
+      <div class="custom-input-wrap">
+        <input class="custom-input" type="time" [(ngModel)]="time" placeholder="HH:mm" [attr.aria-label]="'sharedComponents.clinicalItemModal.timeLabel' | translate" />
+      </div>
+    </div>
+
     <ng-container *ngIf="type === 'agent'">
 
       <!-- Busca de medicação por nome -->
@@ -73,43 +80,79 @@
         </ion-note>
       </div>
 
-      <div class="field dose-row">
-        <div class="dose-value">
-          <label class="field-label">{{ 'sharedComponents.clinicalItemModal.agent.doseLabel' | translate }}</label>
-          <div class="custom-input-wrap">
-            <input class="custom-input" type="number" inputmode="decimal" min="0" step="any" [(ngModel)]="agent.doseValue" [placeholder]="'sharedComponents.clinicalItemModal.agent.dosePlaceholder' | translate" />
+      <div class="field seg-row">
+        <ion-button
+          [fill]="agent.isBolus ? 'solid' : 'outline'"
+          color="primary"
+          (click)="toggleBolus()"
+        >{{ 'sharedComponents.clinicalItemModal.agent.bolusToggle' | translate }}</ion-button>
+        <ion-button
+          [fill]="agent.isInfusionPump ? 'solid' : 'outline'"
+          color="tertiary"
+          (click)="toggleInfusionPump()"
+        >{{ 'sharedComponents.clinicalItemModal.agent.infusionPumpToggle' | translate }}</ion-button>
+      </div>
+
+      <ng-container *ngIf="!agent.isInfusionPump">
+        <div class="field dose-row">
+          <div class="dose-value">
+            <label class="field-label">{{ 'sharedComponents.clinicalItemModal.agent.doseLabel' | translate }}</label>
+            <div class="custom-input-wrap">
+              <input class="custom-input" type="number" inputmode="decimal" min="0" step="any" [(ngModel)]="agent.doseValue" [placeholder]="'sharedComponents.clinicalItemModal.agent.dosePlaceholder' | translate" />
+            </div>
+          </div>
+          <div class="dose-unit">
+            <label class="field-label">{{ 'sharedComponents.clinicalItemModal.agent.unitLabel' | translate }}</label>
+            <div class="custom-input-wrap select-wrap">
+              <select class="custom-input" [(ngModel)]="agent.doseUnit">
+                <option *ngFor="let u of unitOptions" [ngValue]="u.id">{{ u.label }}</option>
+              </select>
+              <ion-icon name="chevron-down-outline" class="select-icon"></ion-icon>
+            </div>
           </div>
         </div>
-        <div class="dose-unit">
-          <label class="field-label">{{ 'sharedComponents.clinicalItemModal.agent.unitLabel' | translate }}</label>
+
+        <div class="field">
+          <label class="field-label">{{ 'sharedComponents.clinicalItemModal.agent.routeLabel' | translate }}</label>
           <div class="custom-input-wrap select-wrap">
-            <select class="custom-input" [(ngModel)]="agent.doseUnit">
-              <option *ngFor="let u of unitOptions" [ngValue]="u.id">{{ u.label }}</option>
+            <select class="custom-input" [(ngModel)]="agent.routeId">
+              <option [ngValue]="null" disabled selected hidden>{{ 'sharedComponents.clinicalItemModal.agent.selectPlaceholder' | translate }}</option>
+              <option *ngFor="let r of routeOptions" [ngValue]="r.id">{{ r.label }}</option>
             </select>
             <ion-icon name="chevron-down-outline" class="select-icon"></ion-icon>
           </div>
         </div>
-      </div>
+      </ng-container>
 
-      <div class="field">
-        <label class="field-label">{{ 'sharedComponents.clinicalItemModal.agent.routeLabel' | translate }}</label>
-        <div class="custom-input-wrap select-wrap">
-          <select class="custom-input" [(ngModel)]="agent.routeId">
-            <option [ngValue]="null" disabled selected hidden>{{ 'sharedComponents.clinicalItemModal.agent.selectPlaceholder' | translate }}</option>
-            <option *ngFor="let r of routeOptions" [ngValue]="r.id">{{ r.label }}</option>
-          </select>
-          <ion-icon name="chevron-down-outline" class="select-icon"></ion-icon>
+      <ng-container *ngIf="agent.isInfusionPump">
+        <div class="field dose-row">
+          <div class="dose-value">
+            <label class="field-label">{{ 'sharedComponents.clinicalItemModal.agent.infusionRateLabel' | translate }}</label>
+            <div class="custom-input-wrap">
+              <input class="custom-input" type="number" inputmode="decimal" min="0" step="any" [(ngModel)]="agent.infusionRate" placeholder="0" [attr.aria-label]="'sharedComponents.clinicalItemModal.agent.infusionRateLabel' | translate" />
+            </div>
+          </div>
+          <div class="dose-unit">
+            <label class="field-label">{{ 'sharedComponents.clinicalItemModal.agent.infusionRateUnitLabel' | translate }}</label>
+            <div class="custom-input-wrap select-wrap">
+              <select class="custom-input" [(ngModel)]="agent.infusionRateUnit" [attr.aria-label]="'sharedComponents.clinicalItemModal.agent.infusionRateUnitLabel' | translate">
+                <option *ngFor="let u of infusionUnitOptions" [ngValue]="u.id">{{ u.label }}</option>
+              </select>
+              <ion-icon name="chevron-down-outline" class="select-icon"></ion-icon>
+            </div>
+          </div>
         </div>
-      </div>
+
+        <div class="field">
+          <label class="field-label">{{ 'sharedComponents.clinicalItemModal.agent.infusionVolumeLabel' | translate }}</label>
+          <div class="custom-input-wrap">
+            <input class="custom-input" type="number" inputmode="decimal" min="0" step="any" [(ngModel)]="agent.infusionVolumeMl" placeholder="0" [attr.aria-label]="'sharedComponents.clinicalItemModal.agent.infusionVolumeLabel' | translate" />
+          </div>
+        </div>
+      </ng-container>
     </ng-container>
     
     <ng-container *ngIf="type === 'event'">
-      <div class="field" *ngIf="isEditMode">
-        <label class="field-label">{{ 'sharedComponents.clinicalItemModal.event.timeLabel' | translate }}</label>
-        <div class="custom-input-wrap">
-          <input class="custom-input" type="time" [(ngModel)]="event.time" [attr.aria-label]="'sharedComponents.clinicalItemModal.event.timeAriaLabel' | translate" placeholder="HH:mm" />
-        </div>
-      </div>
 
       <div class="field">
         <label class="field-label">{{ 'sharedComponents.clinicalItemModal.event.eventLabel' | translate }}</label>

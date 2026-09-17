@@ -1,0 +1,81 @@
+<div class="hm">
+  <header class="hm__header">
+    <h2 class="hm__title">{{ 'monitorizacao.historyDrawer.title' | translate }}</h2>
+    <button type="button" class="hm__close" (click)="close()" aria-label="Fechar">×</button>
+  </header>
+
+  <div class="hm__tabs">
+    <button type="button" class="hm__tab" [class.hm__tab--active]="activeTab === 'vitals'" (click)="setTab('vitals')">
+      {{ 'monitorizacao.historyDrawer.tabs.vitals' | translate }}
+    </button>
+    <button type="button" class="hm__tab" [class.hm__tab--active]="activeTab === 'agents'" (click)="setTab('agents')">
+      {{ 'monitorizacao.historyDrawer.tabs.agents' | translate }}
+    </button>
+    <button type="button" class="hm__tab" [class.hm__tab--active]="activeTab === 'events'" (click)="setTab('events')">
+      {{ 'monitorizacao.historyDrawer.tabs.events' | translate }}
+    </button>
+    <button type="button" class="hm__tab" [class.hm__tab--active]="activeTab === 'balance'" (click)="setTab('balance')">
+      {{ 'monitorizacao.historyDrawer.tabs.balance' | translate }}
+    </button>
+  </div>
+
+  <div class="hm__body">
+    <ng-container *ngIf="activeTab === 'vitals'">
+      <p class="hm__empty" *ngIf="!vitalRecords.length">{{ 'monitorizacao.historyDrawer.empty.vitals' | translate }}</p>
+      <ul class="hm__list">
+        <li class="hm__row" *ngFor="let item of sortedDesc(vitalRecords)">
+          <span class="hm__time">{{ item.time }}<span class="hm__auto" *ngIf="item.isAuto">{{ 'monitorizacao.historyDrawer.autoTag' | translate }}</span></span>
+          <span class="hm__summary">
+            PAS/PAD {{ item.pas ?? '—' }}/{{ item.pad ?? '—' }} · FC {{ item.fc ?? '—' }} · SatO₂ {{ item.spo2 ?? '—' }}
+          </span>
+          <span class="hm__row-actions" *ngIf="!readonly">
+            <button type="button" (click)="editVital(item)" [attr.aria-label]="'monitorizacao.shell.history.editAria' | translate">✎</button>
+            <button type="button" (click)="deleteVital(item)" [attr.aria-label]="'monitorizacao.shell.history.deleteAria' | translate">×</button>
+          </span>
+        </li>
+      </ul>
+    </ng-container>
+
+    <ng-container *ngIf="activeTab === 'agents'">
+      <p class="hm__empty" *ngIf="!agents.length">{{ 'monitorizacao.historyDrawer.empty.agents' | translate }}</p>
+      <ul class="hm__list">
+        <li class="hm__row" *ngFor="let item of sortedDesc(agents)">
+          <span class="hm__time">{{ item.time }}</span>
+          <span class="hm__summary">{{ item.name }} · {{ item.dose }} · {{ item.route }}</span>
+          <span class="hm__row-actions" *ngIf="!readonly">
+            <button type="button" (click)="editAgent(item)" [attr.aria-label]="'monitorizacao.shell.history.editAria' | translate">✎</button>
+            <button type="button" (click)="deleteAgent(item)" [attr.aria-label]="'monitorizacao.shell.history.deleteAria' | translate">×</button>
+          </span>
+        </li>
+      </ul>
+    </ng-container>
+
+    <ng-container *ngIf="activeTab === 'events'">
+      <p class="hm__empty" *ngIf="!events.length">{{ 'monitorizacao.historyDrawer.empty.events' | translate }}</p>
+      <ul class="hm__list">
+        <li class="hm__row" *ngFor="let item of sortedDesc(events)">
+          <span class="hm__time">{{ item.time }}</span>
+          <span class="hm__summary">{{ item.catalogEventName || item.categoryLabel || item.type }} — {{ item.description }}</span>
+          <span class="hm__row-actions" *ngIf="!readonly">
+            <button type="button" (click)="editEvent(item)" [attr.aria-label]="'monitorizacao.shell.history.editAria' | translate">✎</button>
+            <button type="button" (click)="deleteEvent(item)" [attr.aria-label]="'monitorizacao.shell.history.deleteAria' | translate">×</button>
+          </span>
+        </li>
+      </ul>
+    </ng-container>
+
+    <ng-container *ngIf="activeTab === 'balance'">
+      <p class="hm__empty" *ngIf="!balance.length">{{ 'monitorizacao.historyDrawer.empty.balance' | translate }}</p>
+      <ul class="hm__list">
+        <li class="hm__row" *ngFor="let item of sortedDesc(balance)">
+          <span class="hm__time">{{ item.time }}</span>
+          <span class="hm__summary">{{ item.item }} — {{ item.volumeMl }}ml ({{ item.type }})</span>
+          <span class="hm__row-actions" *ngIf="!readonly">
+            <button type="button" (click)="editBalance(item)" [attr.aria-label]="'monitorizacao.shell.history.editAria' | translate">✎</button>
+            <button type="button" (click)="deleteBalance(item)" [attr.aria-label]="'monitorizacao.shell.history.deleteAria' | translate">×</button>
+          </span>
+        </li>
+      </ul>
+    </ng-container>
+  </div>
+</div>

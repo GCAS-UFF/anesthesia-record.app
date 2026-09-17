@@ -190,6 +190,96 @@
       "history": "History",
       "finalizeAnesthesia": "Anesthesia",
       "finalizeSurgery": "Surgery"
+    },
+    "shell": {
+      "loading": "Loading monitoring…",
+      "header": {
+        "eyebrow": "Perioperative record",
+        "title": "Monitoring",
+        "room": "Room {{room}}",
+        "statusWaiting": "waiting to start",
+        "statusInProgress": "anesthesia in progress",
+        "statusFinished": "anesthesia finished"
+      },
+      "patientCard": {
+        "unknownPatient": "Unidentified patient",
+        "ageLabel": "{{age}} years old",
+        "recordLabel": "Record #{{record}}",
+        "anesthesiaTimerLabel": "Anesthesia",
+        "surgeryTimerLabel": "Surgery",
+        "startAnesthesia": "Start Anesthesia",
+        "startSurgery": "Start Surgery",
+        "surgeryInProgress": "Surgery in progress",
+        "waitingFinalize": "Awaiting finalization",
+        "finished": "Anesthesia finished",
+        "frequencyButton": "Measure every {{minutes}} min"
+      },
+      "vitals": {
+        "title": "Vital signs",
+        "addButton": "Add",
+        "empty": "No readings recorded",
+        "parameter": "Parameter",
+        "deleteColumnAria": "Remove {{time}} reading",
+        "editCellTitle": "Edit {{field}}",
+        "rangeHint": "Valid range: {{min}} to {{max}}",
+        "invalidValue": "Value out of allowed range ({{min}} to {{max}}).",
+        "rows": {
+          "temp": "Temp",
+          "spo2": "SpO₂",
+          "etco2": "CO₂",
+          "bis": "BIS",
+          "hydration": "Hydration"
+        }
+      },
+      "chart": {
+        "title": "Blood Pressure & HR",
+        "legendHr": "HR",
+        "legendPas": "SBP",
+        "legendPad": "DBP",
+        "legendAnesthesia": "Anesthesia Start/End",
+        "legendSurgery": "Surgery Start/End",
+        "empty": "No readings to display on the chart"
+      },
+      "resources": {
+        "title": "Resources & flow",
+        "comingSoon": "No resources logged",
+        "positionLabel": "Position",
+        "positionEmpty": "No record",
+        "positionChangeButton": "Change",
+        "o2Label": "O2",
+        "airLabel": "Compressed Air",
+        "infusionPumpLabel": "Infusion Pump",
+        "turnOnO2": "Turn on O2",
+        "turnOffO2": "Turn off O2",
+        "turnOnAir": "Turn on Air",
+        "turnOffAir": "Turn off Air"
+      },
+      "agents": {
+        "title": "Agents",
+        "addButton": "Add agent",
+        "empty": "No agents administered",
+        "editAria": "Edit agent",
+        "deleteAria": "Remove agent"
+      },
+      "actions": {
+        "event": "Event",
+        "fluidBalance": "Fluid balance",
+        "finalizeAnesthesia": "Finalize Anesthesia",
+        "finalizeSurgery": "Finalize Surgery"
+      },
+      "statusStrip": {
+        "draftSaved": "Draft saved {{time}}",
+        "noDraft": "No draft saved",
+        "pendingSync": "{{count}} pending",
+        "synced": "Synced",
+        "syncButton": "Sync",
+        "syncing": "Syncing…",
+        "historyButton": "History"
+      },
+      "history": {
+        "editAria": "Edit",
+        "deleteAria": "Delete"
+      }
     }
   }
 }

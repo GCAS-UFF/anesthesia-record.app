@@ -16,15 +16,7 @@
 
 <ion-content class="vital-modal-content">
   <div class="modal-shell">
-    <section class="time-banner" *ngIf="!isEdit">
-      <ion-icon name="time-outline"></ion-icon>
-      <div>
-        <strong>{{ (isAuto ? 'sharedComponents.quickVitalInput.autoCollection' : 'sharedComponents.quickVitalInput.manualRecord') | translate }}</strong>
-        <span>{{ 'sharedComponents.quickVitalInput.fillAvailableSignals' | translate }}</span>
-      </div>
-    </section>
-
-    <section class="time-banner time-banner-edit" *ngIf="isEdit">
+    <section class="time-banner time-banner-edit">
       <ion-icon name="time-outline"></ion-icon>
       <label class="time-edit-field">
         <span class="field-label">{{ 'sharedComponents.quickVitalInput.timeOfRecordLabel' | translate }}</span>
@@ -35,6 +27,7 @@
           [value]="form.time"
           (input)="setTime($any($event.target).value)">
       </label>
+      <span class="field-hint" *ngIf="!isEdit">{{ 'sharedComponents.quickVitalInput.fillAvailableSignals' | translate }}</span>
     </section>
 
     <section class="vital-group" *ngFor="let group of vitalGroups">

@@ -1,0 +1,146 @@
+@use '../styles/monitoring-tokens' as t;
+@use '../styles/monitoring-fonts';
+
+.ac {
+  background: t.$surface-card;
+  border-radius: t.$radius-2xl;
+  box-shadow: t.$shadow-card;
+  border: 1px solid t.$border;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__title {
+    margin: 0;
+    font-family: t.$font-display;
+    font-weight: 700;
+    font-size: t.$fs-13;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: t.$text-deep;
+  }
+
+  &__add {
+    min-height: 36px;
+    padding: 0 12px;
+    border: none;
+    border-radius: t.$radius-lg;
+    background: t.$surface-accent-soft;
+    color: t.$c-primary;
+    font-family: t.$font-display;
+    font-weight: 700;
+    font-size: t.$fs-12;
+
+    &:disabled { opacity: 0.4; }
+  }
+
+  &__empty {
+    margin: 4px 0;
+    text-align: center;
+    font-family: t.$font-body;
+    font-size: t.$fs-12;
+    color: t.$text-ink;
+  }
+
+  // Mesmo padrão de rolagem horizontal do vitals-section/resources-flow-card —
+  // uma barra fina e sempre visível (não só on-hover), pra deixar claro que dá
+  // pra rolar pro lado quando o quadro cresce com mais agentes.
+  &__scroll {
+    overflow-x: auto;
+    padding-bottom: 6px;
+
+    &::-webkit-scrollbar { height: 6px; }
+    &::-webkit-scrollbar-thumb { background: t.$border; border-radius: 999px; }
+  }
+
+  &__canvas {
+    min-width: 100%;
+  }
+
+  &__row {
+    display: flex;
+    align-items: stretch;
+    min-height: 52px;
+  }
+
+  &__row-label {
+    flex: 0 0 var(--row-label-gutter, 64px);
+  }
+
+  &__row-track {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__item {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  &__marker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: t.$touch-min;
+    padding: 6px 10px;
+    border: 1px solid t.$border;
+    border-radius: t.$radius-lg;
+    background: t.$surface-bg;
+    white-space: nowrap;
+
+    &:disabled { opacity: 0.85; }
+    &:active:not(:disabled) { border-color: t.$c-primary; }
+  }
+
+  &__marker-time {
+    font-family: t.$font-body;
+    font-size: t.$fs-11;
+    font-weight: 600;
+    color: t.$text-ink;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__marker-body {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  &__marker-name {
+    font-family: t.$font-display;
+    font-weight: 700;
+    font-size: t.$fs-12;
+    color: t.$text-deep;
+  }
+
+  &__marker-dose {
+    font-family: t.$font-body;
+    font-size: t.$fs-11;
+    color: t.$text-ink;
+  }
+
+  &__delete {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-height: 20px;
+    min-width: 20px;
+    border: 1px solid t.$border;
+    border-radius: 999px;
+    background: t.$surface-card;
+    color: t.$text-ink;
+    font-size: t.$fs-12;
+    line-height: 1;
+
+    &:active { color: t.$c-crimson; border-color: t.$c-crimson; }
+  }
+}

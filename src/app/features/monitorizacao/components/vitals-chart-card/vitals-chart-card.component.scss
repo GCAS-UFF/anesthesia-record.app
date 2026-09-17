@@ -1,0 +1,187 @@
+@use '../styles/monitoring-tokens' as t;
+@use '../styles/monitoring-fonts';
+
+.vcc {
+  background: t.$surface-card;
+  border-radius: t.$radius-2xl;
+  box-shadow: t.$shadow-card;
+  border: 1px solid t.$border;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__title {
+    margin: 0;
+    font-family: t.$font-display;
+    font-weight: 700;
+    font-size: t.$fs-13;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: t.$text-deep;
+  }
+
+  &__zoom {
+    display: flex;
+    gap: 6px;
+
+    button {
+      width: 32px;
+      height: 32px;
+      border-radius: t.$radius-base;
+      border: 1px solid t.$border;
+      background: t.$surface-bg;
+      font-family: t.$font-display;
+      font-weight: 700;
+      color: t.$text-deep;
+
+      &:disabled { opacity: 0.4; }
+    }
+  }
+
+  &__legend {
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 4px;
+    column-gap: 14px;
+  }
+
+  &__legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: t.$font-body;
+    font-size: t.$fs-10;
+    color: t.$text-ink;
+  }
+
+  &__shape {
+    display: inline-block;
+    width: 0;
+    height: 0;
+
+    &--circle {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+    }
+
+    &--triangle-up {
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-bottom: 9px solid currentColor;
+    }
+
+    &--triangle-down {
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 9px solid currentColor;
+    }
+
+    &--crimson { background: t.$c-crimson; }
+    &--primary { background: t.$c-primary; color: t.$c-primary; }
+    &--deep { background: t.$text-deep; color: t.$text-deep; }
+
+    // Réplicas em miniatura dos glifos de marco (ver milestone-glyph no SVG do
+    // gráfico) — mesma forma/cor, só que pequenas o bastante pra legenda.
+    &--ring {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: t.$surface-card;
+      border: 2px solid t.$c-success;
+    }
+
+    &--cross {
+      width: 10px;
+      height: 10px;
+      overflow: visible;
+
+      line {
+        stroke: t.$c-primary;
+        stroke-width: 1.6;
+        stroke-linecap: round;
+      }
+    }
+  }
+
+  &__scroll {
+    overflow-x: auto;
+  }
+
+  &__canvas {
+    min-width: 100%;
+  }
+
+  // width/height do <svg> vêm dos atributos (px reais, medidos via
+  // ResizeObserver no .ts) — sem width/height em CSS aqui, senão o navegador
+  // reescala o conteúdo e distorce símbolos/texto.
+  &__svg {
+    display: block;
+  }
+
+  &__gridline {
+    stroke: t.$text-deep;
+    stroke-opacity: 0.12;
+    stroke-width: 1;
+  }
+
+  &__tick-label {
+    font-family: t.$font-body;
+    font-size: 8px;
+    fill: t.$text-ink;
+
+    &--x { text-anchor: middle; }
+  }
+
+  &__milestone {
+    stroke-width: 1.5;
+    stroke-dasharray: 5 4;
+
+    &--anesthesia { stroke: t.$c-primary; }
+    &--surgery { stroke: t.$c-success; }
+  }
+
+  &__milestone-glyph {
+    &--anesthesia {
+      stroke: t.$c-primary;
+      stroke-width: 2;
+      stroke-linecap: round;
+    }
+
+    &--surgery {
+      fill: t.$surface-card;
+      stroke: t.$c-success;
+      stroke-width: 2;
+    }
+  }
+
+  &__line {
+    fill: none;
+    stroke-width: 2;
+
+    &--pas { stroke: t.$c-primary; opacity: 0.7; }
+    &--pad { stroke: t.$text-deep; opacity: 0.5; }
+    &--fc { stroke: t.$c-crimson; opacity: 0.7; }
+  }
+
+  &__marker {
+    &--fc { fill: t.$c-crimson; }
+    &--pas { fill: t.$c-primary; }
+    &--pad { fill: t.$text-deep; opacity: 0.75; }
+  }
+
+  &__empty {
+    margin: 4px 0 0;
+    text-align: center;
+    font-family: t.$font-body;
+    font-size: t.$fs-12;
+    color: t.$text-ink;
+  }
+}

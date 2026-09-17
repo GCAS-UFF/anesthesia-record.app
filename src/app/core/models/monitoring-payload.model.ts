@@ -6,6 +6,7 @@ import {
   FluidCategoryEnum,
   SurgicalPositionEnum,
   SurgeryStatusEnum,
+  InfusionRateUnitEnum,
 } from './api-enums.model';
 
 
@@ -37,6 +38,31 @@ export interface MonitoringAgentPayload {
   unit: MedicationUnitEnum;
   route: AdministrationRouteEnum;
   drugId: number;
+  isBolus: boolean;
+}
+
+export interface MonitoringOxygenFlowPayload {
+  time: string;
+  date: string;
+  flowRateLPerMin: number | null;
+  isActive: boolean;
+}
+
+export interface MonitoringCompressedAirFlowPayload {
+  time: string;
+  date: string;
+  flowRateLPerMin: number | null;
+  isActive: boolean;
+}
+
+export interface MonitoringInfusionPumpPayload {
+  time: string;
+  date: string;
+  drugId: number;
+  rate: number;
+  rateUnit: InfusionRateUnitEnum;
+  volumeMl: number;
+  endAt: string;
 }
 
 export interface MonitoringEventPayload {
@@ -78,5 +104,8 @@ export interface MonitoringPayload {
   clinicalEvents: MonitoringEventPayload[];
   fluidBalances: MonitoringFluidBalancePayload[];
   positions: MonitoringPositionPayload[];
+  oxygenFlows: MonitoringOxygenFlowPayload[];
+  compressedAirFlows: MonitoringCompressedAirFlowPayload[];
+  infusionPumps: MonitoringInfusionPumpPayload[];
   status: SurgeryStatusEnum;
 }

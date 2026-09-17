@@ -78,24 +78,26 @@
           "
         >
           <div class="stack-md">
-            <app-radio-group
-              [label]="'fichaAnestesica.seguranca.identificadoAvaliado' | translate"
-              [options]="yesNoOptions"
-              formControlName="identificadoAvaliado"
-              [required]="true"
-            ></app-radio-group>
-            <app-radio-group
-              [label]="'fichaAnestesica.seguranca.consentimentoAssinado' | translate"
-              [options]="yesNoOptions"
-              formControlName="consentimentoAssinado"
-              [required]="true"
-            ></app-radio-group>
-            <app-radio-group
-              [label]="'fichaAnestesica.seguranca.equipamentosChecados' | translate"
-              [options]="yesNoOptions"
-              formControlName="equipamentosChecados"
-              [required]="true"
-            ></app-radio-group>
+            <div class="grid-seguranca">
+              <app-radio-group
+                [label]="'fichaAnestesica.seguranca.identificadoAvaliado' | translate"
+                [options]="yesNoOptions"
+                formControlName="identificadoAvaliado"
+                [required]="true"
+              ></app-radio-group>
+              <app-radio-group
+                [label]="'fichaAnestesica.seguranca.consentimentoAssinado' | translate"
+                [options]="yesNoOptions"
+                formControlName="consentimentoAssinado"
+                [required]="true"
+              ></app-radio-group>
+              <app-radio-group
+                [label]="'fichaAnestesica.seguranca.equipamentosChecados' | translate"
+                [options]="yesNoOptions"
+                formControlName="equipamentosChecados"
+                [required]="true"
+              ></app-radio-group>
+            </div>
             <div class="field-block">
               <label class="field-label"
                 >{{ 'fichaAnestesica.seguranca.atencaoLabel' | translate }}</label
@@ -607,14 +609,6 @@
               </div>
             </div>
           </div>
-          <div class="field-block col-span-2">
-            <label class="field-label">{{ 'fichaAnestesica.equipe.diagnosticoPre' | translate }}</label>
-            <input
-              type="text"
-              formControlName="diagnosticoPre"
-              class="text-input"
-            />
-          </div>
           <div class="field-block">
             <label class="field-label">{{ 'fichaAnestesica.equipe.horaInicioAnestesia' | translate }}</label>
             <input
@@ -626,6 +620,14 @@
               class="text-input"
               (input)="onTimeInput($event, form.get('equipe.horaInicioAnestesia'))"
               (blur)="onTimeBlur($event, form.get('equipe.horaInicioAnestesia'))"
+            />
+          </div>
+          <div class="field-block col-span-3">
+            <label class="field-label">{{ 'fichaAnestesica.equipe.diagnosticoPre' | translate }}</label>
+            <input
+              type="text"
+              formControlName="diagnosticoPre"
+              class="text-input"
             />
           </div>
         </div>

@@ -190,6 +190,96 @@
       "history": "Historial",
       "finalizeAnesthesia": "Anestesia",
       "finalizeSurgery": "Cirugía"
+    },
+    "shell": {
+      "loading": "Cargando monitorización…",
+      "header": {
+        "eyebrow": "Registro perioperatorio",
+        "title": "Monitorización",
+        "room": "Sala {{room}}",
+        "statusWaiting": "esperando inicio",
+        "statusInProgress": "anestesia en curso",
+        "statusFinished": "anestesia finalizada"
+      },
+      "patientCard": {
+        "unknownPatient": "Paciente no identificado",
+        "ageLabel": "{{age}} años",
+        "recordLabel": "Historia #{{record}}",
+        "anesthesiaTimerLabel": "Anestesia",
+        "surgeryTimerLabel": "Cirugía",
+        "startAnesthesia": "Iniciar Anestesia",
+        "startSurgery": "Iniciar Cirugía",
+        "surgeryInProgress": "Cirugía en curso",
+        "waitingFinalize": "Esperando finalización",
+        "finished": "Anestesia finalizada",
+        "frequencyButton": "Medir cada {{minutes}} min"
+      },
+      "vitals": {
+        "title": "Signos vitales",
+        "addButton": "Agregar",
+        "empty": "Ninguna medición registrada",
+        "parameter": "Parámetro",
+        "deleteColumnAria": "Eliminar lanzamiento de las {{time}}",
+        "editCellTitle": "Editar {{field}}",
+        "rangeHint": "Rango válido: {{min}} a {{max}}",
+        "invalidValue": "Valor fuera del rango permitido ({{min}} a {{max}}).",
+        "rows": {
+          "temp": "Temp",
+          "spo2": "SatO₂",
+          "etco2": "CO₂",
+          "bis": "BIS",
+          "hydration": "Hidratación"
+        }
+      },
+      "chart": {
+        "title": "Presión & FC",
+        "legendHr": "FC",
+        "legendPas": "PAS",
+        "legendPad": "PAD",
+        "legendAnesthesia": "Inicio/Fin Anestesia",
+        "legendSurgery": "Inicio/Fin Cirugía",
+        "empty": "Sin mediciones para mostrar en el gráfico"
+      },
+      "resources": {
+        "title": "Recursos & flujo",
+        "comingSoon": "Ningún recurso registrado",
+        "positionLabel": "Posición",
+        "positionEmpty": "Sin registro",
+        "positionChangeButton": "Cambiar",
+        "o2Label": "O2",
+        "airLabel": "Aire Comprimido",
+        "infusionPumpLabel": "Bomba de Infusión",
+        "turnOnO2": "Encender O2",
+        "turnOffO2": "Apagar O2",
+        "turnOnAir": "Encender Aire",
+        "turnOffAir": "Apagar Aire"
+      },
+      "agents": {
+        "title": "Agentes",
+        "addButton": "Agregar agente",
+        "empty": "Ningún agente administrado",
+        "editAria": "Editar agente",
+        "deleteAria": "Eliminar agente"
+      },
+      "actions": {
+        "event": "Evento",
+        "fluidBalance": "Balance hídrico",
+        "finalizeAnesthesia": "Finalizar Anestesia",
+        "finalizeSurgery": "Finalizar Cirugía"
+      },
+      "statusStrip": {
+        "draftSaved": "Borrador guardado {{time}}",
+        "noDraft": "Sin borrador guardado",
+        "pendingSync": "{{count}} pendiente(s)",
+        "synced": "Sincronizado",
+        "syncButton": "Sincronizar",
+        "syncing": "Sincronizando…",
+        "historyButton": "Historial"
+      },
+      "history": {
+        "editAria": "Editar",
+        "deleteAria": "Eliminar"
+      }
     }
   }
 }

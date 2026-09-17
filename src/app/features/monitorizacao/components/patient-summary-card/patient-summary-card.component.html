@@ -1,0 +1,59 @@
+<section class="psc">
+  <div class="psc__top">
+    <div class="psc__patient">
+      <span class="psc__avatar">{{ initials }}</span>
+      <div class="psc__info">
+        <span class="psc__name">{{ patientName || ('monitorizacao.shell.patientCard.unknownPatient' | translate) }}</span>
+        <span class="psc__meta">
+          {{ 'monitorizacao.shell.patientCard.ageLabel' | translate: { age: patientAge || '--' } }}
+          · {{ 'monitorizacao.shell.patientCard.recordLabel' | translate: { record: patientRecord || '--' } }}
+        </span>
+      </div>
+    </div>
+
+    <div class="psc__timers">
+      <div class="psc__timer">
+        <span class="psc__timer-label">{{ 'monitorizacao.shell.patientCard.anesthesiaTimerLabel' | translate }}</span>
+        <span class="psc__timer-value psc__timer-value--primary">{{ anesthesiaTimer }}</span>
+      </div>
+      <div class="psc__timer">
+        <span class="psc__timer-label">{{ 'monitorizacao.shell.patientCard.surgeryTimerLabel' | translate }}</span>
+        <span class="psc__timer-value psc__timer-value--success">{{ surgeryTimer }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="psc__actions">
+    <button
+      type="button"
+      class="psc__action psc__action--primary"
+      [class.psc__action--success]="primaryAction === 'start-surgery' || primaryAction === 'surgery-in-progress'"
+      [class.psc__action--static]="isStaticState"
+      [class.psc__action--done]="primaryAction === 'finished'"
+      [disabled]="isStaticState || !canEdit"
+      (click)="primaryActionClick.emit()"
+    >
+      <span class="psc__action-check" *ngIf="primaryAction === 'finished'" aria-hidden="true">✓</span>
+      {{ primaryActionLabelKey | translate }}
+    </button>
+
+    <button type="button" class="psc__action" (click)="openHistory.emit()">
+      {{ 'monitorizacao.shell.statusStrip.historyButton' | translate }}
+    </button>
+
+    <button type="button" class="psc__action" [disabled]="isSyncing" (click)="syncNow.emit()">
+      {{ isSyncing
+        ? ('monitorizacao.shell.statusStrip.syncing' | translate)
+        : ('monitorizacao.shell.statusStrip.syncButton' | translate) }}
+    </button>
+
+    <button
+      type="button"
+      class="psc__action"
+      [disabled]="isStaticState || !canEdit"
+      (click)="frequencyClick.emit()"
+    >
+      {{ 'monitorizacao.shell.patientCard.frequencyButton' | translate: { minutes: autoMonitoringIntervalMinutes } }}
+    </button>
+  </div>
+</section>

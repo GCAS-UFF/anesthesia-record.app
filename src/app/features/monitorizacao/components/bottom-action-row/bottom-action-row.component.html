@@ -1,0 +1,16 @@
+<div class="bar">
+  <button type="button" class="bar__btn" [disabled]="readonly" (click)="addEvent.emit()">
+    {{ 'monitorizacao.shell.actions.event' | translate }}
+  </button>
+  <button type="button" class="bar__btn" [disabled]="readonly" (click)="addBalance.emit()">
+    {{ 'monitorizacao.shell.actions.fluidBalance' | translate }}
+  </button>
+  <button
+    type="button"
+    class="bar__btn bar__btn--danger"
+    [disabled]="!canFinalize"
+    (click)="finalize.emit()"
+  >
+    {{ (isSurgeryFinished ? 'monitorizacao.shell.actions.finalizeAnesthesia' : 'monitorizacao.shell.actions.finalizeSurgery') | translate }}
+  </button>
+</div>

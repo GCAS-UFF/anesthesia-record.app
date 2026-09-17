@@ -1,0 +1,27 @@
+@use '../styles/monitoring-tokens' as t;
+@use '../styles/monitoring-fonts';
+
+.bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+
+  &__btn {
+    min-height: t.$touch-min;
+    border-radius: t.$radius-lg;
+    border: 1px solid t.$border;
+    background: t.$surface-card;
+    color: t.$text-deep;
+    font-family: t.$font-display;
+    font-weight: 700;
+    font-size: t.$fs-11;
+
+    &:disabled { opacity: 0.4; }
+
+    &--danger {
+      background: t.$c-crimson;
+      border-color: t.$c-crimson;
+      color: #fff;
+    }
+  }
+}

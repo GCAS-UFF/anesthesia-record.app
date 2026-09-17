@@ -1,0 +1,83 @@
+<section class="vcc">
+  <header class="vcc__header">
+    <h2 class="vcc__title">{{ 'monitorizacao.shell.chart.title' | translate }}</h2>
+    <div class="vcc__zoom">
+      <button type="button" (click)="zoomOut()" [disabled]="zoom <= 0.8">−</button>
+      <button type="button" (click)="zoomIn()" [disabled]="zoom >= 2">+</button>
+    </div>
+  </header>
+
+  <div class="vcc__legend">
+    <span class="vcc__legend-item"><i class="vcc__shape vcc__shape--circle vcc__shape--crimson"></i>{{ 'monitorizacao.shell.chart.legendHr' | translate }}</span>
+    <span class="vcc__legend-item"><i class="vcc__shape vcc__shape--triangle-up vcc__shape--primary"></i>{{ 'monitorizacao.shell.chart.legendPas' | translate }}</span>
+    <span class="vcc__legend-item"><i class="vcc__shape vcc__shape--triangle-down vcc__shape--deep"></i>{{ 'monitorizacao.shell.chart.legendPad' | translate }}</span>
+
+    <span class="vcc__legend-item">
+      <svg viewBox="0 0 10 10" class="vcc__shape vcc__shape--cross" aria-hidden="true">
+        <line x1="1.5" y1="1.5" x2="8.5" y2="8.5" />
+        <line x1="1.5" y1="8.5" x2="8.5" y2="1.5" />
+      </svg>
+      {{ 'monitorizacao.shell.chart.legendAnesthesia' | translate }}
+    </span>
+    <span class="vcc__legend-item"><i class="vcc__shape vcc__shape--ring"></i>{{ 'monitorizacao.shell.chart.legendSurgery' | translate }}</span>
+  </div>
+
+  <div class="vcc__scroll" #scrollHost (scroll)="onScroll(scrollHost)">
+    <div class="vcc__canvas" #canvasEl [style.width]="canvasWidth">
+      <svg
+        [attr.width]="chartW" [attr.height]="chartH"
+        [attr.viewBox]="'0 0 ' + chartW + ' ' + chartH" class="vcc__svg"
+      >
+        <g *ngFor="let tick of yTicks">
+          <line
+            [attr.x1]="padL" [attr.x2]="chartW - padR"
+            [attr.y1]="yFor(tick)" [attr.y2]="yFor(tick)"
+            class="vcc__gridline"
+          />
+          <text [attr.x]="4" [attr.y]="yFor(tick) + 3" class="vcc__tick-label">{{ tick }}</text>
+        </g>
+
+        <g *ngFor="let m of milestones">
+          <line
+            [attr.x1]="m.x" [attr.x2]="m.x" y1="12" [attr.y2]="chartH - 30"
+            [class.vcc__milestone--anesthesia]="m.kind === 'anesthesia'"
+            [class.vcc__milestone--surgery]="m.kind === 'surgery'"
+            class="vcc__milestone"
+          />
+          <!-- Anestesia = X; Cirurgia = círculo -->
+          <ng-container *ngIf="m.kind === 'anesthesia'">
+            <line
+              [attr.x1]="crossLine1(m.x).x1" [attr.y1]="crossLine1(m.x).y1"
+              [attr.x2]="crossLine1(m.x).x2" [attr.y2]="crossLine1(m.x).y2"
+              class="vcc__milestone-glyph vcc__milestone-glyph--anesthesia"
+            />
+            <line
+              [attr.x1]="crossLine2(m.x).x1" [attr.y1]="crossLine2(m.x).y1"
+              [attr.x2]="crossLine2(m.x).x2" [attr.y2]="crossLine2(m.x).y2"
+              class="vcc__milestone-glyph vcc__milestone-glyph--anesthesia"
+            />
+          </ng-container>
+          <circle
+            *ngIf="m.kind === 'surgery'"
+            [attr.cx]="m.x" [attr.cy]="milestoneGlyphY" [attr.r]="milestoneGlyphR"
+            class="vcc__milestone-glyph vcc__milestone-glyph--surgery"
+          />
+        </g>
+
+        <polyline *ngIf="pasPoints.length > 1" [attr.points]="polyline(pasPoints)" class="vcc__line vcc__line--pas" />
+        <polyline *ngIf="padPoints.length > 1" [attr.points]="polyline(padPoints)" class="vcc__line vcc__line--pad" />
+        <polyline *ngIf="fcPoints.length > 1" [attr.points]="polyline(fcPoints)" class="vcc__line vcc__line--fc" />
+
+        <circle *ngFor="let p of fcPoints" [attr.cx]="p.x" [attr.cy]="p.y" r="5" class="vcc__marker vcc__marker--fc" />
+        <polygon *ngFor="let p of pasPoints" [attr.points]="triangleUp(p)" class="vcc__marker vcc__marker--pas" />
+        <polygon *ngFor="let p of padPoints" [attr.points]="triangleDown(p)" class="vcc__marker vcc__marker--pad" />
+
+        <text *ngFor="let l of xLabels" [attr.x]="l.x" [attr.y]="chartH - 10" class="vcc__tick-label vcc__tick-label--x">{{ l.label }}</text>
+      </svg>
+    </div>
+  </div>
+
+  <p class="vcc__empty" *ngIf="!vitalRecords.length">
+    {{ 'monitorizacao.shell.chart.empty' | translate }}
+  </p>
+</section>

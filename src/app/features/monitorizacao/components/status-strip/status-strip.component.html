@@ -1,0 +1,15 @@
+<div class="ss">
+  <span class="ss__item">
+    <ng-container *ngIf="lastSavedAt; else noDraft">
+      {{ 'monitorizacao.shell.statusStrip.draftSaved' | translate: { time: (lastSavedAt | date: 'HH:mm') } }}
+    </ng-container>
+    <ng-template #noDraft>{{ 'monitorizacao.shell.statusStrip.noDraft' | translate }}</ng-template>
+  </span>
+
+  <span class="ss__item" [class.ss__item--pending]="pendingSyncCount > 0">
+    <i class="ss__dot" [class.ss__dot--pending]="pendingSyncCount > 0"></i>
+    {{ pendingSyncCount > 0
+      ? ('monitorizacao.shell.statusStrip.pendingSync' | translate: { count: pendingSyncCount })
+      : ('monitorizacao.shell.statusStrip.synced' | translate) }}
+  </span>
+</div>

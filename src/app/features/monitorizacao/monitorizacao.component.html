@@ -1,169 +1,134 @@
-<div class="app-container">
+<div class="monitorizacao-shell">
   <app-status-bar></app-status-bar>
   <app-header-institucional
     [showBackButton]="true"
     [showAnestesicaButton]="true"
     [anestesicaButtonLabel]="'monitorizacao.page.anestesicaButtonLabel' | translate"
-    (openAnestesica)="openFichaAnestesicaModal()"
     (backClick)="goToFichaAnestesica()"
-  >
-  </app-header-institucional>
+    (openAnestesica)="openFichaAnestesicaModal()"
+  ></app-header-institucional>
+
+  <div class="monitorizacao-shell__subheader">
+    <span class="monitorizacao-shell__subheader-phase monitorizacao-shell__subheader-phase--ghost" aria-hidden="true">
+      <ng-container *ngIf="roomLabel">{{ 'monitorizacao.shell.header.room' | translate: { room: roomLabel } }} · </ng-container>
+      {{ phaseKey | translate }}
+    </span>
+
+    <div class="monitorizacao-shell__subheader-block">
+      <span class="monitorizacao-shell__subheader-eyebrow">{{ 'monitorizacao.shell.header.eyebrow' | translate }}</span>
+      <h1 class="monitorizacao-shell__subheader-title">{{ 'monitorizacao.shell.header.title' | translate }}</h1>
+    </div>
+
+    <span
+      class="monitorizacao-shell__subheader-phase"
+      [class.monitorizacao-shell__subheader-phase--active]="phase === 'in-progress'"
+      [class.monitorizacao-shell__subheader-phase--done]="phase === 'finished'"
+    >
+      <ng-container *ngIf="roomLabel">{{ 'monitorizacao.shell.header.room' | translate: { room: roomLabel } }} · </ng-container>
+      {{ phaseKey | translate }}
+    </span>
+  </div>
 
   <div class="readonly-banner" *ngIf="!isResponsible">
     {{ 'monitorizacao.page.readonlyBanner' | translate }}
   </div>
 
-  <div class="main-grid">
-    <div class="channels-column" [style.gridTemplateRows]="channelsGridRows">
-      <app-vital-signs-chart #vitalSigns
-        [vitalRecords]="vitalRecords"
-        [customFields]="customFields"
-        [anesthesiaStartTime]="anesthesiaStartTime"
-        [anesthesiaEndTime]="anesthesiaEndTime"
-        [surgeryStartTime]="surgeryStartTime"
-        [surgeryEndTime]="surgeryEndTime"
-        [positionHistory]="positionHistory"
-        [clinicalEvents]="clinicalEvents"
-        [agents]="agents"
-        [hoverTime]="hoverTime"
-        [readonly]="isAnesthesiaFinished || !canEdit"
-        (hoverTimeChange)="hoverTime = $event"
-        (viewBoundsChange)="onViewBoundsChange($event)"
-        (addVitalRecord)="openVitalModal()"
-        (openHistory)="openDrawer('vitals')"
-        (addCustomField)="openCustomFieldModal()"
-      >
-      </app-vital-signs-chart>
+  <ion-content class="monitorizacao-shell__scroll">
+  <div class="monitorizacao-shell__loading" *ngIf="isLoading">
+    <span class="monitorizacao-shell__spinner" aria-hidden="true"></span>
+    <span>{{ 'monitorizacao.shell.loading' | translate }}</span>
+  </div>
 
-      <app-agents-chart
-        class="channel channel-strip secondary-pan-target"
-        [class.is-collapsed]="expandedPanel !== 'agents'"
-        [class.is-expanded]="expandedPanel === 'agents'"
-        [collapsed]="expandedPanel !== 'agents'"
-        [agents]="agents"
-        [anesthesiaStartTime]="anesthesiaStartTime"
-        [surgeryEndTime]="surgeryEndTime"
-        [viewStartTime]="viewStartTime"
-        [viewEndTime]="viewEndTime"
-        [hoverTime]="sharedHoverTime"
-        (hoverTimeChange)="onSharedHover($event)"
-        (toggle)="togglePanel('agents')"
-        [readonly]="isAnesthesiaFinished || !canEdit"
-        (addAgent)="openAgentModal()"
-        (pointerdown)="onPointerDown($event)"
-        (pointermove)="onPointerMove($event, vitalSigns)"
-        (pointerup)="onPointerUp($event)"
-        (pointercancel)="onPointerUp($event)"
-      >
-      </app-agents-chart>
-
-      <app-events-chart
-        class="channel channel-strip secondary-pan-target"
-        [class.is-collapsed]="expandedPanel !== 'events'"
-        [class.is-expanded]="expandedPanel === 'events'"
-        [collapsed]="expandedPanel !== 'events'"
-        [events]="clinicalEvents"
-        [positionHistory]="positionHistory"
-        [anesthesiaStartTime]="anesthesiaStartTime"
-        [surgeryEndTime]="surgeryEndTime"
-        [viewStartTime]="viewStartTime"
-        [viewEndTime]="viewEndTime"
-        [hoverTime]="sharedHoverTime"
-        (hoverTimeChange)="onSharedHover($event)"
-        (toggle)="togglePanel('events')"
-        [readonly]="isAnesthesiaFinished || !canEdit"
-        (addEvent)="openEventModal()"
-        (pointerdown)="onPointerDown($event)"
-        (pointermove)="onPointerMove($event, vitalSigns)"
-        (pointerup)="onPointerUp($event)"
-        (pointercancel)="onPointerUp($event)"
-      >
-      </app-events-chart>
-
-      <app-fluid-balance-chart
-        class="channel channel-strip secondary-pan-target"
-        [class.is-collapsed]="expandedPanel !== 'balance'"
-        [class.is-expanded]="expandedPanel === 'balance'"
-        [collapsed]="expandedPanel !== 'balance'"
-        [balance]="fluidBalance"
-        [anesthesiaStartTime]="anesthesiaStartTime"
-        [surgeryEndTime]="surgeryEndTime"
-        [viewStartTime]="viewStartTime"
-        [viewEndTime]="viewEndTime"
-        [hoverTime]="sharedHoverTime"
-        (hoverTimeChange)="onSharedHover($event)"
-        (toggle)="togglePanel('balance')"
-        [readonly]="isAnesthesiaFinished || !canEdit"
-        (addBalance)="openBalanceModal()"
-        (pointerdown)="onPointerDown($event)"
-        (pointermove)="onPointerMove($event, vitalSigns)"
-        (pointerup)="onPointerUp($event)"
-        (pointercancel)="onPointerUp($event)"
-      >
-      </app-fluid-balance-chart>
-    </div>
-
-    <app-quick-action-sidebar
-      class="sidebar-right"
-      [isAnesthesiaStarted]="isAnesthesiaStarted"
-      [isSurgeryStarted]="isSurgeryStarted"
-      [isSurgeryFinished]="isSurgeryFinished"
-      [isAnesthesiaFinished]="isAnesthesiaFinished"
-      [startTimeAnesthesia]="startTimeAnesthesia"
-      [startTimeSurgery]="startTimeSurgery"
+  <main class="monitorizacao-shell__content" *ngIf="!isLoading">
+    <app-patient-summary-card
+      [patientName]="patientName"
+      [patientAge]="patientAge"
+      [patientRecord]="patientRecord"
       [anesthesiaTimer]="anesthesiaTimer"
       [surgeryTimer]="surgeryTimer"
+      [primaryAction]="primaryAction"
+      [autoMonitoringIntervalMinutes]="autoMonitoringIntervalMinutes"
+      [canEdit]="canEdit"
+      [pendingSyncCount]="pendingSyncCount"
+      [isSyncing]="isSyncing"
+      (primaryActionClick)="onPrimaryAction()"
+      (frequencyClick)="onFrequencyClick()"
+      (openHistory)="openHistory('vitals')"
+      (syncNow)="syncPendingNow()"
+    ></app-patient-summary-card>
+
+    <app-vitals-section
+      [vitalRecords]="vitalRecords"
+      [fluidBalance]="fluidBalance"
+      [customFields]="customFields"
+      [anesthesiaStartTime]="startTimeAnesthesia"
+      [anesthesiaEndTime]="anesthesiaEndTime"
+      [zoom]="sharedTimelineZoom"
+      [readonly]="!canEdit"
+      [syncScrollRatio]="sharedTimelineScrollRatio"
+      (addRecord)="onAddVital()"
+      (addCustomField)="onAddCustomField()"
+      (cellTap)="onVitalCellTap($event)"
+      (deleteRecord)="onDeleteVitalRecord($event)"
+      (editTime)="onEditVitalTime($event)"
+      (scrollRatioChange)="onTimelineScroll($event)"
+    ></app-vitals-section>
+
+    <app-vitals-chart-card
+      [vitalRecords]="vitalRecords"
+      [anesthesiaStartTime]="startTimeAnesthesia"
+      [anesthesiaEndTime]="anesthesiaEndTime"
+      [surgeryStartTime]="startTimeSurgery"
+      [surgeryEndTime]="surgeryEndTime"
+      [zoom]="sharedTimelineZoom"
+      [syncScrollRatio]="sharedTimelineScrollRatio"
+      (scrollRatioChange)="onTimelineScroll($event)"
+      (zoomChange)="onTimelineZoomChange($event)"
+    ></app-vitals-chart-card>
+
+    <app-resources-flow-card
       [posicaoAtual]="posicaoAtual"
       [posicoesPossiveis]="posicoesPossiveis"
       [positionHistory]="positionHistory"
-      [recentActivity]="recentActivity"
-      [autoMonitoringIntervalMinutes]="autoMonitoringIntervalMinutes"
-      (iniciarAnestesia)="iniciarAnestesia()"
-      (iniciarCirurgia)="iniciarCirurgia()"
-      (mudarPosicao)="mudarPosicao($event)"
-      (reconfigurarFrequencia)="reconfigurarFrequencia()"
-      (addVital)="addTimePoint()"
-      (addAgent)="openAgentModal()"
-      (addEvent)="openEventModal()"
-      (addBalance)="openBalanceModal()"
-      (openHistoryFull)="openHistoryDrawer('vitals')"
-    >
-    </app-quick-action-sidebar>
-  </div>
+      [oxygenFlows]="oxygenFlows"
+      [compressedAirFlows]="compressedAirFlows"
+      [infusionPumps]="infusionPumps"
+      [anesthesiaStartTime]="startTimeAnesthesia"
+      [anesthesiaEndTime]="anesthesiaEndTime"
+      [zoom]="sharedTimelineZoom"
+      [syncScrollRatio]="sharedTimelineScrollRatio"
+      [readonly]="!canEdit"
+      (positionChange)="mudarPosicao()"
+      (addResource)="onAddResource($event)"
+      (scrollRatioChange)="onTimelineScroll($event)"
+    ></app-resources-flow-card>
 
-  <app-finalize-anesthesia-bar
-    [draftSavedAt]="lastDraftSavedAt"
-    [pendingSyncCount]="pendingSyncCount"
-    [isAnesthesiaStarted]="isAnesthesiaStarted"
-    [isSurgeryFinished]="isSurgeryFinished"
-    [isAnesthesiaFinished]="isAnesthesiaFinished"
-    [isSyncing]="isSyncing"
-    (syncNow)="syncPendingNow()"
-    (openHistory)="openHistoryDrawer('vitals')"
-    (finalize)="clickFinalize()"
-  >
-  </app-finalize-anesthesia-bar>
+    <app-agents-card
+      [agents]="agents"
+      [anesthesiaStartTime]="startTimeAnesthesia"
+      [anesthesiaEndTime]="anesthesiaEndTime"
+      [zoom]="sharedTimelineZoom"
+      [readonly]="!canEdit"
+      [syncScrollRatio]="sharedTimelineScrollRatio"
+      (addAgent)="onAddAgent()"
+      (editAgent)="onEditAgent($event)"
+      (deleteAgent)="onDeleteAgent($event)"
+      (scrollRatioChange)="onTimelineScroll($event)"
+    ></app-agents-card>
 
-  <app-history-drawer
-    *ngIf="historyDrawerOpen"
-    [initialTab]="historyDrawerTab"
-    [vitalRecords]="vitalRecords"
-    [customFields]="customFields"
-    [agents]="agents"
-    [events]="clinicalEvents"
-    [balance]="fluidBalance"
-    [isAnesthesiaFinished]="isAnesthesiaFinished"
-    (close)="historyDrawerOpen = false"
-    (editRecord)="onEditVital($event)"
-    (deleteRecord)="onDeleteVital($event)"
-    (editAgent)="onEditAgent($event)"
-    (deleteAgent)="onDeleteAgent($event)"
-    (editEvent)="onEditEvent($event)"
-    (deleteEvent)="onDeleteEvent($event)"
-    (editBalance)="onEditBalance($event)"
-    (deleteBalance)="onDeleteBalance($event)"
-    (addCustomField)="addCustomField()"
-    (addTimePoint)="addTimePoint()"
-  >
-  </app-history-drawer>
+    <app-bottom-action-row
+      [readonly]="!canEdit"
+      [canFinalize]="canEdit && isAnesthesiaStarted && !isAnesthesiaFinished"
+      [isSurgeryFinished]="isSurgeryFinished"
+      (addEvent)="onAddEvent()"
+      (addBalance)="onAddBalance()"
+      (finalize)="onFinalize()"
+    ></app-bottom-action-row>
+
+    <app-status-strip
+      [lastSavedAt]="lastDraftSavedAt"
+      [pendingSyncCount]="pendingSyncCount"
+    ></app-status-strip>
+  </main>
+  </ion-content>
 </div>

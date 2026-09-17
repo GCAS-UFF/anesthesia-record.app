@@ -15,6 +15,8 @@ import {
   FluidCategoryEnum,
   FLUID_CATEGORY_KEY_TO_ID,
   FluidBalanceTypeEnum,
+  InfusionRateUnitEnum,
+  INFUSION_RATE_UNIT_LABELS,
 } from 'src/app/core/models/api-enums.model';
 
 type ItemType = 'agent' | 'event' | 'balance';
@@ -23,6 +25,7 @@ interface Medication { id: number | string; description: string; }
 interface EventTypeOption { id: number; name: string; description: string; }
 interface RouteOption { id: AdministrationRouteEnum; label: string; }
 interface UnitOption { id: MedicationUnitEnum; label: string; }
+interface InfusionUnitOption { id: InfusionRateUnitEnum; label: string; }
 interface BalanceItem { id: string; label: string; needsDetail?: boolean; categoryId: FluidCategoryEnum; }
 
 @Component({
@@ -35,14 +38,39 @@ interface BalanceItem { id: string; label: string; needsDetail?: boolean; catego
 export class ClinicalItemModalComponent implements OnInit {
   @Input() type: ItemType = 'agent';
   @Input() initial: any = null;
-
+  
+  time = ''; 
   agent: {
     medicationId: number | string | null;
     medicationName: string;
     doseValue: number | null;
     doseUnit: MedicationUnitEnum;
     routeId: AdministrationRouteEnum | null;
-  } = { medicationId: null, medicationName: '', doseValue: null, doseUnit: MedicationUnitEnum.Milligram, routeId: null };
+    isBolus: boolean;
+    isInfusionPump: boolean;
+    infusionRate: number | null;
+    infusionRateUnit: InfusionRateUnitEnum;
+    infusionVolumeMl: number | null;
+  } = {
+    medicationId: null, medicationName: '', doseValue: null, doseUnit: MedicationUnitEnum.Milligram, routeId: null,
+    isBolus: false, isInfusionPump: false, infusionRate: null,
+    infusionRateUnit: InfusionRateUnitEnum.MillilitersPerHour, infusionVolumeMl: null,
+  };
+
+  readonly infusionUnitOptions: InfusionUnitOption[] = (Object.keys(INFUSION_RATE_UNIT_LABELS) as any[])
+    .map((key) => Number(key))
+    .filter((id) => !Number.isNaN(id))
+    .map((id) => ({ id, label: INFUSION_RATE_UNIT_LABELS[id as InfusionRateUnitEnum] }));
+
+  toggleBolus(): void {
+    this.agent.isBolus = !this.agent.isBolus;
+    if (this.agent.isBolus) this.agent.isInfusionPump = false;
+  }
+
+  toggleInfusionPump(): void {
+    this.agent.isInfusionPump = !this.agent.isInfusionPump;
+    if (this.agent.isInfusionPump) this.agent.isBolus = false;
+  }
 
   medications: Medication[] = [];
   medSearchTerm = '';
@@ -50,13 +78,13 @@ export class ClinicalItemModalComponent implements OnInit {
   medDropdownOpen = false;
   medHighlightIndex = -1;
 
-  /** Vias de administração — IDs casam 1:1 com `AdministrationRouteEnum` do backend. */
+  
   readonly routeOptions: RouteOption[] = (Object.keys(ADMINISTRATION_ROUTE_LABELS) as any[])
     .map((key) => Number(key))
     .filter((id) => !Number.isNaN(id))
     .map((id) => ({ id, label: ADMINISTRATION_ROUTE_LABELS[id as AdministrationRouteEnum] }));
 
-  /** Unidades de dose — IDs casam 1:1 com `MedicationUnitEnum` do backend. */
+  
   readonly unitOptions: UnitOption[] = (Object.keys(MEDICATION_UNIT_LABELS) as any[])
     .map((key) => Number(key))
     .filter((id) => !Number.isNaN(id))
@@ -92,7 +120,7 @@ export class ClinicalItemModalComponent implements OnInit {
   balanceDropdownOpen = false;
   balanceHighlightIndex = -1;
 
-  // Ganho: preenchido dinamicamente a partir do cache de medicamentos do AGHU (ver loadMedications/buildGainItemsFromMedications) — mesma fonte já usada pelo tipo "agent".
+  
   gainItems: BalanceItem[] = [];
 
   lossItems: BalanceItem[] = [
@@ -121,6 +149,11 @@ export class ClinicalItemModalComponent implements OnInit {
     this.buildGainItemsFromMedications();
     await this.loadEventTypes();
     this.hydrateInitial();
+
+    if (!this.time) {
+      const now = new Date();
+      this.time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    }
   }
 
 
@@ -148,13 +181,7 @@ export class ClinicalItemModalComponent implements OnInit {
     }
   }
 
-  /**
-   * Ganho do Balanço = medicamentos provenientes do AGHU, reaproveitando o mesmo
-   * cache/serviço já usado para o campo "Medicação" da tela de Agentes (MasterDataService.getMedicationsCache()).
-   * O backend (FluidCategoryEnum) ainda não tem uma categoria dedicada para "medicamento",
-   * então usamos FluidCategoryEnum.Other — o nome específico do medicamento continua
-   * preservado no itemLabel/description do lançamento.
-   */
+  
   private buildGainItemsFromMedications() {
     this.gainItems = this.medications.map((m) => ({
       id: `aghu_${m.id}`,
@@ -184,6 +211,7 @@ export class ClinicalItemModalComponent implements OnInit {
 
   private hydrateInitial() {
     if (!this.initial) return;
+    this.time = this.initial.time ?? '';
     if (this.type === 'agent') {
       this.agent = {
         medicationId: this.initial.medicationId ?? null,
@@ -191,6 +219,11 @@ export class ClinicalItemModalComponent implements OnInit {
         doseValue: this.initial.doseValue ?? (typeof this.initial.dose === 'number' ? this.initial.dose : null),
         doseUnit: this.initial.unit ?? this.initial.doseUnit ?? MedicationUnitEnum.Milligram,
         routeId: this.initial.routeId ?? (typeof this.initial.route === 'number' ? this.initial.route : null),
+        isBolus: !!this.initial.isBolus,
+        isInfusionPump: false,
+        infusionRate: null,
+        infusionRateUnit: InfusionRateUnitEnum.MillilitersPerHour,
+        infusionVolumeMl: null,
       };
       this.medSearchTerm = this.agent.medicationName || '';
     } else if (this.type === 'event') {
@@ -376,7 +409,12 @@ export class ClinicalItemModalComponent implements OnInit {
 
   get canSave(): boolean {
     if (this.type === 'agent') {
-      return !!this.agent.medicationId && this.agent.doseValue != null && Number(this.agent.doseValue) > 0 && !!this.agent.routeId;
+      if (!this.agent.medicationId) return false;
+      if (this.agent.isInfusionPump) {
+        return this.agent.infusionRate != null && Number(this.agent.infusionRate) > 0
+          && this.agent.infusionVolumeMl != null && Number(this.agent.infusionVolumeMl) > 0;
+      }
+      return this.agent.doseValue != null && Number(this.agent.doseValue) > 0 && !!this.agent.routeId;
     }
     if (this.type === 'event') {
       return !!this.event.eventTypeId && !!this.event.description?.trim();
@@ -399,7 +437,17 @@ export class ClinicalItemModalComponent implements OnInit {
     if (!this.canSave) return;
     let payload: any;
 
-    if (this.type === 'agent') {
+    if (this.type === 'agent' && this.agent.isInfusionPump) {
+      payload = {
+        type: 'infusionPump',
+        medicationId: this.agent.medicationId,
+        medicationName: this.agent.medicationName,
+        rate: Number(this.agent.infusionRate),
+        rateUnit: this.agent.infusionRateUnit,
+        volumeMl: Number(this.agent.infusionVolumeMl),
+        time: this.time || null,
+      };
+    } else if (this.type === 'agent') {
       const unitLabel = MEDICATION_UNIT_LABELS[this.agent.doseUnit];
       const routeOption = this.routeOptions.find(r => r.id === this.agent.routeId);
       payload = {
@@ -412,7 +460,8 @@ export class ClinicalItemModalComponent implements OnInit {
         unit: this.agent.doseUnit,
         routeId: this.agent.routeId,
         route: routeOption?.label ?? null,
-        timestamp: new Date().toISOString(),
+        isBolus: this.agent.isBolus,
+        time: this.time || null,
       };
     } else if (this.type === 'event') {
       payload = {
@@ -422,8 +471,7 @@ export class ClinicalItemModalComponent implements OnInit {
         categoryLabel: this.event.name,
         eventTypeId: ClinicalEventTypeEnum.Other,
         description: this.event.description.trim(),
-        time: this.isEditMode ? (this.event.time || null) : null,
-        timestamp: new Date().toISOString(),
+        time: this.time || null,
       };
     } else {
       const item = this.balanceItems.find(i => i.id === this.balance.itemId);
@@ -437,7 +485,7 @@ export class ClinicalItemModalComponent implements OnInit {
         volumeMl: Number(this.balance.volumeMl),
         categoryId: item?.categoryId ?? FluidCategoryEnum.Other,
         balanceTypeId: this.balance.type === 'gain' ? FluidBalanceTypeEnum.Gain : FluidBalanceTypeEnum.Loss,
-        timestamp: new Date().toISOString(),
+        time: this.time || null,
       };
     }
 
