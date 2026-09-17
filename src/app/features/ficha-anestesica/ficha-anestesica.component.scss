@@ -112,7 +112,7 @@ ion-content.main-content {
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: 16px;
-  padding: 4px 0 8px 200px;
+  padding: 4px 0 8px;
 
   .title-block {
     text-align: center;
@@ -121,7 +121,7 @@ ion-content.main-content {
       font-family: var(--fa-font-body);
       font-size: 11px;
       font-weight: 800;
-      letter-spacing: 1.5px;
+      letter-spacing: 0.06em;
       color: var(--fa-blue);
       text-transform: uppercase;
       margin-bottom: 2px;
@@ -129,28 +129,10 @@ ion-content.main-content {
     .page-title {
       margin: 0;
       font-family: var(--fa-font-display);
-      font-size: 24px;
+      font-size: 18px;
       font-weight: 700;
       color: var(--fa-ink);
       letter-spacing: -0.3px;
-    }
-  }
-  .header-actions {
-    justify-self: end;
-    .autosave-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      background: var(--fa-accent-soft);
-      color: var(--fa-blue);
-      font-family: var(--fa-font-display);
-      font-size: 11px;
-      font-weight: 700;
-      border-radius: 999px;
-      ion-icon {
-        font-size: 14px;
-      }
     }
   }
 }
@@ -1587,10 +1569,6 @@ ion-content.main-content {
   .navigation-header {
     grid-template-columns: 1fr auto;
     gap: 12px;
-    padding-left: 140px;
-    .title-block .page-title {
-      font-size: 20px;
-    }
   }
   ion-content.main-content {
     --padding-top: 16px;

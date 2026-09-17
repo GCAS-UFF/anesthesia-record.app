@@ -4,12 +4,15 @@
   <app-header-institucional></app-header-institucional>
 
   <main class="page-main">
-    <div class="filters-wrapper" #filtersContainer>
-    <section class="filters-bar">
+    <section class="page-title-row">
       <div class="page-title-block">
+        <span class="page-eyebrow">{{ 'myPatients.eyebrow' | translate }}</span>
         <h1 class="page-title">{{ 'myPatients.title' | translate }}</h1>
       </div>
+    </section>
 
+    <div class="filters-wrapper" #filtersContainer>
+    <section class="filters-bar">
       <button
         type="button"
         class="filters-toggle"

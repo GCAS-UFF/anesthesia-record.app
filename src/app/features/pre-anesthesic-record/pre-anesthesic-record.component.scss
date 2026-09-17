@@ -44,13 +44,18 @@
 
   &__title {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
+    text-align: center;
+    gap: 2px;
+    min-width: 0;
 
     h1 {
       margin: 0;
-      font-size: 20px;
+      font-family: 'Sora', system-ui, -apple-system, sans-serif;
+      font-size: 18px;
       font-weight: 700;
+      color: #223740;
       letter-spacing: -0.01em;
     }
   }
@@ -62,16 +67,13 @@
   }
 }
 
-.chip-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: var(--pre-primary-soft);
-  color: var(--pre-primary);
+.page-eyebrow {
+  display: block;
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.06em;
+  color: #1b8ba6;
   text-transform: uppercase;
 }
 

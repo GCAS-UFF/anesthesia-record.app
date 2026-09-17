@@ -8,8 +8,9 @@
 }
 
 .monitorizacao-shell {
-  max-width: 820px;
+  max-width: 1400px;
   margin: 0 auto;
+  width: 100%;
   height: 100%;
   background: t.$surface-bg;
   display: flex;
@@ -55,7 +56,7 @@
   &__subheader {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: 12px;
     padding: 10px 12px 0;
   }
@@ -90,45 +91,6 @@
     text-overflow: ellipsis;
   }
 
-  &__subheader-phase {
-    flex: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: t.$surface-panel;
-    color: t.$text-ink;
-    font-family: t.$font-display;
-    font-weight: 700;
-    font-size: t.$fs-11;
-    white-space: nowrap;
-
-    &::before {
-      content: '';
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: t.$text-ink;
-      flex: none;
-    }
-
-    &--active {
-      background: rgba(t.$c-success, 0.14);
-      color: t.$c-success;
-      &::before { background: t.$c-success; }
-    }
-
-    &--done {
-      background: t.$surface-accent-soft;
-      color: t.$c-primary;
-      &::before { background: t.$c-primary; }
-    }
-
-    &--ghost {
-      visibility: hidden;
-    }
-  }
 }
 
 @keyframes monitorizacao-spin {

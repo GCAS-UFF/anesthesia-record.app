@@ -49,15 +49,10 @@
     color: t.$text-ink;
   }
 
-  // Mesmo padrão de rolagem horizontal do vitals-section/resources-flow-card —
-  // uma barra fina e sempre visível (não só on-hover), pra deixar claro que dá
-  // pra rolar pro lado quando o quadro cresce com mais agentes.
+
   &__scroll {
     overflow-x: auto;
     padding-bottom: 6px;
-
-    &::-webkit-scrollbar { height: 6px; }
-    &::-webkit-scrollbar-thumb { background: t.$border; border-radius: 999px; }
   }
 
   &__canvas {

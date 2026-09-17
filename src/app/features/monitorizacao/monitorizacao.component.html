@@ -9,24 +9,10 @@
   ></app-header-institucional>
 
   <div class="monitorizacao-shell__subheader">
-    <span class="monitorizacao-shell__subheader-phase monitorizacao-shell__subheader-phase--ghost" aria-hidden="true">
-      <ng-container *ngIf="roomLabel">{{ 'monitorizacao.shell.header.room' | translate: { room: roomLabel } }} · </ng-container>
-      {{ phaseKey | translate }}
-    </span>
-
     <div class="monitorizacao-shell__subheader-block">
       <span class="monitorizacao-shell__subheader-eyebrow">{{ 'monitorizacao.shell.header.eyebrow' | translate }}</span>
       <h1 class="monitorizacao-shell__subheader-title">{{ 'monitorizacao.shell.header.title' | translate }}</h1>
     </div>
-
-    <span
-      class="monitorizacao-shell__subheader-phase"
-      [class.monitorizacao-shell__subheader-phase--active]="phase === 'in-progress'"
-      [class.monitorizacao-shell__subheader-phase--done]="phase === 'finished'"
-    >
-      <ng-container *ngIf="roomLabel">{{ 'monitorizacao.shell.header.room' | translate: { room: roomLabel } }} · </ng-container>
-      {{ phaseKey | translate }}
-    </span>
   </div>
 
   <div class="readonly-banner" *ngIf="!isResponsible">

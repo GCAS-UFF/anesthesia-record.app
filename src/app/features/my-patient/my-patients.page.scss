@@ -19,10 +19,10 @@
 }
 
 .page-title {
-  font-family: 'Space Grotesk', 'DM Sans', sans-serif;
-  font-size: 19px;
+  font-family: 'Sora', system-ui, -apple-system, sans-serif;
+  font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: #223740;
   letter-spacing: -0.01em;
   margin: 0;
   white-space: nowrap;
@@ -34,9 +34,26 @@
   display: contents;
 }
 
+.page-title-row {
+  display: flex;
+  justify-content: center;
+  padding: 16px 24px 4px;
+}
+
 .page-title-block {
-  margin-right: auto;
   min-width: 0;
+  text-align: center;
+}
+
+.page-eyebrow {
+  display: block;
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #1b8ba6;
+  text-transform: uppercase;
+  margin-bottom: 2px;
 }
 
 .filters-bar {
@@ -107,6 +124,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-left: auto;
 }
 
 .filters-panel {
@@ -272,12 +290,14 @@
     app-procedure-card:nth-child(#{$i}) { animation-delay: #{$i * 0.05}s; }
   }
 
-  &::-webkit-scrollbar { width: 8px; }
+  &::-webkit-scrollbar { width: 22px; }
   &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 10px;
-    &:hover { background: #94a3b8; }
+    background: #94a3b8;
+    border: 5px solid transparent;
+    border-radius: 11px;
+    background-clip: padding-box;
+    &:hover { background: #64748b; background-clip: padding-box; }
   }
 }
 @keyframes fadeInUp {

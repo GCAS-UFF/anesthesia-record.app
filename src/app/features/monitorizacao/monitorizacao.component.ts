@@ -24,7 +24,7 @@ import { mapAnesthesiaRecordToRecordData } from 'src/app/shared/models/anesthesi
 import { formatDateTimeBR } from 'src/app/shared/utils/date-format.util';
 
 import {
-  Agent, ClinicalEvent, FluidBalance, HistoryTab, InfusionPumpEntry, MonitoringPhase, PositionEntry,
+  Agent, ClinicalEvent, FluidBalance, HistoryTab, InfusionPumpEntry, PositionEntry,
   PrimaryActionKind, ResourceFlowEntry, VitalRecord,
 } from './models/monitoring-view.model';
 
@@ -172,24 +172,6 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     return this.patient?.age ?? '';
   }
 
-  get roomLabel(): string | null {
-    return this.selectedSurgery?.room ?? this.selectedSurgery?.surgeries?.[0]?.room ?? null;
-  }
-
-  get phase(): MonitoringPhase {
-    if (this.isAnesthesiaFinished) return 'finished';
-    if (this.isAnesthesiaStarted) return 'in-progress';
-    return 'waiting';
-  }
-
-  get phaseKey(): string {
-    switch (this.phase) {
-      case 'in-progress': return 'monitorizacao.shell.header.statusInProgress';
-      case 'finished': return 'monitorizacao.shell.header.statusFinished';
-      default: return 'monitorizacao.shell.header.statusWaiting';
-    }
-  }
-
   /** Máquina de estados visual do card de paciente — o encerramento (cirurgia e
    * anestesia) acontece sempre pela barra inferior, no mesmo fluxo em 2 etapas
    * já usado na tela antiga (1º toque finaliza a cirurgia, 2º finaliza a anestesia). */
@@ -202,7 +184,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
-    // A tela roda em portrait (design de referência), sem travar orientação.
+    // Tela responsiva em portrait e landscape, sem travar orientação.
     this.orientationService.unlock();
 
     this.loggedUser = this.authService.getUser();

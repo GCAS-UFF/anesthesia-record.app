@@ -1,46 +1,73 @@
+@use 'sass:color';
+
+// Mesma paleta "SIGA — Azul gelo" usada em header-institucional — este bloco
+// (hamburguer + drawer + chip do usuário) veio de lá, então mantém as
+// mesmas cores para não haver descontinuidade visual entre as duas linhas
+// do header.
+$surface-bg:          #f3f7f9;
+$surface-card:        #fcfdfe;
+$surface-panel:       #dce7ec;
+$surface-accent-soft: #c6e4ed;
+$text-deep: #223740;
+$text-ink:  #4a6572;
+$c-primary: #1b8ba6;
+$c-crimson: #c23a6b;
+$border:        rgba(34, 55, 64, 0.12);
+$radius-base: 10px;
+$radius-lg:   14px;
+
+:host {
+  display: block;
+}
+
 .status-bar {
   background: white;
-  padding: 4px calc(16px + var(--ion-safe-area-right, 0px)) 4px
+  padding: 6px calc(16px + var(--ion-safe-area-right, 0px)) 6px
     calc(16px + var(--ion-safe-area-left, 0px));
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #e9eef3;
-  font-size: 12px;
-  font-weight: 700;
-  color: #0f172a;
   gap: 16px;
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 31;
 }
 
-.status-left {
+// Abre o menu lateral (drawer) — antes ficava no header-institucional, junto
+// com a seta de voltar; subiu pra cá (linha de status) pra abrir espaço
+// embaixo pros botões de ação da página, sempre centralizados.
+.menu-btn {
   display: flex;
   align-items: center;
-  gap: 16px;
-  min-width: 0;
-}
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  border-radius: $radius-base;
+  color: $text-ink;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
 
-.time {
-  font-weight: 900;
-  font-size: 13px;
-  letter-spacing: 0.6px;
-}
-
-@media (max-width: 768px) {
-  .status-bar {
-    padding: 3px calc(16px + var(--ion-safe-area-right, 0px)) 3px
-      calc(16px + var(--ion-safe-area-left, 0px));
-    font-size: 10px;
+  ion-icon {
+    font-size: 22px;
   }
-  .time {
-    font-size: 12px;
+  &:hover {
+    background: $surface-bg;
+  }
+  &:active {
+    background: $surface-panel;
   }
 }
 
 .status-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
+  min-width: 0;
 }
 
 .status-item {
@@ -143,4 +170,287 @@
   box-sizing: border-box;
 
   z-index: 2;
+}
+
+// ---------- identificação do usuário (chip + submenu) ----------
+
+.doctor-chip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.doctor-chip {
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 14px 3px 3px;
+  border: 1px solid $border;
+  border-radius: 999px;
+  background: $surface-card;
+
+  .avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: $c-primary;
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .doctor-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+  }
+
+  .doctor-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: $text-deep;
+  }
+
+  .doctor-role {
+    font-size: 11px;
+    color: $text-ink;
+  }
+
+  .chevron {
+    font-size: 18px;
+    color: $text-ink;
+    transition: transform 0.2s ease;
+    margin-left: 4px;
+  }
+
+  &.menu-open .chevron {
+    transform: rotate(180deg);
+  }
+}
+
+.user-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: $surface-card;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  box-shadow:
+    0 10px 15px -3px rgba(34, 55, 64, 0.12),
+    0 4px 6px -4px rgba(34, 55, 64, 0.1);
+  min-width: 210px;
+  overflow: hidden;
+  z-index: 100;
+  padding: 6px 0;
+  animation: fadeInDown 0.2s ease;
+
+  .user-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 20px;
+    border: none;
+    background: transparent;
+    text-align: left;
+    font-size: 15px;
+    color: $text-ink;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    ion-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      background: $surface-bg;
+    }
+
+    &.logout {
+      color: $c-crimson;
+      &:hover {
+        background: rgba(194, 58, 107, 0.08);
+      }
+    }
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ---------- drawer (menu lateral) ----------
+
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(34, 55, 64, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 40;
+
+  &.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 320px;
+  max-width: 85vw;
+  background: $surface-card;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  box-shadow: 4px 0 24px rgba(34, 55, 64, 0.1);
+
+  &.open {
+    transform: translateX(0);
+  }
+}
+
+.drawer-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 44px 24px;
+  border-bottom: 1px solid $border;
+
+  .drawer-logos {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    text-align: center;
+
+    .logo {
+      object-fit: contain;
+      &.uff {
+        height: 40px;
+        width: auto;
+      }
+    }
+
+    .drawer-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: $text-deep;
+      line-height: 1.3;
+      word-break: break-word;
+    }
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: $radius-base;
+    color: $text-ink;
+    cursor: pointer;
+
+    ion-icon {
+      font-size: 22px;
+    }
+    &:hover {
+      background: $surface-bg;
+    }
+  }
+}
+
+.drawer-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 2px;
+  overflow-y: auto;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  background: transparent;
+  border-radius: $radius-base;
+  text-align: left;
+  font-size: 15px;
+  font-weight: 600;
+  color: $text-ink;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+
+  ion-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: $surface-bg;
+  }
+
+  &.active {
+    background: $surface-accent-soft;
+    color: $c-primary;
+  }
+
+  &.logout {
+    color: $c-crimson;
+    &:hover {
+      background: rgba(194, 58, 107, 0.08);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .status-bar {
+    padding: 5px calc(16px + var(--ion-safe-area-right, 0px)) 5px
+      calc(16px + var(--ion-safe-area-left, 0px));
+  }
+}
+
+@media (max-width: 480px) {
+  .status-group {
+    gap: 8px;
+  }
+  .doctor-chip .doctor-info {
+    display: none;
+  }
+  .doctor-chip {
+    padding: 4px;
+  }
+  .user-menu {
+    right: -10px;
+  }
 }

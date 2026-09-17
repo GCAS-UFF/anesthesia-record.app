@@ -36,6 +36,25 @@
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 /* @import '@ionic/angular/css/palettes/dark.system.css'; */
 
+/* Fontes auto-hospedadas (app roda offline em tablet — sem CDN de fontes).
+   Carregadas globalmente para que o par eyebrow + título (label de página)
+   use a mesma tipografia em todas as telas do sistema. */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('assets/fonts/sora/Sora-Variable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('assets/fonts/manrope/Manrope-Variable.woff2') format('woff2');
+}
+
 
 :root {
   --cfg-primary: #3b82f6;
@@ -120,20 +139,90 @@ input[type="date"] {
   }
 }
 
+// Barras de rolagem largas de propósito — o médico pode precisar arrastar
+// o thumb usando luva, então o alvo de toque precisa ser bem maior que o
+// fio fino padrão do navegador. Também ganham setas nas pontas (mais um
+// alvo grande pra rolar aos poucos sem precisar acertar o thumb fino).
+* {
+  scrollbar-width: auto;
+  scrollbar-color: #94a3b8 #f1f5f9;
+}
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 22px;
+  height: 22px;
 }
 ::-webkit-scrollbar-track {
   background: #f1f5f9;
-  border-radius: 4px;
+  border-radius: 11px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: #94a3b8;
+  border: 5px solid #f1f5f9;
+  border-radius: 11px;
+  background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-corner {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-button {
+  display: block;
+  background-color: #f1f5f9;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 10px 10px;
+}
+::-webkit-scrollbar-button:hover {
+  background-color: #e2e8f0;
+}
+::-webkit-scrollbar-button:vertical:start:decrement {
+  height: 22px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 8l-6 6h12z' fill='%2364748b'/%3E%3C/svg%3E");
+}
+::-webkit-scrollbar-button:vertical:end:increment {
+  height: 22px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 10l6 6 6-6z' fill='%2364748b'/%3E%3C/svg%3E");
+}
+::-webkit-scrollbar-button:horizontal:start:decrement {
+  width: 22px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14 6l-6 6 6 6z' fill='%2364748b'/%3E%3C/svg%3E");
+}
+::-webkit-scrollbar-button:horizontal:end:increment {
+  width: 22px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 6l6 6-6 6z' fill='%2364748b'/%3E%3C/svg%3E");
+}
+// engines que renderizam o par "duplo" (avançar no início / voltar no fim) —
+// escondido pra não duplicar seta na mesma ponta.
+::-webkit-scrollbar-button:vertical:start:increment,
+::-webkit-scrollbar-button:vertical:end:decrement,
+::-webkit-scrollbar-button:horizontal:start:increment,
+::-webkit-scrollbar-button:horizontal:end:decrement {
+  display: none;
+}
+
+// ion-content usa Shadow DOM — replica o mesmo estilo na parte exposta
+// (::part(scroll)) pra não ficar com barra fina só dentro dele.
+ion-content::part(scroll)::-webkit-scrollbar {
+  width: 22px;
+  height: 22px;
+}
+ion-content::part(scroll)::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 11px;
+}
+ion-content::part(scroll)::-webkit-scrollbar-thumb {
   background: #94a3b8;
+  border: 5px solid #f1f5f9;
+  border-radius: 11px;
+  background-clip: padding-box;
+}
+ion-content::part(scroll)::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+  background-clip: padding-box;
 }
 
 

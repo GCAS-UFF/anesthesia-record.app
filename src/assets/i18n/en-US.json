@@ -58,6 +58,7 @@
     "invalidCredentials": "Invalid username or password, or the API is unavailable."
   },
   "settings": {
+    "eyebrow": "System preferences",
     "title": "Settings",
     "roleAdmin": "Administrator",
     "roleUser": "User",

@@ -1,5 +1,6 @@
 {
   "patientList": {
+    "eyebrow": "Surgical panel",
     "title": "All Patients",
     "filters": {
       "toggle": "Filters",
@@ -61,6 +62,7 @@
     }
   },
   "myPatients": {
+    "eyebrow": "Clinical follow-up",
     "title": "My Patients",
     "filters": {
       "toggle": "Filters",

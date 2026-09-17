@@ -8,7 +8,10 @@
   <div class="cfg-topbar">
     <div class="cfg-topbar__title">
       <ion-icon name="settings-outline"></ion-icon>
-      <h1>{{ 'settings.title' | translate }}</h1>
+      <div class="cfg-topbar__title-text">
+        <span class="page-eyebrow">{{ 'settings.eyebrow' | translate }}</span>
+        <h1>{{ 'settings.title' | translate }}</h1>
+      </div>
       <span class="chip-tag" [class.is-admin]="isAdmin">
         {{ (isAdmin ? 'settings.roleAdmin' : 'settings.roleUser') | translate }}
       </span>

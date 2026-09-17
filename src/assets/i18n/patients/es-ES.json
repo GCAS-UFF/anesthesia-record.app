@@ -1,5 +1,6 @@
 {
   "patientList": {
+    "eyebrow": "Panel quirúrgico",
     "title": "Todos los Pacientes",
     "filters": {
       "toggle": "Filtros",
@@ -61,6 +62,7 @@
     }
   },
   "myPatients": {
+    "eyebrow": "Seguimiento clínico",
     "title": "Mis Pacientes",
     "filters": {
       "toggle": "Filtros",

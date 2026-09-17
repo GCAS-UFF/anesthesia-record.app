@@ -26,18 +26,19 @@
   flex-wrap: wrap;
 }
 
-.header-text { max-width: 720px; }
+.header-text { max-width: 720px; text-align: center; }
 
 .eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  background: rgba(27, 139, 166, 0.1);
+  color: #1b8ba6;
   border-radius: 999px;
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 
@@ -45,10 +46,10 @@
 }
 
 .page-title {
-  font-family: 'Space Grotesk', 'DM Sans', sans-serif;
-  font-size: 28px;
+  font-family: 'Sora', system-ui, -apple-system, sans-serif;
+  font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: #223740;
   letter-spacing: -0.01em;
   margin: 8px 0 0;
 }
@@ -357,7 +358,6 @@
   .card-head { flex-wrap: wrap; }
   .status-chip { order: 3; }
   .card-actions .btn { width: 100%; min-width: 0; }
-  .page-title { font-size: 24px; }
 }
 
 @media (pointer: coarse) {

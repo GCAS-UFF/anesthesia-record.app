@@ -46,16 +46,31 @@
   &__title {
     display: flex;
     align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-width: 0;
     gap: 12px;
 
     ion-icon {
       font-size: 22px;
       color: var(--cfg-primary);
     }
+
+    &-text {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 2px;
+      min-width: 0;
+    }
+
     h1 {
       margin: 0;
-      font-size: 20px;
+      font-family: 'Sora', system-ui, -apple-system, sans-serif;
+      font-size: 18px;
       font-weight: 700;
+      color: #223740;
       letter-spacing: -0.01em;
     }
   }
@@ -83,6 +98,16 @@
     background: var(--cfg-admin-soft);
     color: var(--cfg-admin);
   }
+}
+
+.page-eyebrow {
+  display: block;
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #1b8ba6;
+  text-transform: uppercase;
 }
 
 .save-status {
@@ -657,15 +682,26 @@ ion-modal.sign-modal {
 @media (max-width: 900px) {
   .cfg-layout {
     grid-template-columns: 1fr;
+    // Nas duas colunas (desktop), nav e content dividem uma única linha
+    // minmax(0,1fr) de altura cheia. Empilhados numa coluna só, essa mesma
+    // regra passava a valer apenas pra 1ª linha (nav) — como a 2ª linha
+    // (content) é implícita e teria altura "auto", todo o espaço livre da
+    // grid ia pro nav, inflando a célula dele e deixando um vão em branco
+    // antes do conteúdo. Aqui a linha do nav vira "auto" (cabe no conteúdo)
+    // e só a do content fica flexível/rolável.
+    grid-template-rows: auto minmax(0, 1fr);
   }
 
   .cfg-nav {
-    position: sticky;
-    top: 128px;
+    // Nav já é sua própria linha da grid, sempre visível acima da área
+    // rolável (.cfg-content tem o próprio scroll) — não precisa "grudar"
+    // no topo. O sticky antigo grudava a 128px do topo do .cfg-layout,
+    // um valor que não correspondia à altura real do cabeçalho aqui em
+    // cima, empurrando o nav pra baixo e cobrindo o card "Preferências
+    // gerais".
     height: auto;
     border-right: none;
     border-bottom: 1px solid var(--cfg-border);
-    z-index: 15;
 
     &__scroll {
       flex-direction: row;
