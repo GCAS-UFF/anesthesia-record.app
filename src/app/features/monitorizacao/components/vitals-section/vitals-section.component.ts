@@ -106,21 +106,19 @@ export class VitalsSectionComponent implements OnChanges {
     return record.custom?.[field.custom];
   }
 
-  hydrationAt(record: VitalRecord): number {
+  hydrationAt(record: VitalRecord, index: number): number {
     const ts = new Date(record.timestamp).getTime();
+    const prevTs = index > 0 ? new Date(this.vitalRecords[index - 1].timestamp).getTime() : -Infinity;
     return this.fluidBalance
-      .filter((f) => f.type === 'gain' && new Date(f.timestamp).getTime() <= ts)
+      .filter((f) => {
+        if (f.type !== 'gain') return false;
+        const fts = new Date(f.timestamp).getTime();
+        return fts > prevTs && fts <= ts;
+      })
       .reduce((sum, f) => sum + (f.volumeMl || 0), 0);
   }
 
-  
   hasGainAt(record: VitalRecord, index: number): boolean {
-    const ts = new Date(record.timestamp).getTime();
-    const prevTs = index > 0 ? new Date(this.vitalRecords[index - 1].timestamp).getTime() : -Infinity;
-    return this.fluidBalance.some((f) => {
-      if (f.type !== 'gain') return false;
-      const fts = new Date(f.timestamp).getTime();
-      return fts > prevTs && fts <= ts;
-    });
+    return this.hydrationAt(record, index) > 0;
   }
 }

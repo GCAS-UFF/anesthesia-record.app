@@ -65,7 +65,7 @@
             [disabled]="readonly"
             (click)="hydrationCellTap.emit(record)"
           >
-            <span class="vs__cell-value">{{ hydrationAt(record) }}</span>
+            <span class="vs__cell-value">{{ hydrationAt(record, i) || '—' }}</span>
             <span class="vs__hydration-icon" *ngIf="hasGainAt(record, i)" aria-hidden="true">💧</span>
           </button>
         </div>
