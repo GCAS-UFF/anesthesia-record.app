@@ -175,6 +175,7 @@
       "passwordLabel": "Enter your password to sign",
       "passwordPlaceholder": "Access password",
       "loggedProfessional": "Logged-in professional:",
+      "preview": "Print Preview",
       "signAndSave": "Sign and Save"
     },
     "headerButtons": {

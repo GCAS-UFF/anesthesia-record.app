@@ -19,7 +19,7 @@ import {
   IonModal,
   IonCheckbox,
 } from '@ionic/angular/standalone';
-import { AlertController, LoadingController, ToastController } from '@ionic/angular/standalone';
+import { AlertController, LoadingController, ToastController, ModalController } from '@ionic/angular/standalone';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { addIcons } from 'ionicons';
@@ -82,6 +82,8 @@ import {
   PreAnesthesicRecordPayload,
   PreAnesthesicChecklistFinding,
 } from '../../shared/models/pre-anesthesic-record.model';
+import { RecordViewerModalComponent, RecordData } from 'src/app/shared/components/record-viewer-modal/record-viewer-modal.component';
+import { mapPreAnesthesiaToRecordData } from 'src/app/shared/models/pre-anesthesic.mapper';
 
 interface PreAnesthesiaSection {
   id: string;
@@ -220,6 +222,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     private preAnesthesicService: PreAnesthesicRecordService,
     private cdr: ChangeDetectorRef,
     private translate: TranslateService,
+    private modalCtrl: ModalController,
   ) {
     addIcons({
       arrowBackOutline,
@@ -434,11 +437,6 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   removeCirurgia(i: number): void {
     if (!this.canEdit) return;
     this.cirurgias.removeAt(i);
-  }
-
-  setCirurgiaPrincipal(i: number): void {
-    if (!this.canEdit) return;
-    this.cirurgias.controls.forEach((c, idx) => c.get('principal')?.setValue(idx === i));
   }
 
   private novaMedicacao(): FormGroup {
@@ -665,7 +663,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
     return {
       procedure: {
-        surgeries: (raw.procedimento.cirurgias ?? []).map((c: any) => ({ name: c.nome ?? '', isPrimary: !!c.principal })),
+        surgeries: (raw.procedimento.cirurgias ?? []).map((c: any, index: number) => ({ name: c.nome ?? '', isPrimary: index === 0 })),
         laterality: raw.procedimento.lateralidade || null,
         preOperativeDiagnosis: raw.procedimento.diagnosticoPreOperatorio ?? '',
         consultationDate: raw.procedimento.dataConsulta ?? '',
@@ -775,7 +773,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   private patchFormFromDraft(draft: PreAnesthesicRecordDraft): void {
     this.cirurgias.clear();
     (draft.procedure?.surgeries ?? []).forEach((s) =>
-      this.cirurgias.push(this.fb.group({ nome: [s.name ?? ''], principal: [!!s.isPrimary] })),
+      this.cirurgias.push(this.fb.group({ nome: [s.name ?? ''] })),
     );
 
     const meds = draft.medicationsInUse?.items ?? [];
@@ -1051,6 +1049,9 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
 
   async salvar(): Promise<void> {
+    if (this.cirurgiaSelecionada && this.cirurgiaSelecionada.trim() !== '') {
+      this.addCirurgia();
+    }
     this.saveDraft();
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -1082,6 +1083,18 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
   closeSignModal(): void {
     this.isSignModalOpen = false;
+  }
+
+  async verPrevia() {
+    const data: RecordData = mapPreAnesthesiaToRecordData(this.buildFinalPayload());
+
+    const modal = await this.modalCtrl.create({
+      component: RecordViewerModalComponent,
+      componentProps: { data },
+      cssClass: 'fa-sheet-modal',
+      backdropDismiss: true,
+    });
+    await modal.present();
   }
 
   onSignatureAgreedChange(checked: boolean): void {

@@ -38,9 +38,12 @@
         "confirmRemoveVitalAt": "Remove entry from {{time}}?",
         "confirmRemoveAgent": "Remove {{name}}?",
         "confirmRemoveEvent": "Remove event \"{{description}}\"?",
-        "confirmRemoveBalance": "Remove {{item}} ({{volume}}mL)?"
+        "confirmRemoveBalance": "Remove {{item}} ({{volume}}mL)?",
+        "stopInfusionTitle": "Stop Infusion",
+        "stopInfusionMessage": "Do you want to stop the {{name}} infusion now?"
       },
       "actions": {
+        "stop": "Stop",
         "confirm": "Confirm",
         "add": "Add",
         "finalize": "Finish",

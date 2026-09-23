@@ -117,6 +117,7 @@
     border-radius: 999px;
     min-width: 8px;
 
+    &--clickable { cursor: pointer; }
     &--o2 { background: t.$c-primary; opacity: 0.75; }
     &--air { background: t.$c-success; opacity: 0.75; }
 

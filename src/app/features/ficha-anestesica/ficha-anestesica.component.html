@@ -155,7 +155,7 @@
                     >
                       {{
                         getSelectedLabel(
-                          medicationsLista,
+                          preInducaoMedications,
                           form.get("preInducao.farmacoId")?.value
                         ) || ('fichaAnestesica.preInducao.selecionarFarmaco' | translate)
                       }}
@@ -186,7 +186,7 @@
                     <ul class="ddl-list">
                       <li
                         *ngFor="
-                          let opt of filterList(medicationsLista, 'preFarmaco')
+                          let opt of filterList(preInducaoMedications, 'preFarmaco')
                         "
                         (click)="selectPreFarmaco(opt.id)"
                       >
@@ -197,12 +197,13 @@
                       </li>
                       <li
                         *ngIf="
-                          filterList(medicationsLista, 'preFarmaco').length ===
+                          filterList(preInducaoMedications, 'preFarmaco').length ===
                           0
                         "
                         class="ddl-empty"
+                        (click)="selectCustomPreFarmaco(ddlFilter['preFarmaco'])"
                       >
-                        {{ 'fichaAnestesica.preInducao.nenhumFarmacoEncontrado' | translate }}
+                        {{ 'fichaAnestesica.preInducao.addCustom' | translate }} "{{ ddlFilter['preFarmaco'] }}"
                       </li>
                     </ul>
                   </div>
@@ -348,7 +349,7 @@
                     >
                       {{
                         getSelectedLabel(
-                          medicationsLista,
+                          atbMedications,
                           newAtb.medicationId
                         ) || ('fichaAnestesica.antibiotico.selecionarAntibiotico' | translate)
                       }}
@@ -379,7 +380,7 @@
                     <ul class="ddl-list">
                       <li
                         *ngFor="
-                          let opt of filterList(medicationsLista, 'atb-new')
+                          let opt of filterList(atbMedications, 'atb-new')
                         "
                         (click)="selectAtbMedication(opt.id)"
                       >
@@ -390,11 +391,12 @@
                       </li>
                       <li
                         *ngIf="
-                          filterList(medicationsLista, 'atb-new').length === 0
+                          filterList(atbMedications, 'atb-new').length === 0
                         "
                         class="ddl-empty"
+                        (click)="selectCustomAtbMedication(ddlFilter['atb-new'])"
                       >
-                        {{ 'fichaAnestesica.antibiotico.nenhumAntibioticoEncontrado' | translate }}
+                        {{ 'fichaAnestesica.antibiotico.addCustom' | translate }} "{{ ddlFilter['atb-new'] }}"
                       </li>
                     </ul>
                   </div>
@@ -1377,6 +1379,11 @@
         <p class="sign-error" *ngIf="signatureError">
           <ion-icon name="close-circle-outline"></ion-icon> {{ signatureError }}
         </p>
+
+        <ion-button fill="clear" expand="block" class="sign-modal-preview-btn" (click)="verPrevia()">
+          <ion-icon name="document-text-outline" slot="start"></ion-icon>
+          {{ 'fichaAnestesica.signModal.preview' | translate }}
+        </ion-button>
 
         <div class="sign-modal-actions">
           <ion-button

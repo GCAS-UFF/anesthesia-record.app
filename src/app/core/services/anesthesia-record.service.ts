@@ -831,13 +831,17 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
 
     return records.map(record => {
       const dt = new Date(this.normalizeIso(record.timestamp) ?? new Date().toISOString());
+      let dId = record.medicationId ?? record.drugId ?? record.id ?? 0;
+      if (typeof dId === 'string' && dId.startsWith('custom-')) dId = 0;
+      dId = Number(dId);
+
       return {
         time: dt.toISOString().split('T')[1].substring(0, 8),
         date: dt.toISOString().split('T')[0] + 'T00:00:00.000Z',
         dose: record.doseValue != null ? this.parseNumber(record.doseValue) : this.parseNumber(record.dose),
         unit: typeof record.unit === 'number' ? record.unit : MedicationUnitEnum.Milligram,
         route: mapRoute(record),
-        drugId: record.medicationId ?? record.drugId ?? record.id ?? 0,
+        drugId: dId,
         isBolus: this.parseBoolean(record.isBolus),
       };
     });
@@ -1075,7 +1079,10 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       app.assinaturas?.segundoAnestesista, null);
 
     const preMed = app.preInducao || {};
-    const preAnestheticMedicationId = this.pick(preMed.medication?.id, preMed.farmacoId, null) ?? null;
+    let preAnestheticMedicationId = this.pick(preMed.medication?.id, preMed.farmacoId, null) ?? null;
+    if (typeof preAnestheticMedicationId === 'string' && preAnestheticMedicationId.startsWith('custom-')) preAnestheticMedicationId = null;
+    if (preAnestheticMedicationId) preAnestheticMedicationId = Number(preAnestheticMedicationId);
+
     const preAnestheticMedicationName = this.pick(preMed.medication?.name, preMed.farmaco, '') || '';
     const preAnestheticMedicationDose = preMed.dose ?? preMed.dosagem ?? '';
     const preAnestheticMedicationRoute = preMed.via ?? '';
@@ -1083,23 +1090,33 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     const preAnestheticMedicationTime = this.formatTimeForApi(preMed.hora);
 
     const antibioticsRaw = Array.isArray(app.antibioticsList) ? app.antibioticsList : [];
-    const antibioticsList = antibioticsRaw.map((atb: any) => ({
-      medicationId: atb.medicationId ?? null,
-      medicationName: atb.medicationName ?? atb.nome ?? '',
-      name: atb.medicationName ?? atb.nome ?? '',
-      dose: atb.dose ?? '',
-      route: atb.via ?? '',
-      time: this.formatTimeForApi(atb.hora),
-      hasBooster: (atb.temRepique === 'sim') || (Array.isArray(atb.repiques) && atb.repiques.length > 0),
-      boosters: Array.isArray(atb.repiques) ? atb.repiques.map((r: any) => ({
-        medicationId: r.medicationId ?? atb.medicationId ?? null,
-        medicationName: r.medicationName ?? atb.medicationName ?? atb.nome ?? '',
-        name: r.medicationName ?? atb.medicationName ?? atb.nome ?? '',
-        dose: r.dose ?? '',
-        route: r.via ?? atb.via ?? '',
-        time: this.formatTimeForApi(r.hora)
-      })) : []
-    }));
+    const antibioticsList = antibioticsRaw.map((atb: any) => {
+      let atbMedId = atb.medicationId ?? null;
+      if (typeof atbMedId === 'string' && atbMedId.startsWith('custom-')) atbMedId = null;
+      if (atbMedId) atbMedId = Number(atbMedId);
+      return {
+        medicationId: atbMedId,
+        medicationName: atb.medicationName ?? atb.nome ?? '',
+        name: atb.medicationName ?? atb.nome ?? '',
+        dose: atb.dose ?? '',
+        route: atb.via ?? '',
+        time: this.formatTimeForApi(atb.hora),
+        hasBooster: (atb.temRepique === 'sim') || (Array.isArray(atb.repiques) && atb.repiques.length > 0),
+        boosters: Array.isArray(atb.repiques) ? atb.repiques.map((r: any) => {
+          let repMedId = r.medicationId ?? atb.medicationId ?? null;
+          if (typeof repMedId === 'string' && repMedId.startsWith('custom-')) repMedId = null;
+          if (repMedId) repMedId = Number(repMedId);
+          return {
+            medicationId: repMedId,
+            medicationName: r.medicationName ?? atb.medicationName ?? atb.nome ?? '',
+            name: r.medicationName ?? atb.medicationName ?? atb.nome ?? '',
+            dose: r.dose ?? '',
+            route: r.via ?? atb.via ?? '',
+            time: this.formatTimeForApi(r.hora)
+          };
+        }) : []
+      };
+    });
 
     const positionArray = Array.isArray(app.posicao?.posicoes) ? app.posicao.posicoes : [];
     const surgicalPosition = positionArray.length > 0

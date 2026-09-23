@@ -87,6 +87,7 @@
       [readonly]="!canEdit"
       (positionChange)="mudarPosicao()"
       (addResource)="onAddResource($event)"
+      (stopInfusion)="onStopInfusion($event)"
       (scrollRatioChange)="onTimelineScroll($event)"
     ></app-resources-flow-card>
 

@@ -1147,6 +1147,38 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.persistDraft();
   }
 
+  async onStopInfusion(pump: InfusionPumpEntry): Promise<void> {
+    if (!this.canEdit) return;
+    
+    const now = new Date();
+    const endAtTime = new Date(pump.endAt).getTime();
+    if (endAtTime <= now.getTime()) {
+      return; 
+    }
+    
+    const alert = await this.alertController.create({
+      header: this.translate.instant('monitorizacao.page.alerts.stopInfusionTitle') || 'Parar Infusão',
+      message: (this.translate.instant('monitorizacao.page.alerts.stopInfusionMessage', { name: pump.medicationName })) || `Deseja parar a infusão de ${pump.medicationName} agora?`,
+      buttons: [
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
+        { 
+          text: this.translate.instant('monitorizacao.page.actions.stop') || 'Parar', 
+          role: 'destructive',
+          handler: () => {
+             this.infusionPumps = this.infusionPumps.map(p => {
+               if (p.clientId === pump.clientId) {
+                  return { ...p, endAt: now.toISOString() };
+               }
+               return p;
+             });
+             this.persistDraft();
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
   // ---------------------------------------------------------------------------
   // Histórico (ver/editar/excluir tudo o que já foi lançado)
   // ---------------------------------------------------------------------------

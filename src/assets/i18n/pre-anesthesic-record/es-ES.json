@@ -175,6 +175,7 @@
       "passwordLabel": "Ingrese su contraseña para firmar",
       "passwordPlaceholder": "Contraseña de acceso",
       "loggedProfessional": "Profesional conectado:",
+      "preview": "Ver vista previa",
       "signAndSave": "Firmar y Guardar"
     },
     "headerButtons": {

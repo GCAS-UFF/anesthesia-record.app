@@ -53,6 +53,7 @@ import { SurgeryStatusEnum } from 'src/app/core/models/api-enums.model';
 import { PreAnesthesicRecordService } from 'src/app/core/services/pre-anesthesic-record.service';
 import { RecordViewerModalComponent, RecordData } from 'src/app/shared/components/record-viewer-modal/record-viewer-modal.component';
 import { mapPreAnesthesiaToRecordData } from 'src/app/shared/models/pre-anesthesic.mapper';
+import { mapAnesthesiaRecordToRecordData } from 'src/app/shared/models/anesthesia-record.mapper';
 import { maskTimeInput, normalizeTimeInput } from 'src/app/shared/utils/time-input.util';
 
 
@@ -97,7 +98,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   isResponsible = true;
 
 
-  medicationsLista: { id: string; name: string; codigo?: string }[] = [];
+  medicationsLista: { id: string; name: string; codigo?: string; defaultUnit?: string; categoryId?: number }[] = [];
 
   isMenuOpen = false;
 
@@ -1102,6 +1103,21 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.isSignModalOpen = false;
   }
 
+  async verPrevia() {
+    const data: RecordData = {
+      title: this.translate.instant('fichaAnestesica.preview') || 'Prévia da Ficha Anestésica',
+      sections: mapAnesthesiaRecordToRecordData(this.buildPayload())
+    };
+
+    const modal = await this.modalCtrl.create({
+      component: RecordViewerModalComponent,
+      componentProps: { data },
+      cssClass: 'fa-sheet-modal',
+      backdropDismiss: true,
+    });
+    await modal.present();
+  }
+
   onSignatureAgreedChange(checked: boolean): void {
     this.signatureAgreed = checked;
     this.cdr.detectChanges();
@@ -1563,7 +1579,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
     this.medicationsLista = medications.map((m: any) => ({
       id: String(m.id),
-      name: m.description
+      name: m.description,
+      defaultUnit: m.defaultUnit,
+      categoryId: m.categoryId
     }));
 
     if (!this.masterData.hasCache()) {
@@ -1646,18 +1664,55 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.ddlFilter[key] = value ?? '';
   }
 
-  filterList(list: Array<{ id: string; name: string; codigo?: string }>, key: string) {
-    const term = (this.ddlFilter[key] || '').trim().toLowerCase();
+  get preInducaoMedications() {
+    const allowed = ['midazolam', 'diazepam', 'cetamina', 'atropina', 'clonazepam', 'lorazepam'];
+    return this.medicationsLista.filter(m => allowed.some(a => m.name.toLowerCase().includes(a)));
+  }
 
-    if (!term)
-      return list;
+  get atbMedications() {
+    return this.medicationsLista.filter(m => {
+      // Se já foi classificado como Antibiótico (2), incluir.
+      if (m.categoryId === 2) return true;
+      // Se foi classificado como outra coisa diferente de Outros (0), excluir.
+      if (m.categoryId != null && m.categoryId !== 0) return false;
+
+      // Fallback para os não classificados (0 ou nulo):
+      const allowedUnits = ['amp', 'fr', 'fra'];
+      if (!m.defaultUnit) return true; // Permite se não tem unidade
+      return allowedUnits.includes(m.defaultUnit.toLowerCase());
+    });
+  }
+
+  get agentesMedications() {
+      return this.atbMedications;
+  }
+
+  filterList(list: any[], key: string): any[] {
+    if (!list) return [];
+    const term = (this.ddlFilter[key] || '').trim().toLowerCase();
+    if (!term) return list.slice(0, 100);
 
     return list.filter(item =>
       item.name?.toLowerCase().includes(term) ||
-      String(item.id ?? '').toLowerCase().includes(term) ||
       String(item.codigo ?? '').toLowerCase().includes(term)
-    );
+    ).slice(0, 100);
   }
+
+  selectCustomPreFarmaco(nome: string) {
+    if (!nome) return;
+    const customId = `custom-${Date.now()}`;
+    this.medicationsLista.push({ id: customId, name: nome }); // Sem categoria restrita, pre-inducao filtra por nome
+    this.selectPreFarmaco(customId);
+  }
+
+  selectCustomAtbMedication(nome: string) {
+    if (!nome) return;
+    const customId = `custom-${Date.now()}`;
+    this.medicationsLista.push({ id: customId, name: nome, categoryId: 2 });
+    this.selectAtbMedication(customId);
+  }
+
+
 
   selectDdlOption(control: AbstractControl | null, key: string, id: string): void {
     if (!this.canEdit) return;

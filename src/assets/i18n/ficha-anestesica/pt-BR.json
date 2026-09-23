@@ -37,6 +37,7 @@
       "selecionarFarmaco": "Selecionar fármaco...",
       "buscarFarmaco": "Buscar fármaco...",
       "nenhumFarmacoEncontrado": "Nenhum fármaco encontrado",
+      "addCustom": "Adicionar Fármaco",
       "viaLabel": "Via",
       "especifiqueVia": "Especifique via",
       "viaOptions": {
@@ -59,6 +60,7 @@
       "selecionarAntibiotico": "Selecionar antibiótico...",
       "buscarAntibiotico": "Buscar antibiótico...",
       "nenhumAntibioticoEncontrado": "Nenhum antibiótico encontrado",
+      "addCustom": "Adicionar",
       "doseLabel": "Dose *",
       "dosePlaceholder": "Ex: 2g",
       "viaLabel": "Via",
@@ -312,6 +314,7 @@
       "profissionalLogadoPrefix": "Profissional logado:",
       "senhaLabel": "Digite sua senha para assinar",
       "senhaPlaceholder": "Senha de acesso",
+      "preview": "Ver prévia de impressão",
       "cancelar": "Cancelar",
       "assinarSalvar": "Assinar e Salvar"
     },

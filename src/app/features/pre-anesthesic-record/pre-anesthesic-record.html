@@ -72,9 +72,6 @@
           <div class="repeat-list" formArrayName="cirurgias">
             <div class="repeat-row" *ngFor="let c of cirurgias.controls; let i = index" [formGroupName]="i">
               <input type="text" formControlName="nome" />
-              <button type="button" class="pill" [class.pill--on]="c.get('principal')?.value" (click)="setCirurgiaPrincipal(i)">
-                {{ 'preAnestesica.procedimento.principal' | translate }}
-              </button>
               <button type="button" class="btn-icon btn-icon--danger" (click)="removeCirurgia(i)">
                 <ion-icon name="trash-outline"></ion-icon>
               </button>
@@ -687,6 +684,11 @@
         <p class="sign-error" *ngIf="signatureError">
           <ion-icon name="close-circle-outline"></ion-icon> {{ signatureError }}
         </p>
+
+        <ion-button fill="clear" expand="block" class="sign-modal-preview-btn" (click)="verPrevia()">
+          <ion-icon name="document-text-outline" slot="start"></ion-icon>
+          {{ 'preAnestesica.signModal.preview' | translate }}
+        </ion-button>
 
         <div class="sign-modal-actions">
           <ion-button fill="outline" (click)="closeSignModal()">{{ 'common.cancel' | translate }}</ion-button>

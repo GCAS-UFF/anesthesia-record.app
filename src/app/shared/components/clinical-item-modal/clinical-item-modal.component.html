@@ -71,8 +71,9 @@
           </div>
 
           <div class="custom-empty"
-               *ngIf="medDropdownOpen && !medSuggestions.length && medSearchTerm">
-            {{ 'sharedComponents.clinicalItemModal.agent.noMedicationFound' | translate }}
+               *ngIf="medDropdownOpen && !medSuggestions.length && medSearchTerm"
+               (click)="selectCustomMedication(medSearchTerm)" style="cursor: pointer;">
+            {{ 'sharedComponents.clinicalItemModal.agent.addCustom' | translate }} "{{ medSearchTerm }}"
           </div>
         </div>
         <ion-note *ngIf="!medications.length" color="warning" class="ion-margin-top">

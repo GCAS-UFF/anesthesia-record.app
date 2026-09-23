@@ -13,6 +13,7 @@
         "medicationLabel": "Medicação *",
         "medicationPlaceholder": "Digite o nome da medicação...",
         "noMedicationFound": "Nenhuma medicação encontrada.",
+        "addCustom": "Adicionar",
         "noMedicationLoaded": "Nenhuma medicação carregada no storage.",
         "doseLabel": "Dose *",
         "dosePlaceholder": "ex: 100",

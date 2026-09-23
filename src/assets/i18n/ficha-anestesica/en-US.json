@@ -312,6 +312,7 @@
       "profissionalLogadoPrefix": "Logged-in professional:",
       "senhaLabel": "Type your password to sign",
       "senhaPlaceholder": "Access password",
+      "preview": "Print Preview",
       "cancelar": "Cancel",
       "assinarSalvar": "Sign and Save"
     },

@@ -168,12 +168,23 @@ export class ClinicalItemModalComponent implements OnInit {
   private async loadMedications() {
     try {
       const raw = await this.masterData.getMedicationsCache();
+
       this.medications = this.asArray(raw)
         .map((m: any) => ({
           id: m.id ?? m.medicationId ?? m.codigo,
           description: m.description ?? m.descricao ?? m.name ?? String(m.id),
+          defaultUnit: m.defaultUnit
         }))
         .filter(m => m.id != null && !!m.description)
+        .filter(m => {
+           if (this.type === 'agent') {
+              const allowedAgentUnits = ['amp', 'fr', 'fra'];
+              if (!m.defaultUnit) return true; // Permite se não tem unidade
+              const u = m.defaultUnit.toLowerCase();
+              return allowedAgentUnits.includes(u);
+           }
+           return true;
+        })
         .sort((a, b) => a.description.localeCompare(b.description, 'pt-BR'));
     } catch (e) {
       console.error('[ClinicalItemModal] Falha ao carregar medicações', e);
@@ -302,6 +313,14 @@ export class ClinicalItemModalComponent implements OnInit {
     this.agent.medicationName = m.description;
     this.medSearchTerm = m.description;
     this.medDropdownOpen = false;
+  }
+
+  selectCustomMedication(nome: string) {
+    if (!nome) return;
+    const customId = `custom-${Date.now()}`;
+    const customMed: Medication = { id: customId, description: nome };
+    this.medications.push(customMed);
+    this.selectMedication(customMed);
   }
 
   clearMedication() {

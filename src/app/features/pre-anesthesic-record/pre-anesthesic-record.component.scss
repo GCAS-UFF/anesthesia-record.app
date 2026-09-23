@@ -396,15 +396,15 @@
   }
 
   &--sim.active {
-    background: var(--pre-danger-soft);
-    border-color: var(--pre-danger);
-    color: var(--pre-danger);
-  }
-
-  &--nao.active {
     background: var(--pre-success-soft);
     border-color: var(--pre-success);
     color: var(--pre-success);
+  }
+
+  &--nao.active {
+    background: var(--pre-danger-soft);
+    border-color: var(--pre-danger);
+    color: var(--pre-danger);
   }
 
   &--outline {
@@ -1100,3 +1100,6 @@
     cursor: not-allowed !important;
   }
 }
+
+.sign-modal-preview-btn { margin-top: 16px; margin-bottom: 8px; font-weight: 500; font-size: 15px; }
+

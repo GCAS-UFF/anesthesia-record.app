@@ -312,6 +312,7 @@
       "profissionalLogadoPrefix": "Profesional conectado:",
       "senhaLabel": "Escriba su contraseña para firmar",
       "senhaPlaceholder": "Contraseña de acceso",
+      "preview": "Ver vista previa",
       "cancelar": "Cancelar",
       "assinarSalvar": "Firmar y Guardar"
     },

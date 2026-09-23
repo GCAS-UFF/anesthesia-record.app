@@ -55,6 +55,7 @@ export class ResourcesFlowCardComponent implements OnChanges {
 
   @Output() positionChange = new EventEmitter<string>();
   @Output() addResource = new EventEmitter<'o2' | 'air'>();
+  @Output() stopInfusion = new EventEmitter<InfusionPumpEntry>();
   @Output() scrollRatioChange = new EventEmitter<number>();
 
   @ViewChild('scrollHost') private scrollHostRef?: ElementRef<HTMLDivElement>;
@@ -145,13 +146,24 @@ export class ResourcesFlowCardComponent implements OnChanges {
     return this.compressedAirFlows[this.compressedAirFlows.length - 1]?.isActive ?? false;
   }
 
-  get infusionSegments(): (LanedSegment & { medicationName: string })[] {
-    const raw = this.infusionPumps.map((p) => ({
-      startPct: this.xPercent(p.timestamp),
-      endPct: this.xPercent(p.endAt),
-      medicationName: p.medicationName,
-    }));
+  get infusionSegments(): (LanedSegment & { medicationName: string; entry: InfusionPumpEntry })[] {
+    const viewEnd = this.viewEndMs;
+    const raw = this.infusionPumps.map((p) => {
+      const pEnd = new Date(p.endAt).getTime();
+      const actualEndMs = pEnd > viewEnd ? viewEnd : pEnd;
+      return {
+        startPct: this.xPercent(p.timestamp),
+        endPct: this.xPercent(new Date(actualEndMs).toISOString()),
+        medicationName: p.medicationName,
+        entry: p,
+      };
+    });
     return assignLanes(raw);
+  }
+
+  onInfusionClick(seg: any): void {
+    if (this.readonly) return;
+    this.stopInfusion.emit(seg.entry);
   }
 
   get infusionLaneCount(): number {

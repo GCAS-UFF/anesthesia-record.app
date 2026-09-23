@@ -48,11 +48,13 @@
           <span
             class="rfc__bar rfc__bar--infusion"
             [class.rfc__bar--infusion-alt]="seg.lane % 2 === 1"
+            [class.rfc__bar--clickable]="!readonly"
             *ngFor="let seg of infusionSegments"
             [style.left.%]="seg.startPct"
             [style.width.%]="seg.endPct - seg.startPct"
             [style.top.%]="laneCenterPct(seg.lane)"
             [title]="seg.medicationName"
+            (click)="onInfusionClick(seg)"
           >{{ seg.medicationName }}</span>
         </div>
       </div>
