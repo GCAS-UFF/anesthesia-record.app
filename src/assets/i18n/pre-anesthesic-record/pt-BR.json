@@ -10,6 +10,7 @@
     "otherDescribe": "Outros — descrever",
     "otherDescribePlaceholder": "Descreva",
     "selectPlaceholder": "Selecione…",
+    "clearConfirmMessage": "Tem certeza que deseja limpar todos os dados da ficha? Esta ação não pode ser desfeita.",
     "yes": "SIM",
     "no": "NÃO",
     "sections": {

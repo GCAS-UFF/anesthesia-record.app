@@ -554,6 +554,8 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
         const localDraft = this.preAnesthesicService.getDraft(this.anesthesiaRecordId!, this.patientId!);
         if (localDraft) {
           this.patchFormFromDraft(localDraft);
+        } else if (record) {
+          this.patchFormFromDraft(this.extractDraft(record));
         }
       }
 
@@ -941,11 +943,37 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     const scrollContainer = document.querySelector('.pre-scroll') as HTMLElement | null;
     if (!scrollContainer) return;
     const top = scrollContainer.scrollTop + 120;
+    
+    let activeId = this.activeSectionId;
     for (const s of this.sections) {
       const el = document.getElementById(`sec-${s.id}`);
-      if (el && el.offsetTop <= top) this.activeSectionId = s.id;
+      if (el && el.offsetTop <= top) activeId = s.id;
+    }
+    
+    if (this.activeSectionId !== activeId) {
+      this.activeSectionId = activeId;
+      this.syncNavScroll(activeId);
+      this.cdr.detectChanges();
     }
   };
+
+  private syncNavScroll(id: string): void {
+    const navScroll = document.querySelector('.pre-nav__scroll') as HTMLElement | null;
+    const navItem = document.getElementById(`nav-${id}`);
+    
+    if (navScroll && navItem) {
+      const scrollRect = navScroll.getBoundingClientRect();
+      const itemRect = navItem.getBoundingClientRect();
+      
+      // If item is out of view (left or right) or partially hidden
+      if (itemRect.left < scrollRect.left || itemRect.right > scrollRect.right) {
+        navScroll.scrollTo({
+          left: navItem.offsetLeft - navScroll.offsetLeft - (scrollRect.width / 2) + (itemRect.width / 2),
+          behavior: 'smooth'
+        });
+      }
+    }
+  }
 
   private setupScrollSpy(): void {
     setTimeout(() => {
@@ -956,6 +984,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
   goToSection(id: string): void {
     this.activeSectionId = id;
+    this.syncNavScroll(id);
     const el = document.getElementById(`sec-${id}`);
     if (el) {
       this.isScrolling = true;
@@ -976,14 +1005,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   get headerActionButtons(): HeaderActionButton[] {
-    const printButton: HeaderActionButton = {
-      id: 'print-pre-anesthesic',
-      icon: 'print-outline',
-      color: 'muted',
-      ariaLabel: this.translate.instant('preAnestesica.headerButtons.print'),
-      label: this.translate.instant('preAnestesica.headerButtons.print'),
-      action: () => this.imprimir(),
-    };
+
 
     if (this.isFinalized || !this.canEdit) {
       const buttons: HeaderActionButton[] = [
@@ -995,7 +1017,6 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
           label: this.translate.instant('preAnestesica.headerButtons.goToAnesthesiaRecordShort'),
           action: () => this.irParaFichaAnestesica(),
         },
-        printButton,
       ];
 
       if (this.isFinalized && this.isAdminUser) {
@@ -1029,8 +1050,39 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
         label: this.translate.instant('preAnestesica.headerButtons.finalizeShort'),
         action: () => this.salvar(),
       },
-      printButton,
     ];
+  }
+
+  async confirmClearForm(): Promise<void> {
+    const alert = await this.alertCtrl.create({
+      header: 'Limpar Ficha',
+      message: this.translate.instant('preAnestesica.clearConfirmMessage'),
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Limpar',
+          role: 'destructive',
+          handler: () => {
+            this.form.reset();
+            while (this.cirurgias.length !== 0) {
+              this.cirurgias.removeAt(0);
+            }
+            if (this.anesthesiaRecordId && this.patientId) {
+              const draftToSave = {
+                ...this.form.value,
+                _isClearedDraft: true,
+                _timestamp: new Date().toISOString()
+              };
+              this.preAnesthesicService.saveDraft(this.anesthesiaRecordId, this.patientId, draftToSave);
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
   async imprimir(): Promise<void> {

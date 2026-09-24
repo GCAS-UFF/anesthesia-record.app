@@ -932,7 +932,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
           ).subscribe({
             next: (savedRecord) => {
               if (draft) {
-
+                // Se for um rascunho de limpeza (_isClearedDraft), apenas o aplicamos e ignoramos o que vem do backend.
+                // Pois o backend não suporta limpeza de propriedades (salva zeros e falses).
                 this.hydrateProcedimentos((draft as any)?.posProcedimento?.procedimentos);
                 this.form.patchValue(draft);
                 if (draft.antibioticsList) this.antibioticsList = draft.antibioticsList;
@@ -1036,6 +1037,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   private doLimpar() {
+    this.autoSaveSub?.unsubscribe(); // Cancels old form's pending valueChanges
+
     this.initForm();
     this.antibioticsList = [];
     this.setupConditionalLogic();
@@ -1045,11 +1048,16 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }
 
     if (this.cirurgiaId) {
-      this.anesthesiaService.clearLatestRecord(this.cirurgiaId).subscribe({
-        next: () => { },
-        error: () => this.toast(this.translate.instant('fichaAnestesica.toasts.rascunhoLimpoFalhouServidor'), 'warning')
+      // Clear the local draft explicitly or store an empty cleared draft
+      this.persistDraft({
+        ...this.form.value,
+        antibioticsList: this.antibioticsList,
+        _isClearedDraft: true,
+        _timestamp: new Date().toISOString()
       });
     }
+    
+    this.startAutoSave();
 
     this.toast(this.translate.instant('fichaAnestesica.toasts.formularioLimpo'), 'success');
 

@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, OnInit, HostListener } from '@angular/core';
+import { Component, ViewChild, ElementRef, OnInit, HostListener, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ToastController, LoadingController, AlertController } from '@ionic/angular/standalone';
 import { IonContent, IonSpinner, IonSkeletonText, IonIcon } from '@ionic/angular/standalone';
@@ -41,7 +41,6 @@ type MyPatientStatusFilter = 'all' | 'inProgress' | 'completed';
     IonSkeletonText,
     IonIcon,
     StatusBarComponent,
-    HeaderInstitucionalComponent,
     DateFilterComponent,
     EmptyStateComponent,
     ProcedureCardComponent,
@@ -83,7 +82,9 @@ export class MyPatientsPage implements OnInit {
     private authService: AuthService,
     private alertController: AlertController,
     private loadingController: LoadingController,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {
     addIcons({
       chevronBackOutline,
@@ -196,9 +197,11 @@ export class MyPatientsPage implements OnInit {
     }
   }
 
-  ionViewWillEnter() {
+  ionViewDidEnter() {
     this.loadData();
   }
+
+  private loadSubscription?: any;
 
   async loadData() {
     this.isRefreshing = true;
@@ -206,6 +209,10 @@ export class MyPatientsPage implements OnInit {
 
     if (this.content) {
       this.content.scrollToTop(400);
+    }
+
+    if (this.loadSubscription) {
+      this.loadSubscription.unsubscribe();
     }
 
     const doctorId = this.authService.getCurrentUserId();
@@ -225,7 +232,7 @@ export class MyPatientsPage implements OnInit {
         break;
     }
 
-    this.surgeryService.getMyPatients(doctorId, this.selectedDate, this.searchQuery || undefined, apiStatus,
+    this.loadSubscription = this.surgeryService.getMyPatients(doctorId, this.selectedDate, this.searchQuery || undefined, apiStatus,
       this.currentPage, this.pageSize).subscribe({
         next: (response: any) => {
           const resultData = response.data || response;
@@ -239,9 +246,11 @@ export class MyPatientsPage implements OnInit {
           }
 
           this.isRefreshing = false;
+          this.cdr.detectChanges();
         },
         error: async () => {
           this.isRefreshing = false;
+          this.cdr.detectChanges();
           const toast = await this.toastController.create({
             message: this.translate.instant('myPatients.loadError'),
             duration: 2500,
@@ -437,25 +446,29 @@ export class MyPatientsPage implements OnInit {
             await loading.present();
 
             this.surgeryService.assumePatient(patientId, Number(surgeryId), 0).subscribe({
-              next: async () => {
-                await loading.dismiss();
-                const toast = await this.toastController.create({
-                  message: this.translate.instant('myPatients.abandon.success'),
-                  duration: 2000,
-                  color: 'success',
-                  icon: 'checkmark-circle',
+              next: () => {
+                this.ngZone.run(async () => {
+                  await loading.dismiss();
+                  const toast = await this.toastController.create({
+                    message: this.translate.instant('myPatients.abandon.success'),
+                    duration: 2000,
+                    color: 'success',
+                    icon: 'checkmark-circle',
+                  });
+                  await toast.present();
+                  this.loadData();
                 });
-                await toast.present();
-                this.loadData();
               },
-              error: async () => {
-                await loading.dismiss();
-                const toast = await this.toastController.create({
-                  message: this.translate.instant('myPatients.abandon.error'),
-                  duration: 3000,
-                  color: 'danger',
+              error: () => {
+                this.ngZone.run(async () => {
+                  await loading.dismiss();
+                  const toast = await this.toastController.create({
+                    message: this.translate.instant('myPatients.abandon.error'),
+                    duration: 3000,
+                    color: 'danger',
+                  });
+                  await toast.present();
                 });
-                await toast.present();
               },
             });
           },

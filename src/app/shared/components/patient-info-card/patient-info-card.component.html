@@ -7,38 +7,39 @@
             <div class="name-group">
                 <span class="label-mini">{{ 'sharedComponents.patientInfoCard.patientLabel' | translate }}</span>
                 <h2 class="patient-name">{{ patientName || ('sharedComponents.patientInfoCard.patientNameFallback' | translate) }}</h2>
+                <div class="badges-row">
+                    <span class="badge record" *ngIf="record">📋 {{ record }}</span>
+                    <span class="badge" *ngIf="bed">🛏️ {{ 'sharedComponents.patientInfoCard.bedPrefix' | translate }} {{ bed }}</span>
+                    <span class="badge" *ngIf="surgicalCenter">⚕️ {{ surgicalCenter }}</span>
+                    <span class="badge" *ngIf="room">🚪 {{ room }}</span>
+                    <span class="badge" *ngIf="unit">🏥 {{ unit }}</span>
+                </div>
             </div>
-            <div class="badges-row" style="flex-wrap: wrap; gap: 6px;">
-                <span class="badge record" *ngIf="record">📋 {{ record }}</span>
-                <span class="badge" *ngIf="unit">🏥 {{ unit }}</span>
-                <span class="badge" *ngIf="floor">🏢 {{ 'sharedComponents.patientInfoCard.floorPrefix' | translate }} {{ floor }}</span>
-                <span class="badge" *ngIf="bed">🛏️ {{ 'sharedComponents.patientInfoCard.bedPrefix' | translate }} {{ bed }}</span>
-                <span class="badge" *ngIf="surgicalCenter">⚕️ {{ surgicalCenter }}</span>
-                <span class="badge" *ngIf="room">🚪 {{ room }}</span>
-            </div>
-        </div>
-
-        <div class="patient-info-grid">
-            <div class="info-column">
-                <span class="info-label">{{ 'sharedComponents.patientInfoCard.birthDateLabel' | translate }}</span>
-                <span class="info-value">{{ birthDate || '--' }}</span>
-            </div>
-            <div class="info-column">
-                <span class="info-label">{{ 'sharedComponents.patientInfoCard.ageLabel' | translate }}</span>
-                <span class="info-value">{{ age || '--' }} {{ 'sharedComponents.patientInfoCard.yearsSuffix' | translate }}</span>
-            </div>
-            <div class="info-column">
-                <span class="info-label">{{ 'sharedComponents.patientInfoCard.genderLabel' | translate }}</span>
-                <span class="info-value">{{ gender === 'M' ? ('sharedComponents.patientInfoCard.genderMale' | translate) : gender === 'F' ? ('sharedComponents.patientInfoCard.genderFemale' | translate) : gender || '--'
-                    }}</span>
-            </div>
-            <div class="info-column">
-                <span class="info-label">{{ 'sharedComponents.patientInfoCard.weightLabel' | translate }}</span>
-                <span class="info-value">{{ weight || '--' }} kg</span>
-            </div>
-            <div class="info-column procedure">
-                <span class="info-label">{{ 'sharedComponents.patientInfoCard.procedureLabel' | translate }}</span>
-                <span class="info-value truncate">{{ procedure || ('sharedComponents.patientInfoCard.procedureFallback' | translate) }}</span>
+            <div class="patient-info-strip">
+                <div class="strip-item">
+                    <span class="info-label">{{ 'sharedComponents.patientInfoCard.birthDateLabel' | translate }}</span>
+                    <span class="info-value">{{ birthDate || '--' }}</span>
+                </div>
+                <div class="strip-divider"></div>
+                <div class="strip-item">
+                    <span class="info-label">{{ 'sharedComponents.patientInfoCard.ageLabel' | translate }}</span>
+                    <span class="info-value">{{ age || '--' }} {{ 'sharedComponents.patientInfoCard.yearsSuffix' | translate }}</span>
+                </div>
+                <div class="strip-divider"></div>
+                <div class="strip-item">
+                    <span class="info-label">{{ 'sharedComponents.patientInfoCard.genderLabel' | translate }}</span>
+                    <span class="info-value">{{ gender === 'M' ? ('sharedComponents.patientInfoCard.genderMale' | translate) : gender === 'F' ? ('sharedComponents.patientInfoCard.genderFemale' | translate) : gender || '--' }}</span>
+                </div>
+                <div class="strip-divider"></div>
+                <div class="strip-item">
+                    <span class="info-label">{{ 'sharedComponents.patientInfoCard.weightLabel' | translate }}</span>
+                    <span class="info-value">{{ weight || '--' }} kg</span>
+                </div>
+                <div class="strip-divider"></div>
+                <div class="strip-item strip-item--procedure">
+                    <span class="info-label">{{ 'sharedComponents.patientInfoCard.procedureLabel' | translate }}</span>
+                    <span class="info-value truncate">{{ procedure || ('sharedComponents.patientInfoCard.procedureFallback' | translate) }}</span>
+                </div>
             </div>
         </div>
 
@@ -67,4 +68,5 @@
             <strong>{{ 'sharedComponents.patientInfoCard.allergiesLabelMini' | translate }}</strong> {{ formattedAllergies }}
         </div>
     </div>
+
 </div>

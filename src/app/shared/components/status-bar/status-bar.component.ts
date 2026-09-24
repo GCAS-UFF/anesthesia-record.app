@@ -73,8 +73,7 @@ export class StatusBarComponent implements OnInit, OnDestroy {
     {
       icon: 'people-outline',
       labelKey: 'header.nav.allPatients',
-      route: '/pacientes',
-      active: true
+      route: '/pacientes'
     },
     {
       icon: 'person-outline',
@@ -106,6 +105,11 @@ export class StatusBarComponent implements OnInit, OnDestroy {
       admin: true
     },
   ];
+
+  isActive(item: NavItem): boolean {
+    if (!item.route) return false;
+    return this.router.url.startsWith(item.route);
+  }
 
   constructor(
     private healthService: HealthService,

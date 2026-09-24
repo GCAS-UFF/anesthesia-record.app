@@ -104,7 +104,7 @@ ion-content.main-content {
   overflow-y: visible !important;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 
 .navigation-header {
@@ -174,12 +174,13 @@ ion-content.main-content {
 .ficha-form-container {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
+  margin-top: 6px;
 }
 .form-grid-2col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 10px;
 }
 .stack-md {
   display: flex;
@@ -237,8 +238,8 @@ ion-content.main-content {
 
 .grid-seguranca {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px 14px;
+  grid-template-columns: 1fr;
+  gap: 24px 14px;
 }
 
 .grid-hora-farmaco {
@@ -1539,8 +1540,10 @@ ion-content.main-content {
 
 @media (max-width: 1100px) {
   .form-grid-2col {
-    grid-template-columns: 1fr;
-  }
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
   .alderete-stations {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -1557,8 +1560,7 @@ ion-content.main-content {
     grid-template-columns: 1fr 1fr;
   }
   .grid-equipe,
-  .grid-pos,
-  .grid-seguranca {
+  .grid-pos {
     grid-template-columns: repeat(2, 1fr);
   }
   .col-span-3 {
@@ -1580,10 +1582,10 @@ ion-content.main-content {
     grid-template-columns: repeat(2, 1fr);
   }
   .grid-equipe,
-  .grid-pos,
-  .grid-seguranca {
+  .grid-pos {
     grid-template-columns: 1fr;
   }
+
   .col-span-2,
   .col-span-3 {
     grid-column: span 1;

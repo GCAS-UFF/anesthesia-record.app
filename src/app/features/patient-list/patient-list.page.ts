@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, OnInit, Input, NgZone, HostListener } from '@angular/core';
+import { Component, ViewChild, ElementRef, OnInit, Input, NgZone, HostListener, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular/standalone';
 import { IonContent, IonSpinner, IonSkeletonText, IonIcon } from '@ionic/angular/standalone';
@@ -38,7 +38,6 @@ import { firstValueFrom } from 'rxjs';
     IonSkeletonText,
     IonIcon,
     StatusBarComponent,
-    HeaderInstitucionalComponent,
     DateFilterComponent,
     ProcedureCardComponent,
     EmptyStateComponent,
@@ -89,7 +88,8 @@ export class PatientListPage implements OnInit {
     private anesthesiaRecordService: AnesthesiaRecordService,
     private masterDataService: MasterDataService,
     private ngZone: NgZone,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private cdr: ChangeDetectorRef
   ) {
     addIcons({
       chevronBackOutline,
@@ -198,7 +198,8 @@ export class PatientListPage implements OnInit {
     this.ensureMasterData();
   }
 
-  ionViewWillEnter() {
+  ionViewDidEnter() {
+    // ionViewDidEnter garante que a view já foi montada (ideal para F5)
     this.ngZone.run(() => this.loadData());
   }
 
@@ -234,17 +235,24 @@ export class PatientListPage implements OnInit {
     }
   }
 
+  private loadSubscription?: any;
+
   async loadData() {
     this.isRefreshing = true;
     this.isLoading = true;
     this.viewList = [];
     this.currentUserId = Number(this.authService.getCurrentUserId());
+    this.cdr.detectChanges(); // Força a atualização visual do spinner
 
     if (this.content) {
       this.content.scrollToTop(400);
     }
 
-    this.surgeryService
+    if (this.loadSubscription) {
+      this.loadSubscription.unsubscribe();
+    }
+
+    this.loadSubscription = this.surgeryService
       .getSurgeries(
         this.currentUserId,
         this.selectedDate,
@@ -265,10 +273,12 @@ export class PatientListPage implements OnInit {
           this.canAssumePatient = this.isAdminUser ? false : resultData.canAssumePatient;
           this.isRefreshing = false;
           this.isLoading = false;
+          this.cdr.detectChanges(); // Força a renderização imediata da lista
         },
         error: () => {
           this.isRefreshing = false;
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
       });
   }
@@ -484,29 +494,33 @@ export class PatientListPage implements OnInit {
             await loading.present();
 
             this.surgeryService.assumePatient(patientId, Number(surgeryId), 0).subscribe({
-              next: async () => {
-                await loading.dismiss();
-                const toast = await this.toastController.create({
-                  message: this.isAdminUser
-                    ? this.translate.instant('patientList.abandon.removeDoctorSuccess')
-                    : this.translate.instant('patientList.abandon.leaveSuccess'),
-                  duration: 2000,
-                  color: 'success',
-                  icon: 'checkmark-circle',
+              next: () => {
+                this.ngZone.run(async () => {
+                  await loading.dismiss();
+                  const toast = await this.toastController.create({
+                    message: this.isAdminUser
+                      ? this.translate.instant('patientList.abandon.removeDoctorSuccess')
+                      : this.translate.instant('patientList.abandon.leaveSuccess'),
+                    duration: 2000,
+                    color: 'success',
+                    icon: 'checkmark-circle',
+                  });
+                  await toast.present();
+                  this.loadData();
                 });
-                await toast.present();
-                this.loadData();
               },
-              error: async () => {
-                await loading.dismiss();
-                const toast = await this.toastController.create({
-                  message: this.isAdminUser
-                    ? this.translate.instant('patientList.abandon.removeDoctorError')
-                    : this.translate.instant('patientList.abandon.leaveError'),
-                  duration: 3000,
-                  color: 'danger',
+              error: () => {
+                this.ngZone.run(async () => {
+                  await loading.dismiss();
+                  const toast = await this.toastController.create({
+                    message: this.isAdminUser
+                      ? this.translate.instant('patientList.abandon.removeDoctorError')
+                      : this.translate.instant('patientList.abandon.leaveError'),
+                    duration: 3000,
+                    color: 'danger',
+                  });
+                  await toast.present();
                 });
-                await toast.present();
               },
             });
           },

@@ -35,6 +35,7 @@
         <button
           type="button"
           *ngFor="let s of sections"
+          [id]="'nav-' + s.id"
           class="pre-nav__item"
           [class.active]="activeSectionId === s.id"
           (click)="goToSection(s.id)"
@@ -59,11 +60,11 @@
         <div class="qa-row qa-row--column">
           <span class="qa-label">{{ 'preAnestesica.procedimento.surgeriesLabel' | translate }} <em class="req">*</em></span>
           <div class="inline-add">
-            <select class="select-control" [(ngModel)]="cirurgiaSelecionada" [ngModelOptions]="{ standalone: true }">
+            <select class="select-control" [(ngModel)]="cirurgiaSelecionada" [ngModelOptions]="{ standalone: true }" [disabled]="!canEdit">
               <option value="">{{ 'preAnestesica.procedimento.selectSurgeryPlaceholder' | translate }}</option>
               <option *ngFor="let c of cirurgiasAghu" [value]="c.value">{{ c.labelKey | translate }}</option>
             </select>
-            <button type="button" class="btn-add" (click)="addCirurgia()">
+            <button type="button" class="btn-add" (click)="addCirurgia()" [disabled]="!canEdit">
               <ion-icon name="add-circle-outline"></ion-icon>
               {{ 'preAnestesica.procedimento.add' | translate }}
             </button>
@@ -72,7 +73,7 @@
           <div class="repeat-list" formArrayName="cirurgias">
             <div class="repeat-row" *ngFor="let c of cirurgias.controls; let i = index" [formGroupName]="i">
               <input type="text" formControlName="nome" />
-              <button type="button" class="btn-icon btn-icon--danger" (click)="removeCirurgia(i)">
+              <button type="button" class="btn-icon btn-icon--danger" (click)="removeCirurgia(i)" [disabled]="!canEdit">
                 <ion-icon name="trash-outline"></ion-icon>
               </button>
             </div>
@@ -321,12 +322,12 @@
               <input type="text" formControlName="dose" [placeholder]="'preAnestesica.medicacoes.dosePlaceholder' | translate" />
               <input type="text" formControlName="via" [placeholder]="'preAnestesica.medicacoes.routePlaceholder' | translate" />
               <input type="text" formControlName="frequencia" [placeholder]="'preAnestesica.medicacoes.frequencyPlaceholder' | translate" />
-              <button type="button" class="btn-icon btn-icon--danger" (click)="removeMedicacao(i)">
+              <button type="button" class="btn-icon btn-icon--danger" (click)="removeMedicacao(i)" [disabled]="!canEdit">
                 <ion-icon name="trash-outline"></ion-icon>
               </button>
             </div>
           </div>
-          <button type="button" class="btn-add" (click)="addMedicacao()">
+          <button type="button" class="btn-add" (click)="addMedicacao()" [disabled]="!canEdit">
             <ion-icon name="add-circle-outline"></ion-icon>
             {{ 'preAnestesica.medicacoes.addMedication' | translate }}
           </button>
@@ -637,6 +638,26 @@
         </label>
       </section>
 
+      <div class="form-actions">
+        <ion-button
+          fill="outline"
+          (click)="confirmClearForm()"
+          class="btn-secondary-pill"
+          [disabled]="isSaving || !canEdit"
+        >
+          <ion-icon name="sync-outline" slot="start"></ion-icon>
+          {{ 'fichaAnestesica.formActions.limparFormulario' | translate }}
+        </ion-button>
+
+        <ion-button
+          fill="outline"
+          (click)="imprimir()"
+          class="btn-secondary-pill"
+        >
+          <ion-icon name="print-outline" slot="start"></ion-icon>
+          {{ 'fichaAnestesica.formActions.imprimir' | translate }}
+        </ion-button>
+      </div>
     </main>
   </div>
 

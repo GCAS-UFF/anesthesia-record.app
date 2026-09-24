@@ -102,7 +102,7 @@
     <button
       *ngFor="let item of visibleNavItems"
       class="nav-item"
-      [class.active]="item.active"
+      [class.active]="isActive(item)"
       (click)="navigate(item)"
     >
       <ion-icon [name]="item.icon"></ion-icon>

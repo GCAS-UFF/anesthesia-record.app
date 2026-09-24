@@ -33,9 +33,7 @@
   position: sticky;
   top: 64px;
   z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
   gap: 16px;
   padding: 16px 24px;
   background: rgba(255, 255, 255, 0.92);
@@ -43,6 +41,7 @@
   border-bottom: 1px solid var(--pre-border);
 
   &__title {
+    grid-column: 2;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -60,8 +59,7 @@
     }
   }
 
-  &__actions {
-    display: flex;
+  &__actions { grid-column: 3; display: flex; justify-content: flex-end;
     align-items: center;
     gap: 8px;
   }
@@ -474,8 +472,7 @@
     }
   }
 
-  &__actions {
-    display: flex;
+  &__actions { grid-column: 3; display: flex; justify-content: flex-end;
     gap: 10px;
   }
 }
@@ -1103,3 +1100,175 @@
 
 .sign-modal-preview-btn { margin-top: 16px; margin-bottom: 8px; font-weight: 500; font-size: 15px; }
 
+/* ==========================================================================
+   RESPONSIVIDADE (Tablets e Celulares na Vertical)
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  .pre-layout {
+    display: flex;
+    flex-direction: column;
+    /* Force layout to not expand beyond the viewport so inner scroll works */
+    height: calc(100vh - 128px);
+    max-height: calc(100vh - 128px);
+    overflow: hidden;
+  }
+
+  .pre-nav {
+    position: relative;
+    top: 0;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--pre-border);
+    background: #fff;
+    z-index: 10;
+    flex-shrink: 0;
+
+    &__scroll {
+      flex-direction: row;
+      padding: 12px 16px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      white-space: nowrap;
+      gap: 8px;
+      -webkit-overflow-scrolling: touch;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    &__item {
+      width: auto;
+      flex-shrink: 0;
+      padding: 8px 16px;
+    }
+  }
+
+  .pre-scroll {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    overflow-y: auto;
+    padding: 24px 20px 180px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .grid-5, .grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .pre-scroll {
+    padding: 16px 16px 180px;
+  }
+
+  .pre-section {
+    padding: 20px 16px;
+    
+    &__head {
+      gap: 12px;
+      margin-bottom: 16px;
+      
+      h2 {
+        font-size: 16px;
+      }
+    }
+  }
+
+  .grid-2, .grid-4, .grid-5, .grid-3, .field-pair {
+    grid-template-columns: 1fr;
+  }
+
+  .field--col-2, .field--col-3, .field--col-4 {
+    grid-column: 1 / -1;
+  }
+
+  .qa-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .inline-add {
+    flex-direction: column;
+    width: 100%;
+    
+    .select-control {
+      width: 100%;
+    }
+    
+    .btn-add {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+  
+  .chips {
+    flex-wrap: wrap;
+  }
+  
+  .mallampati-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pre-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 16px;
+    gap: 12px;
+
+    &__title {
+      position: relative;
+      transform: none;
+      left: 0;
+      width: 100%;
+      align-items: center;
+      text-align: center;
+    }
+
+    &__actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+}
+
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--fa-line);
+  align-items: stretch;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  ion-button {
+    flex: 1;
+    max-width: 280px;
+    min-width: 220px;
+    height: 52px;
+    margin: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-actions {
+    flex-direction: column;
+    ion-button {
+      min-width: 100%;
+      max-width: 100%;
+    }
+  }
+}
+
+.btn-secondary-pill {
+  --border-radius: var(--fa-radius-lg);
+  --border-color: var(--fa-line, #cdd7dc);
+  --color: var(--fa-ink, #223740);
+}

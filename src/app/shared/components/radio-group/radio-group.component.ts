@@ -24,7 +24,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@a
     .radio-container {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 14px;
     }
     .group-label {
       font-family: 'Manrope', system-ui, -apple-system, sans-serif;

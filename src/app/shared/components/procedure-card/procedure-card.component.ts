@@ -291,11 +291,17 @@ export class ProcedureCardComponent {
     return this.isPreAnesthesiaRecordDone && !this.isFinished;
   }
 
+  get isSwipeEnabled(): boolean {
+    return this.shouldShowAbandonButton || this.shouldShowReopenButton;
+  }
+
   get slideTransform(): string {
     return `translateX(${this.slideOffset}px)`;
   }
 
   onTouchStart(event: TouchEvent) {
+    if (!this.isSwipeEnabled) return;
+
     const touch = event.touches[0];
     if (!touch) return;
 
@@ -347,6 +353,8 @@ export class ProcedureCardComponent {
   }
 
   onMouseDown(event: MouseEvent) {
+    if (!this.isSwipeEnabled) return;
+
     const target = event.target as HTMLElement;
     if (target.closest('button') || target.closest('.btn')) {
       return;
