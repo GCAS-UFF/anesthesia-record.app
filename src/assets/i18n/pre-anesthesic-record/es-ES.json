@@ -128,6 +128,56 @@
     },
     "exames": {
       "labsTitle": "Laboratorio",
+      "lab": {
+        "groups": {
+          "HEMOGRAM": "Hemograma",
+          "COAGULATION": "Coagulograma",
+          "LIVER_FUNCTION": "Función hepática",
+          "RENAL_FUNCTION": "Función renal",
+          "OTHERS": "Otros exámenes"
+        },
+        "analytes": {
+          "RED_BLOOD_CELLS": "Hematíes",
+          "HEMOGLOBIN": "Hemoglobina",
+          "HEMATOCRIT": "Hematocrito",
+          "MCV": "VCM",
+          "MCH": "HCM",
+          "MCHC": "CHCM",
+          "RDW": "RDW",
+          "LEUKOCYTES": "Leucocitos totales",
+          "PLATELETS": "Plaquetas",
+          "PROTHROMBIN_TIME": "Tiempo de protrombina (TP)",
+          "INR": "INR",
+          "APTT": "TTPA",
+          "AST": "TGO / AST",
+          "ALT": "TGP / ALT",
+          "GGT": "GGT",
+          "ALKALINE_PHOSPHATASE": "Fosfatasa alcalina (FA)",
+          "UREA": "Urea",
+          "CREATININE": "Creatinina"
+        },
+        "liverFunctionNotes": "Función hepática — observaciones",
+        "reference": "Ref.",
+        "sourceAghu": "AGHU",
+        "sourceManual": "Editado",
+        "retry": "Intentar importar de nuevo",
+        "reload": "Recargar exámenes",
+        "status": {
+          "loading": "Cargando exámenes de laboratorio… En la primera apertura se importa del AGHU la toma más reciente.",
+          "importedNow": "Exámenes de la toma del {{date}} importados del AGHU y registrados en la ficha. Los valores pueden corregirse.",
+          "imported": "Exámenes registrados en SIGA (importados del AGHU, toma del {{date}}). Las correcciones se guardan en la ficha y el AGHU no las sobrescribe.",
+          "manual": "Exámenes registrados manualmente en SIGA.",
+          "noExams": "No se encontraron exámenes de laboratorio liberados en el AGHU. Complete los valores manualmente si es necesario.",
+          "failed": "No fue posible importar los exámenes del AGHU. Los campos siguen editables.",
+          "existingValues": "La evaluación ya tiene exámenes registrados; no se realizó la importación automática del AGHU.",
+          "error": "No fue posible cargar los exámenes de laboratorio de SIGA. Los cambios quedan en el borrador local hasta restablecer la conexión."
+        },
+        "sync": {
+          "saving": "Guardando exámenes…",
+          "saved": "Exámenes guardados en SIGA a las {{time}}",
+          "error": "Error al guardar los exámenes en SIGA — reintento automático."
+        }
+      },
       "hemoglobin": "Hemoglobina (g/dL)",
       "hematocrit": "Hematocrito (%)",
       "leukocytes": "Leucocitos (/mm³)",

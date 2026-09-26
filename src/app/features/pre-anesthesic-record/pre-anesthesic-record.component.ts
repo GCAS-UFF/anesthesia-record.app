@@ -9,7 +9,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Subscription, interval } from 'rxjs';
+import { Subscription, firstValueFrom, interval } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
 import {
@@ -47,6 +47,9 @@ import {
   lockOpenOutline,
   readerOutline,
   printOutline,
+  refreshOutline,
+  flaskOutline,
+  cloudOfflineOutline,
 } from 'ionicons/icons';
 
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
@@ -81,7 +84,18 @@ import {
   PreAnesthesicRecordDraft,
   PreAnesthesicRecordPayload,
   PreAnesthesicChecklistFinding,
+  LAB_ANALYTES,
+  LAB_GROUPS,
+  LabAnalyte,
+  LabAnalyteDef,
+  LabGroup,
+  PreAnesthesicLabExams,
+  PreAnesthesicLabResult,
+  PreAnesthesicLabResultInput,
 } from '../../shared/models/pre-anesthesic-record.model';
+
+
+type LabUiState = 'idle' | 'loading' | 'imported' | 'manual' | 'noExams' | 'failed' | 'existingValues' | 'error';
 import { RecordViewerModalComponent, RecordData } from 'src/app/shared/components/record-viewer-modal/record-viewer-modal.component';
 import { mapPreAnesthesiaToRecordData } from 'src/app/shared/models/pre-anesthesic.mapper';
 
@@ -129,7 +143,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
   loggedUser: any = null;
   lastSavedAt: Date | null = null;
-  
+
   isFinalized = false;
   forcedReadOnly = false;
   isResponsible = true;
@@ -139,6 +153,20 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   get canEdit(): boolean {
     return !this.isFinalized && !this.forcedReadOnly && this.isResponsible;
   }
+
+
+  readonly labGroups: LabGroup[] = LAB_GROUPS;
+  labState: LabUiState = 'idle';
+  labExams: PreAnesthesicLabExams | null = null;
+  labSyncing = false;
+  labSyncError = false;
+  labSyncedAt: Date | null = null;
+
+  private labsReady = false;
+
+  private lastSyncedLabs: Partial<Record<LabAnalyte, number | null>> = {};
+  private labResultsByAnalyte: Partial<Record<LabAnalyte, PreAnesthesicLabResult>> = {};
+  private labSyncQueued = false;
 
   private isSubmittingSignature = false;
   private pendingFinalizePayload: PreAnesthesicRecordPayload | null = null;
@@ -248,11 +276,14 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
       lockOpenOutline,
       readerOutline,
       printOutline,
+      refreshOutline,
+      flaskOutline,
+      cloudOfflineOutline,
     });
   }
 
   ngOnInit(): void {
-    
+
     const rawAnesthesiaRecordId = this.route.snapshot.paramMap.get('id');
     this.anesthesiaRecordId = rawAnesthesiaRecordId ? Number(rawAnesthesiaRecordId) : null;
     this.patientId = this.route.snapshot.paramMap.get('patientId');
@@ -381,6 +412,15 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
         creatinina: [null],
         sodio: [null],
         potassio: [null],
+        hemacias: [null],
+        vcm: [null],
+        hcm: [null],
+        chcm: [null],
+        rdw: [null],
+        tgo: [null],
+        tgp: [null],
+        ggt: [null],
+        fosfataseAlcalina: [null],
         tp: [''],
         eas: [''],
         funcaoHepatica: [''],
@@ -523,7 +563,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
   groupControlPath(base: string, groupKey: string, optionKey: string): string {
     return `${base}.${groupKey}.${optionKey}`;
-  } 
+  }
 
   private loadInitialState(): void {
     if (!this.anesthesiaRecordId || !this.patientId) {
@@ -542,16 +582,18 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
           String(record.firstAnesthesiologistId) === String(this.loggedUser?.id);
       }
 
+      let localDraft: PreAnesthesicRecordDraft | null = null;
+
       if (this.isFinalized && record) {
         // Registro já assinado: o servidor é a fonte autoritativa e a ficha vira somente leitura.
         this.patchFormFromDraft(this.extractDraft(record));
         this.preAnesthesicService.clearDraft(this.anesthesiaRecordId!, this.patientId!);
         this.form.disable();
-      } else if (!this.canEdit) {        
+      } else if (!this.canEdit) {
         if (record) this.patchFormFromDraft(this.extractDraft(record));
         this.form.disable();
       } else {
-        const localDraft = this.preAnesthesicService.getDraft(this.anesthesiaRecordId!, this.patientId!);
+        localDraft = this.preAnesthesicService.getDraft(this.anesthesiaRecordId!, this.patientId!);
         if (localDraft) {
           this.patchFormFromDraft(localDraft);
         } else if (record) {
@@ -561,7 +603,222 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
       this.formSub = this.form.valueChanges.pipe(debounceTime(400)).subscribe(() => this.onFormChanged());
       this.startSyncTimer();
+      this.loadLabExams(localDraft?.labsPendingSync === true);
     });
+  }
+
+  loadLabExams(localChangesPending = false): void {
+    if (!this.anesthesiaRecordId) return;
+
+    this.labState = 'loading';
+    this.preAnesthesicService.getLabExams(this.anesthesiaRecordId).subscribe({
+      next: (exams) => this.applyLabExams(exams, localChangesPending),
+      error: (err) => {
+        console.warn('[pre-anestesica] não foi possível carregar os exames laboratoriais do SIGA', err?.status);
+        this.labState = 'error';
+      },
+    });
+  }
+
+  retryLabExams(): void {
+    // Preserva edições feitas enquanto o SIGA estava indisponível.
+    this.loadLabExams(this.hasPendingLabChanges());
+  }
+
+  get canRetryLabExams(): boolean {
+    if (this.labState === 'error') return true;
+    return this.canEdit && (this.labState === 'failed' || this.labState === 'noExams') && !this.labExams?.hasSigaData;
+  }
+
+  private async applyLabExams(exams: PreAnesthesicLabExams, keepLocalChanges: boolean): Promise<void> {
+    this.labExams = exams;
+    this.indexLabResults(exams);
+
+    if (exams.hasSigaData) {
+      const serverValues: Partial<Record<LabAnalyte, number | null>> = {};
+      LAB_ANALYTES.forEach((def) => (serverValues[def.analyte] = this.labResultsByAnalyte[def.analyte]?.value ?? null));
+      this.lastSyncedLabs = serverValues;
+
+      if (!keepLocalChanges || !this.canEdit) {
+        const patch: Record<string, any> = {};
+        LAB_ANALYTES.forEach((def) => {
+          const value = serverValues[def.analyte] ?? null;
+          patch[def.control] = def.textInput ? this.formatLabText(value) : value;
+        });
+        this.form.get('exames')?.patchValue(patch, { emitEvent: false });
+      }
+    } else {
+      this.lastSyncedLabs = {};
+    }
+
+    this.labsReady = true;
+    this.labState = this.resolveLabState(exams);
+    this.cdr.markForCheck();
+
+    if (keepLocalChanges && this.canEdit && this.hasPendingLabChanges()) this.syncLabs();
+
+    if (exams.importedNow) {
+      const t = await this.toastCtrl.create({
+        message: this.translate.instant('preAnestesica.exames.lab.status.importedNow', { date: this.formatLabDate(exams.collectedAt) }),
+        duration: 3000,
+        color: 'success',
+        position: 'top',
+      });
+      await t.present();
+    } else if (exams.importStatus === 'FAILED' && !exams.hasSigaData && this.canEdit) {
+      const t = await this.toastCtrl.create({
+        message: this.translate.instant('preAnestesica.exames.lab.status.failed'),
+        duration: 3000,
+        color: 'warning',
+        position: 'top',
+      });
+      await t.present();
+    }
+  }
+
+  private indexLabResults(exams: PreAnesthesicLabExams): void {
+    this.labResultsByAnalyte = {};
+    (exams.results ?? []).forEach((r) => (this.labResultsByAnalyte[r.analyte] = r));
+  }
+
+  private resolveLabState(exams: PreAnesthesicLabExams): LabUiState {
+    if (exams.hasSigaData) return exams.importStatus === 'IMPORTED' ? 'imported' : 'manual';
+    if (exams.skippedReason === 'EXISTING_RECORD_VALUES') return 'existingValues';
+    if (exams.skippedReason === 'FINALIZED') return 'idle';
+    if (exams.importStatus === 'NO_EXAMS_AVAILABLE') return 'noExams';
+    if (exams.importStatus === 'FAILED') return 'failed';
+    return 'idle';
+  }
+
+  get labStatusMessage(): string {
+    const keys: Partial<Record<LabUiState, string>> = {
+      loading: 'loading',
+      imported: this.labExams?.importedNow ? 'importedNow' : 'imported',
+      manual: 'manual',
+      noExams: 'noExams',
+      failed: 'failed',
+      existingValues: 'existingValues',
+      error: 'error',
+    };
+    const key = keys[this.labState];
+    const date = this.formatLabDate(this.labExams?.collectedAt ?? null);
+    return key ? this.translate.instant(`preAnestesica.exames.lab.status.${key}`, { date }) : '';
+  }
+
+  /** Campo texto (TP) com o separador decimal do idioma, igual aos campos numéricos. */
+  private formatLabText(value: number | null): string {
+    if (value == null) return '';
+    return value.toLocaleString(this.translate.getCurrentLang() || 'pt-BR', { useGrouping: false, maximumFractionDigits: 4 });
+  }
+
+  private formatLabDate(value: string | null): string {
+    if (!value) return '—';
+    const d = new Date(value);
+    return isNaN(d.getTime()) ? value : d.toLocaleDateString(this.translate.getCurrentLang() || 'pt-BR');
+  }
+
+  analytesOf(group: LabGroup): LabAnalyteDef[] {
+    return LAB_ANALYTES.filter((a) => a.group === group);
+  }
+
+  labUnit(def: LabAnalyteDef): string {
+    return this.labResultsByAnalyte[def.analyte]?.unit || def.unit;
+  }
+
+  labReference(def: LabAnalyteDef): string | null {
+    return this.labResultsByAnalyte[def.analyte]?.referenceRange ?? null;
+  }
+
+  labSource(def: LabAnalyteDef): 'AGHU' | 'MANUAL' | null {
+    const result = this.labResultsByAnalyte[def.analyte];
+    if (this.labsReady && this.readLabValue(def) !== undefined &&
+      this.readLabValue(def) !== (this.lastSyncedLabs[def.analyte] ?? null)) {
+      return 'MANUAL';
+    }
+    return result?.source ?? null;
+  }
+
+  private readLabValue(def: LabAnalyteDef): number | null | undefined {
+    const raw = this.form.get(['exames', def.control])?.value;
+    if (raw === null || raw === undefined || raw === '') return null;
+    if (typeof raw === 'number') return isFinite(raw) ? raw : undefined;
+    const parsed = Number(String(raw).replace(',', '.').trim());
+
+    return isFinite(parsed) ? parsed : undefined;
+  }
+
+  private diffLabs(): PreAnesthesicLabResultInput[] {
+    const changes: PreAnesthesicLabResultInput[] = [];
+    LAB_ANALYTES.forEach((def) => {
+      const value = this.readLabValue(def);
+      if (value === undefined) return;
+      if (value !== (this.lastSyncedLabs[def.analyte] ?? null)) changes.push({ analyte: def.analyte, value });
+    });
+    return changes;
+  }
+
+  private hasPendingLabChanges(): boolean {
+    if (this.labsReady) return this.diffLabs().length > 0;
+    const exames = this.form.get('exames');
+    return LAB_ANALYTES.some((def) => !!exames?.get(def.control)?.dirty);
+  }
+
+  private syncLabs(): Promise<boolean> {
+    if (!this.labsReady || !this.canEdit || !this.anesthesiaRecordId) return Promise.resolve(true);
+
+    if (this.labSyncing) {
+      this.labSyncQueued = true;
+      return Promise.resolve(false);
+    }
+
+    const changes = this.diffLabs();
+    if (!changes.length) return Promise.resolve(true);
+
+    this.labSyncing = true;
+    return firstValueFrom(this.preAnesthesicService.saveLabExams(this.anesthesiaRecordId, changes))
+      .then((exams) => {
+        this.labExams = exams;
+        this.indexLabResults(exams);
+        changes.forEach((c) => (this.lastSyncedLabs[c.analyte] = this.labResultsByAnalyte[c.analyte]?.value ?? null));
+        this.labSyncError = false;
+        this.labSyncedAt = new Date();
+
+        if (this.labState !== 'imported')
+          this.labState = this.resolveLabState(exams);
+
+        this.saveDraft();
+        return true;
+      })
+      .catch((err) => {
+        console.warn('[pre-anestesica] falha ao salvar exames laboratoriais no SIGA; nova tentativa automática', err?.status);
+        this.labSyncError = true;
+        return false;
+      })
+      .finally(() => {
+        this.labSyncing = false;
+        this.cdr.markForCheck();
+        if (this.labSyncQueued) {
+          this.labSyncQueued = false;
+          this.syncLabs();
+        }
+      });
+  }
+
+  private async flushLabs(): Promise<boolean> {
+    if (!this.labsReady || !this.canEdit)
+      return true;
+
+    for (let waited = 0; this.labSyncing && waited < 15000; waited += 200) {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+
+    if (this.labSyncing)
+      return false;
+
+    if (!this.hasPendingLabChanges())
+      return true;
+
+    return this.syncLabs();
   }
 
   private startSyncTimer(): void {
@@ -569,9 +826,15 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     this.syncTimerSub = interval(15000).subscribe(() => this.trySync());
   }
 
-  /** Único caso a reenviar automaticamente: uma assinatura que foi tentada mas falhou ao chegar no backend. */
   private trySync(): void {
-    if (!this.pendingFinalizePayload || !navigator.onLine) return;
+    if (!navigator.onLine) 
+      return;
+
+    if (this.labsReady && this.canEdit && !this.labSyncing && this.hasPendingLabChanges()) 
+      this.syncLabs();
+
+    if (!this.pendingFinalizePayload) 
+      return;
 
     this.submitPayload(this.pendingFinalizePayload, {
       onSuccess: async () => {
@@ -624,11 +887,13 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   private onFormChanged(): void {
     if (!this.anesthesiaRecordId || !this.patientId || !this.canEdit) return;
     this.preAnesthesicService.saveDraft(this.anesthesiaRecordId, this.patientId, this.toDraft());
-    this.lastSavedAt = new Date();
+    this.lastSavedAt = new Date();    
+    this.syncLabs();
   }
 
   saveDraft(): void {
-    if (!this.anesthesiaRecordId || !this.patientId || !this.canEdit) return;
+    if (!this.anesthesiaRecordId || !this.patientId || !this.canEdit) 
+      return;
     this.preAnesthesicService.saveDraft(this.anesthesiaRecordId, this.patientId, this.toDraft());
     this.lastSavedAt = new Date();
   }
@@ -636,7 +901,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   private selectedKeys(def: ChecklistGroupDef, value: any): string[] {
     return def.options.filter((o) => !!value?.[o.key]).map((o) => o.key);
   }
-  
+
   toDraft(): PreAnesthesicRecordDraft {
     const raw = this.form.getRawValue();
 
@@ -748,7 +1013,17 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
         urinalysis: raw.exames.eas ?? '',
         liverFunctionTests: raw.exames.funcaoHepatica ?? '',
         pregnancyTest: raw.exames.testeGravidez ?? '',
+        redBloodCells: raw.exames.hemacias,
+        mcv: raw.exames.vcm,
+        mch: raw.exames.hcm,
+        mchc: raw.exames.chcm,
+        rdw: raw.exames.rdw,
+        ast: raw.exames.tgo,
+        alt: raw.exames.tgp,
+        ggt: raw.exames.ggt,
+        alkalinePhosphatase: raw.exames.fosfataseAlcalina,
       },
+      labsPendingSync: this.hasPendingLabChanges(),
       imaging: {
         ecg: raw.exames.ecg ?? '',
         chestXRay: raw.exames.rxTorax ?? '',
@@ -917,6 +1192,15 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
         eas: draft.labs?.urinalysis ?? '',
         funcaoHepatica: draft.labs?.liverFunctionTests ?? '',
         testeGravidez: draft.labs?.pregnancyTest ?? '',
+        hemacias: draft.labs?.redBloodCells ?? null,
+        vcm: draft.labs?.mcv ?? null,
+        hcm: draft.labs?.mch ?? null,
+        chcm: draft.labs?.mchc ?? null,
+        rdw: draft.labs?.rdw ?? null,
+        tgo: draft.labs?.ast ?? null,
+        tgp: draft.labs?.alt ?? null,
+        ggt: draft.labs?.ggt ?? null,
+        fosfataseAlcalina: draft.labs?.alkalinePhosphatase ?? null,
         ecg: draft.imaging?.ecg ?? '',
         rxTorax: draft.imaging?.chestXRay ?? '',
         ecocardiograma: draft.imaging?.echocardiogram ?? '',
@@ -943,13 +1227,13 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     const scrollContainer = document.querySelector('.pre-scroll') as HTMLElement | null;
     if (!scrollContainer) return;
     const top = scrollContainer.scrollTop + 120;
-    
+
     let activeId = this.activeSectionId;
     for (const s of this.sections) {
       const el = document.getElementById(`sec-${s.id}`);
       if (el && el.offsetTop <= top) activeId = s.id;
     }
-    
+
     if (this.activeSectionId !== activeId) {
       this.activeSectionId = activeId;
       this.syncNavScroll(activeId);
@@ -960,12 +1244,12 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   private syncNavScroll(id: string): void {
     const navScroll = document.querySelector('.pre-nav__scroll') as HTMLElement | null;
     const navItem = document.getElementById(`nav-${id}`);
-    
+
     if (navScroll && navItem) {
       const scrollRect = navScroll.getBoundingClientRect();
       const itemRect = navItem.getBoundingClientRect();
+
       
-      // If item is out of view (left or right) or partially hidden
       if (itemRect.left < scrollRect.left || itemRect.right > scrollRect.right) {
         navScroll.scrollTo({
           left: navItem.offsetLeft - navScroll.offsetLeft - (scrollRect.width / 2) + (itemRect.width / 2),
@@ -1185,10 +1469,23 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     };
   }
 
-  private executarSalvamento(): void {
+  private async executarSalvamento(): Promise<void> {
     if (!this.anesthesiaRecordId || !this.patientId) return;
 
     this.isSaving = true;
+    
+    if (!(await this.flushLabs())) {
+      this.isSaving = false;
+      const t = await this.toastCtrl.create({
+        message: this.translate.instant('preAnestesica.exames.lab.sync.error'),
+        duration: 3500,
+        color: 'danger',
+        position: 'top',
+      });
+      await t.present();
+      return;
+    }
+
     const payload = this.buildFinalPayload();
 
     this.submitPayload(payload, {
@@ -1255,10 +1552,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
       next: async () => {
         this.isReopening = false;
         await loading.dismiss();
-        // Só o médico responsável edita a ficha — o formulário desta tela (do ADMIN,
-        // que está em modo leitura) permanece desabilitado; `isFinalized = false` apenas
-        // atualiza o rótulo/ações do cabeçalho. O médico responsável vê os campos
-        // liberados na próxima vez que abrir esta mesma tela.
+       
         this.isFinalized = false;
 
         const t = await this.toastCtrl.create({

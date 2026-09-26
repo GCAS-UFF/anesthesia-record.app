@@ -1272,3 +1272,154 @@
   --border-color: var(--fa-line, #cdd7dc);
   --color: var(--fa-ink, #223740);
 }
+
+
+.lab-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-bottom: 10px;
+
+  .sub-head {
+    margin: 0;
+  }
+}
+
+.lab-sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pre-muted);
+  background: var(--pre-bg);
+
+  ion-icon {
+    font-size: 14px;
+  }
+
+  ion-spinner {
+    width: 16px;
+    height: 16px;
+  }
+
+  &--ok {
+    color: var(--pre-success);
+    background: var(--pre-success-soft);
+  }
+
+  &--error {
+    color: var(--pre-danger);
+    background: var(--pre-danger-soft);
+  }
+}
+
+.lab-status {
+  --lab-warning: #b45309;
+  --lab-warning-soft: rgba(245, 158, 11, 0.12);
+
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--pre-primary);
+  background: var(--pre-primary-soft);
+
+  > span {
+    flex: 1 1 240px;
+  }
+
+  ion-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  ion-spinner {
+    width: 18px;
+    height: 18px;
+  }
+
+  &--loading,
+  &--manual {
+    color: var(--pre-muted);
+    background: var(--pre-bg);
+  }
+
+  &--noExams,
+  &--existingValues {
+    color: var(--lab-warning);
+    background: var(--lab-warning-soft);
+  }
+
+  &--failed,
+  &--error {
+    color: var(--pre-danger);
+    background: var(--pre-danger-soft);
+  }
+
+  &__retry {
+    margin: 0;
+  }
+}
+
+.lab-group {
+  margin-bottom: 16px;
+
+  &__title {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--pre-text);
+  }
+}
+
+.lab-field {
+  > span {
+    min-height: 32px;
+    align-content: flex-start;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .lab-unit {
+    font-style: normal;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .lab-ref {
+    font-size: 11px;
+    color: var(--pre-muted);
+  }
+}
+
+.lab-badge {
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 1px 6px;
+  border-radius: 999px;
+
+  &--aghu {
+    color: var(--pre-primary);
+    background: var(--pre-primary-soft);
+  }
+
+  &--manual {
+    color: var(--pre-success);
+    background: var(--pre-success-soft);
+  }
+}

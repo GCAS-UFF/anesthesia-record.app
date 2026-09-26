@@ -6,6 +6,8 @@ import { ApiUrlService } from './api-url.service';
 import { BaseService } from './base/base.service';
 import {
   PreAnesthesicChecklistFinding,
+  PreAnesthesicLabExams,
+  PreAnesthesicLabResultInput,
   PreAnesthesicRecordDraft,
   PreAnesthesicRecordPayload,
 } from '../../shared/models/pre-anesthesic-record.model';
@@ -87,6 +89,19 @@ export class PreAnesthesicRecordService extends BaseService<PreAnesthesicRecordP
     }
 
     return this.api.post<any>(PRE_ANESTHESIA_ENDPOINT, wireBody);
+  }
+
+
+  getLabExams(anesthesiaRecordId: number): Observable<PreAnesthesicLabExams> {
+    return this.api
+      .get<any>(`${PRE_ANESTHESIA_ENDPOINT}/by-anesthesia-record/${anesthesiaRecordId}/lab-exams`)
+      .pipe(map((res) => (res?.data ?? res) as PreAnesthesicLabExams));
+  }
+  
+  saveLabExams(anesthesiaRecordId: number, results: PreAnesthesicLabResultInput[]): Observable<PreAnesthesicLabExams> {
+    return this.api
+      .put<any>(`${PRE_ANESTHESIA_ENDPOINT}/by-anesthesia-record/${anesthesiaRecordId}/lab-exams`, { results })
+      .pipe(map((res) => (res?.data ?? res) as PreAnesthesicLabExams));
   }
 
   /** Reabre (libera para edição) uma avaliação pré-anestésica finalizada — restrito a ADMIN no backend. */

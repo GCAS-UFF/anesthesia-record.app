@@ -352,8 +352,19 @@ export interface PreAnesthesicRecordDraft {
     tp: string;
     urinalysis: string;
     liverFunctionTests: string;
-    pregnancyTest: string;
+    pregnancyTest: string;    
+    redBloodCells?: number | null;
+    mcv?: number | null;
+    mch?: number | null;
+    mchc?: number | null;
+    rdw?: number | null;
+    ast?: number | null;
+    alt?: number | null;
+    ggt?: number | null;
+    alkalinePhosphatase?: number | null;
   };
+  
+  labsPendingSync?: boolean;
   imaging: {
     ecg: string;
     chestXRay: string;
@@ -381,4 +392,76 @@ export interface PreAnesthesicRecordPayload extends PreAnesthesicRecordDraft {
   signedByName: string;
   signedAt: string;
   isFinalized?: boolean;
+}
+
+export type LabAnalyte =
+  | 'RED_BLOOD_CELLS' | 'HEMOGLOBIN' | 'HEMATOCRIT' | 'MCV' | 'MCH' | 'MCHC' | 'RDW' | 'LEUKOCYTES' | 'PLATELETS'
+  | 'PROTHROMBIN_TIME' | 'INR' | 'APTT'
+  | 'AST' | 'ALT' | 'GGT' | 'ALKALINE_PHOSPHATASE'
+  | 'UREA' | 'CREATININE';
+
+export type LabGroup = 'HEMOGRAM' | 'COAGULATION' | 'LIVER_FUNCTION' | 'RENAL_FUNCTION';
+
+export type LabImportStatus = 'NOT_IMPORTED' | 'IMPORTED' | 'NO_EXAMS_AVAILABLE' | 'FAILED';
+
+export interface LabAnalyteDef {
+  analyte: LabAnalyte;
+  group: LabGroup;
+  control: string;
+  unit: string;
+  step: string;  
+  textInput?: boolean;
+}
+
+export const LAB_GROUPS: LabGroup[] = ['HEMOGRAM', 'COAGULATION', 'LIVER_FUNCTION', 'RENAL_FUNCTION'];
+
+export const LAB_ANALYTES: LabAnalyteDef[] = [
+  { analyte: 'RED_BLOOD_CELLS', group: 'HEMOGRAM', control: 'hemacias', unit: 'milhões/mm³', step: '0.01' },
+  { analyte: 'HEMOGLOBIN', group: 'HEMOGRAM', control: 'hemoglobina', unit: 'g/dL', step: '0.1' },
+  { analyte: 'HEMATOCRIT', group: 'HEMOGRAM', control: 'hematocrito', unit: '%', step: '0.1' },
+  { analyte: 'MCV', group: 'HEMOGRAM', control: 'vcm', unit: 'fL', step: '0.1' },
+  { analyte: 'MCH', group: 'HEMOGRAM', control: 'hcm', unit: 'pg', step: '0.1' },
+  { analyte: 'MCHC', group: 'HEMOGRAM', control: 'chcm', unit: 'g/dL', step: '0.1' },
+  { analyte: 'RDW', group: 'HEMOGRAM', control: 'rdw', unit: '%', step: '0.1' },
+  { analyte: 'LEUKOCYTES', group: 'HEMOGRAM', control: 'leucocitos', unit: '/mm³', step: '1' },
+  { analyte: 'PLATELETS', group: 'HEMOGRAM', control: 'plaquetas', unit: '/mm³', step: '1' },
+  { analyte: 'PROTHROMBIN_TIME', group: 'COAGULATION', control: 'tp', unit: 's', step: '0.1', textInput: true },
+  { analyte: 'INR', group: 'COAGULATION', control: 'tapInr', unit: '', step: '0.01' },
+  { analyte: 'APTT', group: 'COAGULATION', control: 'ttpa', unit: 's', step: '0.1' },
+  { analyte: 'AST', group: 'LIVER_FUNCTION', control: 'tgo', unit: 'U/L', step: '1' },
+  { analyte: 'ALT', group: 'LIVER_FUNCTION', control: 'tgp', unit: 'U/L', step: '1' },
+  { analyte: 'GGT', group: 'LIVER_FUNCTION', control: 'ggt', unit: 'U/L', step: '1' },
+  { analyte: 'ALKALINE_PHOSPHATASE', group: 'LIVER_FUNCTION', control: 'fosfataseAlcalina', unit: 'U/L', step: '1' },
+  { analyte: 'UREA', group: 'RENAL_FUNCTION', control: 'ureia', unit: 'mg/dL', step: '1' },
+  { analyte: 'CREATININE', group: 'RENAL_FUNCTION', control: 'creatinina', unit: 'mg/dL', step: '0.01' },
+];
+
+export interface PreAnesthesicLabResult {
+  analyte: LabAnalyte;
+  group: LabGroup;
+  value: number | null;
+  unit: string | null;
+  referenceRange: string | null;
+  source: 'AGHU' | 'MANUAL';
+  importedValue: number | null;
+}
+
+export interface PreAnesthesicLabExams {
+  anesthesiaRecordId: number;
+  importStatus: LabImportStatus;
+  importedNow: boolean;
+  skippedReason: 'FINALIZED' | 'EXISTING_RECORD_VALUES' | null;
+  hasSigaData: boolean;
+  message: string | null;
+  sourceExamId: number | null;
+  collectedAt: string | null;
+  releasedAt: string | null;
+  importedAt: string | null;
+  results: PreAnesthesicLabResult[];
+  missingAnalytes: LabAnalyte[];
+}
+
+export interface PreAnesthesicLabResultInput {
+  analyte: LabAnalyte;
+  value: number | null;
 }

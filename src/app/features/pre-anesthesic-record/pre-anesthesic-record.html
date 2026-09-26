@@ -538,23 +538,58 @@
           </div>
         </div>
 
-        <h3 class="sub-head">{{ 'preAnestesica.exames.labsTitle' | translate }}</h3>
-        <div class="grid-5">
-          <label class="field"><span>{{ 'preAnestesica.exames.hemoglobin' | translate }}</span><input type="number" step="0.1" formControlName="hemoglobina" /></label>
-          <label class="field"><span>{{ 'preAnestesica.exames.hematocrit' | translate }}</span><input type="number" step="0.1" formControlName="hematocrito" /></label>
-          <label class="field"><span>{{ 'preAnestesica.exames.leukocytes' | translate }}</span><input type="number" formControlName="leucocitos" /></label>
-          <label class="field"><span>{{ 'preAnestesica.exames.platelets' | translate }}</span><input type="number" formControlName="plaquetas" /></label>
-          <label class="field"><span>{{ 'preAnestesica.exames.tapInr' | translate }}</span><input type="number" step="0.01" formControlName="tapInr" /></label>
-          <label class="field"><span>{{ 'preAnestesica.exames.aptt' | translate }}</span><input type="number" step="0.1" formControlName="ttpa" /></label>
-          <label class="field"><span>{{ 'preAnestesica.exames.glucose' | translate }}</span><input type="number" formControlName="glicemia" /></label>
-          <label class="field"><span>{{ 'preAnestesica.exames.urea' | translate }}</span><input type="number" formControlName="ureia" /></label>
-          <label class="field"><span>{{ 'preAnestesica.exames.creatinine' | translate }}</span><input type="number" step="0.01" formControlName="creatinina" /></label>
-          <label class="field"><span>{{ 'preAnestesica.exames.sodium' | translate }}</span><input type="number" formControlName="sodio" /></label>
-          <label class="field"><span>{{ 'preAnestesica.exames.potassium' | translate }}</span><input type="number" step="0.1" formControlName="potassio" /></label>
-          <label class="field"><span>{{ 'preAnestesica.exames.tp' | translate }}</span><input type="text" formControlName="tp" /></label>
-          <label class="field"><span>{{ 'preAnestesica.exames.eas' | translate }}</span><input type="text" formControlName="eas" /></label>
-          <label class="field"><span>{{ 'preAnestesica.exames.liverFunctionTests' | translate }}</span><input type="text" formControlName="funcaoHepatica" /></label>
-          <label class="field"><span>{{ 'preAnestesica.exames.pregnancyTest' | translate }}</span><input type="text" formControlName="testeGravidez" /></label>
+        <div class="lab-head">
+          <h3 class="sub-head">{{ 'preAnestesica.exames.labsTitle' | translate }}</h3>
+          <span class="lab-sync" *ngIf="canEdit && labSyncing">
+            <ion-spinner name="dots"></ion-spinner>{{ 'preAnestesica.exames.lab.sync.saving' | translate }}
+          </span>
+          <span class="lab-sync lab-sync--ok" *ngIf="canEdit && !labSyncing && !labSyncError && labSyncedAt">
+            <ion-icon name="cloud-done-outline"></ion-icon>{{ 'preAnestesica.exames.lab.sync.saved' | translate: { time: (labSyncedAt | date:'HH:mm') } }}
+          </span>
+          <span class="lab-sync lab-sync--error" *ngIf="canEdit && !labSyncing && labSyncError">
+            <ion-icon name="cloud-offline-outline"></ion-icon>{{ 'preAnestesica.exames.lab.sync.error' | translate }}
+          </span>
+        </div>
+
+        <div class="lab-status" *ngIf="labStatusMessage" [ngClass]="'lab-status--' + labState">
+          <ion-spinner *ngIf="labState === 'loading'" name="dots"></ion-spinner>
+          <ion-icon *ngIf="labState === 'imported' || labState === 'manual'" name="flask-outline"></ion-icon>
+          <ion-icon *ngIf="labState === 'noExams' || labState === 'existingValues'" name="alert-circle-outline"></ion-icon>
+          <ion-icon *ngIf="labState === 'failed' || labState === 'error'" name="cloud-offline-outline"></ion-icon>
+          <span>{{ labStatusMessage }}</span>
+          <button type="button" class="btn-add lab-status__retry" *ngIf="canRetryLabExams" (click)="retryLabExams()">
+            <ion-icon name="refresh-outline"></ion-icon>
+            {{ (labState === 'error' ? 'preAnestesica.exames.lab.reload' : 'preAnestesica.exames.lab.retry') | translate }}
+          </button>
+        </div>
+
+        <div class="lab-group" *ngFor="let group of labGroups">
+          <h4 class="lab-group__title">{{ 'preAnestesica.exames.lab.groups.' + group | translate }}</h4>
+          <div class="grid-5">
+            <label class="field lab-field" *ngFor="let a of analytesOf(group)">
+              <span>
+                {{ 'preAnestesica.exames.lab.analytes.' + a.analyte | translate }}
+                <em class="lab-unit" *ngIf="labUnit(a)">({{ labUnit(a) }})</em>
+                <i class="lab-badge lab-badge--aghu" *ngIf="labSource(a) === 'AGHU'">{{ 'preAnestesica.exames.lab.sourceAghu' | translate }}</i>
+                <i class="lab-badge lab-badge--manual" *ngIf="labSource(a) === 'MANUAL'">{{ 'preAnestesica.exames.lab.sourceManual' | translate }}</i>
+              </span>
+              <input *ngIf="!a.textInput" type="number" inputmode="decimal" min="0" [step]="a.step" [formControlName]="a.control" [attr.name]="a.control" />
+              <input *ngIf="a.textInput" type="text" inputmode="decimal" [formControlName]="a.control" [attr.name]="a.control" />
+              <small class="lab-ref" *ngIf="labReference(a)">{{ 'preAnestesica.exames.lab.reference' | translate }} {{ labReference(a) }}</small>
+            </label>
+          </div>
+        </div>
+
+        <div class="lab-group">
+          <h4 class="lab-group__title">{{ 'preAnestesica.exames.lab.groups.OTHERS' | translate }}</h4>
+          <div class="grid-5">
+            <label class="field"><span>{{ 'preAnestesica.exames.glucose' | translate }}</span><input type="number" formControlName="glicemia" /></label>
+            <label class="field"><span>{{ 'preAnestesica.exames.sodium' | translate }}</span><input type="number" formControlName="sodio" /></label>
+            <label class="field"><span>{{ 'preAnestesica.exames.potassium' | translate }}</span><input type="number" step="0.1" formControlName="potassio" /></label>
+            <label class="field"><span>{{ 'preAnestesica.exames.eas' | translate }}</span><input type="text" formControlName="eas" /></label>
+            <label class="field"><span>{{ 'preAnestesica.exames.pregnancyTest' | translate }}</span><input type="text" formControlName="testeGravidez" /></label>
+            <label class="field field--col-2"><span>{{ 'preAnestesica.exames.lab.liverFunctionNotes' | translate }}</span><input type="text" formControlName="funcaoHepatica" /></label>
+          </div>
         </div>
 
         <h3 class="sub-head">{{ 'preAnestesica.exames.imagingTitle' | translate }}</h3>

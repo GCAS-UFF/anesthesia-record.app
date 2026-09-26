@@ -128,6 +128,56 @@
     },
     "exames": {
       "labsTitle": "Laboratory Tests",
+      "lab": {
+        "groups": {
+          "HEMOGRAM": "Complete blood count",
+          "COAGULATION": "Coagulation panel",
+          "LIVER_FUNCTION": "Liver function",
+          "RENAL_FUNCTION": "Renal function",
+          "OTHERS": "Other tests"
+        },
+        "analytes": {
+          "RED_BLOOD_CELLS": "Red blood cells",
+          "HEMOGLOBIN": "Hemoglobin",
+          "HEMATOCRIT": "Hematocrit",
+          "MCV": "MCV",
+          "MCH": "MCH",
+          "MCHC": "MCHC",
+          "RDW": "RDW",
+          "LEUKOCYTES": "Total leukocytes",
+          "PLATELETS": "Platelets",
+          "PROTHROMBIN_TIME": "Prothrombin time (PT)",
+          "INR": "INR",
+          "APTT": "aPTT",
+          "AST": "AST",
+          "ALT": "ALT",
+          "GGT": "GGT",
+          "ALKALINE_PHOSPHATASE": "Alkaline phosphatase (ALP)",
+          "UREA": "Urea",
+          "CREATININE": "Creatinine"
+        },
+        "liverFunctionNotes": "Liver function — notes",
+        "reference": "Ref.",
+        "sourceAghu": "AGHU",
+        "sourceManual": "Edited",
+        "retry": "Try importing again",
+        "reload": "Reload tests",
+        "status": {
+          "loading": "Loading laboratory tests… On first opening, the most recent collection is imported from AGHU.",
+          "importedNow": "Tests from the {{date}} collection were imported from AGHU and saved to the record. Values can be corrected.",
+          "imported": "Tests saved in SIGA (imported from AGHU, collection of {{date}}). Corrections are saved to the record and are not overwritten by AGHU.",
+          "manual": "Tests entered manually in SIGA.",
+          "noExams": "No released laboratory tests were found in AGHU. Fill in the values manually if needed.",
+          "failed": "Could not import tests from AGHU. Fields remain editable.",
+          "existingValues": "The assessment already has laboratory values; the automatic AGHU import was not performed.",
+          "error": "Could not load laboratory tests from SIGA. Changes are kept in the local draft until the connection is restored."
+        },
+        "sync": {
+          "saving": "Saving tests…",
+          "saved": "Tests saved in SIGA at {{time}}",
+          "error": "Failed to save tests in SIGA — retrying automatically."
+        }
+      },
       "hemoglobin": "Hemoglobin (g/dL)",
       "hematocrit": "Hematocrit (%)",
       "leukocytes": "Leukocytes (/mm³)",
