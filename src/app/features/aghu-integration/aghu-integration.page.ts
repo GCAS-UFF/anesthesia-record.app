@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { ToastController, LoadingController } from '@ionic/angular/standalone';
 import { IonSpinner, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -78,9 +79,16 @@ export class AghuIntegrationPage implements OnDestroy, OnInit {
     private masterDataService: MasterDataService,
     private loadingController: LoadingController,
     private translate: TranslateService,
+    private router: Router,
   ) {
     addIcons({ serverOutline, cloudDownloadOutline, cloudOutline, cloudDoneOutline, timeOutline, checkmarkCircle, alertCircleOutline, medkitOutline, peopleOutline, refreshOutline, medicalOutline, clipboardOutline });
   }
+
+  /** A seta do cabeçalho sempre leva à listagem de pacientes, como nas demais telas do menu. */
+  goToPatientList(): void {
+    this.router.navigate(['/pacientes']);
+  }
+
 
   ngOnInit(): void {
     this.getLastIntegration();

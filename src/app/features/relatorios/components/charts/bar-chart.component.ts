@@ -5,6 +5,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { TranslateService } from '@ngx-translate/core';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
+import { applySigaChartDefaults, SIGA_CHART } from './chart-theme';
 
 Chart.register(...registerables);
 
@@ -23,7 +24,7 @@ export class BarChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() labels: string[] = [];
   @Input() data: number[] = [];
   @Input() datasetLabel = this.translate.instant('relatorios.charts.quantityDataset');
-  @Input() color = '#3b82f6';
+  @Input() color = SIGA_CHART.primary;
   @Input() horizontal = false;
 
   @ViewChild('chartCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
@@ -51,6 +52,7 @@ export class BarChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   private buildChart(): void {
+    applySigaChartDefaults();
     const ctx = this.canvasRef.nativeElement.getContext('2d')!;
 
     const config: ChartConfiguration<'bar'> = {

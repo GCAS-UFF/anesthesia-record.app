@@ -1,12 +1,15 @@
+// Tema SIGA compartilhado (mesmo da Monitorização e das demais telas).
+@use '../../../theme/siga-tokens' as t;
+
 .app-container {
   width: 100%;
   height: 100vh;
-  background: #fafbfc;
+  background: t.$surface-bg;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
-  color: #475569;
+  font-family: t.$font-body;
+  color: t.$text-deep;
 }
 
 .page-main {
@@ -17,123 +20,114 @@
   padding-bottom: 32px;
 }
 
+// Subtítulo da página (o título fica no cabeçalho, ao lado da seta).
 .page-header {
-  padding: 24px 28px 8px;
-}
-
-.header-text { max-width: 720px; text-align: center; }
-
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  background: rgba(27, 139, 166, 0.1);
-  color: #1b8ba6;
-  border-radius: 999px;
-  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-
-  ion-icon { font-size: 14px; }
-}
-
-.page-title {
-  font-family: 'Sora', system-ui, -apple-system, sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: #223740;
-  letter-spacing: -0.01em;
-  margin: 8px 0 0;
+  padding: 16px 24px 12px;
 }
 
 .page-subtitle {
-  margin: 6px 0 0;
-  font-size: 15px;
+  margin: 0;
+  max-width: 720px;
+  font-size: t.$fs-15;
   line-height: 1.5;
-  color: #64748b;
+  color: t.$text-ink;
 }
 
 .summary-section {
-  padding: 20px 28px 0;
+  padding: 16px 24px 0;
 }
 
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 14px;
+  gap: 12px;
 }
 
 .summary-card {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 16px 18px;
+  padding: 12px 16px;
+  background: t.$surface-card;
+  border: 1px solid t.$border;
+  border-radius: t.$radius-lg;
+  box-shadow: t.$shadow-card;
 
   ion-icon {
-    font-size: 26px;
-    color: #3b82f6;
     flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    padding: 8px;
+    border-radius: t.$radius-base;
+    background: t.$surface-accent-soft;
+    color: t.$c-primary;
 
-    &.success { color: #10b981; }
-    &.danger { color: #ef4444; }
+    &.success { background: t.$c-success-soft; color: t.$c-success; }
+    &.danger { background: t.$c-crimson-soft; color: t.$c-crimson; }
   }
 
   .value {
     display: block;
+    font-family: t.$font-display;
     font-size: 22px;
     font-weight: 700;
-    color: #0f172a;
     line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+    color: t.$text-deep;
 
-    small { font-size: 13px; font-weight: 600; color: #64748b; }
+    small { font-family: t.$font-body; font-size: t.$fs-13; font-weight: 700; color: t.$text-ink; }
   }
 
   .label {
     display: block;
-    font-size: 12.5px;
-    color: #64748b;
     margin-top: 2px;
+    font-size: t.$fs-10;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: t.$text-ink;
   }
 }
 
 .tabs {
   display: flex;
-  gap: 8px;
-  padding: 20px 28px 0;
-  border-bottom: 1px solid #e2e8f0;
+  gap: 4px;
+  padding: 16px 24px 0;
+  border-bottom: 1px solid t.$border-strong;
+  overflow-x: auto;
 }
 
 .tab-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  min-height: t.$touch-min;
+  padding: 0 12px;
   border: 0;
-  background: transparent;
-  cursor: pointer;
-  padding: 12px 6px;
-  font-size: 14.5px;
-  font-weight: 700;
-  color: #64748b;
   border-bottom: 3px solid transparent;
-  margin-right: 20px;
+  background: transparent;
+  font-family: t.$font-body;
+  font-size: 14px;
+  font-weight: 800;
+  color: t.$text-ink;
+  white-space: nowrap;
+  cursor: pointer;
 
   ion-icon { font-size: 18px; }
 
   &.active {
-    color: #3b82f6;
-    border-bottom-color: #3b82f6;
+    color: t.$c-primary;
+    border-bottom-color: t.$c-primary;
   }
 }
 
 .tab-panel {
-  padding: 20px 28px 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+  padding: 16px 24px 0;
+}
+
+@media (max-width: 720px) {
+  .page-header, .summary-section, .tabs, .tab-panel { padding-left: 16px; padding-right: 16px; }
 }

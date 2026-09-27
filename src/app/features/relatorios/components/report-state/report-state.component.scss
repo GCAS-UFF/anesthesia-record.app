@@ -1,3 +1,5 @@
+@use '../../../../../theme/siga-tokens' as t;
+
 .state-box {
   display: flex;
   flex-direction: column;
@@ -6,33 +8,37 @@
   gap: 10px;
   padding: 48px 20px;
   text-align: center;
-  color: #94a3b8;
+  font-family: t.$font-body;
   font-size: 14px;
+  color: t.$text-ink;
 
   ion-icon { font-size: 32px; }
-  ion-spinner { width: 32px; height: 32px; }
+  ion-spinner { width: 32px; height: 32px; color: t.$c-primary; }
 
   p { margin: 0; max-width: 380px; }
 }
 
 .state-box.error {
-  color: #b91c1c;
-  ion-icon { color: #ef4444; }
+  color: t.$c-crimson;
+
+  ion-icon { color: t.$c-crimson; }
 }
 
 .retry-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: t.$touch-min;
   margin-top: 4px;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
-  color: #334155;
-  border-radius: 10px;
-  padding: 10px 16px;
-  font-size: 13.5px;
-  font-weight: 700;
+  padding: 0 16px;
+  border: 1px solid t.$border-strong;
+  border-radius: t.$radius-base;
+  background: #fff;
+  font-family: t.$font-body;
+  font-size: 14px;
+  font-weight: 800;
+  color: t.$text-deep;
   cursor: pointer;
 
-  &:hover { background: #f1f5f9; }
+  &:hover, &:active { background: t.$surface-bg; }
 }

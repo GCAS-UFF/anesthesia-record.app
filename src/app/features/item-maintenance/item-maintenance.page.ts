@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular/standalone';
 import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { layersOutline, pricetagOutline, calendarOutline, createOutline, addOutline, closeOutline, checkmarkOutline, searchOutline, chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
+import { pricetagOutline, calendarOutline, createOutline, addOutline, closeOutline, checkmarkOutline, searchOutline, chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import { firstValueFrom } from 'rxjs';
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
@@ -65,9 +66,15 @@ export class ItemMaintenancePage implements OnInit {
     private drugAdminService: DrugAdminService,
     private eventTypeService: EventTypeService,
     private toastController: ToastController,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private router: Router,
   ) {
-    addIcons({ layersOutline, pricetagOutline, calendarOutline, createOutline, addOutline, closeOutline, checkmarkOutline, searchOutline, chevronBackOutline, chevronForwardOutline });
+    addIcons({ pricetagOutline, calendarOutline, createOutline, addOutline, closeOutline, checkmarkOutline, searchOutline, chevronBackOutline, chevronForwardOutline });
+  }
+
+  /** A seta do cabeçalho sempre leva à listagem de pacientes, como nas demais telas do menu. */
+  goToPatientList(): void {
+    this.router.navigate(['/pacientes']);
   }
 
   ngOnInit(): void {

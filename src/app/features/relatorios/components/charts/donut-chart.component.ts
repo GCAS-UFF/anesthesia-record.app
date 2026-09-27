@@ -4,10 +4,11 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
+import { applySigaChartDefaults, SIGA_CHART } from './chart-theme';
 
 Chart.register(...registerables);
 
-const PALETTE = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#64748b'];
+const PALETTE = SIGA_CHART.palette;
 
 @Component({
   selector: 'app-donut-chart',
@@ -47,6 +48,7 @@ export class DonutChartComponent implements AfterViewInit, OnChanges, OnDestroy 
   }
 
   private buildChart(): void {
+    applySigaChartDefaults();
     const ctx = this.canvasRef.nativeElement.getContext('2d')!;
 
     const config: ChartConfiguration<'doughnut'> = {

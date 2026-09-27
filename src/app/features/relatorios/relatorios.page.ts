@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { IonIcon } from '@ionic/angular/standalone';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
@@ -69,12 +70,18 @@ export class RelatoriosPage implements OnInit {
   constructor(
     private reportsService: ReportsService,
     private translate: TranslateService,
+    private router: Router,
   ) {
     addIcons({
       analyticsOutline, calendarOutline, checkmarkCircleOutline, closeCircleOutline,
       documentTextOutline, flaskOutline, medkitOutline, pulseOutline, syncOutline
     });
   }
+  /** A seta do cabeçalho sempre leva à listagem de pacientes, como nas demais telas do menu. */
+  goToPatientList(): void {
+    this.router.navigate(['/pacientes']);
+  }
+
 
   ngOnInit(): void {
     this.loadAnesthetistOptions();

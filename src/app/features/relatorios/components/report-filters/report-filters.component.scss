@@ -1,11 +1,15 @@
+@use '../../../../../theme/siga-tokens' as t;
+
 .filters-bar {
   display: flex;
   align-items: flex-end;
-  gap: 14px;
+  gap: 12px;
   flex-wrap: wrap;
-  padding: 16px 28px;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 12px 24px 16px;
+  background: t.$surface-card;
+  border-top: 1px solid t.$border;
+  border-bottom: 1px solid t.$border-strong;
+  font-family: t.$font-body;
 }
 
 .field {
@@ -15,45 +19,55 @@
   min-width: 150px;
 
   label {
-    font-size: 11px;
-    font-weight: 700;
+    font-size: t.$fs-10;
+    font-weight: 800;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #94a3b8;
+    color: t.$text-ink;
   }
 
+  // Mesmo formato do campo de busca dos painéis da Monitorização.
   input, select {
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
+    box-sizing: border-box;
+    min-height: t.$touch-min;
+    padding: 0 12px;
+    border: 1px solid t.$border-strong;
+    border-radius: t.$radius-base;
+    background: #fff;
+    font-family: t.$font-body;
     font-size: 14px;
-    color: #0f172a;
-    min-height: 44px;
+    font-weight: 600;
+    color: t.$text-deep;
 
-    &:focus { outline: none; border-color: #3b82f6; }
+    &:focus {
+      outline: none;
+      border-color: t.$c-primary;
+      box-shadow: 0 0 0 3px rgba(27, 139, 166, 0.15);
+    }
   }
 }
 
 .date-field { min-width: 160px; }
 
+// Atalhos de período no formato de chip dos painéis.
 .quick-ranges {
   display: flex;
   gap: 6px;
-  padding-bottom: 2px;
+  flex-wrap: wrap;
 
   button {
-    border: 1px solid #e2e8f0;
-    background: #f8fafc;
-    color: #334155;
+    min-height: t.$touch-min;
+    padding: 0 14px;
+    border: 1px solid t.$border-strong;
     border-radius: 999px;
-    padding: 8px 14px;
-    font-size: 12.5px;
+    background: #fff;
+    font-family: t.$font-body;
+    font-size: t.$fs-13;
     font-weight: 700;
+    color: t.$text-deep;
     cursor: pointer;
-    min-height: 38px;
 
-    &:hover { background: #e2e8f0; }
+    &:hover, &:active { background: t.$surface-bg; }
   }
 }
 
@@ -61,22 +75,24 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 0;
-  background: #3b82f6;
-  color: #ffffff;
-  border-radius: 12px;
-  padding: 12px 18px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  min-height: 44px;
+  min-height: t.$touch-min;
   margin-left: auto;
+  padding: 0 18px;
+  border: 1px solid t.$c-primary;
+  border-radius: t.$radius-base;
+  background: t.$c-primary;
+  font-family: t.$font-body;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
 
   ion-icon { font-size: 18px; }
 
-  &:hover { background: #2563eb; }
+  &:hover, &:active { background: t.$c-primary-dark; }
 }
 
 @media (max-width: 900px) {
+  .filters-bar { padding-left: 16px; padding-right: 16px; }
   .refresh-btn { margin-left: 0; }
 }
