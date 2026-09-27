@@ -115,10 +115,12 @@
     text-overflow: ellipsis;
   }
 
+  
   &__row-track {
     position: relative;
     flex: 1;
     min-width: 0;
+    margin-right: var(--track-end-gutter, 28px);
   }
 
   &__time-btn,

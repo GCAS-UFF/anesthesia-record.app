@@ -9,13 +9,12 @@ import { VitalRecord } from '../../models/monitoring-view.model';
 import { applyScrollRatio, getScrollRatio, scrollToEnd } from '../../utils/scroll-sync.util';
 import {
   canvasWidthCss, computeTimelineWindow, deoverlapPercents, minGapPercentFor, ROW_LABEL_GUTTER_PX,
-  timeToPercent, TimelineWindow,
+  timeToPercent, TimelineWindow, TRACK_END_GUTTER_PX,
 } from '../../utils/chart-timeline.util';
 
 const CHART_H = 300;
 const PAD_T = 34;
 const PAD_B = 30;
-const PAD_R = 28;
 const Y_MIN = 30;
 const Y_MAX = 240;
 const Y_TICKS = [30, 60, 90, 120, 150, 180, 210, 240];
@@ -109,7 +108,7 @@ export class VitalsChartCardComponent implements OnChanges, AfterViewInit, OnDes
 
   readonly chartH = CHART_H;
   readonly padL = ROW_LABEL_GUTTER_PX;
-  readonly padR = PAD_R;
+  readonly padR = TRACK_END_GUTTER_PX;
   readonly milestoneGlyphY = MILESTONE_GLYPH_Y;
   readonly milestoneGlyphR = MILESTONE_GLYPH_R;
   readonly yTicks = Y_TICKS;

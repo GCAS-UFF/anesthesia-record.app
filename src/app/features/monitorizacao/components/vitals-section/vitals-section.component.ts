@@ -8,7 +8,7 @@ import { FluidBalance, VitalRecord } from '../../models/monitoring-view.model';
 import { applyScrollRatio, getScrollRatio, scrollToEnd } from '../../utils/scroll-sync.util';
 import {
   canvasWidthCss, computeTimelineWindow, deoverlapPercents, minGapPercentFor, ROW_LABEL_GUTTER_PX,
-  timeToPercent, TimelineWindow,
+  timeToPercent, TimelineWindow, TRACK_END_GUTTER_PX,
 } from '../../utils/chart-timeline.util';
 
 type FixedField = 'temp' | 'spo2' | 'etco2' | 'bis';
@@ -60,6 +60,7 @@ export class VitalsSectionComponent implements OnChanges {
   }
 
   readonly rowLabelGutterPx = ROW_LABEL_GUTTER_PX;
+  readonly trackEndGutterPx = TRACK_END_GUTTER_PX;
 
   ngOnChanges(changes: SimpleChanges): void {
     const recordsChange = changes['vitalRecords'];

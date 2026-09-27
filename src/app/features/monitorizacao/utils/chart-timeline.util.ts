@@ -43,6 +43,7 @@ export function canvasWidthCss(recordCount: number, zoom: number): string {
 }
 
 export const ROW_LABEL_GUTTER_PX = 64;
+export const TRACK_END_GUTTER_PX = 28;
 
 
 export function minGapPercentFor(count: number): number {
