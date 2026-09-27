@@ -21,6 +21,7 @@ import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { SurgeryService } from '../../core/services/surgery.service';
 import { AuthService } from '../../core/services/auth.service';
+import { AnesthesiaRecordService } from '../../core/services/anesthesia-record.service';
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
 import { DateFilterComponent } from '../../shared/components/date-filter/date-filter.component';
@@ -59,6 +60,8 @@ export class MyPatientsPage implements OnInit {
   readonly SurgeryStatusEnum = SurgeryStatusEnum;
 
   openCardId: string | number | null = null;
+  
+  isAdminUser = false;
   currentPage = 1;
   pageSize = 10;
   totalItems = 0;
@@ -85,7 +88,8 @@ export class MyPatientsPage implements OnInit {
     private loadingController: LoadingController,
     private translate: TranslateService,
     private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private anesthesiaRecordService: AnesthesiaRecordService,
   ) {
     addIcons({
       chevronBackOutline,
@@ -103,6 +107,7 @@ export class MyPatientsPage implements OnInit {
   }
 
   ngOnInit() {
+    this.isAdminUser = this.authService.isAdmin();
     this.loadData();
   }
 
@@ -432,15 +437,21 @@ export class MyPatientsPage implements OnInit {
 
   async abandonPatient(surgeryId: string | number, patientId: string) {
     const alert = await this.alertController.create({
-      header: this.translate.instant('myPatients.abandon.title'),
-      message: this.translate.instant('myPatients.abandon.confirmMessage'),
+      header: this.isAdminUser
+        ? this.translate.instant('patientList.abandon.removeDoctorTitle')
+        : this.translate.instant('myPatients.abandon.title'),
+      message: this.isAdminUser
+        ? this.translate.instant('patientList.abandon.removeDoctorMessage')
+        : this.translate.instant('myPatients.abandon.confirmMessage'),
       buttons: [
         { text: this.translate.instant('common.cancel'), role: 'cancel', cssClass: 'secondary' },
         {
           text: this.translate.instant('myPatients.common.confirm'),
           handler: async () => {
             const loading = await this.loadingController.create({
-              message: this.translate.instant('myPatients.abandon.loading'),
+              message: this.isAdminUser
+                ? this.translate.instant('patientList.abandon.removingDoctor')
+                : this.translate.instant('myPatients.abandon.loading'),
               duration: 1000,
               spinner: 'circular',
             });
@@ -451,7 +462,9 @@ export class MyPatientsPage implements OnInit {
                 this.ngZone.run(async () => {
                   await loading.dismiss();
                   const toast = await this.toastController.create({
-                    message: this.translate.instant('myPatients.abandon.success'),
+                    message: this.isAdminUser
+                      ? this.translate.instant('patientList.abandon.removeDoctorSuccess')
+                      : this.translate.instant('myPatients.abandon.success'),
                     duration: 2000,
                     color: 'success',
                     icon: 'checkmark-circle',
@@ -470,6 +483,54 @@ export class MyPatientsPage implements OnInit {
                   });
                   await toast.present();
                 });
+              },
+            });
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  async onReopenFicha(surgeryId: string | number) {
+    if (!this.isAdminUser) return;
+
+    const alert = await this.alertController.create({
+      header: this.translate.instant('patientList.reopen.title'),
+      message: this.translate.instant('patientList.reopen.confirmMessage'),
+      buttons: [
+        { text: this.translate.instant('common.cancel'), role: 'cancel', cssClass: 'secondary' },
+        {
+          text: this.translate.instant('patientList.reopen.confirm'),
+          handler: async () => {
+            const loading = await this.loadingController.create({
+              message: this.translate.instant('patientList.reopen.loading'),
+              duration: 1000,
+              spinner: 'circular',
+            });
+            await loading.present();
+
+            this.anesthesiaRecordService.reopenAnesthesiaRecord(Number(surgeryId)).subscribe({
+              next: async () => {
+                await loading.dismiss();
+                const toast = await this.toastController.create({
+                  message: this.translate.instant('patientList.reopen.success'),
+                  duration: 2000,
+                  color: 'success',
+                  icon: 'checkmark-circle',
+                });
+                await toast.present();
+                this.loadData();
+              },
+              error: async () => {
+                await loading.dismiss();
+                const toast = await this.toastController.create({
+                  message: this.translate.instant('patientList.reopen.error'),
+                  duration: 3000,
+                  color: 'danger',
+                });
+                await toast.present();
               },
             });
           },

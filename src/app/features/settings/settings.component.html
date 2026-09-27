@@ -2,16 +2,13 @@
   <app-status-bar></app-status-bar>
   <app-header-institucional
     [showBackButton]="true"
+    [eyebrow]="'settings.eyebrow' | translate"
+    [title]="'settings.title' | translate"
     [actionButtons]="headerActionButtons"
   ></app-header-institucional>
 
   <div class="cfg-topbar">
     <div class="cfg-topbar__title">
-      <ion-icon name="settings-outline"></ion-icon>
-      <div class="cfg-topbar__title-text">
-        <span class="page-eyebrow">{{ 'settings.eyebrow' | translate }}</span>
-        <h1>{{ 'settings.title' | translate }}</h1>
-      </div>
       <span class="chip-tag" [class.is-admin]="isAdmin">
         {{ (isAdmin ? 'settings.roleAdmin' : 'settings.roleUser') | translate }}
       </span>

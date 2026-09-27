@@ -150,6 +150,8 @@
           [anesthesiologist]="p.anesthesiologist?.fullName || youLabel"
           [isCurrentAnesthesiologist]="true"
           [canAssumePatient]="false"
+          [isAdmin]="isAdminUser"
+          (reopenFicha)="onReopenFicha(p.id)"
           (assume)="onOpenMonitorizacao(p.id, p.patientId)"
           (openFicha)="onOpenFicha(p.id, p.patientId)"
           (viewRegistro)="onViewRegistro(p.id, p.patientId)"

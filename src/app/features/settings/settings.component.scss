@@ -1,27 +1,29 @@
+@use '../../../theme/siga-tokens' as t;
+
 :host {
-  --cfg-bg: #fafbfc;
-  --cfg-surface: #ffffff;
-  --cfg-border: #e6e8ee;
-  --cfg-border-strong: #d5d9e2;
-  --cfg-text: #0f172a;
-  --cfg-muted: #64748b;
-  --cfg-primary: #3b82f6;
-  --cfg-primary-soft: rgba(59, 130, 246, 0.08);
-  --cfg-admin: #7c3aed;
-  --cfg-admin-soft: rgba(124, 58, 237, 0.1);
-  --cfg-success: #16a34a;
-  --cfg-success-soft: rgba(22, 163, 74, 0.1);
-  --cfg-danger: #ef4444;
-  --cfg-radius: 16px;
-  --cfg-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
-  --cfg-shadow-md: 0 6px 20px -12px rgba(15, 23, 42, 0.18);
+  
+  --cfg-bg: #{t.$surface-bg};
+  --cfg-surface: #{t.$surface-card};
+  --cfg-border: #{t.$border};
+  --cfg-border-strong: #{t.$border-strong};
+  --cfg-text: #{t.$text-deep};
+  --cfg-muted: #{t.$text-ink};
+  --cfg-primary: #{t.$c-primary};
+  --cfg-primary-soft: rgba(27, 139, 166, 0.1);
+  --cfg-admin: #{t.$c-primary-dark};
+  --cfg-admin-soft: #{t.$surface-accent-soft};
+  --cfg-success: #{t.$c-success};
+  --cfg-success-soft: #{t.$c-success-soft};
+  --cfg-danger: #{t.$c-crimson};
+  --cfg-radius: #{t.$radius-lg};
+  --cfg-shadow-sm: #{t.$shadow-card};
+  --cfg-shadow-md: 0 6px 20px -12px rgba(34, 55, 64, 0.18);
 
   display: block;
   background: var(--cfg-bg);
   min-height: 100%;
   color: var(--cfg-text);
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+  font-family: t.$font-body;
 }
 
 .cfg-page {
@@ -32,47 +34,24 @@
   overflow: hidden;
 }
 
+// Perfil do usuário + estado de salvamento (o título fica no cabeçalho, ao lado da seta).
 .cfg-topbar {
   z-index: 20;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 24px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
+  min-height: 44px;
+  padding: 6px 24px;
+  box-sizing: border-box;
+  background: t.$surface-card;
   border-bottom: 1px solid var(--cfg-border);
 
   &__title {
     display: flex;
     align-items: center;
-    justify-content: center;
-    flex: 1;
     min-width: 0;
     gap: 12px;
-
-    ion-icon {
-      font-size: 22px;
-      color: var(--cfg-primary);
-    }
-
-    &-text {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 2px;
-      min-width: 0;
-    }
-
-    h1 {
-      margin: 0;
-      font-family: 'Sora', system-ui, -apple-system, sans-serif;
-      font-size: 18px;
-      font-weight: 700;
-      color: #223740;
-      letter-spacing: -0.01em;
-    }
   }
 
   &__actions {
@@ -100,16 +79,6 @@
   }
 }
 
-.page-eyebrow {
-  display: block;
-  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: #1b8ba6;
-  text-transform: uppercase;
-}
-
 .save-status {
   display: inline-flex;
   align-items: center;
@@ -134,7 +103,7 @@
   gap: 8px;
   height: 42px;
   padding: 0 18px;
-  border-radius: 12px;
+  border-radius: t.$radius-base;
   border: 1px solid transparent;
   font-size: 14px;
   font-weight: 700;
@@ -159,7 +128,7 @@
   color: #fff;
   box-shadow: var(--cfg-shadow-sm);
   &:hover:not(:disabled) {
-    background: #2563eb;
+    background: t.$c-primary;
   }
 }
 
@@ -168,7 +137,7 @@
   border-color: var(--cfg-border-strong);
   color: var(--cfg-text);
   &:hover:not(:disabled) {
-    background: #f4f6fa;
+    background: t.$surface-bg;
   }
 }
 
@@ -185,7 +154,7 @@
   cursor: pointer;
 
   &:hover {
-    background: #f1f5f9;
+    background: t.$surface-bg;
     color: var(--cfg-text);
   }
   ion-icon {
@@ -244,7 +213,7 @@
     width: 100%;
     padding: 12px 14px;
     border: none;
-    border-radius: 12px;
+    border-radius: t.$radius-base;
     background: transparent;
     text-align: left;
     font-size: 14px;
@@ -274,7 +243,7 @@
     }
 
     &:hover {
-      background: #f4f6fa;
+      background: t.$surface-bg;
       color: var(--cfg-text);
     }
     &.is-active {
@@ -315,7 +284,7 @@
     gap: 14px;
     padding: 18px 20px;
     border-bottom: 1px solid var(--cfg-border);
-    background: linear-gradient(180deg, #fdfefe, #f8fafc);
+    background: linear-gradient(180deg, t.$surface-card, t.$surface-bg);
 
     h2 {
       margin: 0;
@@ -348,7 +317,7 @@
   &__icon {
     margin-left: auto;
     font-size: 22px;
-    color: #cbd5e1;
+    color: t.$border-strong;
     flex-shrink: 0;
   }
 
@@ -380,7 +349,7 @@
     height: 46px;
     padding: 0 14px;
     border: 1px solid var(--cfg-border-strong);
-    border-radius: 12px;
+    border-radius: t.$radius-base;
     background: #fff;
     font-size: 15px;
     color: var(--cfg-text);
@@ -389,7 +358,7 @@
       box-shadow 0.15s ease;
 
     &::placeholder {
-      color: #a5aebd;
+      color: t.$text-ink;
     }
 
     &:focus {
@@ -435,7 +404,7 @@
     position: absolute;
     left: 13px;
     display: inline-flex;
-    color: #94a3b8;
+    color: t.$text-ink;
     pointer-events: none;
     ion-icon {
       font-size: 18px;
@@ -590,8 +559,8 @@
   align-items: center;
   padding: 14px 16px;
   border: 1px solid var(--cfg-border);
-  border-radius: 12px;
-  background: #f8fafc;
+  border-radius: t.$radius-base;
+  background: t.$surface-bg;
   font-size: 14px;
 
   ion-checkbox {
@@ -648,8 +617,8 @@ ion-modal.sign-modal {
     display: block;
     padding: 14px 16px;
     border: 1px solid var(--cfg-border);
-    border-radius: 12px;
-    background: #f8fafc;
+    border-radius: t.$radius-base;
+    background: t.$surface-bg;
 
     ion-checkbox {
       --size: 22px;
@@ -674,7 +643,7 @@ ion-modal.sign-modal {
     gap: 10px;
     padding: 16px 20px;
     border-top: 1px solid var(--cfg-border);
-    background: #fbfcfe;
+    background: t.$surface-card;
   }
 }
 

@@ -1,14 +1,14 @@
 <app-status-bar></app-status-bar>
-<app-header-institucional [showBackButton]="true" [actionButtons]="headerActionButtons"></app-header-institucional>
+<app-header-institucional
+  [showBackButton]="true"
+  [eyebrow]="'preAnestesica.eyebrow' | translate"
+  [title]="'preAnestesica.pageTitle' | translate"
+  [actionButtons]="headerActionButtons"
+></app-header-institucional>
 
 <div class="pre-page" [formGroup]="form">
 
   <header class="pre-topbar">
-    <div class="pre-topbar__title">
-      <span class="page-eyebrow">{{ 'preAnestesica.eyebrow' | translate }}</span>
-      <h1>{{ 'preAnestesica.pageTitle' | translate }}</h1>
-    </div>
-
     <div class="pre-topbar__actions">
       <span class="save-status" *ngIf="lastSavedAt">
         <ion-icon name="cloud-done-outline"></ion-icon>
