@@ -1,0 +1,45 @@
+@use './panel';
+@use '../styles/monitoring-tokens' as t;
+
+.ip__keypad {
+  flex: none;
+  padding: 8px 14px 0;
+  border-top: 1px solid t.$border;
+}
+
+.ip__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.ip__totals {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+
+  div {
+    padding: 8px 10px;
+    border-radius: t.$radius-base;
+    background: t.$surface-bg;
+    font-size: t.$fs-11;
+    color: t.$text-ink;
+  }
+
+  b {
+    display: block;
+    font-size: t.$fs-18;
+    font-variant-numeric: tabular-nums;
+    color: t.$text-deep;
+  }
+}
+
+.ip__gain { color: t.$c-success !important; }
+.ip__loss { color: t.$c-crimson !important; }
+
+.ip__missing {
+  align-self: center;
+  flex: 1;
+  font-size: t.$fs-12;
+  color: t.$text-ink;
+}

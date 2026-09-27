@@ -1,0 +1,170 @@
+<header class="pn__head">
+  <button
+    type="button"
+    class="pn__icon-btn pn__icon-btn--accent"
+    *ngIf="step === 'form' && !isEdit"
+    (click)="backToPick()"
+    [attr.aria-label]="'monitorizacao.shell.panels.back' | translate"
+  >‹</button>
+  <h2 class="pn__title">{{ titleKey | translate }}</h2>
+  <button type="button" class="pn__icon-btn" (click)="cancel()" [attr.aria-label]="'common.close' | translate">×</button>
+</header>
+
+<div class="pn__body">
+  <p class="pn__empty" *ngIf="loading">{{ 'monitorizacao.shell.loading' | translate }}</p>
+
+  <!-- ===================== BALANÇO: resumo + ganho/perda ===================== -->
+  <ng-container *ngIf="type === 'balance' && !loading">
+    <div class="ip__totals" *ngIf="balanceTotals">
+      <div><span>{{ 'monitorizacao.shell.timeline.rows.gains' | translate }}</span><b class="ip__gain">+{{ balanceTotals.gain }}</b></div>
+      <div><span>{{ 'monitorizacao.shell.timeline.rows.losses' | translate }}</span><b class="ip__loss">−{{ balanceTotals.loss }}</b></div>
+      <div><span>{{ 'monitorizacao.shell.panels.balanceNet' | translate }}</span><b>{{ balanceTotals.gain - balanceTotals.loss }}</b></div>
+    </div>
+    <div class="pn__seg" role="group">
+      <button type="button" [class.pn__seg-on]="balance.type === 'gain'" (click)="setBalanceType('gain')">{{ 'monitorizacao.common.gain' | translate }}</button>
+      <button type="button" [class.pn__seg-on]="balance.type === 'loss'" (click)="setBalanceType('loss')">{{ 'monitorizacao.common.loss' | translate }}</button>
+    </div>
+  </ng-container>
+
+  <!-- ===================== ESCOLHA NA LISTA ===================== -->
+  <ng-container *ngIf="step === 'pick' && !loading">
+    <input
+      class="pn__search"
+      type="search"
+      [(ngModel)]="search"
+      [placeholder]="('monitorizacao.shell.panels.search' | translate)"
+      [attr.aria-label]="'monitorizacao.shell.panels.search' | translate"
+    />
+
+    <ng-container *ngIf="type === 'agent'">
+      <ng-container *ngIf="recents.length && !search">
+        <p class="pn__label">{{ 'monitorizacao.shell.panels.recents' | translate }}</p>
+        <div class="pn__chips">
+          <button type="button" class="pn__chip" *ngFor="let a of recents" (click)="pickRecent(a)">
+            {{ a.name }} <small *ngIf="a.dose">· {{ a.dose }}</small>
+          </button>
+        </div>
+      </ng-container>
+      <p class="pn__label">{{ 'monitorizacao.shell.panels.catalog' | translate }}</p>
+      <div class="pn__list">
+        <button type="button" *ngIf="canUseCustomMedication" (click)="pickCustomMedication()">
+          <span>{{ 'monitorizacao.shell.panels.useCustom' | translate: { name: search.trim() } }}</span>
+        </button>
+        <button type="button" *ngFor="let m of filteredMedications" (click)="pickMedication(m)">{{ m.description }}</button>
+      </div>
+      <p class="pn__empty" *ngIf="!filteredMedications.length && !canUseCustomMedication">{{ 'monitorizacao.shell.panels.noResults' | translate }}</p>
+    </ng-container>
+
+    <ng-container *ngIf="type === 'event'">
+      <div class="pn__list">
+        <button type="button" *ngFor="let e of filteredEvents" (click)="pickEvent(e)">
+          <span>{{ e.name }}<small *ngIf="e.description">{{ e.description }}</small></span>
+        </button>
+      </div>
+      <p class="pn__empty" *ngIf="!filteredEvents.length">{{ 'monitorizacao.shell.panels.noResults' | translate }}</p>
+    </ng-container>
+
+    <ng-container *ngIf="type === 'balance'">
+      <div class="pn__list">
+        <button type="button" *ngFor="let i of filteredBalanceItems" (click)="pickBalanceItem(i)">{{ i.label }}</button>
+      </div>
+      <p class="pn__empty" *ngIf="!filteredBalanceItems.length">{{ 'monitorizacao.shell.panels.noResults' | translate }}</p>
+    </ng-container>
+  </ng-container>
+
+  <!-- ===================== FORMULÁRIO ===================== -->
+  <ng-container *ngIf="step === 'form' && !loading">
+
+    <!-- Fármaco / bomba -->
+    <ng-container *ngIf="type === 'agent'">
+      <div class="pn__selected">
+        <span>{{ agent.medicationName }}</span>
+        <button type="button" *ngIf="!isEdit" (click)="backToPick()">{{ 'monitorizacao.shell.panels.change' | translate }}</button>
+      </div>
+
+      <div class="pn__seg" role="group">
+        <button type="button" [class.pn__seg-on]="agent.mode === 'dose'" (click)="setAgentMode('dose')">{{ 'monitorizacao.shell.panels.modeDose' | translate }}</button>
+        <button type="button" [class.pn__seg-on]="agent.mode === 'bolus'" (click)="setAgentMode('bolus')">{{ 'monitorizacao.shell.panels.modeBolus' | translate }}</button>
+        <button type="button" *ngIf="!isEdit" [class.pn__seg-on]="agent.mode === 'pump'" (click)="setAgentMode('pump')">{{ 'monitorizacao.shell.panels.modePump' | translate }}</button>
+      </div>
+
+      <ng-container *ngIf="agent.mode !== 'pump'">
+        <button type="button" class="pn__field pn__field--active" (click)="activeNum = 'dose'">
+          <span class="pn__field-label"><span>{{ 'monitorizacao.shell.panels.dose' | translate }}</span><em>{{ unitLabel }}</em></span>
+          <span class="pn__field-value">{{ agent.dose }}</span>
+        </button>
+        <p class="pn__label">{{ 'monitorizacao.shell.panels.unit' | translate }}</p>
+        <div class="pn__chips">
+          <button type="button" class="pn__chip" *ngFor="let u of unitOptions" [class.pn__chip--on]="agent.unit === u.id" (click)="agent.unit = u.id">{{ u.label }}</button>
+        </div>
+        <p class="pn__label">{{ 'monitorizacao.shell.panels.route' | translate }}</p>
+        <div class="pn__chips">
+          <button type="button" class="pn__chip" *ngFor="let r of routeOptions" [class.pn__chip--on]="agent.routeId === r.id" [title]="r.label" (click)="agent.routeId = r.id">{{ r.short }}</button>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="agent.mode === 'pump'">
+        <div class="ip__pair">
+          <button type="button" class="pn__field" [class.pn__field--active]="activeNum === 'rate'" (click)="activeNum = 'rate'">
+            <span class="pn__field-label"><span>{{ 'monitorizacao.shell.panels.rate' | translate }}</span><em>{{ rateUnitLabel }}</em></span>
+            <span class="pn__field-value">{{ agent.rate }}</span>
+          </button>
+          <button type="button" class="pn__field" [class.pn__field--active]="activeNum === 'volume'" (click)="activeNum = 'volume'">
+            <span class="pn__field-label"><span>{{ 'monitorizacao.shell.panels.volume' | translate }}</span><em>ml</em></span>
+            <span class="pn__field-value">{{ agent.volume }}</span>
+          </button>
+        </div>
+        <p class="pn__label">{{ 'monitorizacao.shell.panels.rateUnit' | translate }}</p>
+        <div class="pn__chips">
+          <button type="button" class="pn__chip" *ngFor="let u of rateUnitOptions" [class.pn__chip--on]="agent.rateUnit === u.id" (click)="agent.rateUnit = u.id">{{ u.label }}</button>
+        </div>
+      </ng-container>
+    </ng-container>
+
+    <!-- Evento -->
+    <ng-container *ngIf="type === 'event'">
+      <div class="pn__selected">
+        <span>{{ event.name }}</span>
+        <button type="button" *ngIf="!isEdit" (click)="backToPick()">{{ 'monitorizacao.shell.panels.change' | translate }}</button>
+      </div>
+      <p class="pn__label">{{ 'monitorizacao.shell.panels.description' | translate }}</p>
+      <textarea class="pn__textarea" [(ngModel)]="event.description" [attr.aria-label]="'monitorizacao.shell.panels.description' | translate"></textarea>
+    </ng-container>
+
+    <!-- Balanço -->
+    <ng-container *ngIf="type === 'balance'">
+      <div class="pn__selected">
+        <span>{{ balance.itemLabel }}</span>
+        <button type="button" (click)="backToPick()">{{ 'monitorizacao.shell.panels.change' | translate }}</button>
+      </div>
+      <button type="button" class="pn__field pn__field--active" (click)="activeNum = 'balanceVolume'">
+        <span class="pn__field-label"><span>{{ 'monitorizacao.shell.panels.volume' | translate }}</span><em>ml</em></span>
+        <span class="pn__field-value">{{ balance.volume }}</span>
+      </button>
+      <ng-container *ngIf="needsDetail">
+        <p class="pn__label">{{ 'monitorizacao.shell.panels.detail' | translate }}</p>
+        <textarea class="pn__textarea" [(ngModel)]="balance.detail"></textarea>
+      </ng-container>
+    </ng-container>
+
+    <div class="pn__time">
+      <span class="pn__label">{{ 'monitorizacao.shell.panels.time' | translate }}</span>
+      <input type="time" [(ngModel)]="time" [attr.aria-label]="'monitorizacao.shell.panels.time' | translate" />
+      <button type="button" class="pn__chip" (click)="setNow()">{{ 'monitorizacao.shell.panels.now' | translate }}</button>
+    </div>
+  </ng-container>
+</div>
+
+<div class="ip__keypad" *ngIf="showKeypad">
+  <app-numeric-keypad [value]="keypadValue" (valueChange)="onKeypad($event)"></app-numeric-keypad>
+</div>
+
+<footer class="pn__foot" *ngIf="step === 'form'">
+  <button type="button" class="pn__btn pn__btn--danger" *ngIf="isEdit" (click)="remove()">
+    {{ 'monitorizacao.page.actions.delete' | translate }}
+  </button>
+  <span class="ip__missing" *ngIf="missingHint">{{ missingHint | translate }}</span>
+  <button type="button" class="pn__btn pn__btn--primary" [disabled]="!canSave" (click)="save()">
+    {{ 'common.save' | translate }}
+  </button>
+</footer>

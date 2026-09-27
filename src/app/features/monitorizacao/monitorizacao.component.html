@@ -1,122 +1,76 @@
 <div class="monitorizacao-shell">
   <app-status-bar></app-status-bar>
-  <app-header-institucional
-    [showBackButton]="true"
-    [showAnestesicaButton]="true"
-    [anestesicaButtonLabel]="'monitorizacao.page.anestesicaButtonLabel' | translate"
-    (backClick)="goToFichaAnestesica()"
-    (openAnestesica)="openFichaAnestesicaModal()"
-  ></app-header-institucional>
 
-  <div class="monitorizacao-shell__subheader">
-    <div class="monitorizacao-shell__subheader-block">
-      <span class="monitorizacao-shell__subheader-eyebrow">{{ 'monitorizacao.shell.header.eyebrow' | translate }}</span>
-      <h1 class="monitorizacao-shell__subheader-title">{{ 'monitorizacao.shell.header.title' | translate }}</h1>
-    </div>
-  </div>
+  <app-monitoring-top-bar
+    [patientName]="patientName"
+    [patientAge]="patientAge"
+    [patientRecord]="patientRecord"
+    [procedureName]="procedureName"
+    [anesthesiaTimer]="anesthesiaTimer"
+    [surgeryTimer]="surgeryTimer"
+    [primaryAction]="primaryAction"
+    [isAnesthesiaStarted]="isAnesthesiaStarted"
+    [isSurgeryStarted]="isSurgeryStarted"
+    [isSurgeryFinished]="isSurgeryFinished"
+    [isAnesthesiaFinished]="isAnesthesiaFinished"
+    [canEdit]="canEdit"
+    [canFinalize]="canFinalize"
+    [pendingSyncCount]="pendingSyncCount"
+    [isSyncing]="isSyncing"
+    (back)="goToFichaAnestesica()"
+    (patientClick)="openFichaAnestesicaModal()"
+    (primaryClick)="onTopPrimaryAction()"
+    (finalizeClick)="onFinalize()"
+    (syncNow)="syncPendingNow()"
+  ></app-monitoring-top-bar>
 
   <div class="readonly-banner" *ngIf="!isResponsible">
     {{ 'monitorizacao.page.readonlyBanner' | translate }}
   </div>
 
-  <ion-content class="monitorizacao-shell__scroll">
   <div class="monitorizacao-shell__loading" *ngIf="isLoading">
     <span class="monitorizacao-shell__spinner" aria-hidden="true"></span>
     <span>{{ 'monitorizacao.shell.loading' | translate }}</span>
   </div>
 
-  <main class="monitorizacao-shell__content" *ngIf="!isLoading">
-    <app-patient-summary-card
-      [patientName]="patientName"
-      [patientAge]="patientAge"
-      [patientRecord]="patientRecord"
-      [anesthesiaTimer]="anesthesiaTimer"
-      [surgeryTimer]="surgeryTimer"
-      [primaryAction]="primaryAction"
-      [autoMonitoringIntervalMinutes]="autoMonitoringIntervalMinutes"
-      [canEdit]="canEdit"
-      [pendingSyncCount]="pendingSyncCount"
-      [isSyncing]="isSyncing"
-      (primaryActionClick)="onPrimaryAction()"
-      (frequencyClick)="onFrequencyClick()"
-      (openHistory)="openHistory('vitals')"
-      (syncNow)="syncPendingNow()"
-    ></app-patient-summary-card>
-
-    <app-vitals-section
+  <main class="monitorizacao-shell__body" *ngIf="!isLoading">
+    <app-monitoring-timeline
+      class="monitorizacao-shell__timeline"
       [vitalRecords]="vitalRecords"
-      [fluidBalance]="fluidBalance"
       [customFields]="customFields"
-      [anesthesiaStartTime]="startTimeAnesthesia"
-      [anesthesiaEndTime]="anesthesiaEndTime"
-      [zoom]="sharedTimelineZoom"
-      [readonly]="!canEdit"
-      [syncScrollRatio]="sharedTimelineScrollRatio"
-      (addRecord)="onAddVital()"
-      (addCustomField)="onAddCustomField()"
-      (cellTap)="onVitalCellTap($event)"
-      (hydrationCellTap)="onHydrationCellTap($event)"
-      (deleteRecord)="onDeleteVitalRecord($event)"
-      (editTime)="onEditVitalTime($event)"
-      (scrollRatioChange)="onTimelineScroll($event)"
-    ></app-vitals-section>
-
-    <app-vitals-chart-card
-      [vitalRecords]="vitalRecords"
+      [agents]="agents"
+      [infusionPumps]="infusionPumps"
+      [oxygenFlows]="oxygenFlows"
+      [compressedAirFlows]="compressedAirFlows"
+      [fluidBalance]="fluidBalance"
+      [positionHistory]="positionHistory"
+      [clinicalEvents]="clinicalEvents"
       [anesthesiaStartTime]="startTimeAnesthesia"
       [anesthesiaEndTime]="anesthesiaEndTime"
       [surgeryStartTime]="startTimeSurgery"
       [surgeryEndTime]="surgeryEndTime"
-      [zoom]="sharedTimelineZoom"
-      [syncScrollRatio]="sharedTimelineScrollRatio"
-      (scrollRatioChange)="onTimelineScroll($event)"
-      (zoomChange)="onTimelineZoomChange($event)"
-    ></app-vitals-chart-card>
-
-    <app-resources-flow-card
-      [posicaoAtual]="posicaoAtual"
-      [posicoesPossiveis]="posicoesPossiveis"
-      [positionHistory]="positionHistory"
-      [oxygenFlows]="oxygenFlows"
-      [compressedAirFlows]="compressedAirFlows"
-      [infusionPumps]="infusionPumps"
-      [anesthesiaStartTime]="startTimeAnesthesia"
-      [anesthesiaEndTime]="anesthesiaEndTime"
-      [zoom]="sharedTimelineZoom"
-      [syncScrollRatio]="sharedTimelineScrollRatio"
       [readonly]="!canEdit"
-      (positionChange)="mudarPosicao()"
-      (addResource)="onAddResource($event)"
-      (stopInfusion)="onStopInfusion($event)"
-      (scrollRatioChange)="onTimelineScroll($event)"
-    ></app-resources-flow-card>
-
-    <app-agents-card
-      [agents]="agents"
-      [anesthesiaStartTime]="startTimeAnesthesia"
-      [anesthesiaEndTime]="anesthesiaEndTime"
-      [zoom]="sharedTimelineZoom"
-      [readonly]="!canEdit"
-      [syncScrollRatio]="sharedTimelineScrollRatio"
-      (addAgent)="onAddAgent()"
-      (editAgent)="onEditAgent($event)"
-      (deleteAgent)="onDeleteAgent($event)"
-      (scrollRatioChange)="onTimelineScroll($event)"
-    ></app-agents-card>
-
-    <app-bottom-action-row
-      [readonly]="!canEdit"
-      [canFinalize]="canEdit && isAnesthesiaStarted && !isAnesthesiaFinished"
-      [isSurgeryFinished]="isSurgeryFinished"
-      (addEvent)="onAddEvent()"
-      (addBalance)="onAddBalance()"
-      (finalize)="onFinalize()"
-    ></app-bottom-action-row>
-
-    <app-status-strip
       [lastSavedAt]="lastDraftSavedAt"
-      [pendingSyncCount]="pendingSyncCount"
-    ></app-status-strip>
+      [reservedRight]="reservedRight"
+      [groups]="visibleGroups"
+      (cellTap)="onTimelineCellTap($event)"
+      (agentTap)="onAgentTap($event)"
+      (pumpTap)="onStopInfusion($event)"
+      (eventTap)="onEventTap($event)"
+      (balanceTap)="openHistory('balance')"
+      (hydrationAdd)="onHydrationAdd()"
+      (hydrationTap)="onHydrationTap($event)"
+      (resourceToggle)="onResourceToggle($event)"
+      (positionTap)="mudarPosicao()"
+      (customize)="openCustomize()"
+    ></app-monitoring-timeline>
+
+    <app-monitoring-tool-bar
+      class="monitorizacao-shell__tools"
+      [readonly]="!canEdit"
+      [active]="activeTool"
+      [activePumps]="activePumpsCount"
+      (toolClick)="onToolClick($event)"
+    ></app-monitoring-tool-bar>
   </main>
-  </ion-content>
 </div>

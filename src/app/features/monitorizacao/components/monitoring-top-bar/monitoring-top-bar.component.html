@@ -1,0 +1,62 @@
+<header class="tb">
+  <button type="button" class="tb__back" (click)="back.emit()" [attr.aria-label]="'monitorizacao.shell.topBar.back' | translate">‹</button>
+
+  <button type="button" class="tb__patient" (click)="patientClick.emit()" [attr.aria-label]="'monitorizacao.shell.topBar.patientAria' | translate">
+    <span class="tb__avatar" aria-hidden="true">{{ initials }}</span>
+    <span class="tb__patient-text">
+      <span class="tb__name">{{ patientName || ('monitorizacao.shell.patientCard.unknownPatient' | translate) }}</span>
+      <span class="tb__meta">
+        {{ 'monitorizacao.shell.patientCard.ageLabel' | translate: { age: patientAge || '--' } }}
+        · {{ 'monitorizacao.shell.patientCard.recordLabel' | translate: { record: patientRecord || '--' } }}
+      </span>
+    </span>
+  </button>
+
+  <span class="tb__break" aria-hidden="true"></span>
+
+  <span class="tb__procedure" *ngIf="procedureName" [title]="procedureName">{{ procedureName }}</span>
+
+  <div class="tb__state">
+    <span class="tb__pill tb__pill--anesthesia" [class.tb__pill--idle]="!isAnesthesiaStarted || isAnesthesiaFinished">
+      <i aria-hidden="true"></i>{{ 'monitorizacao.shell.patientCard.anesthesiaTimerLabel' | translate }}
+      <b>{{ anesthesiaTimer }}</b>
+    </span>
+    <span class="tb__pill tb__pill--surgery" [class.tb__pill--idle]="!isSurgeryStarted || isSurgeryFinished">
+      <i aria-hidden="true"></i>{{ 'monitorizacao.shell.patientCard.surgeryTimerLabel' | translate }}
+      <b>{{ surgeryTimer }}</b>
+    </span>
+
+    <button
+      type="button"
+      class="tb__secondary"
+      *ngIf="showSecondaryFinalize"
+      (click)="finalizeClick.emit()"
+    >{{ 'monitorizacao.shell.actions.finalizeSurgery' | translate }}</button>
+
+    <button
+      type="button"
+      class="tb__primary"
+      [class.tb__primary--finalize]="isFinalizeStep"
+      [class.tb__primary--done]="primaryAction === 'finished'"
+      [disabled]="primaryDisabled"
+      (click)="primaryClick.emit()"
+    >
+      <span *ngIf="primaryAction === 'finished'" aria-hidden="true">✓ </span>{{ primaryLabelKey | translate }}
+    </button>
+  </div>
+
+  <button
+    type="button"
+    class="tb__sync"
+    [class.tb__sync--ok]="pendingSyncCount === 0"
+    [disabled]="isSyncing"
+    (click)="syncNow.emit()"
+    [attr.aria-label]="'monitorizacao.shell.topBar.syncAria' | translate: { count: pendingSyncCount }"
+    [title]="(pendingSyncCount > 0
+      ? ('monitorizacao.shell.statusStrip.pendingSync' | translate: { count: pendingSyncCount })
+      : ('monitorizacao.shell.statusStrip.synced' | translate))"
+  >
+    <span class="tb__sync-icon" [class.tb__sync-icon--spin]="isSyncing" aria-hidden="true">⟳</span>
+    <b>{{ pendingSyncCount > 0 ? pendingSyncCount : '✓' }}</b>
+  </button>
+</header>

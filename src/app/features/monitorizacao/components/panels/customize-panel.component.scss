@@ -1,0 +1,59 @@
+@use './panel';
+@use '../styles/monitoring-tokens' as t;
+
+.cz__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cz__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 52px;
+  padding-right: 4px;
+  border-radius: t.$radius-base;
+  background: t.$surface-bg;
+
+  &--locked { background: t.$surface-panel; }
+  &--hidden .cz__name { color: t.$text-ink; text-decoration: line-through; }
+}
+
+.cz__handle {
+  width: 48px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  color: t.$text-ink;
+
+  &--locked { font-size: 14px; }
+}
+
+.cz__name {
+  flex: 1;
+  font-size: t.$fs-15;
+  font-weight: 700;
+}
+
+.cz__fixed {
+  font-size: t.$fs-11;
+  font-weight: 700;
+  color: t.$text-ink;
+  padding-right: 10px;
+}
+
+.cz__eye {
+  min-width: 88px;
+  min-height: 40px;
+  border-radius: 999px;
+  border: 1px solid t.$border-strong;
+  background: #fff;
+  font-family: t.$font-body;
+  font-size: t.$fs-12;
+  font-weight: 800;
+  color: t.$c-primary;
+
+  &[aria-pressed='false'] { color: t.$text-ink; background: transparent; }
+}

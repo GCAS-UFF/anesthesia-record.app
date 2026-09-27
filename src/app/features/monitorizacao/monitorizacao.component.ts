@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController, IonContent, ModalController, ToastController } from '@ionic/angular/standalone';
+import { AlertController, ModalController, ToastController } from '@ionic/angular/standalone';
 import { finalize, firstValueFrom, Subscription } from 'rxjs';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
@@ -15,40 +15,37 @@ import {
   CLINICAL_EVENT_TYPE_LABELS, SURGERY_STATUS_LABELS, SurgeryStatusEnum, SURGICAL_POSITION_LABEL_TO_ID,
 } from 'src/app/core/models/api-enums.model';
 
-import { ClinicalItemModalComponent } from 'src/app/shared/components/clinical-item-modal/clinical-item-modal.component';
-import { QuickVitalInputComponent } from 'src/app/shared/components/quick-vital-input/quick-vital-input.component';
 import {
   RecordData, RecordSection, RecordViewerModalComponent,
 } from 'src/app/shared/components/record-viewer-modal/record-viewer-modal.component';
 import { mapAnesthesiaRecordToRecordData } from 'src/app/shared/models/anesthesia-record.mapper';
 import { formatDateTimeBR } from 'src/app/shared/utils/date-format.util';
+import { isHydrationEntry } from './utils/fluid-balance.util';
 
 import {
   Agent, ClinicalEvent, FluidBalance, HistoryTab, InfusionPumpEntry, PositionEntry,
   PrimaryActionKind, ResourceFlowEntry, VitalRecord,
 } from './models/monitoring-view.model';
 
-import { HeaderInstitucionalComponent } from 'src/app/shared/components/header-institucional/header-institucional.component';
 import { StatusBarComponent } from 'src/app/shared/components/status-bar/status-bar.component';
-import { PatientSummaryCardComponent } from './components/patient-summary-card/patient-summary-card.component';
-import { VitalCellField, VitalsSectionComponent } from './components/vitals-section/vitals-section.component';
-import { VitalsChartCardComponent } from './components/vitals-chart-card/vitals-chart-card.component';
-import { ResourcesFlowCardComponent } from './components/resources-flow-card/resources-flow-card.component';
-import { AgentsCardComponent } from './components/agents-card/agents-card.component';
-import { BottomActionRowComponent } from './components/bottom-action-row/bottom-action-row.component';
-import { StatusStripComponent } from './components/status-strip/status-strip.component';
 import { HistoryAction, HistoryModalComponent } from './components/history-modal/history-modal.component';
+import { MonitoringTopBarComponent } from './components/monitoring-top-bar/monitoring-top-bar.component';
+import {
+  MonitoringTimelineComponent, TimelineCellField, TimelineCellTap,
+} from './components/monitoring-timeline/monitoring-timeline.component';
+import { MonitoringTool, MonitoringToolBarComponent } from './components/monitoring-tool-bar/monitoring-tool-bar.component';
+import { VITAL_KEYS, VitalPanelComponent } from './components/panels/vital-panel.component';
+import { ItemPanelComponent } from './components/panels/item-panel.component';
+import { CustomizePanelComponent } from './components/panels/customize-panel.component';
+import { HydrationPanelComponent } from './components/panels/hydration-panel.component';
+import { MoreAction, MorePanelComponent } from './components/panels/more-panel.component';
+import { MonitoringLayout, MonitoringLayoutService, TimelineGroupId } from './services/monitoring-layout.service';
 
 const MONITORING_DRAFT_KEY = (surgeryId: string) => `draft_monitoring_${surgeryId}`;
 const FICHA_ANESTESICA_CACHE_KEY = 'cache_ficha_anestesica_';
 
-/** Faixas válidas por parâmetro — edição rápida de célula na grade de sinais vitais. */
-const VITAL_CELL_LIMITS: Record<string, { min: number; max: number }> = {
-  temp: { min: 30, max: 43 },
-  spo2: { min: 0, max: 100 },
-  etco2: { min: 0, max: 150 },
-  bis: { min: 0, max: 100 },
-};
+/** Largura da gaveta lateral em paisagem (mesmo valor de `.mon-panel--side` no global.scss). */
+const SIDE_PANEL_WIDTH_PX = 420;
 
 const POSICOES_POSSIVEIS = [
   'Supina', 'Prona', 'Lateral Direita', 'Lateral Esquerda',
@@ -62,10 +59,8 @@ const POSICOES_POSSIVEIS = [
   templateUrl: './monitorizacao.component.html',
   styleUrls: ['./monitorizacao.component.scss'],
   imports: [
-    CommonModule, TranslatePipe, IonContent,
-    StatusBarComponent, HeaderInstitucionalComponent, PatientSummaryCardComponent, VitalsSectionComponent,
-    VitalsChartCardComponent, ResourcesFlowCardComponent, AgentsCardComponent,
-    BottomActionRowComponent, StatusStripComponent,
+    CommonModule, TranslatePipe,
+    StatusBarComponent, MonitoringTopBarComponent, MonitoringTimelineComponent, MonitoringToolBarComponent,
   ],
 })
 export class MonitorizacaoComponent implements OnInit, OnDestroy {
@@ -110,20 +105,24 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   autoMonitoringIntervalMinutes = 5;
   private autoSnapshotSub?: Subscription;
 
-  /** Mantém a tabela de sinais vitais e o gráfico de Pressão & FC rolando juntos
-   * na horizontal (mesma linha do tempo), sincronizados por proporção — ver
-   * scroll-sync.util.ts. */
-  sharedTimelineScrollRatio: number | null = null;
-  /** Compartilhado entre a tabela de sinais vitais e o gráfico — os dois precisam
-   * esticar na mesma proporção para que as colunas continuem alinhadas. */
-  sharedTimelineZoom = 1;
+  /** Retrato é a orientação preferida; paisagem também é suportada (só muda a posição da barra e das gavetas). */
+  isPortrait = typeof window !== 'undefined' && window.matchMedia?.('(orientation: portrait)').matches;
+  private orientationQuery?: MediaQueryList;
+  private readonly onOrientationChange = (e: MediaQueryListEvent) => {
+    this.isPortrait = e.matches;
+    // Girar com uma gaveta aberta mantém o que foi digitado: só muda onde ela fica.
+    this.activePanel?.classList.toggle('mon-panel--bottom', this.isPortrait);
+    this.activePanel?.classList.toggle('mon-panel--side', !this.isPortrait);
+  };
 
-  onTimelineScroll(ratio: number): void {
-    this.sharedTimelineScrollRatio = ratio;
-  }
+  /** Painel (gaveta/folha) aberto no momento — um por vez, como os antigos guardas de modal. */
+  private activePanel: HTMLIonModalElement | null = null;
+  panelOpen = false;
+  activeTool: MonitoringTool | null = null;
 
-  onTimelineZoomChange(zoom: number): void {
-    this.sharedTimelineZoom = zoom;
+  /** Em paisagem a gaveta cobre a direita da linha do tempo: reserva o espaço para a coluna atual continuar visível. */
+  get reservedRight(): number {
+    return this.panelOpen && !this.isPortrait ? SIDE_PANEL_WIDTH_PX : 0;
   }
 
   lastDraftSavedAt: Date | null = null;
@@ -143,6 +142,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     private toastController: ToastController,
     private alertController: AlertController,
     private modalController: ModalController,
+    private layoutService: MonitoringLayoutService,
     private anesthesiaRecordService: AnesthesiaRecordService,
     private surgeryService: SurgeryService,
     private preAnesthesicService: PreAnesthesicRecordService,
@@ -172,6 +172,55 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     return this.patient?.age ?? '';
   }
 
+  get procedureName(): string {
+    return this.selectedProcedure?.name || '';
+  }
+
+  /** Mesma condição da antiga barra inferior para "Finalizar cirurgia/anestesia". */
+  get canFinalize(): boolean {
+    return this.canEdit && this.isAnesthesiaStarted && !this.isAnesthesiaFinished;
+  }
+
+  /** Fármacos do caso, do mais recente ao mais antigo — atalho "Recentes" no painel de fármacos. */
+  get recentAgents(): Agent[] {
+    return [...this.agents].reverse();
+  }
+
+  get balanceTotals(): { gain: number; loss: number } {
+    const sum = (t: 'gain' | 'loss') => this.fluidBalance.filter((b) => b.type === t).reduce((s, b) => s + (b.volumeMl || 0), 0);
+    return { gain: sum('gain'), loss: sum('loss') };
+  }
+
+  /** Grupos da linha do tempo na ordem/visibilidade salvas pelo usuário (modo Personalizar). */
+  layout: MonitoringLayout = this.layoutService.defaultLayout();
+  visibleGroups: TimelineGroupId[] = this.layoutService.visibleGroups(this.layout);
+
+  private applyLayout(layout: MonitoringLayout): void {
+    this.layout = layout;
+    this.visibleGroups = this.layoutService.visibleGroups(layout);
+  }
+
+  async openCustomize(): Promise<void> {
+    const before = this.layout;
+    const { data, role } = await this.presentPanel<MonitoringLayout>(CustomizePanelComponent, {
+      layout: this.layout,
+      defaultLayout: this.layoutService.defaultLayout(),
+      onPreview: (l: MonitoringLayout) => this.applyLayout(l),
+    });
+    if (role === 'save' && data) {
+      this.applyLayout(data);
+      this.layoutService.save(this.authService.getCurrentUserId(), data);
+      await this.toast(this.translate.instant('monitorizacao.shell.customize.saved'), 'success');
+    } else if (role !== 'busy') {
+      this.applyLayout(before);
+    }
+  }
+
+  get activePumpsCount(): number {
+    const now = Date.now();
+    return this.infusionPumps.filter((p) => new Date(p.endAt).getTime() > now).length;
+  }
+
   /** Máquina de estados visual do card de paciente — o encerramento (cirurgia e
    * anestesia) acontece sempre pela barra inferior, no mesmo fluxo em 2 etapas
    * já usado na tela antiga (1º toque finaliza a cirurgia, 2º finaliza a anestesia). */
@@ -186,8 +235,11 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     // Tela responsiva em portrait e landscape, sem travar orientação.
     this.orientationService.unlock();
+    this.orientationQuery = window.matchMedia?.('(orientation: portrait)');
+    this.orientationQuery?.addEventListener('change', this.onOrientationChange);
 
     this.loggedUser = this.authService.getUser();
+    this.applyLayout(this.layoutService.load(this.authService.getCurrentUserId()));
     this.surgeryId = this.route.snapshot.paramMap.get('id') || '';
 
     const qp = this.route.snapshot.queryParamMap;
@@ -218,6 +270,8 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.orientationService.unlock();
+    this.orientationQuery?.removeEventListener('change', this.onOrientationChange);
+    void this.activePanel?.dismiss(null, 'destroy');
     clearInterval(this.tickSub);
     clearTimeout(this.encerramentoTimeout);
     this.pendingSub?.unsubscribe();
@@ -596,20 +650,189 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     if (!this.canEdit || this.isVitalModalOpen) return;
     this.isVitalModalOpen = true;
     try {
-      const modal = await this.modalController.create({
-        component: QuickVitalInputComponent,
-        cssClass: 'quick-vital-modal',
-        backdropDismiss: false,
-        componentProps: { customFields: this.customFields, isAuto: false, initialValue: null },
-      });
-      await modal.present();
-      const { data, role } = await modal.onDidDismiss();
+      const { data, role } = await this.presentPanel(
+        VitalPanelComponent,
+        { customFields: this.customFields, isAuto: false, initialValue: null },
+        'vital',
+      );
       if (role !== 'confirm' || !data) return;
       this.addVitalRecord(data);
       await this.toast(this.translate.instant('monitorizacao.page.toasts.vitalSaved'), 'success');
     } finally {
       this.isVitalModalOpen = false;
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Painéis (gaveta à direita em paisagem, folha inferior em retrato)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Abre um painel da Monitorização (sinais, fármaco/evento/balanço, Histórico…)
+   * como painel não bloqueante: sem fundo escuro e sem capturar o toque da tela,
+   * para a linha do tempo continuar visível e rolável durante o registro.
+   * O contrato de retorno é o mesmo do modal (`data`, `role`), então a lógica
+   * que aplica o resultado não muda.
+   */
+  private async presentPanel<T = any>(
+    component: any,
+    componentProps: Record<string, unknown>,
+    tool: MonitoringTool | null = null,
+  ): Promise<{ data?: T; role?: string }> {
+    if (this.activePanel) {
+      await this.toast(this.translate.instant('monitorizacao.shell.panel.busy'), 'warning');
+      return { role: 'busy' };
+    }
+    const modal = await this.modalController.create({
+      component,
+      componentProps,
+      cssClass: ['mon-panel', this.isPortrait ? 'mon-panel--bottom' : 'mon-panel--side'],
+      showBackdrop: false,
+      backdropDismiss: false,
+      focusTrap: false,
+    });
+    this.activePanel = modal;
+    this.panelOpen = true;
+    this.activeTool = tool;
+    try {
+      await modal.present();
+      return await modal.onDidDismiss<T>();
+    } finally {
+      this.activePanel = null;
+      this.panelOpen = false;
+      this.activeTool = null;
+    }
+  }
+
+  async onToolClick(tool: MonitoringTool): Promise<void> {
+    // Tocar de novo no ícone ativo fecha o painel.
+    if (this.activePanel && this.activeTool === tool) {
+      await this.activePanel.dismiss(null, 'cancel');
+      return;
+    }
+    switch (tool) {
+      case 'vital': return this.onAddVital();
+      case 'agent': return this.onAddAgent();
+      case 'balance': return this.onAddBalance();
+      case 'event': return this.onAddEvent();
+      case 'history': return this.openHistory('vitals');
+      case 'more': return this.openMoreMenu();
+    }
+  }
+
+  /** O botão de estado do topo executa o próximo passo do procedimento. */
+  async onTopPrimaryAction(): Promise<void> {
+    if (this.primaryAction === 'surgery-in-progress' || this.primaryAction === 'awaiting-finalize') {
+      await this.onFinalize();
+      return;
+    }
+    await this.onPrimaryAction();
+  }
+
+  private async openMoreMenu(): Promise<void> {
+    const { data, role } = await this.presentPanel<MoreAction>(MorePanelComponent, {
+      canEdit: this.canEdit,
+      intervalMinutes: this.autoMonitoringIntervalMinutes,
+    }, 'more');
+    if (role !== 'select' || !data) return;
+    switch (data) {
+      case 'ficha': return this.openFichaAnestesicaModal();
+      case 'position': return this.mudarPosicao();
+      case 'frequency': return this.onFrequencyClick();
+      case 'customField': return this.onAddCustomField();
+      case 'customize': return this.openCustomize();
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Toques na linha do tempo
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Qualquer hora ou valor da coluna abre o registro inteiro no painel, já no
+   * campo tocado (edição liberada pela PO), com a opção de excluir.
+   */
+  async onTimelineCellTap(event: TimelineCellTap): Promise<void> {
+    if (!this.canEdit) return;
+    const { record, field } = event;
+    const key = field === null ? null : typeof field === 'string' ? field : field.custom;
+    await this.onEditVitalRecord(record, key);
+  }
+
+  async onEditVitalRecord(record: VitalRecord, initialField: string | null = null): Promise<void> {
+    if (!this.canEdit || this.isVitalModalOpen) return;
+    this.isVitalModalOpen = true;
+    try {
+      const { data, role } = await this.presentPanel(VitalPanelComponent, {
+        customFields: this.customFields,
+        isAuto: !!record.isAuto,
+        initialValue: record,
+        initialField,
+      });
+      if (role === 'delete') {
+        await this.onDeleteVitalRecord(record);
+        return;
+      }
+      if (role !== 'confirm' || !data) return;
+      this.applyVitalRecordEdit(record, data);
+      await this.toast(this.translate.instant('monitorizacao.page.toasts.vitalSaved'), 'success');
+    } finally {
+      this.isVitalModalOpen = false;
+    }
+  }
+
+  /** Aplica a edição do painel: todos os campos substituídos (vazio = removido). */
+  private applyVitalRecordEdit(record: VitalRecord, data: Partial<VitalRecord> & { custom?: Record<string, number> }): void {
+    const updated: VitalRecord = { ...record };
+    for (const key of VITAL_KEYS) {
+      (updated as any)[key] = (data as any)[key] ?? undefined;
+    }
+    if (this.customFields.length) {
+      const custom = { ...(record.custom || {}) };
+      for (const f of this.customFields) {
+        const v = data.custom?.[f.key];
+        if (v === undefined || v === null) delete custom[f.key];
+        else custom[f.key] = v;
+      }
+      updated.custom = custom;
+    }
+    this.vitalRecords = this.vitalRecords.map((r) => (r.clientId === record.clientId ? updated : r));
+
+    if (data.time && data.time !== record.time) {
+      this.applyVitalTimeChange(updated, data.time);
+      return;
+    }
+    this.persistDraft();
+  }
+
+  /** Toque no fármaco abre direto a edição; Excluir fica dentro do painel. */
+  async onAgentTap(agent: Agent): Promise<void> {
+    await this.onEditAgent(agent);
+  }
+
+  /** Toque no evento abre direto a edição; Excluir fica dentro do painel. */
+  async onEventTap(event: ClinicalEvent): Promise<void> {
+    await this.onEditEvent(event);
+  }
+
+  /** O₂ e Ar ligam/desligam só depois de confirmar (decisão da PO). */
+  async onResourceToggle(kind: 'o2' | 'air'): Promise<void> {
+    if (!this.canEdit) return;
+    const list = kind === 'o2' ? this.oxygenFlows : this.compressedAirFlows;
+    const isActive = list[list.length - 1]?.isActive ?? false;
+    const name = this.translate.instant(kind === 'o2' ? 'monitorizacao.shell.resources.o2Label' : 'monitorizacao.shell.resources.airLabel');
+    const alert = await this.alertController.create({
+      header: this.translate.instant(isActive ? 'monitorizacao.shell.resources.confirmOffTitle' : 'monitorizacao.shell.resources.confirmOnTitle', { name }),
+      message: this.translate.instant('monitorizacao.shell.resources.confirmMessage', { time: this.formatHM(new Date()) }),
+      buttons: [
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
+        {
+          text: this.translate.instant(isActive ? 'monitorizacao.shell.resources.confirmOff' : 'monitorizacao.shell.resources.confirmOn'),
+          handler: () => this.onAddResource(kind),
+        },
+      ],
+    });
+    await alert.present();
   }
 
   private addVitalRecord(data: Partial<VitalRecord>): void {
@@ -629,112 +852,47 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     this.persistDraft();
   }
 
-  async onVitalCellTap(event: { record: VitalRecord; field: VitalCellField }): Promise<void> {
+  /**
+   * Hidratação rápida (💧): ganho fora do catálogo de balanço, gravado com a hora
+   * em que foi lançada (padrão: agora) e mostrado nesse minuto na linha do tempo.
+   */
+  async onHydrationAdd(): Promise<void> {
     if (!this.canEdit) return;
-    const { record, field } = event;
-
-    if (typeof field !== 'string') {
-      // Campo personalizado: sem faixa definida, só validação numérica básica.
-      const customField = this.customFields.find((f) => f.key === field.custom);
-      const alert = await this.alertController.create({
-        header: this.translate.instant('monitorizacao.shell.vitals.editCellTitle', { field: customField?.label || field.custom }),
-        inputs: [{ name: 'value', type: 'number', value: record.custom?.[field.custom] ?? null }],
-        buttons: [
-          { text: this.translate.instant('common.cancel'), role: 'cancel' },
-          {
-            text: this.translate.instant('common.save'),
-            handler: (d) => {
-              const value = d.value === '' || d.value === null || d.value === undefined ? undefined : Number(d.value);
-              this.updateVitalCustomField(record.clientId, field.custom, Number.isFinite(value) ? value : undefined);
-            },
-          },
-        ],
-      });
-      await alert.present();
-      return;
-    }
-
-    const limits = VITAL_CELL_LIMITS[field];
-    const fieldLabel = this.translate.instant(`monitorizacao.shell.vitals.rows.${field}`);
-
-    const alert = await this.alertController.create({
-      header: this.translate.instant('monitorizacao.shell.vitals.editCellTitle', { field: fieldLabel }),
-      subHeader: this.translate.instant('monitorizacao.shell.vitals.rangeHint', limits),
-      inputs: [
-        { name: 'value', type: 'number', value: record[field] ?? null },
-      ],
-      buttons: [
-        { text: this.translate.instant('common.cancel'), role: 'cancel' },
-        {
-          text: this.translate.instant('common.save'),
-          handler: async (d) => {
-            if (d.value === '' || d.value === null || d.value === undefined) {
-              this.updateVitalField(record.clientId, field, undefined);
-              return true;
-            }
-            const value = Number(d.value);
-            if (!Number.isFinite(value) || value < limits.min || value > limits.max) {
-              await this.toast(this.translate.instant('monitorizacao.shell.vitals.invalidValue', limits), 'warning');
-              return false;
-            }
-            this.updateVitalField(record.clientId, field, value);
-            return true;
-          },
-        },
-      ],
-    });
-    await alert.present();
-  }
-
-  async onHydrationCellTap(record: VitalRecord): Promise<void> {
-    if (!this.canEdit) return;
-    const alert = await this.alertController.create({
-      header: this.translate.instant('monitorizacao.shell.vitals.editHydrationTitle'),
-      inputs: [
-        { name: 'volumeMl', type: 'number', placeholder: this.translate.instant('monitorizacao.shell.vitals.hydrationVolumePlaceholder') },
-      ],
-      buttons: [
-        { text: this.translate.instant('common.cancel'), role: 'cancel' },
-        {
-          text: this.translate.instant('common.save'),
-          handler: (d) => {
-            const volumeMl = Number(d.volumeMl);
-            if (!Number.isFinite(volumeMl) || volumeMl <= 0) return false;
-            const entry: FluidBalance = {
-              clientId: this.newClientId(),
-              timestamp: record.timestamp,
-              time: record.time,
-              type: 'gain',
-              item: this.translate.instant('monitorizacao.shell.vitals.rows.hydration'),
-              volumeMl,
-              itemId: null,
-              detail: null,
-              categoryId: null,
-              balanceTypeId: null,
-            };
-            this.fluidBalance = [...this.fluidBalance, entry].sort(this.byTs);
-            this.persistDraft();
-            return true;
-          },
-        },
-      ],
-    });
-    await alert.present();
-  }
-
-  private updateVitalField(clientId: string | undefined, field: 'temp' | 'spo2' | 'etco2' | 'bis', value: number | undefined): void {
-    this.vitalRecords = this.vitalRecords.map((r) => (r.clientId === clientId ? { ...r, [field]: value } : r));
+    const { data: values, role } = await this.presentPanel<{ volumeMl: number; time: string }>(HydrationPanelComponent, { initial: null });
+    if (role !== 'save' || !values) return;
+    const now = new Date();
+    const entry: FluidBalance = {
+      clientId: this.newClientId(),
+      timestamp: this.replaceTimeInIso(now.toISOString(), values.time),
+      time: values.time || this.formatHM(now),
+      type: 'gain',
+      item: this.translate.instant('monitorizacao.shell.vitals.rows.hydration'),
+      volumeMl: values.volumeMl,
+      itemId: null,
+      detail: null,
+      categoryId: null,
+      balanceTypeId: null,
+    };
+    this.fluidBalance = [...this.fluidBalance, entry].sort(this.byTs);
     this.persistDraft();
   }
 
-  private updateVitalCustomField(clientId: string | undefined, key: string, value: number | undefined): void {
-    this.vitalRecords = this.vitalRecords.map((r) => {
-      if (r.clientId !== clientId) return r;
-      const custom = { ...(r.custom || {}) };
-      if (value === undefined) delete custom[key];
-      else custom[key] = value;
-      return { ...r, custom };
-    });
+  async onHydrationTap(entry: FluidBalance): Promise<void> {
+    await this.editHydration(entry);
+  }
+
+  private async editHydration(entry: FluidBalance): Promise<void> {
+    if (!this.canEdit) return;
+    const { data: values, role } = await this.presentPanel<{ volumeMl: number; time: string }>(HydrationPanelComponent, { initial: entry });
+    if (role === 'delete') {
+      await this.onDeleteBalance(entry);
+      return;
+    }
+    if (role !== 'save' || !values) return;
+    const timestamp = this.replaceTimeInIso(entry.timestamp, values.time);
+    this.fluidBalance = this.fluidBalance
+      .map((b) => (b.clientId === entry.clientId ? { ...b, volumeMl: values.volumeMl, timestamp, time: values.time || b.time } : b))
+      .sort(this.byTs);
     this.persistDraft();
   }
 
@@ -783,20 +941,25 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
           text: this.translate.instant('common.save'),
           handler: (d) => {
             if (!d.time || d.time === record.time) return;
-            const oldMinuteEpoch = Math.floor(new Date(record.timestamp).getTime() / 60000);
-            const newTimestamp = this.replaceTimeInIso(record.timestamp, d.time);
-            const newMinuteEpoch = Math.floor(new Date(newTimestamp).getTime() / 60000);
-            const deltaMinutes = newMinuteEpoch - oldMinuteEpoch;
-            const updated: VitalRecord = { ...record, timestamp: newTimestamp, time: d.time };
-            this.vitalRecords = deltaMinutes !== 0
-              ? this.cascadeVitalTimeShift(record.clientId!, updated, deltaMinutes)
-              : this.vitalRecords.map((r) => (r.clientId === record.clientId ? updated : r)).sort(this.byTs);
-            this.persistDraft();
+            this.applyVitalTimeChange(record, d.time);
           },
         },
       ],
     });
     await alert.present();
+  }
+
+  /** Troca a hora de um registro com o mesmo deslocamento em cascata de antes. */
+  private applyVitalTimeChange(record: VitalRecord, time: string): void {
+    const oldMinuteEpoch = Math.floor(new Date(record.timestamp).getTime() / 60000);
+    const newTimestamp = this.replaceTimeInIso(record.timestamp, time);
+    const newMinuteEpoch = Math.floor(new Date(newTimestamp).getTime() / 60000);
+    const deltaMinutes = newMinuteEpoch - oldMinuteEpoch;
+    const updated: VitalRecord = { ...record, timestamp: newTimestamp, time };
+    this.vitalRecords = deltaMinutes !== 0
+      ? this.cascadeVitalTimeShift(record.clientId!, updated, deltaMinutes)
+      : this.vitalRecords.map((r) => (r.clientId === record.clientId ? updated : r)).sort(this.byTs);
+    this.persistDraft();
   }
 
  
@@ -838,13 +1001,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     if (!this.canEdit || this.isAgentModalOpen) return;
     this.isAgentModalOpen = true;
     try {
-      const modal = await this.modalController.create({
-        component: ClinicalItemModalComponent,
-        componentProps: { type: 'agent' },
-        cssClass: 'clinical-item-modal',
-      });
-      await modal.present();
-      const { data } = await modal.onDidDismiss();
+      const { data } = await this.presentPanel(ItemPanelComponent, { type: 'agent', recentAgents: this.recentAgents }, 'agent');
       if (!data) return;
       const now = new Date();
       const timestamp = data.time ? this.replaceTimeInIso(now.toISOString(), data.time) : now.toISOString();
@@ -900,13 +1057,12 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     if (!this.canEdit || this.isAgentModalOpen) return;
     this.isAgentModalOpen = true;
     try {
-      const modal = await this.modalController.create({
-        component: ClinicalItemModalComponent,
-        componentProps: { type: 'agent', initial: { ...a, time: a.time } },
-        cssClass: 'clinical-item-modal',
-      });
-      await modal.present();
-      const { data } = await modal.onDidDismiss();
+      const { data, role } = await this.presentPanel(ItemPanelComponent, { type: 'agent', initial: { ...a, time: a.time }, recentAgents: this.recentAgents }, null);
+      if (role === 'delete') {
+        this.isAgentModalOpen = false;
+        await this.onDeleteAgent(a);
+        return;
+      }
       if (!data || data.type !== 'agent') return;
       const ts = data.time ? this.replaceTimeInIso(a.timestamp, data.time) : a.timestamp;
       this.agents = this.agents
@@ -942,13 +1098,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     if (!this.canEdit || this.isEventModalOpen) return;
     this.isEventModalOpen = true;
     try {
-      const modal = await this.modalController.create({
-        component: ClinicalItemModalComponent,
-        componentProps: { type: 'event' },
-        cssClass: 'clinical-item-modal',
-      });
-      await modal.present();
-      const { data } = await modal.onDidDismiss();
+      const { data } = await this.presentPanel(ItemPanelComponent, { type: 'event' }, 'event');
       if (!data) return;
       const now = new Date();
       const timestamp = data.time ? this.replaceTimeInIso(now.toISOString(), data.time) : now.toISOString();
@@ -976,13 +1126,12 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     if (!this.canEdit || this.isEventModalOpen) return;
     this.isEventModalOpen = true;
     try {
-      const modal = await this.modalController.create({
-        component: ClinicalItemModalComponent,
-        componentProps: { type: 'event', initial: { ...e, time: e.time } },
-        cssClass: 'clinical-item-modal',
-      });
-      await modal.present();
-      const { data } = await modal.onDidDismiss();
+      const { data, role } = await this.presentPanel(ItemPanelComponent, { type: 'event', initial: { ...e, time: e.time } }, null);
+      if (role === 'delete') {
+        this.isEventModalOpen = false;
+        await this.onDeleteEvent(e);
+        return;
+      }
       if (!data) return;
       const ts = data.time ? this.replaceTimeInIso(e.timestamp, data.time) : e.timestamp;
       this.clinicalEvents = this.clinicalEvents
@@ -1022,13 +1171,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     if (!this.canEdit || this.isBalanceModalOpen) return;
     this.isBalanceModalOpen = true;
     try {
-      const modal = await this.modalController.create({
-        component: ClinicalItemModalComponent,
-        componentProps: { type: 'balance' },
-        cssClass: 'clinical-item-modal',
-      });
-      await modal.present();
-      const { data } = await modal.onDidDismiss();
+      const { data } = await this.presentPanel(ItemPanelComponent, { type: 'balance', balanceTotals: this.balanceTotals }, 'balance');
       if (!data) return;
       const now = new Date();
       const timestamp = data.time ? this.replaceTimeInIso(now.toISOString(), data.time) : now.toISOString();
@@ -1054,13 +1197,12 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
     if (!this.canEdit || this.isBalanceModalOpen) return;
     this.isBalanceModalOpen = true;
     try {
-      const modal = await this.modalController.create({
-        component: ClinicalItemModalComponent,
-        componentProps: { type: 'balance', initial: { ...b, time: b.time } },
-        cssClass: 'clinical-item-modal',
-      });
-      await modal.present();
-      const { data } = await modal.onDidDismiss();
+      const { data, role } = await this.presentPanel(ItemPanelComponent, { type: 'balance', initial: { ...b, time: b.time }, balanceTotals: this.balanceTotals }, null);
+      if (role === 'delete') {
+        this.isBalanceModalOpen = false;
+        await this.onDeleteBalance(b);
+        return;
+      }
       if (!data || data.type !== 'balance') return;
       const ts = data.time ? this.replaceTimeInIso(b.timestamp, data.time) : b.timestamp;
       this.fluidBalance = this.fluidBalance
@@ -1186,23 +1328,17 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   async openHistory(initialTab: HistoryTab = 'vitals'): Promise<void> {
     let reopenTab: HistoryTab | null = initialTab;
     while (reopenTab) {
-      const tab = reopenTab;
+      const tab: HistoryTab = reopenTab;
       reopenTab = null;
 
-      const modal = await this.modalController.create({
-        component: HistoryModalComponent,
-        cssClass: 'history-modal',
-        componentProps: {
-          initialTab: tab,
-          vitalRecords: this.vitalRecords,
-          agents: this.agents,
-          events: this.clinicalEvents,
-          balance: this.fluidBalance,
-          readonly: !this.canEdit,
-        },
-      });
-      await modal.present();
-      const { data, role } = await modal.onDidDismiss<HistoryAction>();
+      const { data, role }: { data?: HistoryAction; role?: string } = await this.presentPanel<HistoryAction>(HistoryModalComponent, {
+        initialTab: tab,
+        vitalRecords: this.vitalRecords,
+        agents: this.agents,
+        events: this.clinicalEvents,
+        balance: this.fluidBalance,
+        readonly: !this.canEdit,
+      }, 'history');
       if (role !== 'action' || !data) return;
 
       await this.handleHistoryAction(data);
@@ -1216,7 +1352,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   private async handleHistoryAction(action: HistoryAction): Promise<void> {
     if (action.type === 'vital') {
       if (action.action === 'delete') await this.onDeleteVitalRecord(action.item);
-      // Edição de sinais vitais é feita célula a célula na grade principal.
+      else await this.onEditVitalRecord(action.item);
       return;
     }
     if (action.type === 'agent') {
@@ -1229,8 +1365,13 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
       else await this.onDeleteEvent(action.item);
       return;
     }
-    if (action.action === 'edit') await this.onEditBalance(action.item);
-    else await this.onDeleteBalance(action.item);
+    if (action.action === 'edit') {
+      // Hidratação não é item de catálogo: edita volume e hora, não abre o formulário de balanço.
+      if (isHydrationEntry(action.item)) await this.editHydration(action.item);
+      else await this.onEditBalance(action.item);
+    } else {
+      await this.onDeleteBalance(action.item);
+    }
   }
 
   async onFinalize(): Promise<void> {
@@ -1396,13 +1537,8 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
   async openFichaAnestesicaModal(): Promise<void> {
     const data = await this.buildFichaAnestesicaRecordData();
-    const modal = await this.modalController.create({
-      component: RecordViewerModalComponent,
-      componentProps: { data },
-      cssClass: 'fa-sheet-modal',
-      backdropDismiss: false,
-    });
-    await modal.present();
+    // Dados complementares em painel: a linha do tempo continua visível ao lado/acima.
+    await this.presentPanel(RecordViewerModalComponent, { data });
   }
 
   private async buildFichaAnestesicaRecordData(): Promise<RecordData> {

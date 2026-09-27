@@ -269,6 +269,48 @@ ion-radio {
   }
 }
 
+// Painéis da Monitorização: formulários abertos como gaveta (paisagem) ou folha
+// inferior (retrato) SEM bloquear a tela — o host não captura toques e não há
+// fundo escuro, então a linha do tempo continua visível e rolável.
+ion-modal.mon-panel {
+  --backdrop-opacity: 0;
+  pointer-events: none;
+
+  &::part(content) {
+    pointer-events: auto;
+    box-shadow: 0 8px 32px rgba(34, 55, 64, 0.22);
+  }
+}
+
+// Paisagem: à direita, abaixo da barra superior e à esquerda do trilho de ferramentas.
+ion-modal.mon-panel--side {
+  --width: 420px;
+  --max-width: 46vw;
+  --height: calc(100% - 104px);
+  --border-radius: 16px 0 0 16px;
+  justify-content: flex-end;
+  align-items: flex-end;
+
+  &::part(content) {
+    margin-right: 76px;
+    border-radius: 16px 0 0 16px;
+  }
+}
+
+// Retrato: sobe da base, acima da barra de ferramentas; a metade de cima (gráfico) fica visível.
+ion-modal.mon-panel--bottom {
+  --width: 100%;
+  --max-width: 100%;
+  --height: 56%;
+  --border-radius: 18px 18px 0 0;
+  align-items: flex-end;
+
+  &::part(content) {
+    margin-bottom: 76px;
+    border-radius: 18px 18px 0 0;
+  }
+}
+
 .auto-height-modal {
   --height: fit-content;
   --max-height: 90vh;
@@ -286,35 +328,9 @@ ion-radio {
 }
 
 
-.clinical-item-modal {
-  --height: 90vh;
-  --max-height: 640px;
-  --width: 92%;
-  --max-width: 480px;
-  --border-radius: 20px;
-  align-items: center;
-  justify-content: center;
 
-  &::part(content) {
-    border-radius: 20px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  }
-}
 
-.quick-vital-modal {
-  --height: 90vh;
-  --max-height: 720px;
-  --width: 92%;
-  --max-width: 560px;
-  --border-radius: 20px;
-  align-items: center;
-  justify-content: center;
 
-  &::part(content) {
-    border-radius: 20px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  }
-}
 
 
 @media print {

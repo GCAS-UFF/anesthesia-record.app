@@ -250,7 +250,12 @@
         "turnOnO2": "Turn on O2",
         "turnOffO2": "Turn off O2",
         "turnOnAir": "Turn on Air",
-        "turnOffAir": "Turn off Air"
+        "turnOffAir": "Turn off Air",
+        "confirmOnTitle": "Turn on {{name}}?",
+        "confirmOffTitle": "Turn off {{name}}?",
+        "confirmMessage": "It will be recorded at {{time}}.",
+        "confirmOn": "Turn on",
+        "confirmOff": "Turn off"
       },
       "agents": {
         "title": "Agents",
@@ -277,6 +282,116 @@
       "history": {
         "editAria": "Edit",
         "deleteAria": "Delete"
+      },
+      "timeline": {
+        "records": "{{count}} records",
+        "editRecordAria": "Edit record at {{time}}",
+        "on": "on",
+        "off": "off",
+        "chartTitle": "BP / HR",
+        "rows": {
+          "pas": "SBP",
+          "pad": "DBP",
+          "pam": "MAP",
+          "fc": "HR",
+          "agents": "Drugs",
+          "gains": "Gains",
+          "losses": "Losses",
+          "events": "Events"
+        },
+        "legendAnesthesia": "anesthesia (start/end)",
+        "legendSurgery": "surgery (start/end)",
+        "legendAuto": "grey time = auto record",
+        "zoomIn": "Zoom in",
+        "zoomOut": "Zoom out",
+        "goStart": "Start",
+        "goNow": "Now",
+        "zoomLevel": "Zoom level"
+      },
+      "topBar": {
+        "back": "Back to the anesthesia record",
+        "patientAria": "View patient and anesthesia record details",
+        "syncAria": "Sync now ({{count}} pending)"
+      },
+      "tools": {
+        "aria": "Recording tools",
+        "vital": "Vitals",
+        "agent": "Drugs",
+        "balance": "Fluids",
+        "event": "Events",
+        "history": "History",
+        "more": "More",
+        "moreTitle": "More options",
+        "changePosition": "Change position",
+        "newCustomField": "New custom field"
+      },
+      "panel": {
+        "busy": "Close the open panel before opening another one."
+      },
+      "panels": {
+        "vitalNewTitle": "New vital signs record",
+        "vitalEditTitle": "Record at {{time}}",
+        "autoWarning": "Created by auto recording (copy of the previous one). Check the values.",
+        "time": "Time",
+        "now": "Now",
+        "timeCascadeHint": "Changing the time also shifts the following records, as before.",
+        "outOfRange": "Out of range",
+        "back": "Back to list",
+        "agentNewTitle": "New drug",
+        "agentEditTitle": "Edit drug",
+        "eventNewTitle": "New event",
+        "eventEditTitle": "Edit event",
+        "balanceNewTitle": "Fluid balance",
+        "balanceEditTitle": "Edit fluid entry",
+        "balanceNet": "Net",
+        "search": "Search",
+        "recents": "Recent in this case",
+        "catalog": "Catalog",
+        "useCustom": "Use “{{name}}”",
+        "noResults": "Nothing found.",
+        "change": "Change",
+        "modeDose": "Dose",
+        "modeBolus": "Bolus",
+        "modePump": "Infusion pump",
+        "dose": "Dose",
+        "unit": "Unit",
+        "route": "Route",
+        "rate": "Rate",
+        "volume": "Volume",
+        "rateUnit": "Rate unit",
+        "description": "Description",
+        "detail": "Detail",
+        "missingDose": "Enter the dose.",
+        "missingRoute": "Choose the route.",
+        "missingPump": "Enter rate and volume.",
+        "missingDescription": "Describe the event.",
+        "missingVolume": "Enter the volume.",
+        "hydrationNewTitle": "Hydration",
+        "hydrationEditTitle": "Edit hydration",
+        "hydrationHint": "Quick entry, outside the fluid balance catalog. Shown on the Hydration row at the given minute."
+      },
+      "customize": {
+        "title": "Customize screen",
+        "hint": "Drag by the ≡ handle to reorder and use Visible/Hidden. The timeline shows a preview. Locked items are fixed. Only your view changes: no patient data is altered.",
+        "dragAria": "Drag to reorder",
+        "fixed": "fixed",
+        "toggleAria": "Show or hide",
+        "hidden": "Hidden",
+        "visible": "Visible",
+        "resetConfirm": "Restore the default order and visibility?",
+        "reset": "Restore default",
+        "save": "Save layout",
+        "saved": "Layout saved for your user.",
+        "groups": {
+          "resources": "Resources (O₂, air, pumps)",
+          "agents": "Drugs",
+          "chart": "BP/HR chart",
+          "pressure": "SBP/DBP/MAP/HR values",
+          "monitor": "Monitoring (SpO₂, EtCO₂, Temp, BIS)",
+          "fluids": "Hydration and balance",
+          "position": "Position",
+          "events": "Events"
+        }
       }
     }
   }

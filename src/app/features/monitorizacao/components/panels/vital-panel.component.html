@@ -1,0 +1,55 @@
+<header class="pn__head">
+  <h2 class="pn__title">
+    {{ (isEdit ? 'monitorizacao.shell.panels.vitalEditTitle' : 'monitorizacao.shell.panels.vitalNewTitle') | translate: { time: time } }}
+  </h2>
+  <button type="button" class="pn__icon-btn" (click)="cancel()" [attr.aria-label]="'common.close' | translate">×</button>
+</header>
+
+<div class="pn__body">
+  <p class="vp__auto" *ngIf="isAuto">{{ 'monitorizacao.shell.panels.autoWarning' | translate }}</p>
+
+  <div class="pn__time">
+    <span class="pn__label">{{ 'monitorizacao.shell.panels.time' | translate }}</span>
+    <input type="time" [(ngModel)]="time" [attr.aria-label]="'monitorizacao.shell.panels.time' | translate" />
+    <button type="button" class="pn__chip" (click)="setNow()">{{ 'monitorizacao.shell.panels.now' | translate }}</button>
+  </div>
+  <p class="pn__hint" *ngIf="isEdit && time !== initialValue?.time">{{ 'monitorizacao.shell.panels.timeCascadeHint' | translate }}</p>
+
+  <div class="vp__grid">
+    <button
+      type="button"
+      class="pn__field"
+      *ngFor="let f of fields"
+      [class.pn__field--active]="active === f.key"
+      [class.pn__field--invalid]="isInvalid(f)"
+      (click)="select(f.key)"
+    >
+      <span class="pn__field-label">
+        <span>{{ f.label || (f.labelKey! | translate) }} {{ f.unit }}</span>
+        <em *ngIf="f.min != null">{{ f.min }}–{{ f.max }}</em>
+      </span>
+      <span class="pn__field-value">{{ values[f.key] }}</span>
+      <span class="pn__field-error" *ngIf="isInvalid(f)">{{ 'monitorizacao.shell.panels.outOfRange' | translate }}</span>
+    </button>
+  </div>
+
+  <p class="pn__hint" *ngIf="touched && !hasAnyValue">{{ 'sharedComponents.quickVitalInput.validationMessage' | translate }}</p>
+</div>
+
+<div class="vp__keypad">
+  <app-numeric-keypad
+    [value]="values[active]"
+    [allowDecimal]="!!activeField.decimal"
+    [allowNegative]="(activeField.min ?? 0) < 0"
+    (valueChange)="onKeypad($event)"
+  ></app-numeric-keypad>
+</div>
+
+<footer class="pn__foot">
+  <button type="button" class="pn__btn pn__btn--danger" *ngIf="isEdit" (click)="remove()">
+    {{ 'monitorizacao.page.actions.delete' | translate }}
+  </button>
+  <button type="button" class="pn__btn pn__btn--primary" [disabled]="!canSave" (click)="save()">
+    {{ 'sharedComponents.quickVitalInput.saveRecord' | translate }}
+  </button>
+</footer>

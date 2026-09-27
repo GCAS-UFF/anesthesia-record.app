@@ -1,0 +1,23 @@
+@use './panel';
+@use '../styles/monitoring-tokens' as t;
+
+.vp__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: 8px;
+}
+
+.vp__auto {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: t.$radius-base;
+  background: t.$c-warning-soft;
+  color: t.$c-warning-ink;
+  font-size: t.$fs-12;
+}
+
+.vp__keypad {
+  flex: none;
+  padding: 8px 14px 0;
+  border-top: 1px solid t.$border;
+}

@@ -250,7 +250,12 @@
         "turnOnO2": "Encender O2",
         "turnOffO2": "Apagar O2",
         "turnOnAir": "Encender Aire",
-        "turnOffAir": "Apagar Aire"
+        "turnOffAir": "Apagar Aire",
+        "confirmOnTitle": "¿Encender {{name}}?",
+        "confirmOffTitle": "¿Apagar {{name}}?",
+        "confirmMessage": "Se registrará a las {{time}}.",
+        "confirmOn": "Encender",
+        "confirmOff": "Apagar"
       },
       "agents": {
         "title": "Agentes",
@@ -277,6 +282,116 @@
       "history": {
         "editAria": "Editar",
         "deleteAria": "Eliminar"
+      },
+      "timeline": {
+        "records": "{{count}} registros",
+        "editRecordAria": "Editar registro de las {{time}}",
+        "on": "encendido",
+        "off": "apagado",
+        "chartTitle": "PA / FC",
+        "rows": {
+          "pas": "PAS",
+          "pad": "PAD",
+          "pam": "PAM",
+          "fc": "FC",
+          "agents": "Fármacos",
+          "gains": "Ingresos",
+          "losses": "Pérdidas",
+          "events": "Eventos"
+        },
+        "legendAnesthesia": "anestesia (inicio/fin)",
+        "legendSurgery": "cirugía (inicio/fin)",
+        "legendAuto": "hora en gris = registro automático",
+        "zoomIn": "Acercar",
+        "zoomOut": "Alejar",
+        "goStart": "Inicio",
+        "goNow": "Ahora",
+        "zoomLevel": "Nivel de zoom"
+      },
+      "topBar": {
+        "back": "Volver a la ficha anestésica",
+        "patientAria": "Ver datos del paciente y de la ficha anestésica",
+        "syncAria": "Sincronizar ahora ({{count}} pendientes)"
+      },
+      "tools": {
+        "aria": "Herramientas de registro",
+        "vital": "Signos",
+        "agent": "Fármacos",
+        "balance": "Balance",
+        "event": "Eventos",
+        "history": "Historial",
+        "more": "Más",
+        "moreTitle": "Más opciones",
+        "changePosition": "Cambiar posición",
+        "newCustomField": "Nuevo campo personalizado"
+      },
+      "panel": {
+        "busy": "Cierre el panel abierto antes de abrir otro."
+      },
+      "panels": {
+        "vitalNewTitle": "Nuevo registro de signos",
+        "vitalEditTitle": "Registro de las {{time}}",
+        "autoWarning": "Registro creado automáticamente (copia del anterior). Revise los valores.",
+        "time": "Hora",
+        "now": "Ahora",
+        "timeCascadeHint": "Cambiar la hora también desplaza los registros siguientes, como antes.",
+        "outOfRange": "Fuera de rango",
+        "back": "Volver a la lista",
+        "agentNewTitle": "Nuevo fármaco",
+        "agentEditTitle": "Editar fármaco",
+        "eventNewTitle": "Nuevo evento",
+        "eventEditTitle": "Editar evento",
+        "balanceNewTitle": "Balance hídrico",
+        "balanceEditTitle": "Editar balance",
+        "balanceNet": "Saldo",
+        "search": "Buscar",
+        "recents": "Recientes de este caso",
+        "catalog": "Catálogo",
+        "useCustom": "Usar “{{name}}”",
+        "noResults": "Nada encontrado.",
+        "change": "Cambiar",
+        "modeDose": "Dosis",
+        "modeBolus": "Bolo",
+        "modePump": "Bomba de infusión",
+        "dose": "Dosis",
+        "unit": "Unidad",
+        "route": "Vía",
+        "rate": "Tasa",
+        "volume": "Volumen",
+        "rateUnit": "Unidad de la tasa",
+        "description": "Descripción",
+        "detail": "Detalle",
+        "missingDose": "Indique la dosis.",
+        "missingRoute": "Elija la vía.",
+        "missingPump": "Indique tasa y volumen.",
+        "missingDescription": "Describa el evento.",
+        "missingVolume": "Indique el volumen.",
+        "hydrationNewTitle": "Hidratación",
+        "hydrationEditTitle": "Editar hidratación",
+        "hydrationHint": "Registro rápido, fuera del catálogo de balance. Aparece en la fila Hidratación en el minuto indicado."
+      },
+      "customize": {
+        "title": "Personalizar pantalla",
+        "hint": "Arrastre por el asa ≡ para cambiar el orden y use Visible/Oculto. La línea de tiempo muestra la vista previa. Los elementos con candado son fijos. Solo cambia su vista: no se altera ningún dato del paciente.",
+        "dragAria": "Arrastrar para reordenar",
+        "fixed": "fijo",
+        "toggleAria": "Mostrar u ocultar",
+        "hidden": "Oculto",
+        "visible": "Visible",
+        "resetConfirm": "¿Volver al orden y visibilidad predeterminados?",
+        "reset": "Restaurar predeterminado",
+        "save": "Guardar diseño",
+        "saved": "Diseño guardado para su usuario.",
+        "groups": {
+          "resources": "Recursos (O₂, aire, bombas)",
+          "agents": "Fármacos",
+          "chart": "Gráfico PA/FC",
+          "pressure": "Valores PAS/PAD/PAM/FC",
+          "monitor": "Monitorización (SpO₂, EtCO₂, Temp, BIS)",
+          "fluids": "Hidratación y balance",
+          "position": "Posición",
+          "events": "Eventos"
+        }
       }
     }
   }

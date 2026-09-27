@@ -1,0 +1,8 @@
+@use './panel';
+@use '../styles/monitoring-tokens' as t;
+
+.hp__keypad {
+  flex: none;
+  padding: 8px 14px 0;
+  border-top: 1px solid t.$border;
+}

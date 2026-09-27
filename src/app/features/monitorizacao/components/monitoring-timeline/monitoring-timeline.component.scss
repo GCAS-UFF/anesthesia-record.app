@@ -1,0 +1,458 @@
+@use '../styles/monitoring-tokens' as t;
+
+:host {
+  display: block;
+  min-height: 0;
+  min-width: 0;
+}
+
+.tl {
+  --label-w: 168px;
+  --row-h: 28px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: t.$surface-card;
+  font-family: t.$font-body;
+  color: t.$text-deep;
+
+  // Retrato tem altura de sobra: linhas mais altas (alvo de toque melhor).
+  @media (orientation: portrait) {
+    --row-h: 32px;
+    --label-w: 156px;
+  }
+
+  &__scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    // Rolagem continua nativa; a pinça fica com o zoom da linha do tempo (não amplia a página).
+    touch-action: pan-x pan-y;
+  }
+
+  &__canvas {
+    position: relative;
+    min-width: 100%;
+  }
+
+  &__grp {
+    border-bottom: 1px solid t.$border-strong;
+  }
+
+  &__row {
+    display: flex;
+    min-height: var(--row-h);
+    border-bottom: 1px solid t.$border;
+
+    &:last-child { border-bottom: none; }
+
+    &--head {
+      position: sticky;
+      top: 0;
+      z-index: 4;
+      height: 30px;
+      min-height: 30px;
+      background: t.$surface-bg;
+      border-bottom: 1px solid t.$border-strong;
+    }
+
+    &--position { min-height: calc(var(--row-h) + 8px); }
+  }
+
+  // Rótulo fixo à esquerda ao rolar na horizontal.
+  &__lab {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    flex: none;
+    width: var(--label-w);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+    background: t.$surface-card;
+    border: none;
+    border-right: 1px solid t.$border-strong;
+    font-family: t.$font-body;
+    font-size: t.$fs-12;
+    font-weight: 700;
+    color: t.$text-deep;
+    text-align: left;
+
+    small {
+      font-size: t.$fs-10;
+      font-weight: 500;
+      color: t.$text-ink;
+    }
+
+    &--corner {
+      z-index: 5;
+      background: t.$surface-bg;
+      font-size: t.$fs-11;
+      font-weight: 600;
+      color: t.$text-ink;
+      justify-content: space-between;
+    }
+
+    &--action {
+      cursor: pointer;
+
+      &:not(:disabled):active { background: t.$surface-accent-soft; }
+      &:disabled { cursor: default; }
+    }
+
+    &--chart {
+      position: sticky;
+      align-items: flex-start;
+      padding-top: 26px;
+    }
+  }
+
+  &__gear {
+    width: 30px;
+    height: 26px;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    font-size: 16px;
+    color: t.$c-primary;
+
+    &:active { background: t.$surface-accent-soft; }
+  }
+
+  &__chart-title {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__ytick {
+    position: absolute;
+    right: 8px;
+    transform: translateY(-50%);
+    font-size: t.$fs-11;
+    font-weight: 500;
+    color: t.$text-ink;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__last {
+    margin-left: auto;
+    font-size: t.$fs-13;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+
+    &--text {
+      max-width: 70px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: t.$fs-11;
+      font-weight: 600;
+      color: t.$text-ink;
+    }
+  }
+
+  &__state {
+    margin-left: auto;
+    font-size: t.$fs-10;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: t.$text-ink;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: t.$surface-panel;
+
+    &--on {
+      color: #fff;
+      background: t.$c-primary;
+    }
+  }
+
+  &__plus {
+    margin-left: auto;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: t.$surface-panel;
+    color: t.$c-primary;
+    font-weight: 800;
+  }
+
+  &__trk {
+    position: relative;
+    flex: none;
+
+    &--chart { overflow: hidden; }
+  }
+
+  &__time {
+    position: absolute;
+    top: 5px;
+    width: 60px;
+    margin-left: -30px;
+    height: 22px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    font-family: t.$font-body;
+    font-size: t.$fs-12;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: t.$text-deep;
+    cursor: pointer;
+
+    &--auto {
+      font-weight: 500;
+      color: t.$text-ink;
+    }
+
+    &:not(:disabled):active { background: t.$surface-accent-soft; }
+    &:disabled { cursor: default; }
+  }
+
+  &__cell {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 60px;
+    margin-left: -30px;
+    border: none;
+    background: transparent;
+    font-family: t.$font-body;
+    font-size: t.$fs-13;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: t.$text-deep;
+    cursor: pointer;
+
+    &--empty {
+      color: t.$border-strong;
+      font-weight: 400;
+    }
+
+    &:not(:disabled):active { background: t.$surface-accent-soft; }
+    &:disabled { cursor: default; }
+  }
+
+  // Alvo de toque da coluna inteira sobre o gráfico.
+  &__hit {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 56px;
+    margin-left: -28px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+
+    &:not(:disabled):active { background: rgba(27, 139, 166, 0.1); }
+    &:disabled { cursor: default; }
+  }
+
+  &__tone--pas { color: t.$c-primary; }
+  &__tone--pad { color: t.$text-deep; }
+  &__tone--pam { color: t.$c-warning-ink; }
+  &__tone--fc { color: t.$c-crimson; }
+  &__tone--gain { color: t.$c-success; }
+  &__tone--loss { color: t.$c-crimson; }
+
+  &__bar {
+    position: absolute;
+    top: 50%;
+    height: 12px;
+    transform: translateY(-50%);
+    border-radius: 6px;
+
+    &--o2 { background: #9fd3e0; }
+    &--air { background: #c9d3d8; }
+  }
+
+  &__pump,
+  &__chip {
+    position: absolute;
+    height: 20px;
+    padding: 0 8px;
+    box-sizing: border-box;
+    border-radius: 6px;
+    border: 1px solid t.$border-strong;
+    background: #fff;
+    font-family: t.$font-body;
+    font-size: t.$fs-11;
+    font-weight: 700;
+    color: t.$text-deep;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+    cursor: pointer;
+
+    &:disabled { cursor: default; }
+  }
+
+  &__pump { background: #e7eef1; }
+
+  &__chip {
+    // O chip começa exatamente no minuto do lançamento (marca à esquerda).
+    border-left: 3px solid t.$text-deep;
+
+    &--agent { background: #eef7fa; border-left-color: t.$c-primary; }
+    &--event { background: t.$c-warning-soft; border-left-color: t.$c-warning-ink; color: t.$c-warning-ink; }
+    &--hydration { background: #e8f4ee; border-left-color: t.$c-success; }
+  }
+
+  &__pos {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding-left: 4px;
+    border-left: 3px solid t.$text-deep;
+    font-size: t.$fs-11;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  &__pos-fig {
+    display: inline-flex;
+    width: 28px;
+    height: 20px;
+    color: t.$text-deep;
+  }
+
+  &__svg { display: block; }
+
+  &__grid { stroke: rgba(34, 55, 64, 0.1); stroke-width: 1; }
+
+  &__ms-line {
+    stroke: t.$c-primary;
+    stroke-width: 1.5;
+    stroke-dasharray: 3 3;
+
+    &--surgery { stroke: t.$c-success; }
+  }
+
+  &__ms-glyph {
+    fill: none;
+    stroke: t.$c-primary;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+
+    &--surgery { stroke: t.$c-success; fill: #fff; }
+  }
+
+  &__ms-text {
+    font-family: t.$font-body;
+    font-size: 10.5px;
+    font-weight: 800;
+    fill: t.$c-primary;
+
+    &--surgery { fill: t.$c-success; }
+  }
+
+  &__line {
+    fill: none;
+    stroke-width: 1.8;
+
+    &--pas { stroke: t.$c-primary; }
+    &--pad { stroke: t.$text-deep; }
+    &--pam { stroke: t.$c-warning-ink; stroke-width: 1.6; stroke-dasharray: 5 3; }
+    &--fc { stroke: t.$c-crimson; }
+  }
+
+  &__mark {
+    &--pas { fill: t.$c-primary; }
+    &--pad { fill: t.$text-deep; }
+    &--fc { fill: t.$c-crimson; stroke: #fff; stroke-width: 1; }
+  }
+
+  &__empty {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    margin: 0;
+    font-size: t.$fs-12;
+    color: t.$text-ink;
+  }
+
+  &__overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--label-w);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  &__now {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-left: 2px dashed t.$c-primary;
+  }
+
+  &__legend {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 34px;
+    padding: 0 10px;
+    border-top: 1px solid t.$border-strong;
+    background: t.$surface-card;
+    font-size: t.$fs-11;
+    color: t.$text-ink;
+    white-space: nowrap;
+    overflow: hidden;
+
+    @media (orientation: portrait) {
+      gap: 8px;
+      .tl__key--opt, .tl__btn--opt { display: none; }
+    }
+  }
+
+  &__key {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    svg { width: 14px; height: 10px; }
+    &--ms { font-weight: 800; color: t.$c-primary; }
+    &--surgery { color: t.$c-success; }
+    &--auto { font-style: italic; }
+  }
+
+  &__spacer { flex: 1; }
+
+  &__zoom {
+    min-width: 34px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: t.$text-deep;
+    text-align: center;
+  }
+
+  &__saved { font-weight: 600; }
+
+  &__btn {
+    min-width: 32px;
+    height: 26px;
+    padding: 0 8px;
+    border-radius: 6px;
+    border: 1px solid t.$border-strong;
+    background: #fff;
+    font-family: t.$font-body;
+    font-size: t.$fs-12;
+    font-weight: 700;
+    color: t.$text-deep;
+
+    &:disabled { opacity: 0.4; }
+  }
+}

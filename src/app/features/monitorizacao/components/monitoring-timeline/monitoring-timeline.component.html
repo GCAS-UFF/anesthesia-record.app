@@ -1,0 +1,297 @@
+<div class="tl">
+  <div class="tl__scroll" #scrollHost>
+    <div class="tl__canvas" #canvas [style.width]="'calc(var(--label-w) + ' + (trackW + reservedRight) + 'px)'">
+
+      <!-- Horas: fixas no topo ao rolar na vertical -->
+      <div class="tl__row tl__row--head">
+        <div class="tl__lab tl__lab--corner" #labelProbe>
+          <span>{{ 'monitorizacao.shell.timeline.records' | translate: { count: vitalRecords.length } }}</span>
+          <button type="button" class="tl__gear" (click)="customize.emit()" [attr.aria-label]="'monitorizacao.shell.customize.title' | translate">⚙</button>
+        </div>
+        <div class="tl__trk" [style.width.px]="trackW">
+          <button
+            type="button"
+            class="tl__time"
+            *ngFor="let c of columns; trackBy: trackCol"
+            [class.tl__time--auto]="c.record.isAuto"
+            [style.left.px]="c.x"
+            [disabled]="readonly"
+            [attr.aria-label]="'monitorizacao.shell.timeline.editRecordAria' | translate: { time: c.record.time }"
+            (click)="onCell(c.record, null)"
+          >{{ c.record.time }}</button>
+        </div>
+      </div>
+
+      <!-- Grupos na ordem escolhida pelo usuário (modo Personalizar); gráfico e valores de PA/FC são fixos -->
+      <ng-container *ngFor="let g of groups" [ngSwitch]="g">
+        <ng-container *ngSwitchCase="'resources'">
+        <!-- Recursos -->
+        <div class="tl__grp">
+          <div class="tl__row">
+            <button type="button" class="tl__lab tl__lab--action" [disabled]="readonly" (click)="resourceToggle.emit('o2')">
+              <span>{{ 'monitorizacao.shell.resources.o2Label' | translate }}</span>
+              <span class="tl__state" [class.tl__state--on]="isO2Active">{{ (isO2Active ? 'monitorizacao.shell.timeline.on' : 'monitorizacao.shell.timeline.off') | translate }}</span>
+            </button>
+            <div class="tl__trk" [style.width.px]="trackW">
+              <span class="tl__bar tl__bar--o2" *ngFor="let b of o2Bars" [style.left.px]="b.x" [style.width.px]="b.w"></span>
+            </div>
+          </div>
+          <div class="tl__row">
+            <button type="button" class="tl__lab tl__lab--action" [disabled]="readonly" (click)="resourceToggle.emit('air')">
+              <span>{{ 'monitorizacao.shell.resources.airLabel' | translate }}</span>
+              <span class="tl__state" [class.tl__state--on]="isAirActive">{{ (isAirActive ? 'monitorizacao.shell.timeline.on' : 'monitorizacao.shell.timeline.off') | translate }}</span>
+            </button>
+            <div class="tl__trk" [style.width.px]="trackW">
+              <span class="tl__bar tl__bar--air" *ngFor="let b of airBars" [style.left.px]="b.x" [style.width.px]="b.w"></span>
+            </div>
+          </div>
+          <div class="tl__row" *ngIf="pumpChips.length" [style.height.px]="laneRowHeight(pumpChips)">
+            <div class="tl__lab"><span>{{ 'monitorizacao.shell.resources.infusionPumpLabel' | translate }}</span></div>
+            <div class="tl__trk" [style.width.px]="trackW">
+              <button
+                type="button"
+                class="tl__pump"
+                *ngFor="let p of pumpChips; trackBy: trackChip"
+                [style.left.px]="p.x"
+                [style.width.px]="p.w"
+                [style.top.px]="laneTop(p.lane)"
+                [disabled]="readonly"
+                [title]="p.label"
+                (click)="pumpTap.emit(p.item)"
+              >{{ p.label }}</button>
+            </div>
+          </div>
+        </div>
+  
+          </ng-container>
+        <ng-container *ngSwitchCase="'agents'">
+        <!-- Fármacos: no minuto exato em que foram lançados -->
+        <div class="tl__grp">
+          <div class="tl__row" [style.height.px]="laneRowHeight(agentChips)">
+            <div class="tl__lab"><span>{{ 'monitorizacao.shell.timeline.rows.agents' | translate }}</span></div>
+            <div class="tl__trk" [style.width.px]="trackW">
+              <button
+                type="button"
+                class="tl__chip tl__chip--agent"
+                *ngFor="let a of agentChips; trackBy: trackChip"
+                [style.left.px]="a.x"
+                [style.max-width.px]="a.w"
+                [style.top.px]="laneTop(a.lane)"
+                [disabled]="readonly"
+                [title]="a.item.time + ' · ' + a.label"
+                (click)="agentTap.emit(a.item)"
+              >{{ a.label }}</button>
+            </div>
+          </div>
+        </div>
+  
+          </ng-container>
+        <ng-container *ngSwitchCase="'chart'">
+        <!-- Gráfico PA/FC + valores alinhados logo abaixo (sem tooltip) -->
+        <div class="tl__grp tl__grp--chart">
+          <div class="tl__row" [style.height.px]="chartH">
+            <div class="tl__lab tl__lab--chart">
+              <span class="tl__chart-title">
+                <strong>{{ 'monitorizacao.shell.timeline.chartTitle' | translate }}</strong>
+                <small>mmHg · bpm</small>
+              </span>
+              <span class="tl__ytick" *ngFor="let t of yTicks" [style.top.px]="yFor(t)">{{ t }}</span>
+            </div>
+            <div class="tl__trk tl__trk--chart" [style.width.px]="trackW">
+              <svg class="tl__svg" [attr.width]="trackW" [attr.height]="chartH" [attr.viewBox]="'0 0 ' + trackW + ' ' + chartH" aria-hidden="true">
+                <line *ngFor="let t of yTicks" x1="0" [attr.x2]="trackW" [attr.y1]="yFor(t)" [attr.y2]="yFor(t)" class="tl__grid" />
+  
+                <!-- Marcos no topo do gráfico: × anestesia, ○ cirurgia (início e fim), com a hora ao lado -->
+                <g *ngFor="let m of milestones">
+                  <line [attr.x1]="m.x" [attr.x2]="m.x" [attr.y1]="glyphY + glyphR + 3" [attr.y2]="chartH" class="tl__ms-line" [class.tl__ms-line--surgery]="m.kind === 'surgery'" />
+                  <ng-container *ngIf="m.kind === 'anesthesia'">
+                    <line [attr.x1]="m.x - glyphR" [attr.y1]="glyphY - glyphR" [attr.x2]="m.x + glyphR" [attr.y2]="glyphY + glyphR" class="tl__ms-glyph" />
+                    <line [attr.x1]="m.x - glyphR" [attr.y1]="glyphY + glyphR" [attr.x2]="m.x + glyphR" [attr.y2]="glyphY - glyphR" class="tl__ms-glyph" />
+                  </ng-container>
+                  <circle *ngIf="m.kind === 'surgery'" [attr.cx]="m.x" [attr.cy]="glyphY" [attr.r]="glyphR" class="tl__ms-glyph tl__ms-glyph--surgery" />
+                  <text [attr.x]="m.x + glyphR + 4" [attr.y]="glyphY + 4" class="tl__ms-text" [class.tl__ms-text--surgery]="m.kind === 'surgery'">{{ m.label }}</text>
+                </g>
+  
+                <polyline *ngIf="pasMarks.length > 1" [attr.points]="pasPts" class="tl__line tl__line--pas" />
+                <polyline *ngIf="padMarks.length > 1" [attr.points]="padPts" class="tl__line tl__line--pad" />
+                <polyline [attr.points]="pamPts" class="tl__line tl__line--pam" />
+                <polyline *ngIf="fcMarks.length > 1" [attr.points]="fcPts" class="tl__line tl__line--fc" />
+  
+                <polygon *ngFor="let p of pasMarks" [attr.points]="triangleUp(p)" class="tl__mark tl__mark--pas" />
+                <polygon *ngFor="let p of padMarks" [attr.points]="triangleDown(p)" class="tl__mark tl__mark--pad" />
+                <circle *ngFor="let p of fcMarks" [attr.cx]="p.x" [attr.cy]="p.y" r="4.5" class="tl__mark tl__mark--fc" />
+              </svg>
+              <button
+                type="button"
+                class="tl__hit"
+                *ngFor="let c of columns; trackBy: trackCol"
+                [style.left.px]="c.x"
+                [disabled]="readonly"
+                [attr.aria-label]="'monitorizacao.shell.timeline.editRecordAria' | translate: { time: c.record.time }"
+                (click)="onCell(c.record, null)"
+              ></button>
+              <p class="tl__empty" *ngIf="!columns.length">{{ 'monitorizacao.shell.chart.empty' | translate }}</p>
+            </div>
+          </div>
+  
+        </div>
+          </ng-container>
+        <ng-container *ngSwitchCase="'pressure'">
+        <div class="tl__grp">
+          <div class="tl__row" *ngFor="let row of pressureRows; trackBy: trackRow">
+            <div class="tl__lab">
+              <span>{{ row.labelKey! | translate }} <small>{{ row.unit }}</small></span>
+              <span class="tl__last" [ngClass]="'tl__tone--' + row.tone">{{ lastValue(row.field) }}</span>
+            </div>
+            <div class="tl__trk" [style.width.px]="trackW">
+              <button
+                type="button"
+                class="tl__cell"
+                *ngFor="let c of columns; trackBy: trackCol"
+                [ngClass]="'tl__tone--' + row.tone"
+                [class.tl__cell--empty]="valueFor(c.record, row.field) == null"
+                [style.left.px]="c.x"
+                [disabled]="readonly"
+                (click)="onCell(c.record, row.field)"
+              >{{ display(row.field, valueFor(c.record, row.field)) || '·' }}</button>
+            </div>
+          </div>
+        </div>
+  
+          </ng-container>
+        <ng-container *ngSwitchCase="'monitor'">
+        <!-- Monitorização complementar -->
+        <div class="tl__grp">
+          <div class="tl__row" *ngFor="let row of monitorRows; trackBy: trackRow">
+            <div class="tl__lab">
+              <span>{{ row.label || (row.labelKey! | translate) }} <small>{{ row.unit }}</small></span>
+              <span class="tl__last">{{ lastValue(row.field) }}</span>
+            </div>
+            <div class="tl__trk" [style.width.px]="trackW">
+              <button
+                type="button"
+                class="tl__cell"
+                *ngFor="let c of columns; trackBy: trackCol"
+                [class.tl__cell--empty]="valueFor(c.record, row.field) == null"
+                [style.left.px]="c.x"
+                [disabled]="readonly"
+                (click)="onCell(c.record, row.field)"
+              >{{ display(row.field, valueFor(c.record, row.field)) || '·' }}</button>
+            </div>
+          </div>
+        </div>
+  
+          </ng-container>
+        <ng-container *ngSwitchCase="'fluids'">
+        <!-- Hidratação (fora do catálogo, com a hora do lançamento) e balanço de catálogo -->
+        <div class="tl__grp">
+          <div class="tl__row" [style.height.px]="laneRowHeight(hydrationChips)">
+            <button type="button" class="tl__lab tl__lab--action" [disabled]="readonly" (click)="hydrationAdd.emit()">
+              <span>💧 {{ 'monitorizacao.shell.vitals.rows.hydration' | translate }}</span>
+              <span class="tl__plus" *ngIf="!readonly" aria-hidden="true">+</span>
+            </button>
+            <div class="tl__trk" [style.width.px]="trackW">
+              <button
+                type="button"
+                class="tl__chip tl__chip--hydration"
+                *ngFor="let h of hydrationChips; trackBy: trackChip"
+                [style.left.px]="h.x"
+                [style.max-width.px]="h.w"
+                [style.top.px]="laneTop(h.lane)"
+                [disabled]="readonly"
+                (click)="hydrationTap.emit(h.item)"
+              >💧 {{ h.label }}</button>
+            </div>
+          </div>
+          <div class="tl__row">
+            <div class="tl__lab">
+              <span>{{ 'monitorizacao.shell.timeline.rows.gains' | translate }} <small>ml</small></span>
+              <span class="tl__last tl__tone--gain">Σ {{ totalGains }}</span>
+            </div>
+            <div class="tl__trk" [style.width.px]="trackW">
+              <ng-container *ngFor="let c of columns; let i = index; trackBy: trackCol">
+                <button type="button" class="tl__cell tl__tone--gain" *ngIf="gainsByCol[i]" [style.left.px]="c.x" (click)="balanceTap.emit()">+{{ gainsByCol[i] }}</button>
+              </ng-container>
+            </div>
+          </div>
+          <div class="tl__row">
+            <div class="tl__lab">
+              <span>{{ 'monitorizacao.shell.timeline.rows.losses' | translate }} <small>ml</small></span>
+              <span class="tl__last tl__tone--loss">Σ {{ totalLosses }}</span>
+            </div>
+            <div class="tl__trk" [style.width.px]="trackW">
+              <ng-container *ngFor="let c of columns; let i = index; trackBy: trackCol">
+                <button type="button" class="tl__cell tl__tone--loss" *ngIf="lossesByCol[i]" [style.left.px]="c.x" (click)="balanceTap.emit()">−{{ lossesByCol[i] }}</button>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+  
+          </ng-container>
+        <ng-container *ngSwitchCase="'position'">
+        <!-- Posição e eventos -->
+        <div class="tl__grp">
+          <div class="tl__row tl__row--position">
+            <button type="button" class="tl__lab tl__lab--action" [disabled]="readonly" (click)="positionTap.emit()">
+              <span>{{ 'monitorizacao.shell.resources.positionLabel' | translate }}</span>
+              <span class="tl__last tl__last--text">{{ currentPosition || ('monitorizacao.shell.resources.positionEmpty' | translate) }}</span>
+            </button>
+            <div class="tl__trk" [style.width.px]="trackW">
+              <span class="tl__pos" *ngFor="let p of positionMarks" [style.left.px]="p.x">
+                <app-position-figure class="tl__pos-fig" [position]="p.item.position"></app-position-figure>
+                <span>{{ p.item.time }} · {{ p.item.position }}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+          </ng-container>
+        <ng-container *ngSwitchCase="'events'">
+        <div class="tl__grp">
+          <div class="tl__row" [style.height.px]="laneRowHeight(eventChips)">
+            <div class="tl__lab"><span>{{ 'monitorizacao.shell.timeline.rows.events' | translate }}</span></div>
+            <div class="tl__trk" [style.width.px]="trackW">
+              <button
+                type="button"
+                class="tl__chip tl__chip--event"
+                *ngFor="let e of eventChips; trackBy: trackChip"
+                [style.left.px]="e.x"
+                [style.max-width.px]="e.w"
+                [style.top.px]="laneTop(e.lane)"
+                [disabled]="readonly"
+                [title]="e.item.time + ' · ' + e.label"
+                (click)="eventTap.emit(e.item)"
+              >⚡ {{ e.label }}</button>
+            </div>
+          </div>
+        </div>
+  
+          </ng-container>
+      </ng-container>
+
+      <!-- Linha "agora" -->
+      <div class="tl__overlay" [style.width.px]="trackW">
+        <span class="tl__now" *ngIf="nowX !== null && !anesthesiaEndTime" [style.left.px]="nowX"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tl__legend">
+    <span class="tl__key"><svg viewBox="0 0 12 10" aria-hidden="true"><path d="M6 1l5 8H1z" class="tl__mark--pas" /></svg>{{ 'monitorizacao.shell.chart.legendPas' | translate }}</span>
+    <span class="tl__key"><svg viewBox="0 0 12 10" aria-hidden="true"><path d="M6 9L1 1h10z" class="tl__mark--pad" /></svg>{{ 'monitorizacao.shell.chart.legendPad' | translate }}</span>
+    <span class="tl__key"><svg viewBox="0 0 14 10" aria-hidden="true"><path d="M0 5h14" class="tl__line tl__line--pam" /></svg>{{ 'monitorizacao.shell.timeline.rows.pam' | translate }}</span>
+    <span class="tl__key"><svg viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4" class="tl__mark--fc" /></svg>{{ 'monitorizacao.shell.chart.legendHr' | translate }}</span>
+    <span class="tl__key tl__key--ms">× {{ 'monitorizacao.shell.timeline.legendAnesthesia' | translate }}</span>
+    <span class="tl__key tl__key--ms tl__key--surgery">○ {{ 'monitorizacao.shell.timeline.legendSurgery' | translate }}</span>
+    <span class="tl__key tl__key--opt tl__key--auto">{{ 'monitorizacao.shell.timeline.legendAuto' | translate }}</span>
+    <span class="tl__spacer"></span>
+    <span class="tl__saved">
+      <ng-container *ngIf="lastSavedAt; else noDraft">{{ 'monitorizacao.shell.statusStrip.draftSaved' | translate: { time: (lastSavedAt | date: 'HH:mm') } }}</ng-container>
+      <ng-template #noDraft>{{ 'monitorizacao.shell.statusStrip.noDraft' | translate }}</ng-template>
+    </span>
+    <button type="button" class="tl__btn" (click)="zoomOut()" [disabled]="zoom <= zoomMin" [attr.aria-label]="'monitorizacao.shell.timeline.zoomOut' | translate">−</button>
+    <button type="button" class="tl__btn" (click)="zoomIn()" [disabled]="zoom >= zoomMax" [attr.aria-label]="'monitorizacao.shell.timeline.zoomIn' | translate">+</button>
+    <span class="tl__zoom" [attr.aria-label]="'monitorizacao.shell.timeline.zoomLevel' | translate">{{ zoomLabel }}</span>
+    <button type="button" class="tl__btn tl__btn--opt" (click)="scrollToStart()">‹ {{ 'monitorizacao.shell.timeline.goStart' | translate }}</button>
+    <button type="button" class="tl__btn" (click)="scrollToEnd()">{{ 'monitorizacao.shell.timeline.goNow' | translate }} ›</button>
+  </div>
+</div>
