@@ -234,6 +234,7 @@
         [title]="'fichaAnestesica.antibiotico.title' | translate"
         icon="💊"
         formGroupName="antibiotico"
+        [class.shake-error]="showValidationErrors && isSectionInvalid('antibiotico')"
       >
         <app-radio-group
           [label]="'fichaAnestesica.antibiotico.temAntibiotico' | translate"
@@ -460,7 +461,7 @@
           <!-- Cirurgião e Assistente: DDL pesquisável (nome ou código). Salva o ID. -->
           <div class="field-block">
             <label class="field-label">{{ 'fichaAnestesica.equipe.cirurgiao' | translate }}</label>
-            <div class="ddl" [class.open]="isDdlOpen('cirurgiao')">
+            <div class="ddl" [class.open]="isDdlOpen('cirurgiao')" [class.field-invalid]="isControlInvalid(form.get('equipe.cirurgiao'))">
               <button
                 type="button"
                 class="ddl-trigger text-input"
@@ -530,7 +531,7 @@
           </div>
           <div class="field-block">
             <label class="field-label">{{ 'fichaAnestesica.equipe.assistente' | translate }}</label>
-            <div class="ddl" [class.open]="isDdlOpen('assistente')">
+            <div class="ddl" [class.open]="isDdlOpen('assistente')" [class.field-invalid]="isControlInvalid(form.get('equipe.assistente'))">
               <button
                 type="button"
                 class="ddl-trigger text-input"
@@ -736,7 +737,7 @@
             <div class="proc-index">#{{ i + 1 }}</div>
             <div class="field-block proc-nome">
               <label class="field-label">{{ 'fichaAnestesica.posProcedimento.cirurgiaRealizada' | translate }}</label>
-              <div class="ddl" [class.open]="isDdlOpen('proc-' + i)">
+              <div class="ddl" [class.open]="isDdlOpen('proc-' + i)" [class.field-invalid]="isControlInvalid(row.get('procedimentoId'))">
                 <button
                   type="button"
                   class="ddl-trigger text-input"
@@ -884,6 +885,7 @@
         icon="📋"
         [subtitle]="'fichaAnestesica.alderete.subtitle' | translate"
         formGroupName="alderete"
+        [class.shake-error]="showValidationErrors && isSectionInvalid('alderete')"
       >
         <div class="alderete-stations">
           <div class="station-card" *ngFor="let item of aldereteFields">

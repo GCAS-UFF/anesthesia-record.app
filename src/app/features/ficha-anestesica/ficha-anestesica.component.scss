@@ -1449,13 +1449,15 @@ ion-content.main-content {
   ion-select.ng-invalid.ng-touched,
   .text-input.ng-invalid.ng-touched,
   .ddl.ng-invalid.ng-touched .ddl-trigger,
-  .ng-invalid.ng-touched > .ddl-trigger {
+  .ng-invalid.ng-touched > .ddl-trigger,
+  .ddl.field-invalid .ddl-trigger {
     border-color: var(--fa-danger) !important;
     background: var(--fa-warn-soft) !important;
     box-shadow: 0 0 0 3px rgba(194, 58, 107, 0.12) !important;
   }
 
-  .ng-invalid.ng-touched .ddl-value.placeholder {
+  .ng-invalid.ng-touched .ddl-value.placeholder,
+  .ddl.field-invalid .ddl-value.placeholder {
     color: var(--fa-danger) !important;
   }
 
@@ -1470,7 +1472,8 @@ ion-content.main-content {
   }
 
   .field-label:has(+ .ng-invalid.ng-touched)::after,
-  .field-label:has(+ * .ng-invalid.ng-touched)::after {
+  .field-label:has(+ * .ng-invalid.ng-touched)::after,
+  .field-label:has(+ .ddl.field-invalid)::after {
     content: " • obrigatório";
     color: var(--fa-danger);
     font-weight: 700;
@@ -1531,6 +1534,8 @@ ion-content.main-content {
     max-height: 60vh;
     overflow-y: auto;
     padding-top: 14px;
+    white-space: pre-line;
+    text-align: left;
   }
   .alert-button {
     color: #1b8ba6 !important;

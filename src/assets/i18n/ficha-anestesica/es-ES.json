@@ -336,6 +336,7 @@
       "formularioLimpo": "Formulario limpiado.",
       "fichaAssinadaSalva": "¡Ficha Anestésica firmada y guardada con éxito!",
       "fichaSalva": "¡Ficha Anestésica guardada con éxito!",
+      "salvaAguardandoMonitorizacao": "Ficha guardada como borrador. La firma solo se habilita cuando la monitorización esté finalizada en el servidor.",
       "naoEnviadaRascunhoSalvo": "No se pudo enviar la ficha al servidor en este momento. Se guardó un borrador para reintentar el envío.",
       "naoSalvaRascunhoLocal": "No se pudo guardar en el servidor en este momento. Se guardó un borrador localmente.",
       "naoIdentificouCirurgiaImpressao": "No se pudo identificar la cirugía para la impresión. Recargue la página e inténtelo de nuevo.",

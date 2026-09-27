@@ -338,6 +338,7 @@
       "formularioLimpo": "Formulário limpo.",
       "fichaAssinadaSalva": "Ficha Anestésica assinada e salva com sucesso!",
       "fichaSalva": "Ficha Anestésica salva com sucesso!",
+      "salvaAguardandoMonitorizacao": "Ficha salva como rascunho. A assinatura só é liberada quando a monitorização estiver finalizada no servidor.",
       "naoEnviadaRascunhoSalvo": "Não foi possível enviar a ficha para o servidor nesse momento. Um rascunho foi salvo para tentativa de reenvio.",
       "naoSalvaRascunhoLocal": "Não foi possível salvar no servidor nesse momento. Um rascunho foi salvo localmente.",
       "naoIdentificouCirurgiaImpressao": "Não foi possível identificar a cirurgia para impressão. Recarregue a página e tente novamente.",

@@ -336,6 +336,7 @@
       "formularioLimpo": "Form cleared.",
       "fichaAssinadaSalva": "Anesthesia record signed and saved successfully!",
       "fichaSalva": "Anesthesia record saved successfully!",
+      "salvaAguardandoMonitorizacao": "Record saved as a draft. Signing is only enabled once monitoring is finalized on the server.",
       "naoEnviadaRascunhoSalvo": "Could not submit the record to the server at this time. A draft was saved for retry.",
       "naoSalvaRascunhoLocal": "Could not save to the server at this time. A draft was saved locally.",
       "naoIdentificouCirurgiaImpressao": "Could not identify the surgery for printing. Reload the page and try again.",

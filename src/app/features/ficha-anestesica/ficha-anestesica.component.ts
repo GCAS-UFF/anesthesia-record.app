@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { AlertController, ToastController, ModalController, IonContent, IonRefresherContent, IonRefresher } from '@ionic/angular/standalone';
 import { IonButton, IonIcon, IonCheckbox, IonModal } from '@ionic/angular/standalone';
@@ -177,7 +177,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     private preAnesthesicService: PreAnesthesicRecordService,
     private modalCtrl: ModalController,
     private cdr: ChangeDetectorRef,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private hostRef: ElementRef<HTMLElement>
   ) {
     addIcons({ checkmarkCircle, chevronDownOutline, addOutline, trashOutline, returnDownForwardOutline, closeCircleOutline, timeOutline, alertCircleOutline, lockClosedOutline, shieldCheckmarkOutline, syncOutline, printOutline, fitnessOutline, createOutline, medicalSharp, shieldCheckmark, cloudDoneOutline, pencilOutline, saveOutline, arrowBackOutline, closeOutline });
     this.initForm();
@@ -390,14 +391,10 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       antibiotico: this.fb.group({
         temAntibiotico: ['', Validators.required]
       }),
+      // Seção removida da tela (dados vitais vêm da pré-anestésica/monitoramento): sem
+      // validators, senão o form fica inválido por campos que o usuário não consegue ver.
       dadosVitais: this.fb.group({
-        pa: ['', Validators.required],
-        fr: ['', Validators.required],
-        temp: ['', Validators.required],
-        spo2: ['', Validators.required],
-        peso: ['', Validators.required],
-        asa: ['', Validators.required],
-        entradaSala: ['', Validators.required]
+        pa: [''], fr: [''], temp: [''], spo2: [''], peso: [''], asa: [''], entradaSala: ['']
       }),
       equipe: this.fb.group({
         cirurgiao: ['', Validators.required],
@@ -1081,36 +1078,33 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   async openSignModal() {
-    if (this.form.invalid) {
+    const missing = this.getMissingFields();
+
+    if (this.form.invalid || missing.length > 0) {
       this.form.markAllAsTouched();
       this.showValidationErrors = true;
-
-      const missing = this.getMissingFields();
+      this.cdr.detectChanges();
 
       const bySection: Record<string, string[]> = {};
       missing.forEach(m => {
         (bySection[m.section] ||= []).push(m.label);
       });
+      const detalhes = Object.entries(bySection)
+        .map(([section, labels]) => `• ${section}: ${labels.join(', ')}`)
+        .join('\n');
 
       const alert = await this.alertController.create({
         header: this.translate.instant('fichaAnestesica.validationAlert.header'),
         subHeader: this.translate.instant('fichaAnestesica.validationAlert.subHeader', { count: missing.length }),
-        message: this.translate.instant('fichaAnestesica.validationAlert.message'),
+        message: `${this.translate.instant('fichaAnestesica.validationAlert.message')}\n\n${detalhes}`,
         cssClass: 'validation-alert',
         buttons: [{
           text: this.translate.instant('fichaAnestesica.validationAlert.entendi'),
-          role: 'cancel',
-          handler: () => {
-            setTimeout(() => {
-              this.scrollToFirstInvalid();
-            }, 300);
-          }
+          role: 'cancel'
         }],
       });
+      alert.onDidDismiss().then(() => this.scrollToFirstInvalid());
       await alert.present();
-
-      // Remove o scroll imediato daqui
-      // this.scrollToFirstInvalid();
       return;
     }
 
@@ -1119,6 +1113,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.signaturePassword = '';
     this.signatureError = '';
     this.isSignModalOpen = true;
+    this.cdr.detectChanges();
   }
 
   closeSignModal() {
@@ -1150,11 +1145,29 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   onEnviarClick() {
-    if (this.monitoringFinalizado) {
-      this.openSignModal();
-    } else {
+    if (!this.cirurgiaId) {
       this.executarSalvamento(false);
+      return;
     }
+
+    // Revalida o status a cada envio: o Ionic mantém esta página em cache ao ir para a
+    // monitorização e voltar, então o valor lido no ngOnInit pode estar desatualizado
+    // (monitoramento finalizado depois de abrir a ficha → nunca abriria a assinatura).
+    this.isSaving = true;
+    this.anesthesiaService.getMonitoringStatus(Number(this.cirurgiaId)).pipe(
+      timeout(NETWORK_TIMEOUT_MS),
+      catchError(() => of(null)),
+    ).subscribe((status) => {
+      this.isSaving = false;
+      if (status !== null) this.monitoringFinalizado = status === SurgeryStatusEnum.Concluido;
+
+      if (this.monitoringFinalizado) {
+        this.openSignModal();
+      } else {
+        console.warn(`[FichaAnestesica] Assinatura não liberada: status da monitorização ${this.cirurgiaId} no servidor =`, status);
+        this.executarSalvamento(false, true);
+      }
+    });
   }
 
   get headerActionButtons(): HeaderActionButton[] {
@@ -1219,7 +1232,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
    * efetivamente marca a ficha como concluída/somente-leitura se o monitoramento já estiver
    * FINALIZADO — o front nunca decide isso sozinho.
    */
-  private executarSalvamento(finalize: boolean) {
+  private executarSalvamento(finalize: boolean, monitoringPendente = false) {
     this.isSaving = true;
     const record = this.buildPayload();
 
@@ -1250,6 +1263,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
           this.fichaFinalizadaPor = this.signatureTypedName || this.expectedSignatureName;
           this.form.disable({ emitEvent: false });
           this.toast(this.translate.instant('fichaAnestesica.toasts.fichaAssinadaSalva'), 'success');
+        } else if (monitoringPendente) {
+          this.toast(this.translate.instant('fichaAnestesica.toasts.salvaAguardandoMonitorizacao'), 'warning');
         } else {
           this.toast(this.translate.instant('fichaAnestesica.toasts.fichaSalva'), 'success');
         }
@@ -1470,7 +1485,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   private createProcedimentoRow(data?: { procedimentoId?: string; hora?: string; principal?: boolean }): FormGroup {
     return this.fb.group({
       procedimentoId: [data?.procedimentoId ?? '', Validators.required],
-      hora: [data?.hora ?? '', Validators.required],
+      // Sem campo de hora na tela para o procedimento — não pode ser obrigatório.
+      hora: [data?.hora ?? ''],
       principal: [data?.principal ?? false]
     });
   }
@@ -1802,7 +1818,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       } else if (control instanceof FormArray) {
         control.controls.forEach((c, i) => walk(c, `${path}[${i}]`));
       } else {
-        if (control.invalid) {
+        // Linhas de procedimento são tratadas abaixo com uma única mensagem legível.
+        if (control.invalid && !path.startsWith('posProcedimento.procedimentos')) {
           const section = path.split('.')[0];
           missing.push({
             section: this.sectionLabels[section] || section,
@@ -1832,7 +1849,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }
 
     const procs = this.procedimentosArray;
-    if (procs.length === 0 || procs.controls.every(c => !c.get('procedimentoId')?.value)) {
+    if (procs.length === 0 || procs.invalid) {
       missing.push({
         section: this.sectionLabels['posProcedimento'],
         label: this.translate.instant('fichaAnestesica.missing.procedimentoRequired'),
@@ -1843,15 +1860,27 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     return missing;
   }
 
+  /** Campo inválido a ser destacado em vermelho (para campos sem formControlName no DOM, como os DDLs). */
+  isControlInvalid(control: AbstractControl | null | undefined): boolean {
+    return !!control && control.invalid && (control.touched || this.showValidationErrors);
+  }
+
   private scrollToFirstInvalid(): void {
+    const root: ParentNode = this.hostRef.nativeElement.querySelector('form') ?? this.hostRef.nativeElement;
+    const selector = '.ng-invalid.ng-touched, .field-invalid, .dor-invalid';
 
-    const el =
-      document.querySelector('.shake-error') ||
-      document.querySelector('.ng-invalid.ng-touched');
-    if (el && (el as HTMLElement).scrollIntoView) {
-      (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+    // Pega o primeiro elemento "folha" (o campo em si), não o form/seção que o contém.
+    const el = Array.from(root.querySelectorAll<HTMLElement>(selector))
+      .find(candidate => !candidate.querySelector(selector))
+      ?? root.querySelector<HTMLElement>('.shake-error');
+    if (!el) return;
 
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    const focusable = el.matches('input, textarea, select, button')
+      ? el
+      : el.querySelector<HTMLElement>('input:not([type=hidden]), textarea, select, button, .radio-option');
+    focusable?.focus?.({ preventScroll: true });
   }
 
 
@@ -1887,8 +1916,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
   }
   isCustomCoxim = false;
   isCustomAcesso = false;
-  standardCoxins = ['Cabe�a', 'Membros Superiores', 'Membros Inferiores', 'Joelhos', 'Calcanhares', 'Sacro', 'Lateral Direito', 'Lateral Esquerdo'];
-  standardAcessos = ['Membro Superior Direito', 'Membro Superior Esquerdo', 'Membro Inferior Direito', 'Membro Inferior Esquerdo', 'Jugular Interna Direita', 'Jugular Interna Esquerda', 'Subcl�via Direita', 'Subcl�via Esquerda', 'Femoral Direita', 'Femoral Esquerda'];
+  standardCoxins = ['Cabe�a', 'Membros Superiores', 'Membros Inferiores', 'Joelhos', 'Calcanhares', 'Sacro', 'Lateral Direito', 'Lateral Esquerdo'];
+  standardAcessos = ['Membro Superior Direito', 'Membro Superior Esquerdo', 'Membro Inferior Direito', 'Membro Inferior Esquerdo', 'Jugular Interna Direita', 'Jugular Interna Esquerda', 'Subcl�via Direita', 'Subcl�via Esquerda', 'Femoral Direita', 'Femoral Esquerda'];
 
   onCoximChange(event: any) {
     if (event.target.value === 'OUTRO') {
