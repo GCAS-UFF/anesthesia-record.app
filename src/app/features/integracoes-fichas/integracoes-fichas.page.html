@@ -1,20 +1,18 @@
 <div class="app-container">
   <app-status-bar></app-status-bar>
 
-  <app-header-institucional></app-header-institucional>
+  <app-header-institucional
+    [showBackButton]="true"
+    [eyebrow]="'integracoesFichas.eyebrow' | translate"
+    [title]="'integracoesFichas.pageTitle' | translate"
+    (backClick)="goToPatientList()"
+  ></app-header-institucional>
 
   <main class="page-main">
     <section class="page-header">
-      <div class="header-text">
-        <span class="eyebrow">
-          <ion-icon name="cloud-outline" aria-hidden="true"></ion-icon>
-          {{ 'integracoesFichas.eyebrow' | translate }}
-        </span>
-        <h1 class="page-title">{{ 'integracoesFichas.pageTitle' | translate }}</h1>
-        <p class="page-subtitle">
-          {{ 'integracoesFichas.pageSubtitle' | translate }}
-        </p>
-      </div>
+      <p class="page-subtitle">
+        {{ 'integracoesFichas.pageSubtitle' | translate }}
+      </p>
 
       <button
         class="btn btn-primary run-all"

@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { arrowBackOutline, documentTextOutline } from 'ionicons/icons';
+import { documentTextOutline } from 'ionicons/icons';
 import { HeaderActionButton } from './header-action-button.model';
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -15,6 +15,9 @@ import { TranslatePipe } from '@ngx-translate/core';
 })
 export class HeaderInstitucionalComponent {
   @Input() showBackButton = false;
+  /** Título da página ao lado da seta (mesmo padrão da barra da Monitorização). */
+  @Input() title = '';
+  @Input() eyebrow = '';
   @Input() showPreAnestesicaButton = false;
   @Input() preAnestesicaButtonLabel = '';
   @Input() showAnestesicaButton = false;
@@ -26,10 +29,7 @@ export class HeaderInstitucionalComponent {
   @Output() backClick = new EventEmitter<void>();
 
   constructor(private location: Location) {
-    addIcons({
-      arrowBackOutline,
-      documentTextOutline,
-    });
+    addIcons({ documentTextOutline });
   }
 
   voltar(): void {

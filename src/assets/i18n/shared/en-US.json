@@ -56,7 +56,6 @@
       "defaultMessage": "No items found."
     },
     "patientInfoCard": {
-      "patientLabel": "PATIENT",
       "patientNameFallback": "NAME NOT INFORMED",
       "floorPrefix": "Floor",
       "bedPrefix": "Bed",
@@ -70,8 +69,9 @@
       "procedureLabel": "PROCEDURE",
       "procedureFallback": "NOT INFORMED",
       "allergyLabel": "ALLERGY:",
-      "allergiesLabelMini": "Allergies:",
-      "allergyUnspecified": "Allergy (unspecified)"
+      "allergyUnspecified": "Allergy (unspecified)",
+      "recordPrefix": "MRN",
+      "roomPrefix": "Room"
     },
     "procedureCard": {
       "reopenTicket": "Reopen Record",

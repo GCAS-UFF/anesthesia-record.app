@@ -2,6 +2,8 @@
   <app-status-bar></app-status-bar>
   <app-header-institucional
     [showBackButton]="true"
+    [eyebrow]="'fichaAnestesica.page.eyebrow' | translate"
+    [title]="'fichaAnestesica.page.title' | translate"
     [showPreAnestesicaButton]="true"
     [preAnestesicaButtonLabel]="'fichaAnestesica.header.preAnestesicaButton' | translate"
     [actionButtons]="headerActionButtons"
@@ -19,13 +21,6 @@
       >
       </ion-refresher-content>
     </ion-refresher>
-
-    <div class="navigation-header">
-      <div class="title-block">
-        <span class="eyebrow">{{ 'fichaAnestesica.page.eyebrow' | translate }}</span>
-        <h1 class="page-title">{{ 'fichaAnestesica.page.title' | translate }}</h1>
-      </div>
-    </div>
 
     <div *ngIf="isLoading" class="skeleton-container">
       <div class="skeleton-item" style="height: 180px"></div>

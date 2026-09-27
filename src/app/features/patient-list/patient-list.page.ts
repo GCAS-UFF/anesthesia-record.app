@@ -38,6 +38,7 @@ import { firstValueFrom } from 'rxjs';
     IonSkeletonText,
     IonIcon,
     StatusBarComponent,
+    HeaderInstitucionalComponent,
     DateFilterComponent,
     ProcedureCardComponent,
     EmptyStateComponent,

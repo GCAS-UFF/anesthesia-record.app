@@ -27,16 +27,9 @@
 
   &__break { display: none; }
 
+  // Mesmo "‹" do cabeçalho das demais telas (mixin do tema).
   &__back {
-    width: t.$touch-min;
-    height: t.$touch-min;
-    flex: none;
-    border: none;
-    border-radius: t.$radius-base;
-    background: none;
-    font-size: 28px;
-    line-height: 1;
-    color: t.$text-deep;
+    @include t.back-button;
   }
 
   &__patient {

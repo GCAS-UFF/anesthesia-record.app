@@ -1,72 +1,46 @@
-<div [ngClass]="compact ? 'patient-mini-card' : 'patient-full-card'">
-    <div class="card-gradient-overlay" *ngIf="!compact"></div>
-
-    <!-- MODO PADRÃO (FULL) -->
-    <div class="card-body" *ngIf="!compact">
-        <div class="patient-header">
-            <div class="name-group">
-                <span class="label-mini">{{ 'sharedComponents.patientInfoCard.patientLabel' | translate }}</span>
-                <h2 class="patient-name">{{ patientName || ('sharedComponents.patientInfoCard.patientNameFallback' | translate) }}</h2>
-                <div class="badges-row">
-                    <span class="badge record" *ngIf="record">📋 {{ record }}</span>
-                    <span class="badge" *ngIf="bed">🛏️ {{ 'sharedComponents.patientInfoCard.bedPrefix' | translate }} {{ bed }}</span>
-                    <span class="badge" *ngIf="surgicalCenter">⚕️ {{ surgicalCenter }}</span>
-                    <span class="badge" *ngIf="room">🚪 {{ room }}</span>
-                    <span class="badge" *ngIf="unit">🏥 {{ unit }}</span>
-                </div>
-            </div>
-            <div class="patient-info-strip">
-                <div class="strip-item">
-                    <span class="info-label">{{ 'sharedComponents.patientInfoCard.birthDateLabel' | translate }}</span>
-                    <span class="info-value">{{ birthDate || '--' }}</span>
-                </div>
-                <div class="strip-divider"></div>
-                <div class="strip-item">
-                    <span class="info-label">{{ 'sharedComponents.patientInfoCard.ageLabel' | translate }}</span>
-                    <span class="info-value">{{ age || '--' }} {{ 'sharedComponents.patientInfoCard.yearsSuffix' | translate }}</span>
-                </div>
-                <div class="strip-divider"></div>
-                <div class="strip-item">
-                    <span class="info-label">{{ 'sharedComponents.patientInfoCard.genderLabel' | translate }}</span>
-                    <span class="info-value">{{ gender === 'M' ? ('sharedComponents.patientInfoCard.genderMale' | translate) : gender === 'F' ? ('sharedComponents.patientInfoCard.genderFemale' | translate) : gender || '--' }}</span>
-                </div>
-                <div class="strip-divider"></div>
-                <div class="strip-item">
-                    <span class="info-label">{{ 'sharedComponents.patientInfoCard.weightLabel' | translate }}</span>
-                    <span class="info-value">{{ weight || '--' }} kg</span>
-                </div>
-                <div class="strip-divider"></div>
-                <div class="strip-item strip-item--procedure">
-                    <span class="info-label">{{ 'sharedComponents.patientInfoCard.procedureLabel' | translate }}</span>
-                    <span class="info-value truncate">{{ procedure || ('sharedComponents.patientInfoCard.procedureFallback' | translate) }}</span>
-                </div>
-            </div>
+<section class="pc">
+  <div class="pc__main">
+    <div class="pc__identity">
+      <span class="pc__avatar" aria-hidden="true">{{ initials }}</span>
+      <div class="pc__id-text">
+        <h2 class="pc__name">{{ patientName || ('sharedComponents.patientInfoCard.patientNameFallback' | translate) }}</h2>
+        <div class="pc__tags">
+          <span class="pc__tag pc__tag--record" *ngIf="record">{{ 'sharedComponents.patientInfoCard.recordPrefix' | translate }} {{ record }}</span>
+          <span class="pc__tag" *ngIf="bed">{{ 'sharedComponents.patientInfoCard.bedPrefix' | translate }} {{ bed }}</span>
+          <span class="pc__tag" *ngIf="room">{{ 'sharedComponents.patientInfoCard.roomPrefix' | translate }} {{ room }}</span>
+          <span class="pc__tag" *ngIf="surgicalCenter">{{ surgicalCenter }}</span>
+          <span class="pc__tag" *ngIf="unit">{{ unit }}</span>
         </div>
-
-        <div class="allergy-footer" *ngIf="hasAllergies">
-            <ion-icon name="warning"></ion-icon>
-            <strong>{{ 'sharedComponents.patientInfoCard.allergyLabel' | translate }}</strong>
-            <span>{{ formattedAllergies }}</span>
-        </div>
+      </div>
     </div>
 
-    <!-- MODO COMPACTO (MONITORAMENTO) -->
-    <div class="mini-card-body" *ngIf="compact">
-        <div class="mini-main-info">
-            <div class="mini-name-area">
-                <span class="mini-name">{{ patientName }}</span>
-                <span class="mini-record">{{ record }}</span>
-            </div>
-            <div class="mini-stats-grid">
-                <div class="mini-stat">👤 {{ age }} {{ 'sharedComponents.patientInfoCard.yearsSuffix' | translate }}</div>
-                <div class="mini-stat">⚖️ {{ weight }}kg</div>
-                <div class="mini-stat"><span class="asa-badge">{{ status }}</span></div>
-            </div>
-        </div>
-        <div class="mini-allergy-bar" *ngIf="hasAllergies">
-            <ion-icon name="warning-outline"></ion-icon>
-            <strong>{{ 'sharedComponents.patientInfoCard.allergiesLabelMini' | translate }}</strong> {{ formattedAllergies }}
-        </div>
-    </div>
+    <dl class="pc__strip">
+      <div class="pc__item">
+        <dt>{{ 'sharedComponents.patientInfoCard.birthDateLabel' | translate }}</dt>
+        <dd>{{ birthDate || '--' }}</dd>
+      </div>
+      <div class="pc__item">
+        <dt>{{ 'sharedComponents.patientInfoCard.ageLabel' | translate }}</dt>
+        <dd>{{ age || '--' }} {{ 'sharedComponents.patientInfoCard.yearsSuffix' | translate }}</dd>
+      </div>
+      <div class="pc__item">
+        <dt>{{ 'sharedComponents.patientInfoCard.genderLabel' | translate }}</dt>
+        <dd>{{ genderLabel }}</dd>
+      </div>
+      <div class="pc__item">
+        <dt>{{ 'sharedComponents.patientInfoCard.weightLabel' | translate }}</dt>
+        <dd>{{ weight || '--' }} kg</dd>
+      </div>
+      <div class="pc__item pc__item--procedure">
+        <dt>{{ 'sharedComponents.patientInfoCard.procedureLabel' | translate }}</dt>
+        <dd [title]="procedure">{{ procedure || ('sharedComponents.patientInfoCard.procedureFallback' | translate) }}</dd>
+      </div>
+    </dl>
+  </div>
 
-</div>
+  <div class="pc__allergy" *ngIf="hasAllergies">
+    <ion-icon name="warning" aria-hidden="true"></ion-icon>
+    <strong>{{ 'sharedComponents.patientInfoCard.allergyLabel' | translate }}</strong>
+    <span>{{ formattedAllergies }}</span>
+  </div>
+</section>

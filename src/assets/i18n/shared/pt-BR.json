@@ -57,7 +57,6 @@
       "defaultMessage": "Nenhum item encontrado."
     },
     "patientInfoCard": {
-      "patientLabel": "PACIENTE",
       "patientNameFallback": "NOME NÃO INFORMADO",
       "floorPrefix": "Andar",
       "bedPrefix": "Leito",
@@ -71,8 +70,9 @@
       "procedureLabel": "PROCEDIMENTO",
       "procedureFallback": "NÃO INFORMADO",
       "allergyLabel": "ALERGIA:",
-      "allergiesLabelMini": "Alergias:",
-      "allergyUnspecified": "Alergia (não especificada)"
+      "allergyUnspecified": "Alergia (não especificada)",
+      "recordPrefix": "Pront.",
+      "roomPrefix": "Sala"
     },
     "procedureCard": {
       "reopenTicket": "Reabrir Ficha",

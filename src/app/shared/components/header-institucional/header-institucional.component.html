@@ -6,9 +6,11 @@
       *ngIf="showBackButton"
       (click)="voltar()"
       [attr.aria-label]="'header.back' | translate"
-    >
-      <ion-icon name="arrow-back-outline"></ion-icon>
-    </button>
+    >‹</button>
+    <div class="header-title-block" *ngIf="title">
+      <span class="header-eyebrow" *ngIf="eyebrow">{{ eyebrow }}</span>
+      <h1 class="header-title">{{ title }}</h1>
+    </div>
   </div>
 
   <div class="header-center">

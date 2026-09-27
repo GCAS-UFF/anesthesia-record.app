@@ -16,22 +16,22 @@ import { CommonModule } from '@angular/common';
   styles: [`
     .form-section {
       background: #fcfdfe;
-      border-radius: 1.25rem;
+      border-radius: 0.875rem;
       margin-bottom: 16px;
       border: 1px solid rgba(34, 55, 64, 0.12);
       overflow: hidden;
       box-shadow: 0 1px 2px rgba(34, 55, 64, 0.06);
     }
+    /* Cabeçalho no padrão dos painéis da Monitorização: Sora 15, sem caixa alta, linha abaixo. */
     .section-header {
-      padding: 14px 16px 0 16px;
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid rgba(34, 55, 64, 0.12);
     }
     .section-title {
       margin: 0;
       font-family: 'Sora', system-ui, -apple-system, sans-serif;
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
       color: #223740;
     }
     .section-subtitle {

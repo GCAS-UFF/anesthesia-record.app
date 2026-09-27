@@ -56,7 +56,6 @@
       "defaultMessage": "No se encontraron elementos."
     },
     "patientInfoCard": {
-      "patientLabel": "PACIENTE",
       "patientNameFallback": "NOMBRE NO INFORMADO",
       "floorPrefix": "Piso",
       "bedPrefix": "Cama",
@@ -70,8 +69,9 @@
       "procedureLabel": "PROCEDIMIENTO",
       "procedureFallback": "NO INFORMADO",
       "allergyLabel": "ALERGIA:",
-      "allergiesLabelMini": "Alergias:",
-      "allergyUnspecified": "Alergia (no especificada)"
+      "allergyUnspecified": "Alergia (no especificada)",
+      "recordPrefix": "HC",
+      "roomPrefix": "Sala"
     },
     "procedureCard": {
       "reopenTicket": "Reabrir Ficha",

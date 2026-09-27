@@ -1,21 +1,17 @@
 @use 'sass:color';
+@use '../../../../theme/siga-tokens' as t;
 
-// Paleta "SIGA — Azul gelo" (mesma da tela de Monitorização) — cores centrais
-// usadas neste header. Mantidas em hexadecimal puro (não em @use de um
-// arquivo de tokens de feature) porque este é um componente compartilhado,
-// carregado por telas que não têm acesso aos parciais de `monitorizacao`.
-$surface-bg:          #f3f7f9;
-$surface-panel:       #dce7ec;
-$surface-accent-soft: #c6e4ed;
-$text-ink:  #4a6572;
-$c-primary: #1b8ba6;
-$c-success: #2f9e6e;
-$c-crimson: #c23a6b;
-$c-warning: #8a5a1f;
-$border:        rgba(34, 55, 64, 0.12);
-$border-strong: rgba(34, 55, 64, 0.22);
-$shadow-card: 0 1px 2px rgba(34, 55, 64, 0.06);
-$radius-base: 10px;
+$surface-bg: t.$surface-bg;
+$surface-panel: t.$surface-panel;
+$surface-accent-soft: t.$surface-accent-soft;
+$text-ink: t.$text-ink;
+$c-primary: t.$c-primary;
+$c-success: t.$c-success;
+$c-crimson: t.$c-crimson;
+$c-warning: t.$c-warning-ink;
+$border: t.$border;
+$border-strong: t.$border-strong;
+$shadow-card: t.$shadow-card;
 
 :host {
   display: block;
@@ -30,11 +26,13 @@ $radius-base: 10px;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  height: 56px;
-  padding: 0 16px;
-  background: rgba(252, 253, 254, 0.92);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid $border;
+  gap: 12px;
+  min-height: 60px;
+  padding: 6px 12px;
+  box-sizing: border-box;
+  background: t.$surface-card;
+  border-bottom: 1px solid t.$border-strong;
+  font-family: t.$font-body;
   position: sticky;
   top: 53px;
   z-index: 30;
@@ -46,7 +44,34 @@ $radius-base: 10px;
   justify-self: start;
   display: flex;
   align-items: center;
+  gap: 4px;
   min-width: 0;
+}
+
+.header-title-block {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-left: 4px;
+}
+
+.header-eyebrow {
+  font-size: t.$fs-10;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: t.$text-ink;
+}
+
+.header-title {
+  margin: 0;
+  font-family: t.$font-display;
+  font-size: t.$fs-16;
+  font-weight: 700;
+  color: t.$text-deep;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .header-center {
@@ -54,52 +79,12 @@ $radius-base: 10px;
   justify-self: center;
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 12px;
 }
 
-// Botão de voltar — de propósito simples (só o ícone, sem pílula colorida
-// nem sombra pesada): é a ação mais usada do header, então quanto mais leve
-// visualmente, menos compete com o conteúdo da própria página.
+// Botão de voltar: o mesmo "‹" da barra da Monitorização (mixin do tema).
 .header-back-btn {
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  margin: 0;
-
-  background: $surface-accent-soft;
-  border: none;
-  border-radius: 999px;
-  color: $c-primary;
-  cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    transform 0.15s ease,
-    opacity 0.2s ease;
-
-  ion-icon {
-    font-size: 20px;
-  }
-  span {
-    display: none;
-  }
-
-  &:hover {
-    background: $surface-panel;
-  }
-
-  &:active {
-    transform: scale(0.94);
-  }
-
-  &:focus-visible {
-    outline: 2px solid $c-primary;
-    outline-offset: 2px;
-  }
+  @include t.back-button;
 }
 
 .header-icon-btn {
@@ -141,10 +126,10 @@ $radius-base: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: t.$radius-base;
   box-shadow: $shadow-card;
   transition:
     background 0.2s ease,
@@ -232,6 +217,7 @@ $radius-base: 10px;
 }
 
 .header-icon-btn-label {
+  font-family: t.$font-body;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;

@@ -65,10 +65,14 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@a
     .checkbox-option:hover {
       background: #dce7ec;
     }
+    /* Selecionado = mesmo "ligado" dos botões da Monitorização: azul sólido, texto branco. */
     .checkbox-option.active {
-      background: #c6e4ed;
+      background: #1b8ba6;
       border-color: #1b8ba6;
-      color: #223740;
+      color: #ffffff;
+    }
+    .checkbox-option.active:hover {
+      background: #156a80;
     }
     .checkbox-box {
       width: 22px;
@@ -83,9 +87,9 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@a
       flex-shrink: 0;
     }
     .active .checkbox-box {
-      border-color: #1b8ba6;
-      background: #1b8ba6;
-      color: white;
+      border-color: #ffffff;
+      background: #ffffff;
+      color: #1b8ba6;
     }
     .active .checkbox-box ion-icon {
       font-size: 16px;

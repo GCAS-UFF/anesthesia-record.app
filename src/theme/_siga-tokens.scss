@@ -1,0 +1,73 @@
+// Tokens do tema SIGA ("Azul gelo"), usados pela Monitorização e pelas demais
+// telas para manter o sistema uniforme. Fontes Sora/Manrope carregadas em global.scss.
+
+// Superfícies
+$surface-bg:          #f3f7f9;
+$surface-card:        #fcfdfe;
+$surface-panel:       #dce7ec;
+$surface-accent-soft: #c6e4ed;
+
+// Texto
+$text-deep: #223740; // títulos, valores, ícones principais
+$text-ink:  #4a6572; // texto secundário
+
+// Marca / estado
+$c-primary: #1b8ba6; // ação principal
+$c-primary-dark: #156a80;
+$c-success: #2f9e6e;
+$c-crimson: #c23a6b; // ações destrutivas
+$c-crimson-dark: #a82f59;
+$c-warning-soft: #fbf1de;
+$c-warning-ink:  #8a5a1f;
+$c-warning:      #c98a2e; // marcador de "aguardando"/urgência (pontos, ícones)
+
+// Tons suaves para selos e fundos de estado
+$c-primary-soft: #e3f1f5;
+$c-success-soft: #e2f3ea;
+$c-success-dark: #237a55;
+$c-crimson-soft: rgba(194, 58, 107, 0.1);
+
+$border: rgba(34, 55, 64, 0.12);
+$border-strong: rgba(34, 55, 64, 0.22);
+
+// Tipografia
+$font-display: 'Sora', system-ui, -apple-system, sans-serif;
+$font-body:    'Manrope', system-ui, -apple-system, sans-serif;
+
+$fs-9: 9px; $fs-10: 10px; $fs-11: 11px; $fs-12: 12px;
+$fs-13: 13px; $fs-15: 15px; $fs-16: 16px; $fs-18: 18px;
+
+// Raio / toque
+$radius-base: 0.625rem; // 10px
+$radius-lg:   0.875rem; // 14px
+$radius-2xl:  1.25rem;  // 20px
+$touch-min:   44px;
+
+// Sombra de card
+$shadow-card: 0 1px 2px rgba(34, 55, 64, 0.06);
+
+// Botão de voltar do topo das telas — o mesmo "‹" da Monitorização em todo o sistema.
+@mixin back-button {
+  width: $touch-min;
+  height: $touch-min;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: $radius-base;
+  background: none;
+  font-family: $font-body;
+  font-size: 28px;
+  line-height: 1;
+  color: $text-deep;
+  cursor: pointer;
+
+  &:active { background: $surface-bg; }
+
+  &:focus-visible {
+    outline: 2px solid $c-primary;
+    outline-offset: 2px;
+  }
+}

@@ -1,9 +1,13 @@
+@use '../../../../theme/siga-tokens' as t;
+
 .empty-state {
     text-align: center;
     padding: 48px 24px;
-    background: white;
-    border-radius: 24px;
-    color: #94a3b8;
+    background: t.$surface-card;
+    border: 1px dashed t.$border-strong;
+    border-radius: t.$radius-lg;
+    color: t.$text-ink;
+    font-family: t.$font-body;
     font-size: 14px;
     grid-column: 1 / -1;
 }

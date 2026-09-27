@@ -302,6 +302,11 @@ export class IntegracoesFichasPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
+  /** A seta do cabeçalho sempre leva à listagem de pacientes, independente de onde se veio. */
+  goToPatientList(): void {
+    this.router.navigate(['/pacientes']);
+  }
+
   openForm(item: PendingIntegration): void {
     if (item.navigateRoute) {
       this.router.navigate(item.navigateRoute);

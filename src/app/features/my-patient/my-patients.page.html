@@ -1,14 +1,11 @@
 <div class="app-container">
   <app-status-bar></app-status-bar>
+  <app-header-institucional
+    [eyebrow]="'myPatients.eyebrow' | translate"
+    [title]="'myPatients.title' | translate"
+  ></app-header-institucional>
 
   <main class="page-main">
-    <section class="page-title-row">
-      <div class="page-title-block">
-        <span class="page-eyebrow">{{ 'myPatients.eyebrow' | translate }}</span>
-        <h1 class="page-title">{{ 'myPatients.title' | translate }}</h1>
-      </div>
-    </section>
-
     <div class="filters-wrapper" #filtersContainer>
     <section class="filters-bar">
       <button

@@ -41,6 +41,7 @@ type MyPatientStatusFilter = 'all' | 'inProgress' | 'completed';
     IonSkeletonText,
     IonIcon,
     StatusBarComponent,
+    HeaderInstitucionalComponent,
     DateFilterComponent,
     EmptyStateComponent,
     ProcedureCardComponent,

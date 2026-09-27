@@ -64,10 +64,14 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@a
     .radio-option:hover {
       background: #dce7ec;
     }
+    /* Selecionado = mesmo "ligado" dos botões da Monitorização: azul sólido, texto branco. */
     .radio-option.active {
-      background: #c6e4ed;
+      background: #1b8ba6;
       border-color: #1b8ba6;
-      color: #223740;
+      color: #ffffff;
+    }
+    .radio-option.active:hover {
+      background: #156a80;
     }
     .radio-circle {
       width: 18px;
@@ -81,13 +85,13 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@a
       flex-shrink: 0;
     }
     .active .radio-circle {
-      border-color: #1b8ba6;
-      background: #fcfdfe;
+      border-color: #ffffff;
+      background: #1b8ba6;
     }
     .radio-inner {
       width: 10px;
       height: 10px;
-      background: #1b8ba6;
+      background: #ffffff;
       border-radius: 50%;
     }
     .option-label {

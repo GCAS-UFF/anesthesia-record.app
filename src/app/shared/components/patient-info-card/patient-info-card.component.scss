@@ -1,250 +1,160 @@
-.patient-full-card {
-    position: relative;
-    background: #fcfdfe;
-    border-radius: 1rem;
-    padding: 12px 16px;
-    color: #223740;
-    border: 1px solid rgba(34, 55, 64, 0.12);
-    box-shadow: 0 1px 3px rgba(34, 55, 64, 0.08);
+@use '../../../../theme/siga-tokens' as t;
+
+:host { display: block; }
+
+// Mesmo padrão de identificação da barra da Monitorização: avatar com iniciais,
+// nome em Sora e dados em texto (sem emojis).
+.pc {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px;
+  background: t.$surface-card;
+  border: 1px solid t.$border;
+  border-radius: t.$radius-lg;
+  box-shadow: t.$shadow-card;
+  font-family: t.$font-body;
+  color: t.$text-deep;
+
+  &__main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  &__identity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  &__avatar {
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: t.$surface-accent-soft;
+    color: t.$text-deep;
+    font-weight: 800;
+    font-size: t.$fs-13;
+  }
+
+  &__id-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  &__name {
+    margin: 0;
+    font-family: t.$font-display;
+    font-size: t.$fs-18;
+    font-weight: 700;
+    color: t.$text-deep;
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-    .card-gradient-overlay {
-        display: none;
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  &__tag {
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: t.$surface-bg;
+    border: 1px solid t.$border;
+    font-size: t.$fs-12;
+    font-weight: 600;
+    color: t.$text-ink;
+    white-space: nowrap;
+
+    &--record {
+      background: t.$surface-panel;
+      color: t.$text-deep;
+      font-weight: 700;
+    }
+  }
+
+  &__strip {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 0;
+    padding: 8px 4px;
+    border-radius: t.$radius-base;
+    background: t.$surface-bg;
+  }
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0 12px;
+    min-width: 0;
+    border-left: 1px solid t.$border;
+
+    &:first-child { border-left: none; }
+
+    dt {
+      font-size: t.$fs-10;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: t.$text-ink;
+      white-space: nowrap;
     }
 
-    .card-body {
-        position: relative;
-        z-index: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
+    dd {
+      margin: 0;
+      font-size: t.$fs-15;
+      font-weight: 700;
+      color: t.$text-deep;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
     }
 
-    /* Linha principal: nome+badges à esquerda, strip de dados à direita */
-    .patient-header {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        flex-wrap: wrap;
+    &--procedure {
+      flex: 1;
+
+      dd {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
+  }
 
-    .name-group {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        flex-shrink: 0;
+  &__allergy {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: t.$radius-base;
+    background: t.$c-warning-soft;
+    color: t.$c-warning-ink;
+    font-size: t.$fs-12;
+    font-weight: 700;
 
-        .label-mini {
-            font-family: 'Manrope', system-ui, -apple-system, sans-serif;
-            font-size: 9px;
-            font-weight: 800;
-            color: #4a6572;
-            letter-spacing: 1.2px;
-            text-transform: uppercase;
-        }
-
-        .patient-name {
-            margin: 0;
-            font-family: 'Sora', system-ui, -apple-system, sans-serif;
-            font-size: 17px;
-            font-weight: 700;
-            color: #223740;
-            letter-spacing: -0.2px;
-            white-space: nowrap;
-        }
-
-        .badges-row {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-
-            .badge {
-                padding: 3px 9px;
-                border-radius: 999px;
-                font-family: 'Manrope', system-ui, -apple-system, sans-serif;
-                font-size: 11px;
-                font-weight: 700;
-                background: #c6e4ed;
-                color: #1b8ba6;
-                border: none;
-                white-space: nowrap;
-
-                &.record {
-                    background: #dce7ec;
-                    color: #223740;
-                }
-            }
-        }
+    ion-icon {
+      font-size: 16px;
+      flex: none;
     }
-
-    /* Strip horizontal de dados demográficos */
-    .patient-info-strip {
-        display: flex;
-        align-items: center;
-        gap: 0;
-        flex: 1;
-        min-width: 0;
-        background: #f3f7f9;
-        border-radius: 0.625rem;
-        padding: 8px 12px;
-        border: 1px solid rgba(34, 55, 64, 0.08);
-        flex-wrap: wrap;
-        row-gap: 6px;
-    }
-
-    .strip-item {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        padding: 0 14px;
-        min-width: 0;
-
-        &:first-child {
-            padding-left: 0;
-        }
-
-        &--procedure {
-            flex: 1;
-            min-width: 0;
-
-            .truncate {
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                display: block;
-            }
-        }
-
-        .info-label {
-            font-family: 'Manrope', system-ui, -apple-system, sans-serif;
-            font-size: 9px;
-            font-weight: 700;
-            color: #4a6572;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            white-space: nowrap;
-        }
-
-        .info-value {
-            font-family: 'Sora', system-ui, -apple-system, sans-serif;
-            font-size: 13px;
-            font-weight: 700;
-            color: #223740;
-            white-space: nowrap;
-        }
-    }
-
-    .strip-divider {
-        width: 1px;
-        height: 28px;
-        background: rgba(34, 55, 64, 0.12);
-        flex-shrink: 0;
-    }
-
-    .allergy-footer {
-        background: #fbf1de;
-        color: #8a5a1f;
-        border-radius: 0.5rem;
-        padding: 5px 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-family: 'Manrope', system-ui, -apple-system, sans-serif;
-        font-size: 11px;
-        font-weight: 700;
-
-        ion-icon {
-            font-size: 15px;
-            flex-shrink: 0;
-        }
-    }
+  }
 }
 
-/* MODO COMPACTO (MONITORAMENTO) */
-.patient-mini-card {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-    border-radius: 12px;
-    padding: 8px 12px;
-    color: white;
-    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2);
-
-    .mini-main-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
-
-        .mini-name-area {
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            .mini-name { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
-            .mini-record { font-size: 12px; font-weight: 700; opacity: 0.8; text-transform: uppercase; }
-        }
-
-        .mini-stats-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            align-items: center;
-            justify-content: flex-end;
-
-            .mini-stat {
-                font-size: 12px;
-                font-weight: 600;
-                white-space: nowrap;
-                display: flex;
-                align-items: center;
-                gap: 4px;
-                background: rgba(255, 255, 255, 0.12);
-                padding: 4px 10px;
-                border-radius: 20px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-            }
-
-            .asa-badge {
-                background: #f59e0b;
-                color: white;
-                padding: 2px 10px;
-                border-radius: 8px;
-                font-weight: 800;
-                font-size: 11px;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            }
-        }
-    }
-
-    .mini-allergy-bar {
-        margin-top: 10px;
-        background: #ef4444;
-        border: 1px solid rgba(255,255,255,0.2);
-        padding: 6px 12px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 11px;
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-        ion-icon { font-size: 14px; }
-    }
-}
-
-/* Responsividade — telas estreitas */
 @media (max-width: 900px) {
-    .patient-full-card {
-        .patient-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .patient-info-strip {
-            width: 100%;
-        }
-    }
-
-    .patient-mini-card .mini-main-info {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
+  .pc__main {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }

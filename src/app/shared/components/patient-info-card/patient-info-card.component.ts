@@ -45,6 +45,17 @@ export class PatientInfoCardComponent {
     return String(this.allergies);
   }
 
+  get initials(): string {
+    return (this.patientName || '')
+      .split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase() || '—';
+  }
+
+  get genderLabel(): string {
+    if (this.gender === 'M') return this.translate.instant('sharedComponents.patientInfoCard.genderMale');
+    if (this.gender === 'F') return this.translate.instant('sharedComponents.patientInfoCard.genderFemale');
+    return this.gender || '--';
+  }
+
   get hasAllergies(): boolean {
     if (!this.allergies) return false;
     if (Array.isArray(this.allergies)) return this.allergies.length > 0;
