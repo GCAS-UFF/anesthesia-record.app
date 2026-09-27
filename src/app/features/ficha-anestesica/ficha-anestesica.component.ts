@@ -42,7 +42,7 @@ import { FormSectionComponent } from '../../shared/components/form-section/form-
 import { RadioGroupComponent } from '../../shared/components/radio-group/radio-group.component';
 import { CheckboxGroupComponent } from '../../shared/components/checkbox-group/checkbox-group.component';
 import { TecnicaAnestesicaSectionComponent } from './components/tecnica-anestesica-section/tecnica-anestesica-section.component';
-import { DadosVitaisSectionComponent } from './components/dados-vitais-section/dados-vitais-section.component';
+
 
 import { SurgeryService } from 'src/app/core/services/surgery.service';
 import { AnesthesiaRecordService } from 'src/app/core/services/anesthesia-record.service';
@@ -75,7 +75,7 @@ import { maskTimeInput, normalizeTimeInput } from 'src/app/shared/utils/time-inp
     RadioGroupComponent,
     CheckboxGroupComponent,
     TecnicaAnestesicaSectionComponent,
-    DadosVitaisSectionComponent,
+    
     IonContent,
     IonRefresherContent,
     TranslatePipe,
@@ -956,6 +956,13 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
                 const procedimentosFromSurgery = this.buildProcedimentosFromSurgery();
                 this.hydrateProcedimentos(procedimentosFromSurgery);
                 this.form.get('dadosVitais.peso')?.patchValue(this.pesoFromPreAnestesicaOuAghu());
+                const diag = this.diagnosticoFromPreAnestesica();
+                if (diag) {
+                  this.form.get('equipe.diagnosticoPre')?.patchValue(diag);
+                  this.form.get('posProcedimento.diagnosticoPos')?.patchValue(diag);
+                }
+                this.extractTimesFromMonitoringDraft();
+                this.checkCustomSelects();
               }
 
               if (this.fichaFinalizada || this.forcedReadOnly || this.isCancelled)
@@ -1045,6 +1052,13 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
     if (this.patient) {
       this.form.get('dadosVitais.peso')?.patchValue(this.pesoFromPreAnestesicaOuAghu());
+                const diag = this.diagnosticoFromPreAnestesica();
+                if (diag) {
+                  this.form.get('equipe.diagnosticoPre')?.patchValue(diag);
+                  this.form.get('posProcedimento.diagnosticoPos')?.patchValue(diag);
+                }
+                this.extractTimesFromMonitoringDraft();
+                this.checkCustomSelects();
     }
 
     if (this.cirurgiaId) {
@@ -1869,6 +1883,79 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       console.warn('Falha ao recarregar dados mestres', err);
     } finally {
       this.isLoading = false;
+    }
+  }
+  isCustomCoxim = false;
+  isCustomAcesso = false;
+  standardCoxins = ['Cabeça', 'Membros Superiores', 'Membros Inferiores', 'Joelhos', 'Calcanhares', 'Sacro', 'Lateral Direito', 'Lateral Esquerdo'];
+  standardAcessos = ['Membro Superior Direito', 'Membro Superior Esquerdo', 'Membro Inferior Direito', 'Membro Inferior Esquerdo', 'Jugular Interna Direita', 'Jugular Interna Esquerda', 'Subclávia Direita', 'Subclávia Esquerda', 'Femoral Direita', 'Femoral Esquerda'];
+
+  onCoximChange(event: any) {
+    if (event.target.value === 'OUTRO') {
+      this.isCustomCoxim = true;
+      this.form.get('posicao.localCoxim')?.setValue('');
+    }
+  }
+
+  clearCustomCoxim() {
+    this.isCustomCoxim = false;
+    this.form.get('posicao.localCoxim')?.setValue('');
+  }
+
+  onAcessoChange(event: any) {
+    if (event.target.value === 'OUTRO') {
+      this.isCustomAcesso = true;
+      this.form.get('posicao.localAcesso')?.setValue('');
+    }
+  }
+
+  clearCustomAcesso() {
+    this.isCustomAcesso = false;
+    this.form.get('posicao.localAcesso')?.setValue('');
+  }
+
+  checkCustomSelects(): void {
+    const coxim = this.form.get('posicao.localCoxim')?.value;
+    if (coxim && !this.standardCoxins.includes(coxim)) {
+      this.isCustomCoxim = true;
+    }
+    const acesso = this.form.get('posicao.localAcesso')?.value;
+    if (acesso && !this.standardAcessos.includes(acesso)) {
+      this.isCustomAcesso = true;
+    }
+  }
+
+  diagnosticoFromPreAnestesica(): string {
+    try {
+      const raw = localStorage.getItem(`preAnesthesiaData_${this.cirurgiaId}`);
+      const preData = raw ? JSON.parse(raw) : null;
+      return preData?.procedure?.preOperativeDiagnosis ?? '';
+    } catch {
+      return '';
+    }
+  }
+
+  extractTimesFromMonitoringDraft(): void {
+    try {
+      const raw = localStorage.getItem(`draft_monitoring_${this.cirurgiaId}`);
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data.startedAt) {
+           const time = data.startedAt.includes('T') ? data.startedAt.split('T')[1].substring(0, 5) : data.startedAt;
+           this.form.get('equipe.horaInicioAnestesia')?.patchValue(time);
+        }
+        if (data.surgeryEndedAt) {
+           const time = data.surgeryEndedAt.includes('T') ? data.surgeryEndedAt.split('T')[1].substring(0, 5) : data.surgeryEndedAt;
+           this.form.get('posProcedimento.horaTerminoCirurgia')?.patchValue(time);
+        }
+        if (data.endedAt) {
+           const time = data.endedAt.includes('T') ? data.endedAt.split('T')[1].substring(0, 5) : data.endedAt;
+           this.form.get('posProcedimento.horaTerminoAnestesia')?.patchValue(time);
+           this.form.get('alderete.horaAvaliacao')?.patchValue(time);
+        }
+      }
+    } catch(e) {
+       console.warn('Could not extract monitoring times:', e);
     }
   }
 }

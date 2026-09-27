@@ -62,7 +62,8 @@
           <div class="inline-add">
             <select class="select-control" [(ngModel)]="cirurgiaSelecionada" [ngModelOptions]="{ standalone: true }" [disabled]="!canEdit">
               <option value="">{{ 'preAnestesica.procedimento.selectSurgeryPlaceholder' | translate }}</option>
-              <option *ngFor="let c of cirurgiasAghu" [value]="c.value">{{ c.labelKey | translate }}</option>
+              <option value="NEW_CUSTOM">+ Outra cirurgia (digitar nome)...</option>
+              <option *ngFor="let c of cirurgiasAghu" [value]="c.labelKey | translate">{{ c.labelKey | translate }}</option>
             </select>
             <button type="button" class="btn-add" (click)="addCirurgia()" [disabled]="!canEdit">
               <ion-icon name="add-circle-outline"></ion-icon>

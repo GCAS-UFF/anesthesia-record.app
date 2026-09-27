@@ -239,7 +239,7 @@ export const NORMAL_ABNORMAL_OPTIONS: SelectOption[] = [
 ];
 
 export const HUAP_SPECIALTY_OPTIONS: SelectOption[] = [
-  { value: 'CARDIOLOGIST', label: 'Cardiologista' },
+  { value: 'CARDIOLOGIST', label: 'Cardiologia' },
   { value: 'GENERAL_PRACTITIONER', label: 'Clínico Geral' },
   { value: 'PULMONOLOGIST', label: 'Pneumologista' },
   { value: 'NEPHROLOGIST', label: 'Nefrologista' },

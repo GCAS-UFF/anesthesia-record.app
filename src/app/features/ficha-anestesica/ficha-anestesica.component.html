@@ -449,13 +449,6 @@
         </div>
       </app-form-section>
 
-      <app-dados-vitais-section
-        [formGroup]="getFormGroup('dadosVitais')"
-        [class.shake-error]="
-          showValidationErrors && isSectionInvalid('dadosVitais')
-        "
-      >
-      </app-dados-vitais-section>
 
       <app-form-section
         [title]="'fichaAnestesica.equipe.title' | translate"
@@ -669,13 +662,16 @@
               class="field-block flex-1"
               *ngIf="form.get('posicao.usoCoxim')?.value === 'sim'"
             >
-              <label class="field-label">{{ 'fichaAnestesica.posicao.localCoxim' | translate }}</label>
-              <input
-                type="text"
-                formControlName="localCoxim"
-                [placeholder]="'fichaAnestesica.posicao.localCoximPlaceholder' | translate"
-                class="text-input"
-              />
+                            <label class="field-label">{{ 'fichaAnestesica.posicao.localCoxim' | translate }}</label>
+              <div class="inline-add">
+                <select *ngIf="!isCustomCoxim" formControlName="localCoxim" class="select-control" (change)="onCoximChange($event)">
+                  <option value="">Selecione o local...</option>
+                  <option *ngFor="let c of standardCoxins" [value]="c">{{ c }}</option>
+                  <option value="OUTRO">+ Outro (digitar manualmente)...</option>
+                </select>
+                <input *ngIf="isCustomCoxim" type="text" formControlName="localCoxim" [placeholder]="'fichaAnestesica.posicao.localCoximPlaceholder' | translate" class="text-input" style="flex: 1" />
+                <button *ngIf="isCustomCoxim" type="button" class="btn-clear" (click)="clearCustomCoxim()"><ion-icon name="close-circle"></ion-icon></button>
+              </div>
             </div>
           </div>
 
@@ -691,13 +687,16 @@
                 ></app-checkbox-group>
               </div>
               <div class="field-block flex-1">
-                <label class="field-label">{{ 'fichaAnestesica.posicao.localAcesso' | translate }}</label>
-                <input
-                  type="text"
-                  formControlName="localAcesso"
-                  [placeholder]="'fichaAnestesica.posicao.localAcessoPlaceholder' | translate"
-                  class="text-input"
-                />
+                              <label class="field-label">{{ 'fichaAnestesica.posicao.localAcesso' | translate }}</label>
+              <div class="inline-add">
+                <select *ngIf="!isCustomAcesso" formControlName="localAcesso" class="select-control" (change)="onAcessoChange($event)">
+                  <option value="">Selecione o acesso...</option>
+                  <option *ngFor="let a of standardAcessos" [value]="a">{{ a }}</option>
+                  <option value="OUTRO">+ Outro (digitar manualmente)...</option>
+                </select>
+                <input *ngIf="isCustomAcesso" type="text" formControlName="localAcesso" [placeholder]="'fichaAnestesica.posicao.localAcessoPlaceholder' | translate" class="text-input" style="flex: 1" />
+                <button *ngIf="isCustomAcesso" type="button" class="btn-clear" (click)="clearCustomAcesso()"><ion-icon name="close-circle"></ion-icon></button>
+              </div>
               </div>
             </div>
             <div class="dificuldade-row">
@@ -809,19 +808,7 @@
                 </div>
               </div>
             </div>
-            <div class="field-block proc-hora">
-              <label class="field-label">{{ 'fichaAnestesica.posProcedimento.horaLabel' | translate }}</label>
-              <input
-                type="text"
-                inputmode="numeric"
-                maxlength="5"
-                placeholder="HH:mm"
-                formControlName="hora"
-                class="text-input"
-                (input)="onTimeInput($event, row.get('hora'))"
-                (blur)="onTimeBlur($event, row.get('hora'))"
-              />
-            </div>
+
             <div class="proc-principal">
               <label class="proc-principal-check">
                 <input

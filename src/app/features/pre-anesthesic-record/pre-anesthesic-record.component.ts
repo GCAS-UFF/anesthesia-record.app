@@ -467,9 +467,9 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
   addCirurgia(nome?: string): void {
     if (!this.canEdit) return;
-    const valor = (nome ?? this.cirurgiaSelecionada ?? '').trim();
-    if (!valor) return;
-    if (this.cirurgias.value.some((c: any) => c.nome === valor)) return;
+    let valor = (nome ?? this.cirurgiaSelecionada ?? '').trim();
+    if (valor === 'NEW_CUSTOM') valor = '';
+    if (valor && this.cirurgias.value.some((c: any) => c.nome === valor)) return;
     this.cirurgias.push(this.fb.group({ nome: [valor], principal: [this.cirurgias.length === 0] }));
     this.cirurgiaSelecionada = '';
   }
@@ -1032,7 +1032,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
         other: raw.exames.outrosExames ?? '',
       },
       reports: [
-        ...(cardiologyDescricao ? [{ specialty: 'CARDIOLOGIST', description: cardiologyDescricao }] : []),
+        ...(cardiologyDescricao ? [{ specialty: 'SURGICAL_RISK', description: cardiologyDescricao }] : []),
         ...outrosPareceres,
       ],
       conduct: {
@@ -1071,8 +1071,8 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     }
 
     const reports = draft.reports ?? [];
-    const cardiologyReport = reports.find((r) => r.specialty === 'CARDIOLOGIST');
-    const otherReports = reports.filter((r) => r.specialty !== 'CARDIOLOGIST');
+    const cardiologyReport = reports.find((r) => r.specialty === 'SURGICAL_RISK');
+    const otherReports = reports.filter((r) => r.specialty !== 'SURGICAL_RISK');
     this.outrosPareceres.clear();
     otherReports.forEach((r) =>
       this.outrosPareceres.push(this.fb.group({ especialidade: [r.specialty ?? ''], descricao: [r.description ?? ''] })),

@@ -1665,3 +1665,14 @@ ion-content.main-content {
 
 .sign-modal-preview-btn { margin-top: 16px; margin-bottom: 8px; font-weight: 500; font-size: 15px; }
 
+.btn-clear {
+  background: none;
+  border: none;
+  color: var(--ion-color-danger);
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+}

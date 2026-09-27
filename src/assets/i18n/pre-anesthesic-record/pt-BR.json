@@ -26,7 +26,7 @@
     },
     "procedimento": {
       "surgeriesLabel": "Cirurgia(s) proposta(s)",
-      "selectSurgeryPlaceholder": "Selecione uma cirurgia (AGHU)…",
+      "selectSurgeryPlaceholder": "Selecione a cirurgia...",
       "add": "Adicionar",
       "principal": "Principal",
       "noSurgeryAdded": "Nenhuma cirurgia adicionada.",
@@ -202,7 +202,7 @@
       "pulmonaryFunctionTest": "Prova de função respiratória",
       "other": "Outros",
       "reportsTitle": "Pareceres",
-      "cardiologyReport": "Parecer da Cardiologia",
+      "cardiologyReport": "Parecer do Risco Cirúrgico",
       "specialtyPlaceholder": "Especialidade…",
       "reportPlaceholder": "Parecer",
       "addOtherReports": "Adicionar outros pareceres"
