@@ -218,7 +218,15 @@
       "adicionarProcedimento": "Add procedure",
       "horaTerminoCirurgia": "Surgery end time *",
       "diagnosticoPos": "Post-operative diagnosis *",
-      "horaTerminoAnestesia": "Anesthesia end time *"
+      "horaTerminoAnestesia": "Anesthesia end time *",
+      "horaInicioCirurgia": "Surgery start time",
+      "procedimentoPreAnestesica": "Procedure in Pre-Anesthesia"
+    },
+    "monitoringSync": {
+      "registrado": "Monitoring: {{hora}}",
+      "usar": "Use this time",
+      "origem": "Recorded in Monitoring",
+      "naoRegistrado": "Not recorded in Monitoring"
     },
     "alderete": {
       "title": "Aldrete-Kroulik Score",

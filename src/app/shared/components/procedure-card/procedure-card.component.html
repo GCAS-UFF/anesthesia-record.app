@@ -216,6 +216,21 @@
             <ion-ripple-effect></ion-ripple-effect>
           </button>
         </ng-container>
+
+        <button
+          *ngIf="shouldShowConsumptionButton"
+          type="button"
+          class="btn btn-consumption ion-activatable ripple-parent"
+          [class.is-live]="isInProgress"
+          [attr.aria-label]="'sharedComponents.procedureCard.consumptionSummaryHint' | translate"
+          [title]="'sharedComponents.procedureCard.consumptionSummaryHint' | translate"
+          (click)="onOpenConsumption()"
+        >
+          <ion-icon name="flask-outline"></ion-icon>
+          {{ 'sharedComponents.procedureCard.consumptionSummary' | translate }}
+          <span class="live-dot" *ngIf="isInProgress" aria-hidden="true"></span>
+          <ion-ripple-effect></ion-ripple-effect>
+        </button>
       </div>
     </div>
   </article>

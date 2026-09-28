@@ -160,6 +160,7 @@ export function mapAnesthesiaRecordToRecordData(record: Partial<AnesthesiaRecord
   if (pp) {
     add('Pós-Procedimento', [
       { label: 'Cirurgia realizada', value: pp.cirurgiaRealizada },
+      { label: 'Hora de início da cirurgia', value: pp.horaInicioCirurgia },
       { label: 'Hora de término da cirurgia', value: pp.horaTerminoCirurgia },
       { label: 'Diagnóstico pós', value: pp.diagnosticoPos },
       { label: 'Hora de término da anestesia', value: pp.horaTerminoAnestesia },

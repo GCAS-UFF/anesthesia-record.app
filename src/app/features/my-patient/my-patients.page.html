@@ -32,17 +32,6 @@
       </button>
 
       <div class="filters-meta">
-        <button
-          class="refresh-btn"
-          (click)="handleRefresh()"
-          [disabled]="isRefreshing"
-          [attr.aria-label]="'myPatients.refresh.label' | translate"
-          [title]="'myPatients.refresh.label' | translate"
-        >
-          <ion-spinner *ngIf="isRefreshing" name="crescent"></ion-spinner>
-          <ion-icon *ngIf="!isRefreshing" name="refresh-outline"></ion-icon>
-        </button>
-
         <span class="count-pill"> {{ totalItems }} {{ 'myPatients.countSuffix' | translate }} </span>
       </div>
     </section>

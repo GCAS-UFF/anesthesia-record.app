@@ -1,0 +1,389 @@
+<div class="cs">
+  <header class="cs__header">
+    <div class="cs__heading">
+      <span class="cs__eyebrow">
+        <ion-icon name="flask-outline" aria-hidden="true"></ion-icon>
+        {{ 'sharedComponents.consumptionSummary.title' | translate }}
+      </span>
+      <h2 class="cs__title">{{ patientName || '—' }}</h2>
+      <p class="cs__subtitle">
+        <span *ngIf="procedure">{{ procedure }}</span>
+        <span *ngIf="record"> · {{ 'sharedComponents.procedureCard.recordPrefix' | translate }} {{ record }}</span>
+      </p>
+    </div>
+
+    <div class="cs__status" *ngIf="summary as s">
+      <span class="cs-badge cs-badge--live" *ngIf="s.isLive">
+        <span class="cs-pulse" aria-hidden="true"></span>
+        {{ 'sharedComponents.consumptionSummary.status.live' | translate }}
+      </span>
+      <span class="cs-badge cs-badge--wait" *ngIf="s.phase === 'monitoring-finished'">
+        {{ 'sharedComponents.consumptionSummary.status.monitoringFinished' | translate }}
+      </span>
+      <span class="cs-badge cs-badge--done" *ngIf="s.phase === 'finalized'">
+        <ion-icon name="lock-closed-outline" aria-hidden="true"></ion-icon>
+        {{ 'sharedComponents.consumptionSummary.status.finalized' | translate }}
+      </span>
+      <span class="cs-badge cs-badge--muted" *ngIf="s.phase === 'not-started'">
+        {{ 'sharedComponents.consumptionSummary.status.notStarted' | translate }}
+      </span>
+      <span class="cs-badge cs-badge--warn" *ngIf="s.pendingSync">
+        <ion-icon name="cloud-offline-outline" aria-hidden="true"></ion-icon>
+        {{ 'sharedComponents.consumptionSummary.status.pendingSync' | translate }}
+      </span>
+    </div>
+
+    <button type="button" class="cs__close" (click)="close()" [attr.aria-label]="'common.close' | translate">
+      <ion-icon name="close-outline"></ion-icon>
+    </button>
+  </header>
+
+  <div class="cs__state" *ngIf="state.loading && !summary">
+    <ion-spinner name="crescent"></ion-spinner>
+    <span>{{ 'sharedComponents.consumptionSummary.loading' | translate }}</span>
+  </div>
+
+  <div class="cs__state" *ngIf="state.error === 'forbidden'">
+    <ion-icon name="lock-closed-outline"></ion-icon>
+    <span>{{ 'sharedComponents.consumptionSummary.errors.forbidden' | translate }}</span>
+  </div>
+
+  <div class="cs__state" *ngIf="state.error === 'unavailable'">
+    <ion-icon name="cloud-offline-outline"></ion-icon>
+    <span>{{ 'sharedComponents.consumptionSummary.errors.unavailable' | translate }}</span>
+  </div>
+
+  <ng-container *ngIf="summary as s">
+    <!-- Totais principais: sempre visíveis, sem rolagem -->
+    <section class="cs-kpis" [attr.aria-label]="'sharedComponents.consumptionSummary.overview' | translate">
+      <div class="cs-kpi">
+        <span class="cs-kpi__label">{{ 'sharedComponents.consumptionSummary.kpi.anesthesia' | translate }}</span>
+        <strong class="cs-kpi__value">{{ duration(s.times.anesthesiaMin) }}</strong>
+        <span class="cs-kpi__sub">
+          {{ time(s.times.anesthesiaStart) }} → {{ s.times.anesthesiaRunning ? ('sharedComponents.consumptionSummary.ongoing' | translate) : time(s.times.anesthesiaEnd) }}
+        </span>
+      </div>
+      <div class="cs-kpi">
+        <span class="cs-kpi__label">{{ 'sharedComponents.consumptionSummary.kpi.surgery' | translate }}</span>
+        <strong class="cs-kpi__value">{{ duration(s.times.surgeryMin) }}</strong>
+        <span class="cs-kpi__sub">
+          {{ time(s.times.surgeryStart) }} → {{ s.times.surgeryRunning ? ('sharedComponents.consumptionSummary.ongoing' | translate) : time(s.times.surgeryEnd) }}
+        </span>
+      </div>
+      <div class="cs-kpi">
+        <span class="cs-kpi__label">{{ 'sharedComponents.consumptionSummary.kpi.drugs' | translate }}</span>
+        <strong class="cs-kpi__value">{{ s.overview.distinctDrugs }}</strong>
+        <span class="cs-kpi__sub">
+          {{ 'sharedComponents.consumptionSummary.drugs.administrations' | translate: { count: s.overview.administrations } }}
+        </span>
+      </div>
+      <div class="cs-kpi">
+        <span class="cs-kpi__label">{{ 'sharedComponents.consumptionSummary.kpi.balance' | translate }}</span>
+        <strong class="cs-kpi__value">{{ s.fluids.entryCount ? signedMl(s.overview.balanceMl) : notRegistered }}</strong>
+        <span class="cs-kpi__sub" *ngIf="s.fluids.entryCount">
+          ↑ {{ num(s.overview.totalGainMl) }} mL · ↓ {{ num(s.overview.totalLossMl) }} mL
+        </span>
+      </div>
+      <div class="cs-kpi">
+        <span class="cs-kpi__label">{{ 'sharedComponents.consumptionSummary.kpi.pumps' | translate }}</span>
+        <strong class="cs-kpi__value">{{ s.overview.pumpCount }}</strong>
+        <span class="cs-kpi__sub" *ngIf="s.overview.runningPumps">
+          {{ 'sharedComponents.consumptionSummary.pumps.runningCount' | translate: { count: s.overview.runningPumps } }}
+        </span>
+      </div>
+      <div class="cs-kpi">
+        <span class="cs-kpi__label">{{ 'sharedComponents.consumptionSummary.kpi.gases' | translate }}</span>
+        <strong class="cs-kpi__value">
+          O₂ {{ s.gases.o2.intervals.length ? duration(s.overview.o2Min) : '—' }}
+        </strong>
+        <span class="cs-kpi__sub">
+          {{ 'sharedComponents.consumptionSummary.gases.air' | translate }} {{ s.gases.air.intervals.length ? duration(s.overview.airMin) : '—' }}
+        </span>
+      </div>
+    </section>
+
+    <nav class="cs-tabs" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        class="cs-tab"
+        *ngFor="let tab of tabs"
+        [class.cs-tab--active]="activeTab === tab"
+        [attr.aria-selected]="activeTab === tab"
+        (click)="setTab(tab)"
+      >
+        {{ 'sharedComponents.consumptionSummary.tabs.' + tab | translate }}
+        <span class="cs-tab__count">{{ tabCount(tab) }}</span>
+      </button>
+    </nav>
+
+    <div class="cs__body">
+      <!-- ============ FÁRMACOS ============ -->
+      <ng-container *ngIf="activeTab === 'drugs'">
+        <ng-container
+          *ngTemplateOutlet="drugSection; context: { title: 'sharedComponents.consumptionSummary.drugs.agents', groups: s.agents }"
+        ></ng-container>
+        <ng-container
+          *ngTemplateOutlet="drugSection; context: { title: 'sharedComponents.consumptionSummary.drugs.medications', groups: s.medications }"
+        ></ng-container>
+        <p class="cs-note">{{ 'sharedComponents.consumptionSummary.drugs.note' | translate }}</p>
+      </ng-container>
+
+      <!-- ============ SOLUÇÕES E BALANÇO ============ -->
+      <ng-container *ngIf="activeTab === 'fluids'">
+        <div class="cs-strip">
+          <div class="cs-strip__item">
+            <span>{{ 'sharedComponents.consumptionSummary.fluids.totalGain' | translate }}</span>
+            <strong>{{ num(s.fluids.totalGainMl) }} mL</strong>
+          </div>
+          <div class="cs-strip__item">
+            <span>{{ 'sharedComponents.consumptionSummary.fluids.totalLoss' | translate }}</span>
+            <strong>{{ num(s.fluids.totalLossMl) }} mL</strong>
+          </div>
+          <div class="cs-strip__item cs-strip__item--accent">
+            <span>{{ 'sharedComponents.consumptionSummary.fluids.balance' | translate }}</span>
+            <strong>{{ signedMl(s.fluids.balanceMl) }}</strong>
+          </div>
+        </div>
+
+        <h3 class="cs-section-title">{{ 'sharedComponents.consumptionSummary.fluids.solutionsGains' | translate }}</h3>
+        <ng-container *ngTemplateOutlet="fluidGroups; context: { groups: s.fluids.gainsByItem, prefix: 'gain' }"></ng-container>
+
+        <ng-container *ngIf="s.fluids.gainsByType.length">
+          <h3 class="cs-section-title">{{ 'sharedComponents.consumptionSummary.fluids.gainsByType' | translate }}</h3>
+          <div class="cs-chips">
+            <span class="cs-chip" *ngFor="let g of s.fluids.gainsByType; trackBy: trackByKey">
+              {{ fluidTypeLabel(g) }} <strong>{{ num(g.totalMl) }} mL</strong>
+            </span>
+          </div>
+        </ng-container>
+
+        <h3 class="cs-section-title">{{ 'sharedComponents.consumptionSummary.fluids.losses' | translate }}</h3>
+        <ng-container *ngTemplateOutlet="fluidGroups; context: { groups: s.fluids.lossesByType, prefix: 'loss', byType: true }"></ng-container>
+
+        <ng-container *ngIf="s.solutions.length">
+          <ng-container
+            *ngTemplateOutlet="drugSection; context: { title: 'sharedComponents.consumptionSummary.fluids.solutionsAsDrugs', groups: s.solutions }"
+          ></ng-container>
+        </ng-container>
+        <p class="cs-note">{{ 'sharedComponents.consumptionSummary.fluids.note' | translate }}</p>
+      </ng-container>
+
+      <!-- ============ BOMBAS ============ -->
+      <ng-container *ngIf="activeTab === 'pumps'">
+        <p class="cs-empty" *ngIf="!s.pumps.length">{{ 'sharedComponents.consumptionSummary.noData' | translate }}</p>
+        <article class="cs-item" *ngFor="let p of s.pumps; trackBy: trackByKey">
+          <div class="cs-item__head cs-item__head--static">
+            <div class="cs-item__main">
+              <span class="cs-item__name">
+                {{ p.name }}
+                <span class="cs-tag cs-tag--live" *ngIf="p.isRunning">{{ 'sharedComponents.consumptionSummary.ongoing' | translate }}</span>
+              </span>
+              <span class="cs-item__meta">
+                {{ p.rate != null ? num(p.rate, 2) + ' ' + p.rateUnitLabel : notRegistered }}
+                · {{ 'sharedComponents.consumptionSummary.pumps.programmed' | translate }}:
+                {{ p.programmedVolumeMl != null ? num(p.programmedVolumeMl) + ' mL' : notRegistered }}
+              </span>
+            </div>
+            <div class="cs-item__total">
+              <strong>{{ duration(p.durationMin) }}</strong>
+              <small *ngIf="p.infusedVolumeMl != null">
+                {{ 'sharedComponents.consumptionSummary.pumps.infusedVolume' | translate }}: {{ num(p.infusedVolumeMl) }} mL
+              </small>
+              <small *ngIf="p.infusedAmount">
+                {{ 'sharedComponents.consumptionSummary.pumps.infusedAmount' | translate }}: {{ num(p.infusedAmount.total, 2) }} {{ p.infusedAmount.unit }}
+              </small>
+            </div>
+          </div>
+          <dl class="cs-grid">
+            <div>
+              <dt>{{ 'sharedComponents.consumptionSummary.start' | translate }}</dt>
+              <dd>{{ p.startTime || notRegistered }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'sharedComponents.consumptionSummary.end' | translate }}</dt>
+              <dd>
+                {{ p.isRunning ? ('sharedComponents.consumptionSummary.ongoing' | translate) : p.endTimestamp ? time(p.endTimestamp) : notRegistered }}
+              </dd>
+            </div>
+            <div class="cs-grid__wide">
+              <dt>{{ 'sharedComponents.consumptionSummary.pumps.basisLabel' | translate }}</dt>
+              <dd>{{ 'sharedComponents.consumptionSummary.pumps.basis.' + p.endBasis | translate }}</dd>
+            </div>
+          </dl>
+        </article>
+        <p class="cs-note">{{ 'sharedComponents.consumptionSummary.pumps.note' | translate }}</p>
+      </ng-container>
+
+      <!-- ============ O2 / AR ============ -->
+      <ng-container *ngIf="activeTab === 'gases'">
+        <div class="cs-gases">
+          <article class="cs-item" *ngFor="let g of [s.gases.o2, s.gases.air]">
+            <div class="cs-item__head cs-item__head--static">
+              <div class="cs-item__main">
+                <span class="cs-item__name">
+                  {{ 'sharedComponents.consumptionSummary.gases.' + g.kind | translate }}
+                  <span class="cs-tag cs-tag--live" *ngIf="g.isActive">{{ 'sharedComponents.consumptionSummary.gases.on' | translate }}</span>
+                </span>
+                <span class="cs-item__meta" *ngIf="g.intervals.length">
+                  {{ g.firstStartTime }} → {{ g.isActive ? ('sharedComponents.consumptionSummary.ongoing' | translate) : (g.lastEndTime || notRegistered) }}
+                  · {{ g.flowsRegistered.length ? (g.flowsRegistered.join(' / ') + ' L/min') : ('sharedComponents.consumptionSummary.gases.noFlow' | translate) }}
+                </span>
+              </div>
+              <div class="cs-item__total">
+                <strong>{{ g.intervals.length ? duration(g.totalMin) : notRegistered }}</strong>
+                <small *ngIf="g.totalVolumeL != null">{{ num(g.totalVolumeL) }} L</small>
+              </div>
+            </div>
+            <table class="cs-table" *ngIf="g.intervals.length">
+              <thead>
+                <tr>
+                  <th>{{ 'sharedComponents.consumptionSummary.start' | translate }}</th>
+                  <th>{{ 'sharedComponents.consumptionSummary.end' | translate }}</th>
+                  <th>{{ 'sharedComponents.consumptionSummary.durationLabel' | translate }}</th>
+                  <th>{{ 'sharedComponents.consumptionSummary.gases.flow' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let i of g.intervals">
+                  <td>{{ i.startTime }}</td>
+                  <td>
+                    {{ i.endBasis === 'running' ? ('sharedComponents.consumptionSummary.ongoing' | translate) : (i.endTime || notRegistered) }}
+                    <small class="cs-basis" *ngIf="i.endBasis === 'capped-anesthesia-end'">
+                      {{ 'sharedComponents.consumptionSummary.gases.cappedAtAnesthesiaEnd' | translate }}
+                    </small>
+                  </td>
+                  <td>{{ duration(i.durationMin) }}</td>
+                  <td>{{ i.flowLPerMin != null ? num(i.flowLPerMin) + ' L/min' : notRegistered }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="cs-empty" *ngIf="!g.intervals.length">{{ 'sharedComponents.consumptionSummary.noData' | translate }}</p>
+          </article>
+        </div>
+
+        <div class="cs-callout" *ngIf="s.oxygenSupplementation as sup">
+          <strong>{{ 'sharedComponents.consumptionSummary.gases.fichaSupplementation' | translate }}:</strong>
+          {{ sup.types.join(', ') }}<span *ngIf="sup.other">{{ sup.types.length ? ', ' : '' }}{{ sup.other }}</span>
+          <span *ngIf="!sup.types.length && !sup.other">{{ notRegistered }}</span>
+        </div>
+        <p class="cs-note">{{ 'sharedComponents.consumptionSummary.gases.note' | translate }}</p>
+      </ng-container>
+
+      <!-- ============ TEMPOS E EVENTOS ============ -->
+      <ng-container *ngIf="activeTab === 'timeline'">
+        <dl class="cs-grid cs-grid--times">
+          <div>
+            <dt>{{ 'sharedComponents.consumptionSummary.times.anesthesiaStart' | translate }}</dt>
+            <dd>{{ s.times.anesthesiaStart ? time(s.times.anesthesiaStart) : notRegistered }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'sharedComponents.consumptionSummary.times.surgeryStart' | translate }}</dt>
+            <dd>{{ s.times.surgeryStart ? time(s.times.surgeryStart) : notRegistered }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'sharedComponents.consumptionSummary.times.surgeryEnd' | translate }}</dt>
+            <dd>{{ s.times.surgeryEnd ? time(s.times.surgeryEnd) : s.times.surgeryRunning ? ('sharedComponents.consumptionSummary.ongoing' | translate) : notRegistered }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'sharedComponents.consumptionSummary.times.anesthesiaEnd' | translate }}</dt>
+            <dd>{{ s.times.anesthesiaEnd ? time(s.times.anesthesiaEnd) : s.times.anesthesiaRunning ? ('sharedComponents.consumptionSummary.ongoing' | translate) : notRegistered }}</dd>
+          </div>
+        </dl>
+
+        <h3 class="cs-section-title">{{ 'sharedComponents.consumptionSummary.times.events' | translate }}</h3>
+        <p class="cs-empty" *ngIf="!s.events.length">{{ 'sharedComponents.consumptionSummary.noData' | translate }}</p>
+        <ul class="cs-events" *ngIf="s.events.length">
+          <li *ngFor="let e of s.events">
+            <span class="cs-events__time">{{ e.time || '—' }}</span>
+            <span class="cs-events__label">{{ e.label }}</span>
+            <span class="cs-events__desc" *ngIf="e.description">{{ e.description }}</span>
+          </li>
+        </ul>
+      </ng-container>
+    </div>
+
+    <footer class="cs__footer">
+      <span>
+        {{ 'sharedComponents.consumptionSummary.footer.updatedAt' | translate: { time: time(s.generatedAt) } }}
+        · {{ 'sharedComponents.consumptionSummary.footer.source.' + s.source | translate }}
+      </span>
+      <span>{{ 'sharedComponents.consumptionSummary.footer.readOnly' | translate }}</span>
+    </footer>
+  </ng-container>
+</div>
+
+<ng-template #drugSection let-title="title" let-groups="groups">
+  <h3 class="cs-section-title">{{ title | translate }} <span class="cs-section-count">{{ groups.length }}</span></h3>
+  <p class="cs-empty" *ngIf="!groups.length">{{ 'sharedComponents.consumptionSummary.noData' | translate }}</p>
+  <article class="cs-item" *ngFor="let g of groups; trackBy: trackByKey">
+    <button type="button" class="cs-item__head" (click)="toggle(g.key)" [attr.aria-expanded]="isExpanded(g.key)">
+      <div class="cs-item__main">
+        <span class="cs-item__name">{{ g.name }}</span>
+        <span class="cs-item__meta">{{ drugMeta(g) }}</span>
+      </div>
+      <div class="cs-item__total">
+        <strong>{{ g.totals.length ? totals(g.totals) : notRegistered }}</strong>
+        <small *ngIf="g.unparsedCount && g.totals.length">
+          {{ 'sharedComponents.consumptionSummary.drugs.unparsed' | translate: { count: g.unparsedCount } }}
+        </small>
+        <small *ngIf="g.infusionMinutes != null">
+          {{ 'sharedComponents.consumptionSummary.drugs.infusion' | translate }}: {{ duration(g.infusionMinutes) }}
+        </small>
+      </div>
+      <ion-icon class="cs-item__chevron" [class.open]="isExpanded(g.key)" name="chevron-down-outline" aria-hidden="true"></ion-icon>
+    </button>
+    <table class="cs-table" *ngIf="isExpanded(g.key)">
+      <thead>
+        <tr>
+          <th>{{ 'sharedComponents.consumptionSummary.timeLabel' | translate }}</th>
+          <th>{{ 'sharedComponents.consumptionSummary.drugs.dose' | translate }}</th>
+          <th>{{ 'sharedComponents.consumptionSummary.drugs.route' | translate }}</th>
+          <th>{{ 'sharedComponents.consumptionSummary.drugs.record' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let a of g.administrations">
+          <td>{{ a.time || notRegistered }}</td>
+          <td>{{ a.dose != null ? num(a.dose, 3) + ' ' + a.unit : (a.doseText || notRegistered) }}</td>
+          <td>{{ a.route || notRegistered }}</td>
+          <td>{{ administrationKind(a) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </article>
+</ng-template>
+
+<ng-template #fluidGroups let-groups="groups" let-prefix="prefix" let-byType="byType">
+  <p class="cs-empty" *ngIf="!groups.length">{{ 'sharedComponents.consumptionSummary.noData' | translate }}</p>
+  <article class="cs-item" *ngFor="let g of groups; trackBy: trackByKey">
+    <button type="button" class="cs-item__head" (click)="toggle(prefix + g.key)" [attr.aria-expanded]="isExpanded(prefix + g.key)">
+      <div class="cs-item__main">
+        <span class="cs-item__name">{{ byType ? fluidTypeLabel(g) : fluidItemLabel(g) }}</span>
+        <span class="cs-item__meta">
+          {{ 'sharedComponents.consumptionSummary.fluids.entries' | translate: { count: g.entries.length } }}
+        </span>
+      </div>
+      <div class="cs-item__total">
+        <strong>{{ num(g.totalMl) }} mL</strong>
+      </div>
+      <ion-icon class="cs-item__chevron" [class.open]="isExpanded(prefix + g.key)" name="chevron-down-outline" aria-hidden="true"></ion-icon>
+    </button>
+    <table class="cs-table" *ngIf="isExpanded(prefix + g.key)">
+      <thead>
+        <tr>
+          <th>{{ 'sharedComponents.consumptionSummary.timeLabel' | translate }}</th>
+          <th>{{ 'sharedComponents.consumptionSummary.fluids.volume' | translate }}</th>
+          <th>{{ 'sharedComponents.consumptionSummary.fluids.item' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of g.entries">
+          <td>{{ e.time || notRegistered }}</td>
+          <td>{{ num(e.volumeMl) }} mL</td>
+          <td>{{ e.isHydration ? fluidTypeLabel(g) : (e.name || notRegistered) }}<span *ngIf="e.detail"> — {{ e.detail }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </article>
+</ng-template>

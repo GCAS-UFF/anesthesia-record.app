@@ -606,6 +606,15 @@
               (input)="onTimeInput($event, form.get('equipe.horaInicioAnestesia'))"
               (blur)="onTimeBlur($event, form.get('equipe.horaInicioAnestesia'))"
             />
+            <div class="monitoring-sync" *ngIf="monitoringTimes?.anesthesiaStart as mt">
+              <span>{{ 'fichaAnestesica.monitoringSync.registrado' | translate: { hora: mt } }}</span>
+              <button
+                type="button"
+                class="monitoring-sync-apply"
+                *ngIf="canEdit && monitoringTimeDiffers('equipe.horaInicioAnestesia', mt)"
+                (click)="useMonitoringTime('equipe.horaInicioAnestesia', mt)"
+              >{{ 'fichaAnestesica.monitoringSync.usar' | translate }}</button>
+            </div>
           </div>
           <div class="field-block col-span-3">
             <label class="field-label">{{ 'fichaAnestesica.equipe.diagnosticoPre' | translate }}</label>
@@ -723,6 +732,14 @@
           showValidationErrors && isSectionInvalid('posProcedimento')
         "
       >
+        <div class="pre-anestesia-ref" *ngIf="preAnesthesiaProcedures.length">
+          <span class="pre-anestesia-ref-label">{{ 'fichaAnestesica.posProcedimento.procedimentoPreAnestesica' | translate }}</span>
+          <span class="pre-anestesia-ref-value">
+            <ng-container *ngFor="let p of preAnesthesiaProcedures; let last = last">
+              {{ p.name }}<em *ngIf="p.isPrimary && preAnesthesiaProcedures.length > 1"> ({{ 'fichaAnestesica.posProcedimento.principalLabel' | translate | lowercase }})</em><span *ngIf="!last">, </span>
+            </ng-container>
+          </span>
+        </div>
         <div class="procedimentos-list" formArrayName="procedimentos">
           <div
             class="procedimento-row"
@@ -839,6 +856,20 @@
 
         <div class="grid-pos">
           <div class="field-block">
+            <label class="field-label">{{ 'fichaAnestesica.posProcedimento.horaInicioCirurgia' | translate }}</label>
+            <!-- Somente leitura: o início da cirurgia é registrado (e gravado) só na Monitorização. -->
+            <input
+              type="text"
+              class="text-input"
+              readonly
+              [value]="monitoringTimes?.surgeryStart || ''"
+              [placeholder]="'fichaAnestesica.monitoringSync.naoRegistrado' | translate"
+            />
+            <div class="monitoring-sync" *ngIf="monitoringTimes?.surgeryStart">
+              <span>{{ 'fichaAnestesica.monitoringSync.origem' | translate }}</span>
+            </div>
+          </div>
+          <div class="field-block">
             <label class="field-label">{{ 'fichaAnestesica.posProcedimento.horaTerminoCirurgia' | translate }}</label>
             <input
               type="text"
@@ -850,6 +881,15 @@
               (input)="onTimeInput($event, form.get('posProcedimento.horaTerminoCirurgia'))"
               (blur)="onTimeBlur($event, form.get('posProcedimento.horaTerminoCirurgia'))"
             />
+            <div class="monitoring-sync" *ngIf="monitoringTimes?.surgeryEnd as mt">
+              <span>{{ 'fichaAnestesica.monitoringSync.registrado' | translate: { hora: mt } }}</span>
+              <button
+                type="button"
+                class="monitoring-sync-apply"
+                *ngIf="canEdit && monitoringTimeDiffers('posProcedimento.horaTerminoCirurgia', mt)"
+                (click)="useMonitoringTime('posProcedimento.horaTerminoCirurgia', mt)"
+              >{{ 'fichaAnestesica.monitoringSync.usar' | translate }}</button>
+            </div>
           </div>
           <div class="field-block">
             <label class="field-label">{{ 'fichaAnestesica.posProcedimento.diagnosticoPos' | translate }}</label>
@@ -871,6 +911,15 @@
               (input)="onTimeInput($event, form.get('posProcedimento.horaTerminoAnestesia'))"
               (blur)="onTimeBlur($event, form.get('posProcedimento.horaTerminoAnestesia'))"
             />
+            <div class="monitoring-sync" *ngIf="monitoringTimes?.anesthesiaEnd as mt">
+              <span>{{ 'fichaAnestesica.monitoringSync.registrado' | translate: { hora: mt } }}</span>
+              <button
+                type="button"
+                class="monitoring-sync-apply"
+                *ngIf="canEdit && monitoringTimeDiffers('posProcedimento.horaTerminoAnestesia', mt)"
+                (click)="useMonitoringTime('posProcedimento.horaTerminoAnestesia', mt)"
+              >{{ 'fichaAnestesica.monitoringSync.usar' | translate }}</button>
+            </div>
           </div>
         </div>
       </app-form-section>
@@ -1332,23 +1381,6 @@
         </div>
 
         <div class="sign-name-block">
-          <label class="field-label"
-            >{{ 'fichaAnestesica.signModal.nomeCompletoLabel' | translate }}</label
-          >
-          <input
-            type="text"
-            class="text-input sign-input"
-            [(ngModel)]="signatureTypedName"
-            [placeholder]="expectedSignatureName || ('fichaAnestesica.signModal.nomeCompletoPlaceholder' | translate)"
-            autocomplete="off"
-            spellcheck="false"
-          />
-          <p class="sign-hint" *ngIf="expectedSignatureName">
-            {{ 'fichaAnestesica.signModal.profissionalLogadoPrefix' | translate }} <strong>{{ expectedSignatureName }}</strong>
-          </p>
-        </div>
-
-        <div class="sign-name-block">
           <label class="field-label">{{ 'fichaAnestesica.signModal.senhaLabel' | translate }}</label>
           <input
             type="password"
@@ -1356,8 +1388,12 @@
             [(ngModel)]="signaturePassword"
             [placeholder]="'fichaAnestesica.signModal.senhaPlaceholder' | translate"
             autocomplete="current-password"
+            spellcheck="false"
             (keyup.enter)="confirmarESalvar()"
           />
+          <p class="sign-hint" *ngIf="expectedSignatureName">
+            {{ 'fichaAnestesica.signModal.profissionalLogadoPrefix' | translate }} <strong>{{ expectedSignatureName }}</strong>
+          </p>
         </div>
 
         <p class="sign-error" *ngIf="signatureError">
@@ -1380,7 +1416,7 @@
             color="primary"
             class="btn-primary-pill"
             (click)="confirmarESalvar()"
-            [disabled]="!signatureAgreed || !signatureTypedName.trim() || !signaturePassword.trim()"
+            [disabled]="!signatureAgreed || !signaturePassword.trim()"
           >
             <ion-icon name="create-outline" slot="start"></ion-icon>
             {{ 'fichaAnestesica.signModal.assinarSalvar' | translate }}

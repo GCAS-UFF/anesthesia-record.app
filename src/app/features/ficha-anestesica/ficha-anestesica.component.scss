@@ -181,6 +181,49 @@ ion-content.main-content {
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
 }
+// Aviso de origem dos dados integrados (Monitorização / Pré-Anestésica)
+.monitoring-sync {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fa-muted);
+}
+.monitoring-sync-apply {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 800;
+  color: var(--fa-blue);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.pre-anestesia-ref {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: var(--fa-radius-sm);
+  background: var(--fa-soft);
+  font-size: 13px;
+  color: var(--fa-ink);
+}
+.pre-anestesia-ref-label {
+  align-self: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--fa-muted);
+}
+.pre-anestesia-ref-value {
+  font-weight: 600;
+}
 .grid-assinaturas {
   display: grid;
   grid-template-columns: 1.4fr 1.4fr 1fr;

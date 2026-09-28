@@ -218,7 +218,15 @@
       "adicionarProcedimento": "Añadir procedimiento",
       "horaTerminoCirurgia": "Hora de término de la cirugía *",
       "diagnosticoPos": "Diagnóstico postoperatorio *",
-      "horaTerminoAnestesia": "Hora de término de la anestesia *"
+      "horaTerminoAnestesia": "Hora de término de la anestesia *",
+      "horaInicioCirurgia": "Hora de inicio de la cirugía",
+      "procedimentoPreAnestesica": "Procedimiento en la Preanestesia"
+    },
+    "monitoringSync": {
+      "registrado": "Monitorización: {{hora}}",
+      "usar": "Usar este horario",
+      "origem": "Registrado en la Monitorización",
+      "naoRegistrado": "No registrado en la Monitorización"
     },
     "alderete": {
       "title": "Índice de Aldrete y Kroulik",

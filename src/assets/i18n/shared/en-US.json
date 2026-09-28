@@ -94,7 +94,9 @@
       "preAnesthesia": "Pre-Anesthesia",
       "anestheticRecord": "Anesthetic Record",
       "assumePatient": "Assume Patient",
-      "goToSurgery": "Go to Surgery"
+      "goToSurgery": "Go to Surgery",
+      "consumptionSummary": "Supplies",
+      "consumptionSummaryHint": "Surgery supplies and consumption summary"
     },
     "quickVitalInput": {
       "autoTitle": "Automatic recording",
@@ -125,6 +127,128 @@
     },
     "searchBar": {
       "defaultPlaceholder": "Search..."
+    },
+    "consumptionSummary": {
+      "title": "Surgery supplies and consumption",
+      "overview": "Consumption overview",
+      "loading": "Consolidating records...",
+      "notRegistered": "Not recorded",
+      "noData": "No data available",
+      "ongoing": "ongoing",
+      "start": "Start",
+      "end": "End",
+      "durationLabel": "Duration",
+      "timeLabel": "Time",
+      "status": {
+        "live": "Updating in real time",
+        "monitoringFinished": "Anesthesia ended · record being completed",
+        "finalized": "Record finalized · final consolidation",
+        "notStarted": "Monitoring not started",
+        "pendingSync": "Includes records from this device not yet synced"
+      },
+      "errors": {
+        "forbidden": "You are not allowed to view this surgery consumption while it is in progress.",
+        "unavailable": "Could not load data: server unavailable and no records on this device."
+      },
+      "kpi": {
+        "anesthesia": "Anesthesia",
+        "surgery": "Surgery",
+        "drugs": "Drugs",
+        "balance": "Fluid balance",
+        "pumps": "Pumps",
+        "gases": "O₂ / Air"
+      },
+      "tabs": {
+        "drugs": "Agents and medications",
+        "fluids": "Solutions and balance",
+        "pumps": "Infusion pumps",
+        "gases": "O₂ and medical air",
+        "timeline": "Times and events"
+      },
+      "origin": {
+        "bolus": "Bolus",
+        "dose": "Dose",
+        "pre-anesthetic": "Record · premedication",
+        "antibiotic": "Record · antibiotic",
+        "booster": "Record · redose"
+      },
+      "drugs": {
+        "agents": "Anesthetic agents",
+        "medications": "Medications",
+        "administrations": "{{count}} administration(s)",
+        "unparsed": "+ {{count}} without numeric dose",
+        "infusion": "Continuous infusion",
+        "dose": "Dose",
+        "route": "Route",
+        "record": "Entry",
+        "note": "Totals add up doses of the same drug per unit, with no unit conversion. Anesthetic agents = drugs in the \"Anesthetic\" category; the others are listed under Medications. Free-text doses from the record are shown in the history but only counted when numeric."
+      },
+      "fluids": {
+        "totalGain": "Gains",
+        "totalLoss": "Losses",
+        "balance": "Balance (gains − losses)",
+        "solutionsGains": "Solutions and fluids given (gains)",
+        "gainsByType": "Gains by type",
+        "losses": "Losses by type",
+        "solutionsAsDrugs": "Solutions recorded as drugs",
+        "entries": "{{count}} entry(ies)",
+        "volume": "Volume",
+        "item": "Item",
+        "note": "The fluid balance uses only the gain and loss entries from Monitoring. Solutions recorded as drugs and infusion pump volumes are shown in their own sections and are not added to the balance, to avoid counting the same volume twice."
+      },
+      "fluidTypes": {
+        "1": "Crystalloid",
+        "2": "Colloid",
+        "3": "Blood product",
+        "4": "Diuresis",
+        "5": "Bleeding",
+        "6": "Drain",
+        "7": "Gastric aspirate",
+        "8": "Other",
+        "hydration": "Hydration"
+      },
+      "pumps": {
+        "runningCount": "{{count}} ongoing",
+        "programmed": "programmed volume",
+        "infusedVolume": "Infused volume (calculated)",
+        "infusedAmount": "Amount given (calculated)",
+        "basisLabel": "How the time was obtained",
+        "basis": {
+          "stopped": "Stop recorded in Monitoring",
+          "volume-completed": "Scheduled end from volume and rate (no earlier stop recorded)",
+          "running": "Ongoing — counted until now",
+          "capped-anesthesia-end": "No stop recorded — limited to the end of anesthesia",
+          "not-registered": "End not recorded (the system stores a default 2 h window) — time not calculated"
+        },
+        "note": "Infused volume = rate (mL/h) × effective hours, capped at the programmed volume. For rates in mcg/min, mg/h, IU/h and mcg/kg/min (with the record weight) the drug amount is calculated. SIGA does not record pauses, resumes or rate changes: each new entry is shown as another pump."
+      },
+      "gases": {
+        "o2": "Oxygen (O₂)",
+        "air": "Medical air",
+        "on": "On",
+        "flow": "Flow",
+        "noFlow": "flow not recorded",
+        "cappedAtAnesthesiaEnd": "no switch-off recorded — until the end of anesthesia",
+        "fichaSupplementation": "O₂ supplementation recorded in the anesthesia record",
+        "note": "Time = sum of the intervals between \"on\" and \"off\" recorded in Monitoring. Volume (L) = flow × minutes, only when the flow was recorded."
+      },
+      "times": {
+        "anesthesiaStart": "Anesthesia start",
+        "surgeryStart": "Surgery start",
+        "surgeryEnd": "Surgery end",
+        "anesthesiaEnd": "Anesthesia end",
+        "events": "Recorded events"
+      },
+      "footer": {
+        "updatedAt": "Updated at {{time}}",
+        "readOnly": "Read-only",
+        "source": {
+          "server": "Server data",
+          "local": "Data from this device",
+          "cache": "Local copy of the finalized record",
+          "none": "No monitoring records"
+        }
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { IonRippleEffect, IonIcon } from '@ionic/angular/standalone';
+import { IonRippleEffect, IonIcon, ModalController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   medicalOutline,
@@ -19,10 +19,12 @@ import {
   exitOutline,
   calendarClearOutline,
   timeOutline,
-  lockOpenOutline
+  lockOpenOutline,
+  flaskOutline
 } from 'ionicons/icons';
 import { SurgeryStatusEnum } from 'src/app/core/models/api-enums.model';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { ConsumptionSummaryModalComponent } from '../consumption-summary-modal/consumption-summary-modal.component';
 
 export type ProcedureStatus = SurgeryStatusEnum | null;
 export type ProcedureType = 'Eletiva' | 'Urgência' | 'Emergência';
@@ -88,8 +90,9 @@ export class ProcedureCardComponent {
   private touchId: number | null = null;
   openCardId: string | number | null = null;
 
-  constructor(private translate: TranslateService) {
+  constructor(private translate: TranslateService, private modalController: ModalController) {
     addIcons({
+      flaskOutline,
       exitOutline,
       timeOutline,
       fitnessOutline,
@@ -294,6 +297,18 @@ export class ProcedureCardComponent {
     return this.isPreAnesthesiaRecordDone && !this.isFinished;
   }
 
+  /**
+   * Resumo de insumos: em andamento, só o anestesista responsável (o backend só libera a
+   * monitorização em andamento para ele); concluída, qualquer perfil — somente leitura.
+   */
+  get shouldShowConsumptionButton(): boolean {
+    if (this.status === SurgeryStatusEnum.Concluido) {
+      return true;
+    }
+
+    return this.isMonitoringStarted && this.isCurrentAnesthesiologist && !this.isAdmin;
+  }
+
   get isSwipeEnabled(): boolean {
     return this.shouldShowAbandonButton || this.shouldShowReopenButton;
   }
@@ -450,5 +465,20 @@ export class ProcedureCardComponent {
   onReopenFicha() {
     this.resetSwipe();
     this.reopenFicha.emit();
+  }
+
+  async onOpenConsumption() {
+    this.resetSwipe();
+    const modal = await this.modalController.create({
+      component: ConsumptionSummaryModalComponent,
+      componentProps: {
+        surgeryId: Number(this.id),
+        patientName: this.patientName,
+        procedure: this.hasProcedure ? this.procedure : '',
+        record: this.record,
+      },
+      cssClass: 'fa-sheet-modal',
+    });
+    await modal.present();
   }
 }

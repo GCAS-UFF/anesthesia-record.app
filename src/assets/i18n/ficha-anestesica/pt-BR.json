@@ -218,9 +218,17 @@
       "principalLabel": "Principal",
       "removerProcedimentoAria": "Remover procedimento",
       "adicionarProcedimento": "Adicionar procedimento",
+      "horaInicioCirurgia": "Hora início cirurgia",
+      "procedimentoPreAnestesica": "Procedimento na Pré-Anestésica",
       "horaTerminoCirurgia": "Hora término cirurgia *",
       "diagnosticoPos": "Diagnóstico pós-operatório *",
       "horaTerminoAnestesia": "Hora término anestesia *"
+    },
+    "monitoringSync": {
+      "registrado": "Monitorização: {{hora}}",
+      "usar": "Usar este horário",
+      "origem": "Registrado na Monitorização",
+      "naoRegistrado": "Não registrado na Monitorização"
     },
     "alderete": {
       "title": "Índice de Alderete e Kroulik",

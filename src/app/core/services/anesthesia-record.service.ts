@@ -25,6 +25,7 @@ import {
   SurgeryStatusEnum,
 } from "../models/api-enums.model";
 import { MonitoringPayload } from "../models/monitoring-payload.model";
+import { MonitoringTimes } from "../models/monitoring-times.model";
 import { AuthService } from "./auth.service";
 import { SurgeryService } from "./surgery.service";
 
@@ -733,6 +734,11 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     return timeStr.substring(0, 8);
   }
 
+  /** Como formatTimeForApi, mas horário vazio vira null (o backend grava nulo, não 00:00). */
+  private formatOptionalTimeForApi(timeStr: string | undefined | null): string | null {
+    return timeStr ? this.formatTimeForApi(timeStr) : null;
+  }
+
   private formatTimeForApp(timeStr: string | undefined | null): string {
     if (!timeStr) return '';
     if (timeStr.length >= 8) {
@@ -956,14 +962,19 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       this.pick(app.recordedByProfessionalId, this.authService.getCurrentUserId(), 0)
     ) || 0;
 
+    // Só a finalização pode completar os horários de término com "agora". Num PUT de progresso,
+    // término ainda não registrado precisa ir nulo — senão o servidor guarda um fim fictício
+    // (que a ficha anestésica e a própria monitorização leriam como anestesia/cirurgia encerrada).
+    const fallbackEnd = finalize ? new Date().toISOString() : null;
+
     return {
       anesthesiaRecordId: Number(this.pick(app.anesthesiaRecordId, app.id, 0)) || 0,
       surgeryId,
       recordedByProfessionalId,
       startedAt: this.normalizeIso(app.anesthesiaStartTime) ?? this.normalizeIso(app.startedAt) ?? new Date().toISOString(),
-      endedAt: this.normalizeIso(app.anesthesiaEndTime) ?? this.normalizeIso(app.endedAt) ?? new Date().toISOString(),
+      endedAt: this.normalizeIso(app.anesthesiaEndTime) ?? this.normalizeIso(app.endedAt) ?? fallbackEnd,
       surgeryStartedAt: this.normalizeIso(app.surgeryStartTime) ?? this.normalizeIso(app.surgeryStartedAt),
-      surgeryEndedAt: this.normalizeIso(app.surgeryEndTime) ?? this.normalizeIso(app.surgeryEndedAt) ?? new Date().toISOString(),
+      surgeryEndedAt: this.normalizeIso(app.surgeryEndTime) ?? this.normalizeIso(app.surgeryEndedAt) ?? fallbackEnd,
 
       isMonitoringDraft: false,
       monitoringUpdatedAt: new Date().toISOString(),
@@ -1002,6 +1013,62 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       map((res: any) => res?.data ?? null),
       catchError((err) => err?.status === 403 ? throwError(() => err) : of(null))
     );
+  }
+
+  /**
+   * Horários de início/término da anestesia e da cirurgia registrados na Monitorização.
+   * Segue a mesma precedência da própria tela de Monitorização: registro do servidor quando
+   * já finalizado; senão o rascunho local deste aparelho (pode ter horários ainda não
+   * sincronizados); senão o registro em andamento do servidor; senão o cache do registro
+   * finalizado (uso offline). Nunca falha: sem monitorização, devolve todos os campos nulos.
+   */
+  getMonitoringTimes(surgeryId: number): Observable<MonitoringTimes> {
+    return this.api.get<any>(`MonitoringRecord/${surgeryId}`).pipe(
+      map((res: any) => res?.data ?? null),
+      catchError(() => of(null)),
+      map((server: any) => {
+        const localDraft = this.safeJsonParse(localStorage.getItem(`draft_monitoring_${surgeryId}`));
+        const serverFinished = server?.status === SurgeryStatusEnum.Concluido;
+
+        // O fim da anestesia só existe de fato com a monitorização finalizada; num registro
+        // ainda em andamento no servidor, um endedAt é resíduo de PUT de progresso antigo.
+        if (server && (serverFinished || !localDraft))
+          return this.extractMonitoringTimes(server, server.status ?? null, !serverFinished);
+
+        if (localDraft)
+          return this.extractMonitoringTimes(localDraft, server?.status ?? null);
+
+        const finalizedCache = this.getFinalizedMonitoringRecord(surgeryId);
+        if (finalizedCache)
+          return this.extractMonitoringTimes(finalizedCache, SurgeryStatusEnum.Concluido);
+
+        return { status: null, anesthesiaStart: null, surgeryStart: null, surgeryEnd: null, anesthesiaEnd: null };
+      })
+    );
+  }
+
+  /** Aceita tanto o formato da API (startedAt...) quanto o do rascunho local (anesthesiaStartTime...). */
+  private extractMonitoringTimes(source: any, status: SurgeryStatusEnum | null, ignoreAnesthesiaEnd = false): MonitoringTimes {
+    const anesthesiaStart = this.formatLocalTimeFromIso(this.validIso(source.anesthesiaStartTime ?? source.startedAt));
+    const surgeryStart = this.formatLocalTimeFromIso(this.validIso(source.surgeryStartTime ?? source.surgeryStartedAt));
+    const surgeryEnd = this.formatLocalTimeFromIso(this.validIso(source.surgeryEndTime ?? source.surgeryEndedAt));
+    const anesthesiaEnd = this.formatLocalTimeFromIso(this.validIso(source.anesthesiaEndTime ?? source.endedAt));
+
+    // Término sem o início correspondente não existe no fluxo da Monitorização — é resíduo de
+    // PUT de progresso antigo (que completava o fim com "agora"); descarta em vez de exibir.
+    return {
+      status,
+      anesthesiaStart: anesthesiaStart || null,
+      surgeryStart: surgeryStart || null,
+      surgeryEnd: surgeryStart && surgeryEnd ? surgeryEnd : null,
+      anesthesiaEnd: !ignoreAnesthesiaEnd && anesthesiaStart && anesthesiaEnd ? anesthesiaEnd : null,
+    };
+  }
+
+  private validIso(value: any): string | null {
+    if (!value || typeof value !== 'string') return null;
+    const date = new Date(value);
+    return Number.isFinite(date.getTime()) && date.getFullYear() > 1900 ? value : null;
   }
 
   private mapToApiFormat(app: any, surgeryId: number): any {
@@ -1309,7 +1376,7 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       roomEntryTime: this.formatTimeForApi(app.dadosVitais?.entradaSala),
 
       // Equipe
-      anesthesiaStartTime: this.formatTimeForApi(app.equipe?.horaInicioAnestesia),
+      anesthesiaStartTime: this.formatOptionalTimeForApi(app.equipe?.horaInicioAnestesia),
       surgeonId: surgeonId,
       assistantId: assistantId,
       preOperativeDiagnosis: app.equipe?.diagnosticoPre || '',
@@ -1382,9 +1449,9 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
         app.posProcedimento?.cirurgiaRealizada,
         ''
       ) || '',
-      surgeryEndTime: this.formatTimeForApi(app.posProcedimento?.horaTerminoCirurgia),
+      surgeryEndTime: this.formatOptionalTimeForApi(app.posProcedimento?.horaTerminoCirurgia),
       postOperativeDiagnosis: app.posProcedimento?.diagnosticoPos || '',
-      anesthesiaEndTime: this.formatTimeForApi(app.posProcedimento?.horaTerminoAnestesia),
+      anesthesiaEndTime: this.formatOptionalTimeForApi(app.posProcedimento?.horaTerminoAnestesia),
 
       // Alderete
       consciousnessScore: this.parseNumber(app.alderete?.consciencia),
@@ -1798,6 +1865,8 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       },
 
       surgeryId: api.surgeryId,
+      // false = procedimentos acima são só o agendamento do AGHU (ficha ainda sem procedimento salvo).
+      proceduresFromRecord: api.proceduresFromRecord !== false,
       externalPatientId: api.externalPatientId,
       recordDate: api.recordDate,
       surgeryDate: api.surgeryDate,

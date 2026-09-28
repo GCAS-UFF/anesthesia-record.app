@@ -94,7 +94,9 @@
       "preAnesthesia": "Preanestesia",
       "anestheticRecord": "Ficha Anestésica",
       "assumePatient": "Asumir Paciente",
-      "goToSurgery": "Ir a Cirugía"
+      "goToSurgery": "Ir a Cirugía",
+      "consumptionSummary": "Insumos",
+      "consumptionSummaryHint": "Resumen de insumos y consumo de la cirugía"
     },
     "quickVitalInput": {
       "autoTitle": "Registro automático",
@@ -125,6 +127,128 @@
     },
     "searchBar": {
       "defaultPlaceholder": "Buscar..."
+    },
+    "consumptionSummary": {
+      "title": "Insumos y consumo de la cirugía",
+      "overview": "Visión general del consumo",
+      "loading": "Consolidando registros...",
+      "notRegistered": "No registrado",
+      "noData": "Sin datos disponibles",
+      "ongoing": "en curso",
+      "start": "Inicio",
+      "end": "Fin",
+      "durationLabel": "Duración",
+      "timeLabel": "Horario",
+      "status": {
+        "live": "Actualizando en tiempo real",
+        "monitoringFinished": "Anestesia finalizada · ficha en llenado",
+        "finalized": "Ficha finalizada · consolidado definitivo",
+        "notStarted": "Monitorización no iniciada",
+        "pendingSync": "Incluye registros de este dispositivo aún no sincronizados"
+      },
+      "errors": {
+        "forbidden": "No tiene permiso para ver el consumo de esta cirugía mientras está en curso.",
+        "unavailable": "No fue posible cargar los datos: servidor no disponible y no hay registros en este dispositivo."
+      },
+      "kpi": {
+        "anesthesia": "Anestesia",
+        "surgery": "Cirugía",
+        "drugs": "Fármacos",
+        "balance": "Balance hídrico",
+        "pumps": "Bombas",
+        "gases": "O₂ / Aire"
+      },
+      "tabs": {
+        "drugs": "Agentes y medicamentos",
+        "fluids": "Soluciones y balance",
+        "pumps": "Bombas de infusión",
+        "gases": "O₂ y aire comprimido",
+        "timeline": "Tiempos y eventos"
+      },
+      "origin": {
+        "bolus": "Bolo",
+        "dose": "Dosis",
+        "pre-anesthetic": "Ficha · preanestésica",
+        "antibiotic": "Ficha · antibiótico",
+        "booster": "Ficha · refuerzo"
+      },
+      "drugs": {
+        "agents": "Agentes anestésicos",
+        "medications": "Medicamentos",
+        "administrations": "{{count}} administración(es)",
+        "unparsed": "+ {{count}} sin dosis numérica",
+        "infusion": "Infusión continua",
+        "dose": "Dosis",
+        "route": "Vía",
+        "record": "Registro",
+        "note": "Los totales suman las dosis del mismo fármaco por unidad, sin conversión entre unidades. Agentes anestésicos = fármacos de la categoría \"Anestésico\"; los demás aparecen en Medicamentos. Las dosis en texto libre de la ficha aparecen en el historial, pero solo se suman cuando son numéricas."
+      },
+      "fluids": {
+        "totalGain": "Ingresos",
+        "totalLoss": "Pérdidas",
+        "balance": "Balance (ingresos − pérdidas)",
+        "solutionsGains": "Soluciones y líquidos administrados (ingresos)",
+        "gainsByType": "Ingresos por tipo",
+        "losses": "Pérdidas por tipo",
+        "solutionsAsDrugs": "Soluciones registradas como fármaco",
+        "entries": "{{count}} registro(s)",
+        "volume": "Volumen",
+        "item": "Ítem",
+        "note": "El balance hídrico usa solo los registros de ingreso y pérdida de la Monitorización. Las soluciones registradas como fármaco y los volúmenes de bombas de infusión aparecen en sus secciones y no se suman al balance, para no contar dos veces el mismo volumen."
+      },
+      "fluidTypes": {
+        "1": "Cristaloide",
+        "2": "Coloide",
+        "3": "Hemocomponente",
+        "4": "Diuresis",
+        "5": "Sangrado",
+        "6": "Drenaje",
+        "7": "Aspirado gástrico",
+        "8": "Otro",
+        "hydration": "Hidratación"
+      },
+      "pumps": {
+        "runningCount": "{{count}} en curso",
+        "programmed": "volumen programado",
+        "infusedVolume": "Volumen infundido (calculado)",
+        "infusedAmount": "Cantidad administrada (calculada)",
+        "basisLabel": "Cómo se obtuvo el tiempo",
+        "basis": {
+          "stopped": "Parada registrada en la Monitorización",
+          "volume-completed": "Fin programado por volumen y velocidad (sin parada anticipada registrada)",
+          "running": "En curso — contado hasta ahora",
+          "capped-anesthesia-end": "Sin parada registrada — limitado al fin de la anestesia",
+          "not-registered": "Fin no registrado (el sistema guarda una ventana estándar de 2 h) — tiempo no calculado"
+        },
+        "note": "Volumen infundido = velocidad (mL/h) × horas efectivas, limitado al volumen programado. Para velocidades en mcg/min, mg/h, UI/h y mcg/kg/min (con el peso de la ficha) se calcula la cantidad de fármaco. SIGA no registra pausas, reanudaciones ni cambios de velocidad: cada nuevo registro aparece como otra bomba."
+      },
+      "gases": {
+        "o2": "Oxígeno (O₂)",
+        "air": "Aire comprimido",
+        "on": "Encendido",
+        "flow": "Flujo",
+        "noFlow": "flujo no registrado",
+        "cappedAtAnesthesiaEnd": "sin apagado registrado — hasta el fin de la anestesia",
+        "fichaSupplementation": "Suplementación de O₂ registrada en la ficha",
+        "note": "Tiempo = suma de los intervalos entre \"encender\" y \"apagar\" registrados en la Monitorización. Volumen (L) = flujo × minutos, solo cuando se registró el flujo."
+      },
+      "times": {
+        "anesthesiaStart": "Inicio de la anestesia",
+        "surgeryStart": "Inicio de la cirugía",
+        "surgeryEnd": "Fin de la cirugía",
+        "anesthesiaEnd": "Fin de la anestesia",
+        "events": "Eventos registrados"
+      },
+      "footer": {
+        "updatedAt": "Actualizado a las {{time}}",
+        "readOnly": "Solo lectura",
+        "source": {
+          "server": "Datos del servidor",
+          "local": "Datos de este dispositivo",
+          "cache": "Copia local del registro finalizado",
+          "none": "Sin registros de monitorización"
+        }
+      }
     }
   }
 }

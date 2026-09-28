@@ -55,6 +55,7 @@ import { RecordViewerModalComponent, RecordData } from 'src/app/shared/component
 import { mapPreAnesthesiaToRecordData } from 'src/app/shared/models/pre-anesthesic.mapper';
 import { mapAnesthesiaRecordToRecordData } from 'src/app/shared/models/anesthesia-record.mapper';
 import { maskTimeInput, normalizeTimeInput } from 'src/app/shared/utils/time-input.util';
+import { MonitoringTimes } from 'src/app/core/models/monitoring-times.model';
 
 
 @Component({
@@ -143,13 +144,21 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   isSignModalOpen = false;
   signatureAgreed = false;
-  signatureTypedName = '';
   signaturePassword = '';
   signatureError = '';
   monitoringFinalizado = false;
   fichaFinalizada = false;
   fichaFinalizadaEm: string | null = null;
   fichaFinalizadaPor: string | null = null;
+
+  /** Horários registrados na Monitorização (fonte única; nulo = ainda não registrado). */
+  monitoringTimes: MonitoringTimes | null = null;
+  /** Procedimentos informados na Pré-Anestésica (texto livre, exibidos como referência). */
+  preAnesthesiaProcedures: { name: string; isPrimary: boolean }[] = [];
+  /** Só depois de hidratar o formulário (rascunho/servidor) é seguro aplicar os horários da monitorização. */
+  private formHydrated = false;
+  private viewEnteredOnce = false;
+  private monitoringTimesSub?: Subscription;
 
   private autoSaveSub?: Subscription;
   private conditionalSubs: Subscription[] = [];
@@ -332,6 +341,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
         if (status !== null) this.monitoringFinalizado = status === SurgeryStatusEnum.Concluido;
       });
 
+      this.loadMonitoringTimes();
+
       // Buscar a ficha pré-anestésica do backend e salvar no storage ANTES de carregar a ficha
       // anestésica: valores corrigidos pelo médico na pré-anestésica (ex.: peso) precisam estar
       // disponíveis no storage a tempo de prevalecer sobre o dado original do AGHU.
@@ -353,7 +364,20 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     window.visualViewport?.addEventListener('scroll', this.onViewportChange);
   }
 
+  /**
+   * O Ionic mantém esta página em cache ao ir para a Monitorização e voltar (ngOnInit não
+   * roda de novo): rebusca os horários para refletir o que foi registrado/alterado lá.
+   */
+  ionViewWillEnter() {
+    if (!this.viewEnteredOnce) {
+      this.viewEnteredOnce = true;
+      return;
+    }
+    this.loadMonitoringTimes();
+  }
+
   ngOnDestroy() {
+    this.monitoringTimesSub?.unsubscribe();
     this.openRecordModal?.dismiss().catch(() => { });
     this.conditionalSubs.forEach(sub => sub.unsubscribe());
     this.langChangeSub?.unsubscribe();
@@ -923,6 +947,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
           this.canEdit = !this.isReadOnlyRecord && !this.fichaFinalizada;
 
+          this.loadPreAnesthesiaProcedures();
+          this.formHydrated = false;
+
           const draft = this.anesthesiaService.getDraft(this.cirurgiaId!);
           this.anesthesiaService.getLatestByPatient(this.cirurgiaId!, patientId).pipe(
             timeout(NETWORK_TIMEOUT_MS),
@@ -936,7 +963,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
                 if (draft.antibioticsList) this.antibioticsList = draft.antibioticsList;
               } else if (savedRecord) {
 
-                const procedimentos = (savedRecord as any)?.posProcedimento?.procedimentos;
+                // Ficha ainda sem procedimento próprio salvo (só o agendamento do AGHU):
+                // o procedimento informado na Pré-Anestésica prevalece.
+                const procedimentos = (savedRecord as any)?.proceduresFromRecord
+                  ? (savedRecord as any)?.posProcedimento?.procedimentos
+                  : this.buildProcedimentosFromPreAnestesica() ?? (savedRecord as any)?.posProcedimento?.procedimentos;
                 this.hydrateProcedimentos(procedimentos);
                 const formValue = { ...savedRecord };
                 delete formValue.posProcedimento?.procedimentos;
@@ -950,7 +981,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
                 }
               } else {
 
-                const procedimentosFromSurgery = this.buildProcedimentosFromSurgery();
+                const procedimentosFromSurgery = this.buildProcedimentosFromPreAnestesica() ?? this.buildProcedimentosFromSurgery();
                 this.hydrateProcedimentos(procedimentosFromSurgery);
                 this.form.get('dadosVitais.peso')?.patchValue(this.pesoFromPreAnestesicaOuAghu());
                 const diag = this.diagnosticoFromPreAnestesica();
@@ -958,9 +989,11 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
                   this.form.get('equipe.diagnosticoPre')?.patchValue(diag);
                   this.form.get('posProcedimento.diagnosticoPos')?.patchValue(diag);
                 }
-                this.extractTimesFromMonitoringDraft();
                 this.checkCustomSelects();
               }
+
+              this.formHydrated = true;
+              this.applyMonitoringTimes();
 
               if (this.fichaFinalizada || this.forcedReadOnly || this.isCancelled)
                 this.form.disable({ emitEvent: false });
@@ -974,6 +1007,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
                 this.hydrateProcedimentos((draft as any)?.posProcedimento?.procedimentos);
                 this.form.patchValue(draft);
                 if (draft.antibioticsList) this.antibioticsList = draft.antibioticsList;
+                this.formHydrated = true;
+                this.applyMonitoringTimes();
                 if (this.fichaFinalizada || this.forcedReadOnly || this.isCancelled)
                   this.form.disable({ emitEvent: false });
                 this.isLoading = false;
@@ -1054,7 +1089,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
                   this.form.get('equipe.diagnosticoPre')?.patchValue(diag);
                   this.form.get('posProcedimento.diagnosticoPos')?.patchValue(diag);
                 }
-                this.extractTimesFromMonitoringDraft();
+                const procsPre = this.buildProcedimentosFromPreAnestesica();
+                if (procsPre) this.hydrateProcedimentos(procsPre);
+                this.applyMonitoringTimes();
                 this.checkCustomSelects();
     }
 
@@ -1109,7 +1146,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }
 
     this.signatureAgreed = false;
-    this.signatureTypedName = '';
     this.signaturePassword = '';
     this.signatureError = '';
     this.isSignModalOpen = true;
@@ -1205,22 +1241,13 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const typed = this.signatureTypedName.trim();
-    const expected = this.expectedSignatureName;
-    if (!typed) {
-      this.signatureError = this.translate.instant('fichaAnestesica.signatureErrors.digiteNomeCompleto');
-      return;
-    }
-    if (expected && typed.toLowerCase() !== expected.toLowerCase()) {
-      this.signatureError = this.translate.instant('fichaAnestesica.signatureErrors.nomeNaoConfere', { expected });
-      return;
-    }
     if (!this.signaturePassword.trim()) {
       this.signatureError = this.translate.instant('fichaAnestesica.signatureErrors.digiteSenha');
       return;
     }
 
-    this.form.get('assinaturas.primeiroAnestesista')?.setValue(typed);
+    // Como na pré-anestésica, quem assina é sempre o profissional logado (não há nome digitado).
+    this.form.get('assinaturas.primeiroAnestesista')?.setValue(this.expectedSignatureName);
     this.form.get('assinaturas.dataAssinatura')?.setValue(new Date().toISOString().split('T')[0]);
     this.isSignModalOpen = false;
     this.executarSalvamento(true);
@@ -1260,7 +1287,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
           this.fichaFinalizada = true;
           this.canEdit = false;
           this.fichaFinalizadaEm = new Date().toISOString();
-          this.fichaFinalizadaPor = this.signatureTypedName || this.expectedSignatureName;
+          this.fichaFinalizadaPor = this.expectedSignatureName;
           this.form.disable({ emitEvent: false });
           this.toast(this.translate.instant('fichaAnestesica.toasts.fichaAssinadaSalva'), 'success');
         } else if (monitoringPendente) {
@@ -1395,7 +1422,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       },
       posProcedimento: {
         ...raw.posProcedimento,
-        procedimentos
+        procedimentos,
+        // Só exibição (prévia): o início da cirurgia é gravado na Monitorização, não na ficha.
+        horaInicioCirurgia: this.monitoringTimes?.surgeryStart ?? ''
       },
       alderete: { ...raw.alderete, destino: 'RPA' },
       assinaturas: {
@@ -1908,6 +1937,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       await this.masterData.downloadMasterData().toPromise();
       this.loadDropdownLists();
       await this.loadPatientData(this.cirurgiaId, this.patientId);
+      this.loadMonitoringTimes();
     } catch (err) {
       console.warn('Falha ao recarregar dados mestres', err);
     } finally {
@@ -1964,27 +1994,114 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     }
   }
 
-  extractTimesFromMonitoringDraft(): void {
-    try {
-      const raw = localStorage.getItem(`draft_monitoring_${this.cirurgiaId}`);
-      if (raw) {
-        const data = JSON.parse(raw);
-        if (data.startedAt) {
-           const time = data.startedAt.includes('T') ? data.startedAt.split('T')[1].substring(0, 5) : data.startedAt;
-           this.form.get('equipe.horaInicioAnestesia')?.patchValue(time);
-        }
-        if (data.surgeryEndedAt) {
-           const time = data.surgeryEndedAt.includes('T') ? data.surgeryEndedAt.split('T')[1].substring(0, 5) : data.surgeryEndedAt;
-           this.form.get('posProcedimento.horaTerminoCirurgia')?.patchValue(time);
-        }
-        if (data.endedAt) {
-           const time = data.endedAt.includes('T') ? data.endedAt.split('T')[1].substring(0, 5) : data.endedAt;
-           this.form.get('posProcedimento.horaTerminoAnestesia')?.patchValue(time);
-           this.form.get('alderete.horaAvaliacao')?.patchValue(time);
-        }
-      }
-    } catch(e) {
-       console.warn('Could not extract monitoring times:', e);
-    }
+  // ── Integração com a Monitorização (horários) ──────────────────────────────
+
+  private loadMonitoringTimes(): void {
+    if (!this.cirurgiaId) return;
+
+    this.monitoringTimesSub?.unsubscribe();
+    this.monitoringTimesSub = this.anesthesiaService.getMonitoringTimes(Number(this.cirurgiaId)).pipe(
+      timeout(NETWORK_TIMEOUT_MS),
+      catchError(() => of(null)),
+    ).subscribe((times) => {
+      if (!times) return;
+      this.monitoringTimes = times;
+      this.applyMonitoringTimes();
+    });
+  }
+
+  /**
+   * Preenche os horários da ficha com os registrados na Monitorização. Só preenche campo vazio:
+   * um horário já digitado pelo anestesista é mantido (a Monitorização não permite corrigir
+   * esses horários, então a ficha continua sendo o lugar de ajuste) e a divergência fica
+   * visível no aviso abaixo do campo, com a opção de usar o horário da Monitorização.
+   */
+  private applyMonitoringTimes(): void {
+    const t = this.monitoringTimes;
+    // Ficha finalizada/somente leitura nunca tem valores alterados; e antes de hidratar o
+    // formulário, preencher geraria um rascunho quase vazio que sobreporia o da ficha salva.
+    if (!t || !this.formHydrated || !this.canEdit) return;
+
+    this.fillTimeIfEmpty('equipe.horaInicioAnestesia', t.anesthesiaStart);
+    this.fillTimeIfEmpty('posProcedimento.horaTerminoCirurgia', t.surgeryEnd);
+    this.fillTimeIfEmpty('posProcedimento.horaTerminoAnestesia', t.anesthesiaEnd);
+    this.fillTimeIfEmpty('alderete.horaAvaliacao', t.anesthesiaEnd);
+  }
+
+  private fillTimeIfEmpty(path: string, value: string | null): void {
+    const control = this.form.get(path);
+    if (!value || !control || !this.isBlankTime(control.value)) return;
+    control.setValue(value);
+    control.markAsDirty();
+  }
+
+  /** '00:00' é o marcador que o backend gravava para horário não informado. */
+  private isBlankTime(value: unknown): boolean {
+    const text = String(value ?? '').trim();
+    return !text || text === '00:00' || text === '00:00:00';
+  }
+
+  /** Horário da Monitorização quando diverge do que está no campo (para o aviso "usar este horário"). */
+  monitoringTimeDiffers(path: string, monitoringValue: string | null | undefined): boolean {
+    const current = String(this.form.get(path)?.value ?? '').trim();
+    return !!monitoringValue && current !== monitoringValue;
+  }
+
+  useMonitoringTime(path: string, value: string | null | undefined): void {
+    if (!this.canEdit || !value) return;
+    const control = this.form.get(path);
+    control?.setValue(value);
+    control?.markAsDirty();
+    control?.markAsTouched();
+  }
+
+  // ── Integração com a Pré-Anestésica (procedimento) ─────────────────────────
+
+  private loadPreAnesthesiaProcedures(): void {
+    const payload: any = this.cirurgiaId
+      ? this.preAnesthesicService.getBestAvailable(Number(this.cirurgiaId), this.patientId ?? '')
+      : null;
+    const surgeries: any[] = Array.isArray(payload?.procedure?.surgeries) ? payload.procedure.surgeries : [];
+
+    this.preAnesthesiaProcedures = surgeries
+      .map(s => ({ name: String(s?.name ?? '').trim(), isPrimary: !!s?.isPrimary }))
+      .filter(s => !!s.name);
+  }
+
+  /**
+   * A Pré-Anestésica guarda o procedimento como texto livre (sem id do catálogo). Converte para
+   * as linhas da ficha só quando o nome casa exatamente (sem acento/caixa) com um único item do
+   * catálogo de procedimentos — nunca "chuta" um procedimento parecido. Sem nenhum casamento,
+   * devolve null e a ficha mantém o comportamento atual (agendamento do AGHU).
+   */
+  private buildProcedimentosFromPreAnestesica(): Array<{ procedimentoId: string; hora: string; principal: boolean }> | null {
+    if (!this.preAnesthesiaProcedures.length || !this.procedimentoLista.length) return null;
+
+    const idByName = new Map<string, string | null>();
+    this.procedimentoLista.forEach(p => {
+      const key = this.normalizeProcedureName(p.name);
+      if (!key) return;
+      idByName.set(key, idByName.has(key) ? null : p.id); // nome duplicado no catálogo = ambíguo
+    });
+
+    const hasPrimary = this.preAnesthesiaProcedures.some(p => p.isPrimary);
+    const rows: Array<{ procedimentoId: string; hora: string; principal: boolean }> = [];
+
+    this.preAnesthesiaProcedures.forEach((p, index) => {
+      const id = idByName.get(this.normalizeProcedureName(p.name));
+      if (!id || rows.some(r => r.procedimentoId === id)) return;
+      rows.push({ procedimentoId: id, hora: '', principal: hasPrimary ? p.isPrimary : index === 0 });
+    });
+
+    return rows.length ? rows : null;
+  }
+
+  private normalizeProcedureName(name: string | null | undefined): string {
+    return String(name ?? '')
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim();
   }
 }

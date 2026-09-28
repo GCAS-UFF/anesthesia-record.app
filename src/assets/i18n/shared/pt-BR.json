@@ -95,7 +95,9 @@
       "preAnesthesia": "Pré Anestesia",
       "anestheticRecord": "Ficha Anestésica",
       "assumePatient": "Assumir Paciente",
-      "goToSurgery": "Ir para Cirurgia"
+      "goToSurgery": "Ir para Cirurgia",
+      "consumptionSummary": "Insumos",
+      "consumptionSummaryHint": "Resumo de insumos e consumo da cirurgia"
     },
     "quickVitalInput": {
       "autoTitle": "Registro automático",
@@ -126,6 +128,128 @@
     },
     "searchBar": {
       "defaultPlaceholder": "Buscar..."
+    },
+    "consumptionSummary": {
+      "title": "Insumos e consumo da cirurgia",
+      "overview": "Visão geral do consumo",
+      "loading": "Consolidando registros...",
+      "notRegistered": "Não registrado",
+      "noData": "Sem dados disponíveis",
+      "ongoing": "em andamento",
+      "start": "Início",
+      "end": "Término",
+      "durationLabel": "Duração",
+      "timeLabel": "Horário",
+      "status": {
+        "live": "Atualizando em tempo real",
+        "monitoringFinished": "Anestesia encerrada · ficha em preenchimento",
+        "finalized": "Ficha finalizada · consolidado definitivo",
+        "notStarted": "Monitorização não iniciada",
+        "pendingSync": "Inclui registros deste aparelho ainda não sincronizados"
+      },
+      "errors": {
+        "forbidden": "Você não tem permissão para ver o consumo desta cirurgia enquanto ela está em andamento.",
+        "unavailable": "Não foi possível carregar os dados: servidor indisponível e não há registros neste aparelho."
+      },
+      "kpi": {
+        "anesthesia": "Anestesia",
+        "surgery": "Cirurgia",
+        "drugs": "Fármacos",
+        "balance": "Balanço hídrico",
+        "pumps": "Bombas",
+        "gases": "O₂ / Ar"
+      },
+      "tabs": {
+        "drugs": "Agentes e medicamentos",
+        "fluids": "Soluções e balanço",
+        "pumps": "Bombas de infusão",
+        "gases": "O₂ e ar comprimido",
+        "timeline": "Tempos e eventos"
+      },
+      "origin": {
+        "bolus": "Bolus",
+        "dose": "Dose",
+        "pre-anesthetic": "Ficha · pré-anestésica",
+        "antibiotic": "Ficha · antibiótico",
+        "booster": "Ficha · repique"
+      },
+      "drugs": {
+        "agents": "Agentes anestésicos",
+        "medications": "Medicamentos",
+        "administrations": "{{count}} administração(ões)",
+        "unparsed": "+ {{count}} sem dose numérica",
+        "infusion": "Infusão contínua",
+        "dose": "Dose",
+        "route": "Via",
+        "record": "Registro",
+        "note": "Totais somam as doses do mesmo fármaco por unidade, sem conversão entre unidades. Agentes anestésicos = fármacos da categoria \"Anestésico\" no cadastro; os demais aparecem em Medicamentos. Doses registradas como texto livre na ficha aparecem no histórico, mas só entram no total quando são numéricas."
+      },
+      "fluids": {
+        "totalGain": "Ganhos",
+        "totalLoss": "Perdas",
+        "balance": "Balanço (ganhos − perdas)",
+        "solutionsGains": "Soluções e líquidos administrados (ganhos)",
+        "gainsByType": "Ganhos por tipo",
+        "losses": "Perdas por tipo",
+        "solutionsAsDrugs": "Soluções registradas como fármaco",
+        "entries": "{{count}} registro(s)",
+        "volume": "Volume",
+        "item": "Item",
+        "note": "O balanço hídrico usa somente os lançamentos de ganho e perda da Monitorização. Soluções registradas como fármaco e volumes de bombas de infusão aparecem em suas seções e não são somados ao balanço, para não contar o mesmo volume duas vezes."
+      },
+      "fluidTypes": {
+        "1": "Cristaloide",
+        "2": "Coloide",
+        "3": "Hemocomponente",
+        "4": "Diurese",
+        "5": "Sangramento",
+        "6": "Dreno",
+        "7": "Aspirado gástrico",
+        "8": "Outro",
+        "hydration": "Hidratação"
+      },
+      "pumps": {
+        "runningCount": "{{count}} em andamento",
+        "programmed": "volume programado",
+        "infusedVolume": "Volume infundido (calculado)",
+        "infusedAmount": "Quantidade administrada (calculada)",
+        "basisLabel": "Como o tempo foi obtido",
+        "basis": {
+          "stopped": "Parada registrada na Monitorização",
+          "volume-completed": "Fim programado pelo volume e vazão (sem parada antecipada registrada)",
+          "running": "Em andamento — contado até agora",
+          "capped-anesthesia-end": "Sem parada registrada — limitado ao término da anestesia",
+          "not-registered": "Término não registrado (o sistema grava uma janela padrão de 2 h) — tempo não calculado"
+        },
+        "note": "Volume infundido = vazão (mL/h) × horas efetivas, limitado ao volume programado. Para vazões em mcg/min, mg/h, UI/h e mcg/kg/min (com o peso da ficha) é calculada a quantidade de fármaco. O SIGA não registra pausa, retomada nem alteração de vazão: cada novo lançamento aparece como outra bomba."
+      },
+      "gases": {
+        "o2": "Oxigênio (O₂)",
+        "air": "Ar comprimido",
+        "on": "Ligado",
+        "flow": "Fluxo",
+        "noFlow": "fluxo não registrado",
+        "cappedAtAnesthesiaEnd": "sem desligamento registrado — até o fim da anestesia",
+        "fichaSupplementation": "Suplementação de O₂ registrada na ficha",
+        "note": "Tempo = soma dos intervalos entre \"ligar\" e \"desligar\" registrados na Monitorização. Volume (L) = fluxo × minutos, só quando o fluxo foi registrado."
+      },
+      "times": {
+        "anesthesiaStart": "Início da anestesia",
+        "surgeryStart": "Início da cirurgia",
+        "surgeryEnd": "Fim da cirurgia",
+        "anesthesiaEnd": "Fim da anestesia",
+        "events": "Eventos registrados"
+      },
+      "footer": {
+        "updatedAt": "Atualizado às {{time}}",
+        "readOnly": "Somente leitura",
+        "source": {
+          "server": "Dados do servidor",
+          "local": "Dados deste aparelho",
+          "cache": "Cópia local do registro finalizado",
+          "none": "Sem registros de monitorização"
+        }
+      }
     }
   }
 }

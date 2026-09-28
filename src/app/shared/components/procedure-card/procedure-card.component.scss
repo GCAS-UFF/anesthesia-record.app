@@ -472,6 +472,34 @@
   }
 }
 
+// Resumo de insumos: tom suave da marca, para não competir com a ação principal.
+.btn-consumption {
+  background: t.$c-primary-soft;
+  color: t.$c-primary-dark;
+  border-color: t.$surface-accent-soft;
+
+  &:hover {
+    background: t.$surface-accent-soft;
+  }
+
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: t.$c-primary;
+    animation: consumption-live 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes consumption-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-consumption .live-dot { animation: none; }
+}
+
 .ripple-parent {
   position: relative;
   overflow: hidden;

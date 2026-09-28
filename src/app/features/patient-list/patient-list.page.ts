@@ -9,7 +9,6 @@ import {
   chevronDownOutline,
   checkmarkCircle,
   searchOutline,
-  refreshOutline,
   optionsOutline,
   arrowDownOutline,
 } from 'ionicons/icons';
@@ -99,7 +98,6 @@ export class PatientListPage implements OnInit {
       chevronDownOutline,
       checkmarkCircle,
       searchOutline,
-      refreshOutline,
       optionsOutline,
       arrowDownOutline,
     });
