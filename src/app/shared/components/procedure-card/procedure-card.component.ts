@@ -60,7 +60,8 @@ export class ProcedureCardComponent {
   @Input() isPreAnesthesiaRecordDone = false;
   @Input() canAssumePatient = true;
   @Input() canAbandon = true;
-  @Input() isAdmin = false;
+  @Input() isAdmin = false;  
+  @Input() isMonitoringStarted = false;
 
   @Output() openPreAnesthesia = new EventEmitter<void>();
   @Output() viewPreAnesthesia = new EventEmitter<void>();
@@ -208,7 +209,9 @@ export class ProcedureCardComponent {
   }
  
   get shouldShowAbandonButton(): boolean {
-    if (this.isFinished) {
+    // Regra: médico só abandona / admin só remove enquanto a cirurgia não terminou
+    // e o monitoramento não começou (também validado no servidor).
+    if (this.isFinished || this.isMonitoringStarted) {
       return false;
     }
 

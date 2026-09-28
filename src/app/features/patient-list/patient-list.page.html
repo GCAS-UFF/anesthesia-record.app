@@ -158,6 +158,7 @@
           [anesthesiologist]="p.anesthesiologist?.fullName || ''"
           [isCurrentAnesthesiologist]="isUserAssignedToThisPatient(p)"
           [isPreAnesthesiaRecordDone]="p.isPreAnesthesiaRecordDone"
+          [isMonitoringStarted]="p.isMonitoringStarted"
           [canAssumePatient]="canAssumePatient"
           [isAdmin]="isAdminUser"
           (assume)="onAssume(p.id, p.patientId, $event)"

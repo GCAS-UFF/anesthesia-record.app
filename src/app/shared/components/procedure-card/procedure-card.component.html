@@ -135,7 +135,8 @@
       </div>
 
       <div class="body-actions">
-        <ng-container *ngIf="shouldShowOnlyViewRecords">
+        
+        <ng-container *ngIf="shouldShowOnlyViewRecords && !isAdmin">
           <button
             *ngIf="shouldShowViewPreAnesthesia"
             class="btn btn-outline ion-activatable ripple-parent"

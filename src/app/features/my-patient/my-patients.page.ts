@@ -23,6 +23,7 @@ import { SurgeryService } from '../../core/services/surgery.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AnesthesiaRecordService } from '../../core/services/anesthesia-record.service';
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
+import { hasLocalMonitoringStarted } from '../../shared/utils/monitoring-state.util';
 import { HeaderInstitucionalComponent } from '../../shared/components/header-institucional/header-institucional.component';
 import { DateFilterComponent } from '../../shared/components/date-filter/date-filter.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
@@ -345,6 +346,7 @@ export class MyPatientsPage implements OnInit {
         time: this.datePipe.transform(dt, 'HH:mm'),
         completedAt: completedTime,
         isPreAnesthesiaRecordDone: item.isPreAnesthesiaRecordDone || false,
+        isMonitoringStarted: !!item.isMonitoringStarted || hasLocalMonitoringStarted(item.surgeryId || item.id),
       });
     });
   }
