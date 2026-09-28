@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { ApiService } from './base/api.service';
-import { ApiUrlService } from './api-url.service';
 import { DrugCategoryEnum } from '../models/api-enums.model';
 import {
   AnesthetistOption,
@@ -30,7 +28,7 @@ interface ApiEnvelope<T> {
 })
 export class ReportsService {
 
-  constructor(private api: ApiService, private http: HttpClient, private apiUrlService: ApiUrlService) { }
+  constructor(private api: ApiService) { }
 
   private toParams(filters: ReportFilters, extra?: Record<string, any>): any {
     const params: any = {
@@ -97,7 +95,6 @@ export class ReportsService {
 
   getReportPrintHtml(reportKey: string, filters: ReportFilters, category?: DrugCategoryEnum | null) {
     const params = this.toParams(filters, category !== null && category !== undefined ? { category } : undefined);
-    const url = `${this.apiUrlService.getBaseUrl()}/reports/${reportKey}/print`;
-    return this.http.get(url, { params, responseType: 'blob' });
+    return this.api.getText(`reports/${reportKey}/print`, params);
   }
 }

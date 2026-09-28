@@ -1,0 +1,284 @@
+@use '../../../../theme/siga-tokens' as t;
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.dv {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: t.$surface-panel;
+  font-family: t.$font-body;
+  color: t.$text-deep;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    padding-top: calc(10px + env(safe-area-inset-top));
+    background: t.$surface-card;
+    border-bottom: 1px solid t.$border;
+  }
+
+  &__back {
+    @include t.back-button;
+  }
+
+  &__heading {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: t.$font-display;
+    font-size: t.$fs-11;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: t.$c-primary-dark;
+
+    ion-icon {
+      font-size: 15px;
+    }
+  }
+
+  &__title {
+    margin: 2px 0 0;
+    font-family: t.$font-display;
+    font-size: t.$fs-18;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__subtitle {
+    margin: 0;
+    font-size: t.$fs-13;
+    color: t.$text-ink;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 32px;
+    text-align: center;
+    font-size: t.$fs-15;
+    color: t.$text-ink;
+
+    ion-icon {
+      font-size: 40px;
+      color: t.$c-primary;
+    }
+
+    ion-spinner {
+      width: 40px;
+      height: 40px;
+      color: t.$c-primary;
+    }
+
+    small {
+      max-width: 360px;
+      font-size: t.$fs-13;
+    }
+
+    &--error ion-icon {
+      color: t.$c-crimson;
+    }
+
+    > span {
+      max-width: 480px;
+      color: t.$text-deep;
+    }
+  }
+
+  &__state-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  // Área rolável: o SIGA controla rolagem e zoom (o iframe não recebe toques).
+  &__canvas {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 16px;
+    touch-action: pan-x pan-y;
+    overscroll-behavior: contain;
+    overflow-anchor: none; // a posição é controlada pelo visualizador (zoom/páginas)
+    -webkit-overflow-scrolling: touch;
+  }
+
+  &__sheet {
+    position: relative;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(34, 55, 64, 0.12), 0 8px 24px rgba(34, 55, 64, 0.14);
+    overflow: hidden;
+  }
+
+  &__frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: 0;
+    background: #ffffff;
+    transform-origin: 0 0;
+    pointer-events: none;
+  }
+
+  &__controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px 16px;
+    padding: 8px 16px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    background: t.$surface-card;
+    border-top: 1px solid t.$border;
+  }
+}
+
+.dv-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 999px;
+  background: t.$surface-bg;
+  border: 1px solid t.$border;
+
+  &__value {
+    min-width: 116px;
+    padding: 0 6px;
+    text-align: center;
+    font-size: t.$fs-13;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: t.$text-deep;
+    white-space: nowrap;
+
+    &--zoom {
+      min-width: 52px;
+    }
+  }
+}
+
+.dv-icon {
+  width: t.$touch-min;
+  height: t.$touch-min;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: t.$text-deep;
+  font-size: 20px;
+  cursor: pointer;
+
+  &:active:not(:disabled) {
+    background: t.$surface-accent-soft;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  &--active {
+    background: t.$c-primary-soft;
+    color: t.$c-primary-dark;
+  }
+
+  &:focus-visible {
+    outline: 2px solid t.$c-primary;
+    outline-offset: 1px;
+  }
+}
+
+.dv-btn {
+  height: t.$touch-min;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 1px solid t.$border-strong;
+  border-radius: t.$radius-base;
+  background: t.$surface-card;
+  font-family: t.$font-body;
+  font-size: t.$fs-13;
+  font-weight: 700;
+  color: t.$text-deep;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 18px;
+  }
+
+  ion-spinner {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:active:not(:disabled) {
+    background: t.$surface-bg;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  &--primary {
+    border-color: t.$c-primary;
+    background: t.$c-primary;
+    color: #ffffff;
+
+    &:active:not(:disabled) {
+      background: t.$c-primary-dark;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid t.$c-primary;
+    outline-offset: 2px;
+  }
+}
+
+// Tablet em retrato/celular: botões do topo só com ícone para o título caber.
+@media (max-width: 720px) {
+  .dv__header .dv-btn {
+    width: t.$touch-min;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .dv__header .dv-btn__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}

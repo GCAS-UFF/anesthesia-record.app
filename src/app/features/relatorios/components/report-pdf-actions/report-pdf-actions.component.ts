@@ -1,11 +1,11 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonIcon, ToastController } from '@ionic/angular/standalone';
+import { IonIcon } from '@ionic/angular/standalone';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
 import { printOutline } from 'ionicons/icons';
-import { firstValueFrom } from 'rxjs';
 import { ReportsService } from 'src/app/core/services/reports.service';
+import { DocumentViewerService } from 'src/app/core/services/document-viewer.service';
 import { ReportFilters } from 'src/app/core/models/reports.model';
 import { DrugCategoryEnum } from 'src/app/core/models/api-enums.model';
 
@@ -17,6 +17,16 @@ function defaultFilters(): ReportFilters {
   const today = new Date();
   const start = new Date(today.getFullYear(), today.getMonth(), 1);
   return { startDate: toIsoDate(start), endDate: toIsoDate(today), anesthesiologistId: null, status: null };
+}
+
+/** "clinical-events" → "clinicalEvents", a chave usada pelos títulos em relatorios.*.title. */
+function toI18nKey(reportKey: string): string {
+  return reportKey.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
+}
+
+function formatDate(iso: string): string {
+  const [year, month, day] = (iso || '').split('-');
+  return year && month && day ? `${day}/${month}/${year}` : iso;
 }
 
 @Component({
@@ -31,34 +41,24 @@ export class ReportPdfActionsComponent {
   @Input() filters: ReportFilters = defaultFilters();
   @Input() category: DrugCategoryEnum | null = null;
 
-  generating = false;
-
   constructor(
     private reportsService: ReportsService,
-    private toastController: ToastController,
+    private documentViewer: DocumentViewerService,
     private translate: TranslateService,
   ) {
     addIcons({ printOutline });
   }
 
-  async visualizar() {
-    if (this.generating) return;
-    this.generating = true;
-    try {
-      const blob = await firstValueFrom(this.reportsService.getReportPrintHtml(this.reportKey, this.filters, this.category));
-      const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    } catch (error) {
-      console.error('Erro ao gerar relatório', error);
-      await this.showToast(this.translate.instant('relatorios.pdfActions.generateError'), 'danger');
-    } finally {
-      this.generating = false;
-    }
-  }
+  visualizar(): void {
+    // Congela os filtros do momento do clique: o documento exibido corresponde ao que estava na tela.
+    const filters = { ...this.filters };
+    const category = this.category;
 
-  private async showToast(message: string, color: 'success' | 'danger' | 'medium' = 'medium') {
-    const toast = await this.toastController.create({ message, duration: 3200, color, position: 'top' });
-    await toast.present();
+    void this.documentViewer.open({
+      title: this.translate.instant(`relatorios.${toI18nKey(this.reportKey)}.title`),
+      subtitle: `${formatDate(filters.startDate)} – ${formatDate(filters.endDate)}`,
+      orientation: 'portrait',
+      load: () => this.reportsService.getReportPrintHtml(this.reportKey, filters, category),
+    });
   }
 }

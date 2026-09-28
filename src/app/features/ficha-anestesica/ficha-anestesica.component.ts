@@ -51,6 +51,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
 import { MasterDataService } from 'src/app/core/services/master-data.service';
 import { SurgeryStatusEnum } from 'src/app/core/models/api-enums.model';
 import { PreAnesthesicRecordService } from 'src/app/core/services/pre-anesthesic-record.service';
+import { DocumentViewerService } from 'src/app/core/services/document-viewer.service';
 import { RecordViewerModalComponent, RecordData } from 'src/app/shared/components/record-viewer-modal/record-viewer-modal.component';
 import { mapPreAnesthesiaToRecordData } from 'src/app/shared/models/pre-anesthesic.mapper';
 import { mapAnesthesiaRecordToRecordData } from 'src/app/shared/models/anesthesia-record.mapper';
@@ -187,7 +188,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     private modalCtrl: ModalController,
     private cdr: ChangeDetectorRef,
     private translate: TranslateService,
-    private hostRef: ElementRef<HTMLElement>
+    private hostRef: ElementRef<HTMLElement>,
+    private documentViewer: DocumentViewerService,
   ) {
     addIcons({ checkmarkCircle, chevronDownOutline, addOutline, trashOutline, returnDownForwardOutline, closeCircleOutline, timeOutline, alertCircleOutline, lockClosedOutline, shieldCheckmarkOutline, syncOutline, printOutline, fitnessOutline, createOutline, medicalSharp, shieldCheckmark, cloudDoneOutline, pencilOutline, saveOutline, arrowBackOutline, closeOutline });
     this.initForm();
@@ -1447,7 +1449,13 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   imprimir() {
     if (this.selectedSurgery?.id) {
-      window.open(this.anesthesiaService.getPdfUrl(this.selectedSurgery.id), '_blank');
+      const surgeryId = Number(this.selectedSurgery.id);
+      void this.documentViewer.open({
+        title: this.translate.instant('fichaAnestesica.page.title'),
+        subtitle: this.patient?.fullName || undefined,
+        orientation: 'landscape',
+        load: () => this.anesthesiaService.getPrintHtml(surgeryId),
+      });
     } else {
       this.toast(this.translate.instant('fichaAnestesica.toasts.naoIdentificouCirurgiaImpressao'), 'warning');
     }

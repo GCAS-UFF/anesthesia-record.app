@@ -54,44 +54,46 @@
           <span class="col-actions">{{ 'itemMaintenance.drugs.columnActions' | translate }}</span>
         </div>
 
-        <p class="empty-state" *ngIf="!drugsLoading && drugs.length === 0">{{ 'itemMaintenance.drugs.empty' | translate }}</p>
-        <p class="loading-state" *ngIf="drugsLoading">{{ 'itemMaintenance.drugs.loading' | translate }}</p>
+        <div class="list-body" #listBody>
+          <p class="empty-state" *ngIf="!drugsLoading && drugs.length === 0">{{ 'itemMaintenance.drugs.empty' | translate }}</p>
+          <p class="loading-state" *ngIf="drugsLoading && drugs.length === 0">{{ 'itemMaintenance.drugs.loading' | translate }}</p>
 
-        <div class="list-row" *ngFor="let drug of drugs">
-          <span class="col-name">
-            {{ drug.description }}
-            <span class="inactive-badge" *ngIf="!drug.active">{{ 'itemMaintenance.drugs.inactiveBadge' | translate }}</span>
-          </span>
-          <span class="col-unit">{{ drug.defaultUnit }}</span>
+          <div class="list-row" *ngFor="let drug of drugs">
+            <span class="col-name">
+              {{ drug.description }}
+              <span class="inactive-badge" *ngIf="!drug.active">{{ 'itemMaintenance.drugs.inactiveBadge' | translate }}</span>
+            </span>
+            <span class="col-unit">{{ drug.defaultUnit }}</span>
 
-          <span class="col-category" *ngIf="editingDrugId !== drug.id">
-            <span class="category-chip">{{ drug.categoryLabel }}</span>
-          </span>
-          <span class="col-category" *ngIf="editingDrugId === drug.id">
-            <select class="category-select" [(ngModel)]="editingDrugCategory">
-              <option *ngFor="let c of categoryOptions" [ngValue]="c.id">{{ c.label }}</option>
-            </select>
-          </span>
+            <span class="col-category" *ngIf="editingDrugId !== drug.id">
+              <span class="category-chip">{{ drug.categoryLabel }}</span>
+            </span>
+            <span class="col-category" *ngIf="editingDrugId === drug.id">
+              <select class="category-select" [(ngModel)]="editingDrugCategory">
+                <option *ngFor="let c of categoryOptions" [ngValue]="c.id">{{ c.label }}</option>
+              </select>
+            </span>
 
-          <span class="col-actions">
-            <ng-container *ngIf="editingDrugId !== drug.id">
-              <button class="icon-btn" (click)="startEditDrug(drug)" [title]="'itemMaintenance.drugs.editCategoryTitle' | translate">
-                <ion-icon name="create-outline"></ion-icon>
-              </button>
-            </ng-container>
-            <ng-container *ngIf="editingDrugId === drug.id">
-              <button class="icon-btn confirm" [disabled]="savingDrugId === drug.id" (click)="saveDrugCategory(drug)" [title]="'itemMaintenance.drugs.saveTitle' | translate">
-                <ion-icon name="checkmark-outline"></ion-icon>
-              </button>
-              <button class="icon-btn" [disabled]="savingDrugId === drug.id" (click)="cancelEditDrug()" [title]="'itemMaintenance.drugs.cancelTitle' | translate">
-                <ion-icon name="close-outline"></ion-icon>
-              </button>
-            </ng-container>
-          </span>
+            <span class="col-actions">
+              <ng-container *ngIf="editingDrugId !== drug.id">
+                <button class="icon-btn" (click)="startEditDrug(drug)" [title]="'itemMaintenance.drugs.editCategoryTitle' | translate">
+                  <ion-icon name="create-outline"></ion-icon>
+                </button>
+              </ng-container>
+              <ng-container *ngIf="editingDrugId === drug.id">
+                <button class="icon-btn confirm" [disabled]="savingDrugId === drug.id" (click)="saveDrugCategory(drug)" [title]="'itemMaintenance.drugs.saveTitle' | translate">
+                  <ion-icon name="checkmark-outline"></ion-icon>
+                </button>
+                <button class="icon-btn" [disabled]="savingDrugId === drug.id" (click)="cancelEditDrug()" [title]="'itemMaintenance.drugs.cancelTitle' | translate">
+                  <ion-icon name="close-outline"></ion-icon>
+                </button>
+              </ng-container>
+            </span>
+          </div>
         </div>
       </div>
 
-      <div class="pagination-container" *ngIf="drugsTotalItems > drugsPageSize">
+      <div class="pagination-container">
         <button (click)="drugsPrevPage()" [disabled]="drugsPage === 1" class="page-btn">
           <ion-icon name="chevron-back-outline"></ion-icon> {{ 'itemMaintenance.pagination.prev' | translate }}
         </button>
@@ -149,24 +151,26 @@
           <span class="col-actions">{{ 'itemMaintenance.events.columnActions' | translate }}</span>
         </div>
 
-        <p class="empty-state" *ngIf="!eventsLoading && events.length === 0">{{ 'itemMaintenance.events.empty' | translate }}</p>
-        <p class="loading-state" *ngIf="eventsLoading">{{ 'itemMaintenance.events.loading' | translate }}</p>
+        <div class="list-body" #listBody>
+          <p class="empty-state" *ngIf="!eventsLoading && events.length === 0">{{ 'itemMaintenance.events.empty' | translate }}</p>
+          <p class="loading-state" *ngIf="eventsLoading && events.length === 0">{{ 'itemMaintenance.events.loading' | translate }}</p>
 
-        <div class="list-row events-row" *ngFor="let event of events">
-          <span class="col-name">
-            {{ event.name }}
-            <span class="inactive-badge" *ngIf="!event.active">{{ 'itemMaintenance.events.inactiveBadge' | translate }}</span>
-          </span>
-          <span class="col-description">{{ event.description }}</span>
-          <span class="col-actions">
-            <button class="icon-btn" (click)="startEditEvent(event)" [title]="'itemMaintenance.events.editTitle' | translate">
-              <ion-icon name="create-outline"></ion-icon>
-            </button>
-          </span>
+          <div class="list-row events-row" *ngFor="let event of events">
+            <span class="col-name">
+              {{ event.name }}
+              <span class="inactive-badge" *ngIf="!event.active">{{ 'itemMaintenance.events.inactiveBadge' | translate }}</span>
+            </span>
+            <span class="col-description">{{ event.description }}</span>
+            <span class="col-actions">
+              <button class="icon-btn" (click)="startEditEvent(event)" [title]="'itemMaintenance.events.editTitle' | translate">
+                <ion-icon name="create-outline"></ion-icon>
+              </button>
+            </span>
+          </div>
         </div>
       </div>
 
-      <div class="pagination-container" *ngIf="eventsTotalItems > eventsPageSize">
+      <div class="pagination-container">
         <button (click)="eventsPrevPage()" [disabled]="eventsPage === 1" class="page-btn">
           <ion-icon name="chevron-back-outline"></ion-icon> {{ 'itemMaintenance.pagination.prev' | translate }}
         </button>

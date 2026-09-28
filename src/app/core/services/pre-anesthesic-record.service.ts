@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { ApiService } from './base/api.service';
-import { ApiUrlService } from './api-url.service';
 import { BaseService } from './base/base.service';
 import {
   PreAnesthesicChecklistFinding,
@@ -58,12 +57,13 @@ function wireToFindingRecord(groups: PreAnesthesiaChecklistGroupWire[] | null | 
 })
 export class PreAnesthesicRecordService extends BaseService<PreAnesthesicRecordPayload> {
 
-  constructor(api: ApiService, private apiUrlService: ApiUrlService) {
+  constructor(api: ApiService) {
     super(api, PRE_ANESTHESIA_ENDPOINT);
   }
 
-  getPdfUrl(anesthesiaRecordId: number): string {
-    return `${this.apiUrlService.getBaseUrl()}/${PRE_ANESTHESIA_ENDPOINT}/by-anesthesia-record/${anesthesiaRecordId}/print`;
+  /** HTML de impressão da avaliação pré-anestésica, requisitado com autenticação. */
+  getPrintHtml(anesthesiaRecordId: number): Observable<string> {
+    return this.api.getText(`${PRE_ANESTHESIA_ENDPOINT}/by-anesthesia-record/${anesthesiaRecordId}/print`);
   }
 
 

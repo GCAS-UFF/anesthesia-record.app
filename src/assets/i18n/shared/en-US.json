@@ -128,6 +128,30 @@
     "searchBar": {
       "defaultPlaceholder": "Search..."
     },
+    "documentViewer": {
+      "eyebrow": "Document",
+      "back": "Back to previous screen",
+      "print": "Print / Save PDF",
+      "loading": "Preparing the document...",
+      "slow": "The server is taking longer than usual. Please wait a little longer.",
+      "retry": "Try again",
+      "page": "Page {{current}} of {{total}}",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "fitWidth": "Fit to width",
+      "printError": "Could not open printing for this document.",
+      "errors": {
+        "offline": "Could not reach the SIGA server. Check the network and try again.",
+        "timeout": "The server took too long to generate the document. Try again shortly.",
+        "unauthorized": "Your session has expired. Sign in to SIGA again to view the document.",
+        "forbidden": "You are not allowed to view this document.",
+        "notFound": "Document not found. Check that the record was saved on the server.",
+        "server": "The server could not generate the document. Try again or contact support.",
+        "empty": "The server returned an empty document."
+      }
+    },
     "consumptionSummary": {
       "title": "Surgery supplies and consumption",
       "overview": "Consumption overview",

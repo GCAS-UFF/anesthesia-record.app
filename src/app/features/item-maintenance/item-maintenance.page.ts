@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -18,6 +18,11 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 type Tab = 'drugs' | 'events';
 
+/** Altura de uma linha (botão de 40px + padding + borda) enquanto nenhuma foi desenhada para medir. */
+const DEFAULT_ROW_HEIGHT = 57;
+const MIN_PAGE_SIZE = 5;
+const MAX_PAGE_SIZE = 50;
+
 @Component({
   selector: 'app-item-maintenance',
   templateUrl: './item-maintenance.page.html',
@@ -32,8 +37,12 @@ type Tab = 'drugs' | 'events';
     TranslatePipe,
   ],
 })
-export class ItemMaintenancePage implements OnInit {
+export class ItemMaintenancePage implements AfterViewInit, OnDestroy {
+  /** Área rolável da lista da aba ativa; sua altura define quantos itens cabem por página. */
+  @ViewChild('listBody') listBody?: ElementRef<HTMLElement>;
+
   activeTab: Tab = 'drugs';
+  private resizeTimer?: ReturnType<typeof setTimeout>;
 
   categoryOptions = Object.entries(DRUG_CATEGORY_LABELS).map(([id, label]) => ({
     id: Number(id) as DrugCategoryEnum,
@@ -41,7 +50,7 @@ export class ItemMaintenancePage implements OnInit {
   }));
 
   drugs: DrugAdmin[] = [];
-  drugsLoading = false;
+  drugsLoading = true; // a primeira busca sai no ngAfterViewInit
   drugsTerm = '';
   drugsCategoryFilter: DrugCategoryEnum | null = null;
   drugsPage = 1;
@@ -77,15 +86,56 @@ export class ItemMaintenancePage implements OnInit {
     this.router.navigate(['/pacientes']);
   }
 
-  ngOnInit(): void {
-    this.loadDrugs();
+  ngAfterViewInit(): void {
+    // Mede a lista já desenhada antes da primeira busca, para pedir uma página que preencha a tela.
+    requestAnimationFrame(() => {
+      this.drugsPageSize = this.fittedPageSize() ?? this.drugsPageSize;
+      this.loadDrugs();
+    });
+  }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.resizeTimer);
   }
 
   selectTab(tab: Tab) {
     this.activeTab = tab;
     if (tab === 'events' && this.events.length === 0) {
-      this.loadEvents();
+      this.eventsLoading = true;
+      requestAnimationFrame(() => {
+        this.eventsPageSize = this.fittedPageSize() ?? this.eventsPageSize;
+        this.loadEvents();
+      });
     }
+  }
+
+  /** Rotação do tablet ou redimensionamento: refaz a página mantendo visível o primeiro item atual. */
+  @HostListener('window:resize')
+  onResize(): void {
+    clearTimeout(this.resizeTimer);
+    this.resizeTimer = setTimeout(() => {
+      const size = this.fittedPageSize();
+      if (!size) return;
+
+      if (this.activeTab === 'drugs' && size !== this.drugsPageSize) {
+        this.drugsPage = Math.floor(((this.drugsPage - 1) * this.drugsPageSize) / size) + 1;
+        this.drugsPageSize = size;
+        this.loadDrugs();
+      } else if (this.activeTab === 'events' && size !== this.eventsPageSize) {
+        this.eventsPage = Math.floor(((this.eventsPage - 1) * this.eventsPageSize) / size) + 1;
+        this.eventsPageSize = size;
+        this.loadEvents();
+      }
+    }, 250);
+  }
+
+  private fittedPageSize(): number | null {
+    const body = this.listBody?.nativeElement;
+    if (!body?.clientHeight) return null;
+    // A última linha (e não a primeira, que não tem borda superior) dá a altura real de cada linha.
+    const rows = body.querySelectorAll<HTMLElement>('.list-row');
+    const rowHeight = rows[rows.length - 1]?.offsetHeight || DEFAULT_ROW_HEIGHT;
+    return Math.min(MAX_PAGE_SIZE, Math.max(MIN_PAGE_SIZE, Math.floor(body.clientHeight / rowHeight)));
   }
 
   categoryLabel(id: DrugCategoryEnum): string {

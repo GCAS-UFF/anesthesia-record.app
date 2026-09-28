@@ -1,5 +1,4 @@
 import { Injectable } from "@angular/core";
-import { ApiUrlService } from "./api-url.service";
 import { ApiService } from "./base/api.service";
 import { BaseService } from "./base/base.service";
 import { AnesthesiaRecordModel } from "../../shared/models/anesthesia-record.model";
@@ -177,7 +176,6 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
   constructor(
     api: ApiService,
     private authService: AuthService,
-    private apiUrlService: ApiUrlService,
     private surgeryService: SurgeryService,
   ) {
     super(api, 'anesthesiarecord');
@@ -714,8 +712,9 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       .join(' ');
   }
 
-  getPdfUrl(id: number): string {
-    return `${this.apiUrlService.getBaseUrl()}/AnesthesiaRecord/${id}/print`;
+  /** HTML de impressão da ficha, requisitado com autenticação para exibição no visualizador interno. */
+  getPrintHtml(id: number): Observable<string> {
+    return this.api.getText(`AnesthesiaRecord/${id}/print`);
   }
 
   reopenAnesthesiaRecord(id: number): Observable<any> {

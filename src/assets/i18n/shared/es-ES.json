@@ -128,6 +128,30 @@
     "searchBar": {
       "defaultPlaceholder": "Buscar..."
     },
+    "documentViewer": {
+      "eyebrow": "Documento",
+      "back": "Volver a la pantalla anterior",
+      "print": "Imprimir / Guardar PDF",
+      "loading": "Preparando el documento...",
+      "slow": "El servidor está tardando más de lo normal. Espere un poco más.",
+      "retry": "Intentar de nuevo",
+      "page": "Página {{current}} de {{total}}",
+      "previousPage": "Página anterior",
+      "nextPage": "Página siguiente",
+      "zoomIn": "Ampliar",
+      "zoomOut": "Reducir",
+      "fitWidth": "Ajustar al ancho",
+      "printError": "No fue posible abrir la impresión de este documento.",
+      "errors": {
+        "offline": "No fue posible conectar con el servidor de SIGA. Verifique la red e intente de nuevo.",
+        "timeout": "El servidor tardó demasiado en generar el documento. Intente de nuevo en unos instantes.",
+        "unauthorized": "Su sesión expiró. Inicie sesión de nuevo en SIGA para ver el documento.",
+        "forbidden": "No tiene permiso para ver este documento.",
+        "notFound": "Documento no encontrado. Verifique que el registro se haya guardado en el servidor.",
+        "server": "El servidor no pudo generar el documento. Intente de nuevo o avise al soporte.",
+        "empty": "El servidor devolvió un documento vacío."
+      }
+    },
     "consumptionSummary": {
       "title": "Insumos y consumo de la cirugía",
       "overview": "Visión general del consumo",

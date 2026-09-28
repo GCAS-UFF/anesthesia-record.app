@@ -14,10 +14,10 @@
 
 .page-main {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  padding-bottom: 32px;
 }
 
 // Subtítulo da página (o título fica no cabeçalho, ao lado da seta).
@@ -63,7 +63,12 @@
   }
 }
 
+// A aba ocupa o restante da tela: a lista cresce e a paginação fica no rodapé.
 .tab-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   padding: 16px 24px 0;
 }
 
@@ -126,6 +131,12 @@
   min-height: 40px;
 }
 
+// Na mesma linha da busca, para sobrar mais altura para a lista.
+.category-filter {
+  flex: 0 0 260px;
+  width: 260px;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -163,11 +174,21 @@
 }
 
 .list-card {
+  flex: 1;
+  min-height: 240px; // em telas baixas (ou com o formulário de evento aberto) a página inteira rola
+  display: flex;
+  flex-direction: column;
   background: t.$surface-card;
   border: 1px solid t.$border;
   border-radius: t.$radius-lg;
   box-shadow: t.$shadow-card;
   overflow: hidden;
+}
+
+.list-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .list-header {
@@ -287,7 +308,8 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  padding: 16px 0;
+  padding: 12px 0;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
 }
 
 .page-btn {
@@ -379,6 +401,8 @@
 
 @media (max-width: 720px) {
   .page-header, .tabs, .tab-panel { padding-left: 16px; padding-right: 16px; }
+
+  .category-filter { flex: 1 1 100%; width: 100%; }
 
   .list-header, .list-row {
     grid-template-columns: 1fr 1fr;

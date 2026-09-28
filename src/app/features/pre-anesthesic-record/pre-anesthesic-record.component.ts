@@ -57,6 +57,7 @@ import { HeaderActionButton } from '../../shared/components/header-institucional
 import { StatusBarComponent } from '../../shared/components/status-bar/status-bar.component';
 import { AuthService } from '../../core/services/auth.service';
 import { PreAnesthesicRecordService } from '../../core/services/pre-anesthesic-record.service';
+import { DocumentViewerService } from '../../core/services/document-viewer.service';
 import {
   ChecklistGroupDef,
   ChecklistOption,
@@ -251,6 +252,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private translate: TranslateService,
     private modalCtrl: ModalController,
+    private documentViewer: DocumentViewerService,
   ) {
     addIcons({
       arrowBackOutline,
@@ -1380,7 +1382,13 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
       await t.present();
       return;
     }
-    window.open(this.preAnesthesicService.getPdfUrl(this.anesthesiaRecordId), '_blank');
+    const anesthesiaRecordId = this.anesthesiaRecordId;
+    void this.documentViewer.open({
+      title: this.translate.instant('preAnestesica.pageTitle'),
+      subtitle: this.patient?.fullName || undefined,
+      orientation: 'portrait',
+      load: () => this.preAnesthesicService.getPrintHtml(anesthesiaRecordId),
+    });
   }
 
 

@@ -1,0 +1,95 @@
+<div class="dv">
+  <header class="dv__header">
+    <button type="button" class="dv__back" (click)="close()" [attr.aria-label]="'sharedComponents.documentViewer.back' | translate">‹</button>
+
+    <div class="dv__heading">
+      <span class="dv__eyebrow">
+        <ion-icon name="document-text-outline" aria-hidden="true"></ion-icon>
+        {{ 'sharedComponents.documentViewer.eyebrow' | translate }}
+      </span>
+      <h2 class="dv__title">{{ request.title }}</h2>
+      <p class="dv__subtitle" *ngIf="request.subtitle">{{ request.subtitle }}</p>
+    </div>
+
+    <button type="button" class="dv-btn dv-btn--primary" *ngIf="status === 'ready'" [disabled]="printing" (click)="print()">
+      <ion-spinner *ngIf="printing" name="crescent"></ion-spinner>
+      <ion-icon *ngIf="!printing" name="print-outline" aria-hidden="true"></ion-icon>
+      <span class="dv-btn__label">{{ 'sharedComponents.documentViewer.print' | translate }}</span>
+    </button>
+
+    <button type="button" class="dv-btn" (click)="close()">
+      <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+      <span class="dv-btn__label">{{ 'common.close' | translate }}</span>
+    </button>
+  </header>
+
+  <div class="dv__state" *ngIf="status === 'loading'" role="status" aria-live="polite">
+    <ion-spinner name="crescent"></ion-spinner>
+    <span>{{ 'sharedComponents.documentViewer.loading' | translate }}</span>
+    <small *ngIf="slow">{{ 'sharedComponents.documentViewer.slow' | translate }}</small>
+  </div>
+
+  <div class="dv__state dv__state--error" *ngIf="status === 'error' && error" role="alert">
+    <ion-icon [name]="errorIcon"></ion-icon>
+    <span>{{ errorDetail || ('sharedComponents.documentViewer.errors.' + error | translate) }}</span>
+    <div class="dv__state-actions">
+      <button type="button" class="dv-btn dv-btn--primary" *ngIf="error !== 'unauthorized' && error !== 'forbidden'" (click)="load()">
+        <ion-icon name="refresh-outline" aria-hidden="true"></ion-icon>
+        <span class="dv-btn__label">{{ 'sharedComponents.documentViewer.retry' | translate }}</span>
+      </button>
+      <button type="button" class="dv-btn" (click)="close()">
+        <span class="dv-btn__label">{{ 'sharedComponents.documentViewer.back' | translate }}</span>
+      </button>
+    </div>
+  </div>
+
+  <ng-container *ngIf="status === 'ready'">
+    <div class="dv__canvas" #canvas>
+      <div class="dv__sheet" [style.width.px]="docWidth * zoom" [style.height.px]="docHeight * zoom">
+        <iframe
+          #frame
+          class="dv__frame"
+          sandbox="allow-scripts allow-modals"
+          referrerpolicy="no-referrer"
+          [title]="request.title"
+          [style.width.px]="docWidth"
+          [style.height.px]="docHeight"
+          [style.transform]="'scale(' + zoom + ')'"
+        ></iframe>
+      </div>
+    </div>
+
+    <nav class="dv__controls" [attr.aria-label]="request.title">
+      <div class="dv-group">
+        <button type="button" class="dv-icon" (click)="previousPage()" [disabled]="currentPage <= 1"
+                [attr.aria-label]="'sharedComponents.documentViewer.previousPage' | translate">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </button>
+        <span class="dv-group__value">
+          {{ 'sharedComponents.documentViewer.page' | translate: { current: currentPage, total: totalPages } }}
+        </span>
+        <button type="button" class="dv-icon" (click)="nextPage()" [disabled]="currentPage >= totalPages"
+                [attr.aria-label]="'sharedComponents.documentViewer.nextPage' | translate">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
+      </div>
+
+      <div class="dv-group">
+        <button type="button" class="dv-icon" (click)="zoomOut()"
+                [attr.aria-label]="'sharedComponents.documentViewer.zoomOut' | translate">
+          <ion-icon name="remove-outline"></ion-icon>
+        </button>
+        <span class="dv-group__value dv-group__value--zoom">{{ zoomPercent }}%</span>
+        <button type="button" class="dv-icon" (click)="zoomIn()"
+                [attr.aria-label]="'sharedComponents.documentViewer.zoomIn' | translate">
+          <ion-icon name="add-outline"></ion-icon>
+        </button>
+        <button type="button" class="dv-icon" [class.dv-icon--active]="fitMode" (click)="fitWidth()"
+                [attr.aria-label]="'sharedComponents.documentViewer.fitWidth' | translate"
+                [attr.aria-pressed]="fitMode">
+          <ion-icon name="expand-outline"></ion-icon>
+        </button>
+      </div>
+    </nav>
+  </ng-container>
+</div>
