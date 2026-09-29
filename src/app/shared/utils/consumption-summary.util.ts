@@ -29,17 +29,6 @@ import {
 } from 'src/app/core/models/consumption-summary.model';
 import { isHydrationEntry } from 'src/app/features/monitorizacao/utils/fluid-balance.util';
 
-/**
- * Consolidação do consumo de uma cirurgia. Função pura: recebe os registros já existentes
- * (monitorização no formato do app + medicações da ficha) e o instante atual, e devolve os
- * agrupamentos e totais. Não grava nada e não inventa valores: o que não foi registrado sai `null`.
- *
- * Fórmulas (detalhadas em cada função):
- * - doses: soma por fármaco e por unidade, sem conversão entre unidades;
- * - balanço: ganhos − perdas (mL), só com os lançamentos do balanço hídrico;
- * - bomba (mL/h): volume = vazão × horas efetivas, limitado ao volume programado;
- * - O₂/Ar: soma dos intervalos ligado→desligado; volume (L) = fluxo × minutos, só com fluxo registrado.
- */
 
 const MINUTE_MS = 60_000;
 /** Janela padrão que a Monitorização grava como fim de bombas fora de mL/h (não é um término real). */
@@ -103,9 +92,6 @@ export function buildConsumptionSummary(input: ConsumptionSourceData, now: Date 
   };
 }
 
-// ---------------------------------------------------------------------------
-// Fase / horários
-// ---------------------------------------------------------------------------
 
 function resolvePhase(input: ConsumptionSourceData, monitoring: any): ConsumptionPhase {
   if (input.recordStatus === SurgeryStatusEnum.Concluido) return 'finalized';
@@ -120,8 +106,7 @@ function resolvePhase(input: ConsumptionSourceData, monitoring: any): Consumptio
 function buildTimes(monitoring: any, ignoreAnesthesiaEnd: boolean, isLive: boolean, nowMs: number): ConsumptionTimes {
   const anesthesiaStart = validIso(monitoring.anesthesiaStartTime ?? monitoring.startedAt);
   const surgeryStart = validIso(monitoring.surgeryStartTime ?? monitoring.surgeryStartedAt);
-  // Término sem o início correspondente é resíduo de PUT de progresso antigo (mesma regra de
-  // AnesthesiaRecordService.extractMonitoringTimes) — descartado em vez de exibido.
+ 
   const rawSurgeryEnd = validIso(monitoring.surgeryEndTime ?? monitoring.surgeryEndedAt);
   const rawAnesthesiaEnd = validIso(monitoring.anesthesiaEndTime ?? monitoring.endedAt);
   const surgeryEnd = surgeryStart ? rawSurgeryEnd : null;
@@ -142,11 +127,7 @@ function buildTimes(monitoring: any, ignoreAnesthesiaEnd: boolean, isLive: boole
   };
 }
 
-// ---------------------------------------------------------------------------
-// Fármacos (monitorização + ficha)
-// ---------------------------------------------------------------------------
 
-/** Anestésico → agente; Solução/Diluente → solução; demais (ou sem categoria) → medicamento. */
 export function classifyDrug(category: DrugCategoryEnum | null | undefined): DrugGroupKind {
   if (category === DrugCategoryEnum.Anestesico) return 'agent';
   if (category === DrugCategoryEnum.Solucao || category === DrugCategoryEnum.Diluente) return 'solution';
@@ -576,7 +557,6 @@ function timeOf(timestamp: string | null, fallback: any): string | null {
   return typeof fallback === 'string' && fallback ? fallback.slice(0, 5) : null;
 }
 
-/** Ficha só registra "HH:mm": usa o dia de início da anestesia só para ordenar junto da monitorização. */
 function combineDateAndTime(referenceIso: string | null, time: string | null): string | null {
   if (!referenceIso || !time || !/^\d{2}:\d{2}/.test(time)) return null;
   const d = new Date(referenceIso);

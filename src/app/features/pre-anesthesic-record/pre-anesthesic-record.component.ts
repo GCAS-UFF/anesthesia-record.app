@@ -792,8 +792,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     const date = this.formatLabDate(this.labExams?.collectedAt ?? null);
     return key ? this.translate.instant(`preAnestesica.exames.lab.status.${key}`, { date }) : '';
   }
-
-  /** Campo texto (TP) com o separador decimal do idioma, igual aos campos numéricos. */
+  
   private formatLabText(value: number | null): string {
     if (value == null) return '';
     return value.toLocaleString(this.translate.getCurrentLang() || 'pt-BR', { useGrouping: false, maximumFractionDigits: 4 });

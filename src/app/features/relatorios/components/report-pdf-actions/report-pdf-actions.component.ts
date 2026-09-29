@@ -19,7 +19,6 @@ function defaultFilters(): ReportFilters {
   return { startDate: toIsoDate(start), endDate: toIsoDate(today), anesthesiologistId: null, status: null };
 }
 
-/** "clinical-events" → "clinicalEvents", a chave usada pelos títulos em relatorios.*.title. */
 function toI18nKey(reportKey: string): string {
   return reportKey.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
 }
@@ -49,8 +48,7 @@ export class ReportPdfActionsComponent {
     addIcons({ printOutline });
   }
 
-  visualizar(): void {
-    // Congela os filtros do momento do clique: o documento exibido corresponde ao que estava na tela.
+  visualizar(): void {    
     const filters = { ...this.filters };
     const category = this.category;
 

@@ -13,7 +13,6 @@ import { AnesthesiaRecordService } from './anesthesia-record.service';
 import { ApiService } from './base/api.service';
 import { MasterDataService } from './master-data.service';
 
-/** Resposta de GET MonitoringRecord/{id}/consumption (SurgeryConsumptionResponse no backend). */
 interface ConsumptionApiResponse {
   surgeryId: number;
   anesthesiaRecordStatus: SurgeryStatusEnum | null;
@@ -31,8 +30,7 @@ interface ConsumptionApiResponse {
 interface ServerState {
   loaded: boolean;
   response: ConsumptionApiResponse | null;
-  forbidden: boolean;
-  /** Registro de monitorização ainda não existe no servidor (404). */
+  forbidden: boolean;  
   notFound: boolean;
   failed: boolean;
   syncedAt: string | null;
@@ -43,25 +41,10 @@ interface LocalState {
   fichaDraft: any | null;
 }
 
-/**
- * Resumo de insumos de uma cirurgia, sempre atualizado com o que já foi registrado.
- *
- * Fontes (somente leitura — abrir o resumo nunca grava nada):
- * - servidor: GET MonitoringRecord/{id}/consumption, relido periodicamente enquanto a ficha não
- *   estiver finalizada e logo após cada sincronização de rascunhos;
- * - aparelho: rascunho da monitorização (`draft_monitoring_{id}`) e da ficha (`draft_anesthesia_{id}`),
- *   relidos a cada poucos segundos (e no evento `storage` de outras abas).
- *
- * Precedência da monitorização (a mesma de AnesthesiaRecordService.getMonitoringTimes):
- * servidor finalizado → rascunho local → servidor em andamento → cache do registro finalizado.
- * As fontes nunca são mescladas lista a lista: cada PUT de progresso substitui no servidor todos
- * os lançamentos pelos do rascunho, então o rascunho é um retrato completo — mesclar duplicaria.
- */
 @Injectable({ providedIn: 'root' })
 export class ConsumptionSummaryService {
   static readonly SERVER_REFRESH_MS = 30_000;
-  static readonly LOCAL_CHECK_MS = 5_000;
-  /** Recalcula durações em andamento (bombas, O₂/Ar, anestesia) mesmo sem novos registros. */
+  static readonly LOCAL_CHECK_MS = 5_000;  
   static readonly CLOCK_MS = 30_000;
 
   constructor(
@@ -98,14 +81,12 @@ export class ConsumptionSummaryService {
     const initial: ServerState = { loaded: false, response: null, forbidden: false, notFound: false, failed: false, syncedAt: null };
 
     return merge(timer(0, ConsumptionSummaryService.SERVER_REFRESH_MS), syncFinished$).pipe(
-      exhaustMap(() => this.fetch(surgeryId)),
-      // Falha de rede não apaga a última leitura boa (uso offline durante a cirurgia).
+      exhaustMap(() => this.fetch(surgeryId)),      
       scan((prev: ServerState, next: Partial<ServerState>) => {
         if (next.response) return { ...initial, loaded: true, response: next.response, syncedAt: new Date().toISOString() };
         if (next.forbidden || next.notFound) return { ...initial, loaded: true, forbidden: !!next.forbidden, notFound: !!next.notFound };
         return { ...prev, loaded: true, failed: true };
-      }, initial),
-      // Ficha finalizada: nada mais muda (o backend bloqueia a edição) — para de consultar.
+      }, initial),      
       takeWhile(s => s.response?.anesthesiaRecordStatus !== SurgeryStatusEnum.Concluido && !s.forbidden, true),
       startWith(initial),
     );
@@ -129,9 +110,11 @@ export class ConsumptionSummaryService {
 
   private readLocal(surgeryId: number): LocalState {
     const belongs = (draft: any) => {
-      if (!draft) return false;
+      if (!draft) 
+        return false;
+      
       const ids = [draft.surgeryId, draft.cirurgiaId, draft.id].filter(v => v != null && v !== '');
-      // Rascunhos são indexados pelo id da cirurgia; se trouxerem outro id, não são desta cirurgia.
+      
       return ids.length === 0 || ids.some(v => Number(v) === Number(surgeryId));
     };
     const monitoringDraft = safeParse(localStorage.getItem(`draft_monitoring_${surgeryId}`));
@@ -144,9 +127,9 @@ export class ConsumptionSummaryService {
 
   private compose(surgeryId: number, server: ServerState, local: LocalState): ConsumptionSummaryState {
     const base = { serverSyncedAt: server.syncedAt };
-
-    // Sem permissão no servidor: não exibe nem o que houver neste aparelho (pode ser de outro usuário).
-    if (server.forbidden) return { ...base, summary: null, loading: false, error: 'forbidden' };
+    
+    if (server.forbidden) 
+      return { ...base, summary: null, loading: false, error: 'forbidden' };
 
     const resp = server.response;
     const recordStatus = resp?.anesthesiaRecordStatus ?? null;
@@ -209,8 +192,7 @@ export class ConsumptionSummaryService {
 
     return { ...base, summary: buildConsumptionSummary(data), loading: false, error: null };
   }
-
-  /** Categoria do cadastro de fármacos: cache de dados mestres (vale offline) + resposta do servidor. */
+  
   private drugCategories(resp: ConsumptionApiResponse | null): Record<number, DrugCategoryEnum> {
     const result: Record<number, DrugCategoryEnum> = {};
     for (const m of asArray(this.masterData.getMedicationsCache())) {
@@ -254,7 +236,6 @@ function fichaMedicationsFromServer(resp: ConsumptionApiResponse): FichaMedicati
   return items;
 }
 
-/** Rascunho local da ficha (valores do formulário + `antibioticsList`), ainda não sincronizado. */
 function fichaMedicationsFromDraft(draft: any): FichaMedicationInput[] {
   const items: FichaMedicationInput[] = [];
   const pre = draft?.preInducao ?? {};

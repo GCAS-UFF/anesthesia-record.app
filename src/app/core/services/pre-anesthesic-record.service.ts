@@ -103,8 +103,7 @@ export class PreAnesthesicRecordService extends BaseService<PreAnesthesicRecordP
       .put<any>(`${PRE_ANESTHESIA_ENDPOINT}/by-anesthesia-record/${anesthesiaRecordId}/lab-exams`, { results })
       .pipe(map((res) => (res?.data ?? res) as PreAnesthesicLabExams));
   }
-
-  /** Reabre (libera para edição) uma avaliação pré-anestésica finalizada — restrito a ADMIN no backend. */
+  
   reopen(anesthesiaRecordId: number): Observable<any> {
     return this.api.patch<any>(`${PRE_ANESTHESIA_ENDPOINT}/by-anesthesia-record/${anesthesiaRecordId}/reopen`, {});
   }

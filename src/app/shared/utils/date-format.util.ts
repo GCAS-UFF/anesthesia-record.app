@@ -13,11 +13,13 @@ export function formatDateBR(value: string | null | undefined): string | null {
   return value;
 }
 
-/** Formata data e hora (ex.: timestamps de assinatura) para dd/MM/yyyy HH:mm, no fuso local. */
 export function formatDateTimeBR(value: string | null | undefined): string | null {
-  if (!value) return null;
+  if (!value) 
+    return null;
   const parsed = new Date(value);
-  if (isNaN(parsed.getTime())) return formatDateBR(value);
+  if (isNaN(parsed.getTime())) 
+    return formatDateBR(value);
+  
   const datePart = `${String(parsed.getDate()).padStart(2, '0')}/${String(parsed.getMonth() + 1).padStart(2, '0')}/${parsed.getFullYear()}`;
   const timePart = `${String(parsed.getHours()).padStart(2, '0')}:${String(parsed.getMinutes()).padStart(2, '0')}`;
   return `${datePart} ${timePart}`;

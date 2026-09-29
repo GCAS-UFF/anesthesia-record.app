@@ -42,7 +42,6 @@ public class SigaPrintPlugin extends Plugin {
 
         getActivity().runOnUiThread(() -> {
             WebView webView = new WebView(getContext());
-            // Scripts ligados só para os gráficos (Chart.js) dos relatórios; sem acesso a arquivos.
             webView.getSettings().setJavaScriptEnabled(true);
             webView.getSettings().setAllowFileAccess(false);
             webView.getSettings().setAllowContentAccess(false);
@@ -52,10 +51,7 @@ public class SigaPrintPlugin extends Plugin {
                 @Override
                 public void onPageFinished(WebView view, String url) {
                     if (started) return;
-                    started = true;
-                    // Dá um instante para os gráficos terminarem de desenhar no canvas.
-                    // Handler, e não view.postDelayed: o WebView fora da tela não está anexado a uma
-                    // janela, e a fila de um View desanexado só roda quando ele for anexado.
+                    started = true;                    
                     new Handler(Looper.getMainLooper()).postDelayed(() -> startPrint(view, jobName, landscape, call), 300);
                 }
             });

@@ -1,12 +1,6 @@
 import { DrugCategoryEnum, FluidCategoryEnum, InfusionRateUnitEnum, SurgeryStatusEnum } from './api-enums.model';
 
-/**
- * Resumo de insumos/consumo de uma cirurgia, consolidado a partir do que já foi registrado na
- * Monitorização e na Ficha Anestésica. Todo valor ausente é `null` ("Não registrado") — nunca zero
- * nem estimativa sem identificação.
- */
 
-/** De onde vieram os dados da monitorização usados no resumo. */
 export type ConsumptionSource = 'server' | 'local' | 'cache' | 'none';
 
 export type ConsumptionPhase = 'not-started' | 'in-progress' | 'monitoring-finished' | 'finalized';
@@ -15,28 +9,24 @@ export type DrugGroupKind = 'agent' | 'medication' | 'solution';
 
 export type AdministrationOrigin = 'monitoring' | 'pre-anesthetic' | 'antibiotic' | 'booster';
 
-/** Medicação registrada na Ficha Anestésica (pré-anestésica, antibiótico, repique), já normalizada. */
+
 export interface FichaMedicationInput {
   origin: Exclude<AdministrationOrigin, 'monitoring'>;
   medicationId: number | null;
   name: string;
   doseText: string;
   route: string | null;
-  /** "HH:mm" (a ficha só registra a hora). */
   time: string | null;
 }
 
-/** Entrada do consolidador (montada pelo ConsumptionSummaryService). */
+
 export interface ConsumptionSourceData {
-  surgeryId: number;
-  /** Monitorização no formato do app (rascunho local ou `mapMonitoringPayloadToApp`). */
+  surgeryId: number;  
   monitoring: any | null;
   monitoringSource: ConsumptionSource;
-  /** Rascunho local com alterações ainda não enviadas ao servidor. */
   pendingSync: boolean;
   monitoringStatus: SurgeryStatusEnum | null;
-  recordStatus: SurgeryStatusEnum | null;
-  /** Registro do servidor em andamento: um fim de anestesia ali é resíduo de PUT de progresso antigo. */
+  recordStatus: SurgeryStatusEnum | null;  
   ignoreAnesthesiaEnd: boolean;
   fichaSource: 'server' | 'local' | 'none';
   fichaMedications: FichaMedicationInput[];
@@ -67,15 +57,12 @@ export interface DrugGroup {
   name: string;
   category: DrugCategoryEnum | null;
   kind: DrugGroupKind;
-  administrations: DrugAdministration[];
-  /** Soma das doses por unidade (sem conversão entre unidades). */
-  totals: UnitTotal[];
-  /** Administrações cuja dose não é numérica (texto livre da ficha) — fora dos totais. */
+  administrations: DrugAdministration[];  
+  totals: UnitTotal[];  
   unparsedCount: number;
   routes: string[];
   firstTime: string | null;
-  lastTime: string | null;
-  /** Tempo de infusão por bomba do mesmo fármaco, quando houver (ver seção de bombas). */
+  lastTime: string | null;  
   infusionMinutes: number | null;
 }
 
@@ -90,8 +77,7 @@ export interface FluidEntry {
 }
 
 export interface FluidGroup {
-  key: string;
-  /** Nome do item (soluções) ou chave de tradução do tipo (`hydration` / id da categoria). */
+  key: string;  
   label: string;
   categoryId: FluidCategoryEnum | null;
   isHydration: boolean;
@@ -99,10 +85,8 @@ export interface FluidGroup {
   entries: FluidEntry[];
 }
 
-export interface FluidSummary {
-  /** Ganhos agrupados pelo item registrado (soluções/líquidos). */
-  gainsByItem: FluidGroup[];
-  /** Ganhos agrupados pelo tipo (categoria do balanço / hidratação). */
+export interface FluidSummary {  
+  gainsByItem: FluidGroup[];  
   gainsByType: FluidGroup[];
   lossesByType: FluidGroup[];
   totalGainMl: number;
@@ -111,14 +95,7 @@ export interface FluidSummary {
   entryCount: number;
 }
 
-/**
- * Como o fim da infusão foi determinado:
- * - `stopped`: parada registrada ("Parar infusão");
- * - `volume-completed`: fim programado pelo volume/vazão (mL/h) já alcançado;
- * - `running`: em andamento — tempo contado até agora;
- * - `capped-anesthesia-end`: sem parada registrada; limitado ao término da anestesia;
- * - `not-registered`: sem término registrado (janela padrão do sistema) — tempo não calculado.
- */
+
 export type InfusionEndBasis = 'stopped' | 'volume-completed' | 'running' | 'capped-anesthesia-end' | 'not-registered';
 
 export interface PumpSummary {
@@ -127,20 +104,16 @@ export interface PumpSummary {
   name: string;
   category: DrugCategoryEnum | null;
   startTimestamp: string | null;
-  startTime: string | null;
-  /** Fim considerado no cálculo (null quando não registrado). */
-  endTimestamp: string | null;
-  /** `endAt` como está gravado no registro. */
+  startTime: string | null;  
+  endTimestamp: string | null;  
   registeredEndAt: string | null;
   endBasis: InfusionEndBasis;
   durationMin: number | null;
   rate: number | null;
   rateUnitId: InfusionRateUnitEnum | null;
   rateUnitLabel: string;
-  programmedVolumeMl: number | null;
-  /** Volume infundido calculado (só para vazão em mL/h). */
-  infusedVolumeMl: number | null;
-  /** Quantidade de fármaco calculada pela vazão (mcg/min, mg/h, UI/h, mcg/kg/min com peso). */
+  programmedVolumeMl: number | null;  
+  infusedVolumeMl: number | null;  
   infusedAmount: UnitTotal | null;
   isRunning: boolean;
 }
@@ -223,12 +196,9 @@ export interface ConsumptionSummary {
   overview: ConsumptionOverview;
 }
 
-/** Estado exposto pela tela: resumo + situação da carga. */
 export interface ConsumptionSummaryState {
   summary: ConsumptionSummary | null;
-  loading: boolean;
-  /** `forbidden`: sem permissão; `unavailable`: servidor inacessível e sem dados locais. */
-  error: 'forbidden' | 'unavailable' | null;
-  /** Última leitura bem-sucedida do servidor. */
+  loading: boolean;  
+  error: 'forbidden' | 'unavailable' | null;  
   serverSyncedAt: string | null;
 }

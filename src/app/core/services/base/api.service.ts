@@ -16,8 +16,7 @@ export class ApiService {
   get<T>(url: string, params?: any) {
     return this.http.get<T>(`${this.baseUrl}/${url}`, { params });
   }
-
-  /** GET que devolve o corpo como texto (ex.: HTML dos documentos de impressão), com o Bearer do interceptor. */
+  
   getText(url: string, params?: any) {
     return this.http.get(`${this.baseUrl}/${url}`, { params, responseType: 'text' });
   }

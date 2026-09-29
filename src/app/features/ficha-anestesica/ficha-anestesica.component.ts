@@ -2033,9 +2033,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
    */
   private applyMonitoringTimes(): void {
     const t = this.monitoringTimes;
-    // Ficha finalizada/somente leitura nunca tem valores alterados; e antes de hidratar o
-    // formulário, preencher geraria um rascunho quase vazio que sobreporia o da ficha salva.
-    if (!t || !this.formHydrated || !this.canEdit) return;
+   
+    if (!t || !this.formHydrated || !this.canEdit) 
+      return;
 
     this.fillTimeIfEmpty('equipe.horaInicioAnestesia', t.anesthesiaStart);
     this.fillTimeIfEmpty('posProcedimento.horaTerminoCirurgia', t.surgeryEnd);
@@ -2049,14 +2049,12 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     control.setValue(value);
     control.markAsDirty();
   }
-
-  /** '00:00' é o marcador que o backend gravava para horário não informado. */
+  
   private isBlankTime(value: unknown): boolean {
     const text = String(value ?? '').trim();
     return !text || text === '00:00' || text === '00:00:00';
   }
-
-  /** Horário da Monitorização quando diverge do que está no campo (para o aviso "usar este horário"). */
+  
   monitoringTimeDiffers(path: string, monitoringValue: string | null | undefined): boolean {
     const current = String(this.form.get(path)?.value ?? '').trim();
     return !!monitoringValue && current !== monitoringValue;
