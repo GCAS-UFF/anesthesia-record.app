@@ -732,14 +732,6 @@
           showValidationErrors && isSectionInvalid('posProcedimento')
         "
       >
-        <div class="pre-anestesia-ref" *ngIf="preAnesthesiaProcedures.length">
-          <span class="pre-anestesia-ref-label">{{ 'fichaAnestesica.posProcedimento.procedimentoPreAnestesica' | translate }}</span>
-          <span class="pre-anestesia-ref-value">
-            <ng-container *ngFor="let p of preAnesthesiaProcedures; let last = last">
-              {{ p.name }}<em *ngIf="p.isPrimary && preAnesthesiaProcedures.length > 1"> ({{ 'fichaAnestesica.posProcedimento.principalLabel' | translate | lowercase }})</em><span *ngIf="!last">, </span>
-            </ng-container>
-          </span>
-        </div>
         <div class="procedimentos-list" formArrayName="procedimentos">
           <div
             class="procedimento-row"

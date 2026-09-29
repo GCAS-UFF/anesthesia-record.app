@@ -721,6 +721,15 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
     return this.api.patch(`AnesthesiaRecord/${id}/reopen`, {});
   }
 
+  private mapProceduresBase(base: any[] | null | undefined): any[] | null {
+    if (!Array.isArray(base)) 
+      return null;
+    
+    return base
+      .filter((p: any) => !!p?.procedureId)
+      .map((p: any) => ({ id: String(p.procedureId), description: p.name ?? '', isPrimary: !!p.isPrimary }));
+  }
+
   private formatTimeForApi(timeStr: string | undefined | null): string {
     if (!timeStr) return '00:00:00';
     if (timeStr.includes('T')) {
@@ -1345,6 +1354,9 @@ export class AnesthesiaRecordService extends BaseService<AnesthesiaRecordModel> 
       surgeryEndedAt: this.normalizeIso(app.posProcedimento?.horaTerminoCirurgia) ?? null,
 
       surgeries: surgeries,
+      // Procedimento oficial carregado ao abrir a ficha: sem alteração do médico, o backend preserva
+      // o procedimento oficial atual (que pode ter sido alterado depois na pré-anestésica).
+      baseSurgeries: this.mapProceduresBase(app.proceduresBase ?? app._proceduresBase),
 
       // Segurança
       patientIdentifiedBeforeInduction: app.seguranca?.identificadoAvaliado === 'sim',

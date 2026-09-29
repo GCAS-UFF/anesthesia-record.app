@@ -26,6 +26,10 @@
     "procedimento": {
       "surgeriesLabel": "Proposed surgery(ies)",
       "selectSurgeryPlaceholder": "Select a surgery (AGHU)…",
+      "searchProcedurePlaceholder": "Search a procedure to add (min. 2 letters)…",
+      "noProcedureFound": "No procedure found.",
+      "primary": "Primary",
+      "makePrimary": "Make primary",
       "add": "Add",
       "principal": "Primary",
       "noSurgeryAdded": "No surgery added.",

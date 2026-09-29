@@ -45,6 +45,7 @@ import { TecnicaAnestesicaSectionComponent } from './components/tecnica-anestesi
 
 
 import { SurgeryService } from 'src/app/core/services/surgery.service';
+import { OfficialProcedure, sameProcedureSelection } from 'src/app/shared/utils/surgery-procedures.util';
 import { AnesthesiaRecordService } from 'src/app/core/services/anesthesia-record.service';
 import { AnesthesiaRecordModel } from 'src/app/shared/models/anesthesia-record.model';
 import { AuthService } from 'src/app/core/services/auth.service';
@@ -154,9 +155,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
   /** Horários registrados na Monitorização (fonte única; nulo = ainda não registrado). */
   monitoringTimes: MonitoringTimes | null = null;
-  /** Procedimentos informados na Pré-Anestésica (texto livre, exibidos como referência). */
-  preAnesthesiaProcedures: { name: string; isPrimary: boolean }[] = [];
-  /** Só depois de hidratar o formulário (rascunho/servidor) é seguro aplicar os horários da monitorização. */
+
+  private procedimentosBase: OfficialProcedure[] | null = null;
+  
   private formHydrated = false;
   private viewEnteredOnce = false;
   private monitoringTimesSub?: Subscription;
@@ -845,7 +846,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
           : draftData.assinaturas?.segundoAnestesistaNome || ''
       },
       firstAnesthesiologistId: this.loggedUser?.id ? String(this.loggedUser.id) : draftData.firstAnesthesiologistId || null,
-      secondAnesthesiologistId: draftData.secondAnesthesiologistId || null
+      secondAnesthesiologistId: draftData.secondAnesthesiologistId || null,
+      _proceduresBase: draftData._proceduresBase ?? this.procedimentosBase
     };
 
     this.anesthesiaService.saveDraft(this.cirurgiaId, formattedData);
@@ -875,6 +877,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
       const record: any = this.buildPayload();
       record.finalize = !!draft.finalize;
+      record.proceduresBase = draft._proceduresBase ?? record.proceduresBase;
 
       this.form.patchValue(originalFormValue);
       this.antibioticsList = originalAntibioticsList;
@@ -949,7 +952,6 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
 
           this.canEdit = !this.isReadOnlyRecord && !this.fichaFinalizada;
 
-          this.loadPreAnesthesiaProcedures();
           this.formHydrated = false;
 
           const draft = this.anesthesiaService.getDraft(this.cirurgiaId!);
@@ -957,20 +959,20 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
             timeout(NETWORK_TIMEOUT_MS),
           ).subscribe({
             next: (savedRecord) => {
+              // Procedimento oficial da cirurgia (escolha do médico no SIGA — aqui ou na
+              // pré-anestésica — ou, sem ela, o agendamento do AGHU), vindo do backend.
+              const officialRows = (savedRecord as any)?.posProcedimento?.procedimentos ?? null;
+              const official = savedRecord ? this.toProcedureSelection(officialRows) : null;
+
               if (draft) {
                 // Se for um rascunho de limpeza (_isClearedDraft), apenas o aplicamos e ignoramos o que vem do backend.
                 // Pois o backend não suporta limpeza de propriedades (salva zeros e falses).
-                this.hydrateProcedimentos((draft as any)?.posProcedimento?.procedimentos);
-                this.form.patchValue(draft);
+                this.hydrateProcedimentosFromDraft(draft, official, officialRows);
+                this.form.patchValue(this.withoutProcedimentos(draft));
                 if (draft.antibioticsList) this.antibioticsList = draft.antibioticsList;
               } else if (savedRecord) {
-
-                // Ficha ainda sem procedimento próprio salvo (só o agendamento do AGHU):
-                // o procedimento informado na Pré-Anestésica prevalece.
-                const procedimentos = (savedRecord as any)?.proceduresFromRecord
-                  ? (savedRecord as any)?.posProcedimento?.procedimentos
-                  : this.buildProcedimentosFromPreAnestesica() ?? (savedRecord as any)?.posProcedimento?.procedimentos;
-                this.hydrateProcedimentos(procedimentos);
+                this.hydrateProcedimentos(officialRows);
+                this.procedimentosBase = official;
                 const formValue = { ...savedRecord };
                 delete formValue.posProcedimento?.procedimentos;
                 this.form.patchValue(formValue);
@@ -983,8 +985,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
                 }
               } else {
 
-                const procedimentosFromSurgery = this.buildProcedimentosFromPreAnestesica() ?? this.buildProcedimentosFromSurgery();
+                const procedimentosFromSurgery = this.buildProcedimentosFromSurgery();
                 this.hydrateProcedimentos(procedimentosFromSurgery);
+                this.procedimentosBase = this.toProcedureSelection(procedimentosFromSurgery);
                 this.form.get('dadosVitais.peso')?.patchValue(this.pesoFromPreAnestesicaOuAghu());
                 const diag = this.diagnosticoFromPreAnestesica();
                 if (diag) {
@@ -1006,8 +1009,9 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
             error: (err) => {
               console.warn('[FichaAnestesica] Falha ao buscar ficha na API, usando rascunho local se houver', err);
               if (draft) {
-                this.hydrateProcedimentos((draft as any)?.posProcedimento?.procedimentos);
-                this.form.patchValue(draft);
+                // Sem conexão com a API: fica o rascunho local, com a base que ele registrou.
+                this.hydrateProcedimentosFromDraft(draft, null, null);
+                this.form.patchValue(this.withoutProcedimentos(draft));
                 if (draft.antibioticsList) this.antibioticsList = draft.antibioticsList;
                 this.formHydrated = true;
                 this.applyMonitoringTimes();
@@ -1091,8 +1095,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
                   this.form.get('equipe.diagnosticoPre')?.patchValue(diag);
                   this.form.get('posProcedimento.diagnosticoPos')?.patchValue(diag);
                 }
-                const procsPre = this.buildProcedimentosFromPreAnestesica();
-                if (procsPre) this.hydrateProcedimentos(procsPre);
+                const procsOficiais = this.buildProcedimentosFromSurgery();
+                if (procsOficiais.length) this.hydrateProcedimentos(procsOficiais);
                 this.applyMonitoringTimes();
                 this.checkCustomSelects();
     }
@@ -1283,6 +1287,8 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     this.anesthesiaService.saveRecord(formattedRecord).subscribe({
       next: async () => {
         this.anesthesiaService.clearDraft(this.cirurgiaId!);
+        // O procedimento enviado é agora o oficial da cirurgia.
+        this.procedimentosBase = this.toProcedureSelection(this.procedimentosArray.value);
         this.isSaving = false;
 
         if (finalize) {
@@ -1406,6 +1412,7 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
       antibioticsList: antibioticsPayload,
       antibiotics: antibioticsPayload,
       cirurgias: procedimentos,
+      proceduresBase: this.procedimentosBase,
       surgeryPerformed: primaryProc?.description ?? '',
       firstAnesthesiologistId: firstAnesthesiologistId,
       firstAnesthesiologistName: primeiroResolved?.name ?? raw.assinaturas?.primeiroAnestesista ?? '',
@@ -2063,53 +2070,43 @@ export class FichaAnestesicaComponent implements OnInit, OnDestroy {
     control?.markAsTouched();
   }
 
-  // ── Integração com a Pré-Anestésica (procedimento) ─────────────────────────
+  // ── Procedimento oficial da cirurgia ──────────────────────────────────────
+  // A pré-anestésica, esta ficha e as listagens mostram o mesmo procedimento, gravado no backend.
 
-  private loadPreAnesthesiaProcedures(): void {
-    const payload: any = this.cirurgiaId
-      ? this.preAnesthesicService.getBestAvailable(Number(this.cirurgiaId), this.patientId ?? '')
-      : null;
-    const surgeries: any[] = Array.isArray(payload?.procedure?.surgeries) ? payload.procedure.surgeries : [];
-
-    this.preAnesthesiaProcedures = surgeries
-      .map(s => ({ name: String(s?.name ?? '').trim(), isPrimary: !!s?.isPrimary }))
-      .filter(s => !!s.name);
+  private toProcedureSelection(rows: any[] | null | undefined): OfficialProcedure[] {
+    return (rows ?? [])
+      .filter((r: any) => !!(r?.procedimentoId ?? r?.id))
+      .map((r: any) => ({
+        procedureId: String(r.procedimentoId ?? r.id),
+        name: '',
+        isPrimary: !!(r.principal ?? r.isPrimary),
+      }));
   }
 
   /**
-   * A Pré-Anestésica guarda o procedimento como texto livre (sem id do catálogo). Converte para
-   * as linhas da ficha só quando o nome casa exatamente (sem acento/caixa) com um único item do
-   * catálogo de procedimentos — nunca "chuta" um procedimento parecido. Sem nenhum casamento,
-   * devolve null e a ficha mantém o comportamento atual (agendamento do AGHU).
+   * Rascunho local: se o médico não alterou o procedimento em relação à base registrada no
+   * rascunho, vale o procedimento oficial atual (pode ter sido alterado depois na pré-anestésica).
+   * Com alteração pendente, mantém a do rascunho — ela é enviada no próximo salvamento.
    */
-  private buildProcedimentosFromPreAnestesica(): Array<{ procedimentoId: string; hora: string; principal: boolean }> | null {
-    if (!this.preAnesthesiaProcedures.length || !this.procedimentoLista.length) return null;
+  private hydrateProcedimentosFromDraft(draft: any, official: OfficialProcedure[] | null, officialRows: any[] | null): void {
+    const draftRows = draft?.posProcedimento?.procedimentos ?? [];
+    const draftBase: OfficialProcedure[] | null = Array.isArray(draft?._proceduresBase) ? draft._proceduresBase : null;
+    const pendingChange = !sameProcedureSelection(this.toProcedureSelection(draftRows), draftBase ?? official);
 
-    const idByName = new Map<string, string | null>();
-    this.procedimentoLista.forEach(p => {
-      const key = this.normalizeProcedureName(p.name);
-      if (!key) return;
-      idByName.set(key, idByName.has(key) ? null : p.id); // nome duplicado no catálogo = ambíguo
-    });
+    if (official && official.length && !pendingChange) {
+      this.hydrateProcedimentos(officialRows);
+      this.procedimentosBase = official;
+      return;
+    }
 
-    const hasPrimary = this.preAnesthesiaProcedures.some(p => p.isPrimary);
-    const rows: Array<{ procedimentoId: string; hora: string; principal: boolean }> = [];
-
-    this.preAnesthesiaProcedures.forEach((p, index) => {
-      const id = idByName.get(this.normalizeProcedureName(p.name));
-      if (!id || rows.some(r => r.procedimentoId === id)) return;
-      rows.push({ procedimentoId: id, hora: '', principal: hasPrimary ? p.isPrimary : index === 0 });
-    });
-
-    return rows.length ? rows : null;
+    this.hydrateProcedimentos(draftRows);
+    this.procedimentosBase = draftBase ?? official;
   }
 
-  private normalizeProcedureName(name: string | null | undefined): string {
-    return String(name ?? '')
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, ' ')
-      .trim();
+  /** Cópia do rascunho sem as linhas de procedimento (já hidratadas à parte). */
+  private withoutProcedimentos(draft: any): any {
+    if (!draft?.posProcedimento) return draft;
+    const { procedimentos, ...posProcedimento } = draft.posProcedimento;
+    return { ...draft, posProcedimento };
   }
 }

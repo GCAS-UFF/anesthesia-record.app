@@ -59,21 +59,39 @@
 
         <div class="qa-row qa-row--column">
           <span class="qa-label">{{ 'preAnestesica.procedimento.surgeriesLabel' | translate }} <em class="req">*</em></span>
-          <div class="inline-add">
-            <select class="select-control" [(ngModel)]="cirurgiaSelecionada" [ngModelOptions]="{ standalone: true }" [disabled]="!canEdit">
-              <option value="">{{ 'preAnestesica.procedimento.selectSurgeryPlaceholder' | translate }}</option>
-              <option value="NEW_CUSTOM">+ Outra cirurgia (digitar nome)...</option>
-              <option *ngFor="let c of cirurgiasAghu" [value]="c.labelKey | translate">{{ c.labelKey | translate }}</option>
-            </select>
-            <button type="button" class="btn-add" (click)="addCirurgia()" [disabled]="!canEdit">
-              <ion-icon name="add-circle-outline"></ion-icon>
-              {{ 'preAnestesica.procedimento.add' | translate }}
-            </button>
+          <div class="procedure-search" *ngIf="canEdit">
+            <input
+              type="text"
+              class="select-control"
+              [(ngModel)]="procedureSearch"
+              [ngModelOptions]="{ standalone: true }"
+              [placeholder]="'preAnestesica.procedimento.searchProcedurePlaceholder' | translate"
+              autocomplete="off"
+            />
+            <ul class="procedure-search__list" *ngIf="procedureSearch.trim().length >= 2">
+              <li *ngFor="let p of filteredProcedures" (click)="addCirurgia(p)">
+                <ion-icon name="add-circle-outline"></ion-icon>
+                <span>{{ p.description }}</span>
+              </li>
+              <li class="procedure-search__empty" *ngIf="!filteredProcedures.length">
+                {{ 'preAnestesica.procedimento.noProcedureFound' | translate }}
+              </li>
+            </ul>
           </div>
 
           <div class="repeat-list" formArrayName="cirurgias">
             <div class="repeat-row" *ngFor="let c of cirurgias.controls; let i = index" [formGroupName]="i">
-              <input type="text" formControlName="nome" />
+              <input type="text" formControlName="nome" [readonly]="!!c.get('procedimentoId')?.value" />
+              <span class="procedure-primary-badge" *ngIf="i === 0">{{ 'preAnestesica.procedimento.primary' | translate }}</span>
+              <button
+                type="button"
+                class="btn-icon"
+                *ngIf="i > 0 && canEdit"
+                (click)="setCirurgiaPrincipal(i)"
+                [title]="'preAnestesica.procedimento.makePrimary' | translate"
+              >
+                <ion-icon name="checkmark-circle-outline"></ion-icon>
+              </button>
               <button type="button" class="btn-icon btn-icon--danger" (click)="removeCirurgia(i)" [disabled]="!canEdit">
                 <ion-icon name="trash-outline"></ion-icon>
               </button>

@@ -9,8 +9,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Subscription, firstValueFrom, interval } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { Observable, Subscription, firstValueFrom, forkJoin, interval, of } from 'rxjs';
+import { catchError, debounceTime, map } from 'rxjs/operators';
 
 import {
   IonButton,
@@ -58,6 +58,9 @@ import { StatusBarComponent } from '../../shared/components/status-bar/status-ba
 import { AuthService } from '../../core/services/auth.service';
 import { PreAnesthesicRecordService } from '../../core/services/pre-anesthesic-record.service';
 import { DocumentViewerService } from '../../core/services/document-viewer.service';
+import { SurgeryService } from '../../core/services/surgery.service';
+import { MasterDataService } from '../../core/services/master-data.service';
+import { OfficialProcedure, officialProceduresFromRecord, sameProcedureSelection } from '../../shared/utils/surgery-procedures.util';
 import {
   ChecklistGroupDef,
   ChecklistOption,
@@ -194,32 +197,52 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   readonly normalAnormalOptions = NORMAL_ABNORMAL_OPTIONS;
   readonly especialidadesHuap = HUAP_SPECIALTY_OPTIONS;
 
-  readonly cirurgiasAghu: { value: string; labelKey: string }[] = [
-    { value: 'Colecistectomia videolaparoscópica', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.colecistectomiaVideolaparoscopica' },
-    { value: 'Herniorrafia inguinal', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.herniorrafiaInguinal' },
-    { value: 'Herniorrafia umbilical', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.herniorrafiaUmbilical' },
-    { value: 'Apendicectomia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.apendicectomia' },
-    { value: 'Histerectomia total abdominal', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.histerectomiaTotalAbdominal' },
-    { value: 'Cesariana', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.cesariana' },
-    { value: 'Curetagem uterina', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.curetagemUterina' },
-    { value: 'Artroplastia total de quadril', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.artroplastiaTotalQuadril' },
-    { value: 'Artroplastia total de joelho', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.artroplastiaTotalJoelho' },
-    { value: 'Osteossíntese de fêmur', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.osteossinteseFemur' },
-    { value: 'Prostatectomia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.prostatectomia' },
-    { value: 'Ressecção transuretral de próstata (RTU)', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.ressecaoTransuretralProstata' },
-    { value: 'Nefrolitotripsia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.nefrolitotripsia' },
-    { value: 'Tireoidectomia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.tireoidectomia' },
-    { value: 'Mastectomia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.mastectomia' },
-    { value: 'Facectomia com implante de LIO', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.facectomiaComImplanteLio' },
-    { value: 'Amigdalectomia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.amigdalectomia' },
-    { value: 'Septoplastia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.septoplastia' },
-    { value: 'Laparotomia exploradora', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.laparotomiaExploradora' },
-    { value: 'Gastrectomia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.gastrectomia' },
-    { value: 'Colectomia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.colectomia' },
-    { value: 'Craniotomia', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.craniotomia' },
-    { value: 'Laminectomia / Artrodese de coluna', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.laminectomiaArtrodeseColuna' },
-    { value: 'Safenectomia / Varizes de MMII', labelKey: 'preAnestesica.procedimento.cirurgiasAghu.safenectomiaVarizesMmii' },
-  ];
+
+  private proceduresBase: OfficialProcedure[] | null = null;
+  private procedureCatalogCache: { id: string; description: string }[] | null = null;
+  procedureSearch = '';
+
+  /** Catálogo de procedimentos (o mesmo da ficha anestésica), identificado pelo id externo do AGHU. */
+  get procedureCatalog(): { id: string; description: string }[] {
+    if (!this.procedureCatalogCache?.length) {
+      const raw = this.masterData.getProceduresCache();
+      const list: any[] = Array.isArray(raw) ? raw : Array.isArray((raw as any)?.data) ? (raw as any).data : [];
+      this.procedureCatalogCache = list
+        .filter((p) => p?.id !== null && p?.id !== undefined)
+        .map((p) => ({ id: String(p.id), description: p.description ?? '' }));
+    }
+    return this.procedureCatalogCache;
+  }
+
+  get filteredProcedures(): { id: string; description: string }[] {
+    const term = this.normalizeText(this.procedureSearch);
+    if (term.length < 2) return [];
+    const selected = new Set(this.cirurgias.value.map((c: any) => c.procedimentoId).filter(Boolean));
+    return this.procedureCatalog
+      .filter((p) => !selected.has(p.id) && this.normalizeText(p.description).includes(term))
+      .slice(0, 30);
+  }
+
+  private ensureProcedureCatalog(): void {
+    if (this.masterData.hasCache()) return;
+
+    this.masterData.downloadMasterData().subscribe({
+      next: (res) => {
+        this.masterData.saveProfessionals(res.professionals || []);
+        this.masterData.saveProcedures(res.procedures || []);
+        this.masterData.saveMedications(res.medications || []);
+        this.masterData.saveEvents(res.events || []);
+        this.procedureCatalogCache = null;
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.warn('[pre-anestesica] não foi possível carregar o catálogo de procedimentos', err?.status),
+    });
+  }
+
+  private normalizeText(value: string | null | undefined): string {
+    return String(value ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+  }
+
 
   readonly comorbidadeGroups: ChecklistGroupDef[] = COMORBIDITY_GROUPS;
   readonly exameFisicoGroups: ChecklistGroupDef[] = PHYSICAL_EXAM_GROUPS;
@@ -253,6 +276,8 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     private translate: TranslateService,
     private modalCtrl: ModalController,
     private documentViewer: DocumentViewerService,
+    private surgeryService: SurgeryService,
+    private masterData: MasterDataService,
   ) {
     addIcons({
       arrowBackOutline,
@@ -293,6 +318,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     this.loggedUser = this.authService.getUser();
     this.isAdminUser = this.authService.isAdmin();
     this.buildForm();
+    this.ensureProcedureCatalog();
     this.loadInitialState();
     this.setupScrollSpy();
   }
@@ -465,15 +491,29 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     return this.form.get('procedimento.cirurgias') as FormArray;
   }
 
-  cirurgiaSelecionada = '';
 
-  addCirurgia(nome?: string): void {
-    if (!this.canEdit) return;
-    let valor = (nome ?? this.cirurgiaSelecionada ?? '').trim();
-    if (valor === 'NEW_CUSTOM') valor = '';
-    if (valor && this.cirurgias.value.some((c: any) => c.nome === valor)) return;
-    this.cirurgias.push(this.fb.group({ nome: [valor], principal: [this.cirurgias.length === 0] }));
-    this.cirurgiaSelecionada = '';
+  addCirurgia(procedure: { id: string; description: string }): void {
+    if (!this.canEdit || !procedure?.id) return;
+    if (this.cirurgias.value.some((c: any) => c.procedimentoId === procedure.id)) return;
+    this.cirurgias.push(this.createCirurgiaRow({ procedureId: procedure.id, name: procedure.description }));
+    this.procedureSearch = '';
+  }
+
+  private createCirurgiaRow(s: { procedureId?: string | null; name?: string | null }): FormGroup {
+    return this.fb.group({ procedimentoId: [s.procedureId ?? null], nome: [s.name ?? ''] });
+  }
+
+  private setCirurgias(items: Array<{ procedureId?: string | null; name?: string | null }>): void {
+    this.cirurgias.clear();
+    items.forEach((s) => this.cirurgias.push(this.createCirurgiaRow(s)));
+  }
+
+  /** Torna o procedimento da linha `i` o principal (primeira posição). */
+  setCirurgiaPrincipal(i: number): void {
+    if (!this.canEdit || i <= 0) return;
+    const row = this.cirurgias.at(i);
+    this.cirurgias.removeAt(i);
+    this.cirurgias.insert(0, row);
   }
 
   removeCirurgia(i: number): void {
@@ -574,7 +614,10 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     }
 
     this.isLoadingRecord = true;
-    this.preAnesthesicService.getByAnesthesiaRecordId(this.anesthesiaRecordId).subscribe((record) => {
+    forkJoin({
+      record: this.preAnesthesicService.getByAnesthesiaRecordId(this.anesthesiaRecordId),
+      official: this.loadOfficialProcedures(),
+    }).subscribe(({ record, official }) => {
       this.isLoadingRecord = false;
 
       if (record) {
@@ -603,10 +646,53 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
         }
       }
 
+      this.applyOfficialProcedures(official, localDraft);
+
       this.formSub = this.form.valueChanges.pipe(debounceTime(400)).subscribe(() => this.onFormChanged());
       this.startSyncTimer();
       this.loadLabExams(localDraft?.labsPendingSync === true);
     });
+  }
+
+ 
+  private loadOfficialProcedures(): Observable<OfficialProcedure[] | null> {
+    if (!this.anesthesiaRecordId || !this.patientId) return of(null);
+
+    return this.surgeryService.getPatientDate(this.anesthesiaRecordId, this.patientId).pipe(
+      map((res: any) => officialProceduresFromRecord(res?.data ?? res, this.anesthesiaRecordId)),
+      catchError((err) => {
+        console.warn('[pre-anestesica] não foi possível carregar o procedimento oficial da cirurgia', err?.status);
+        return of(null);
+      }),
+    );
+  }
+
+
+  private applyOfficialProcedures(official: OfficialProcedure[] | null, localDraft: PreAnesthesicRecordDraft | null): void {
+    if (!official) {
+      this.proceduresBase = localDraft?.procedure?.baseSurgeries
+        ? localDraft.procedure.baseSurgeries.map((s) => ({ procedureId: s.procedureId ?? '', name: s.name, isPrimary: s.isPrimary }))
+        : null;
+      return;
+    }
+
+    const draftSurgeries = localDraft?.procedure?.surgeries ?? null;
+    const draftBase = localDraft?.procedure?.baseSurgeries ?? null;
+    const draftHasPendingChange = !!draftSurgeries && !!draftBase && !sameProcedureSelection(draftSurgeries, draftBase);
+
+    if (draftHasPendingChange && this.canEdit) {      
+      this.proceduresBase = draftBase!.map((s) => ({ procedureId: s.procedureId ?? '', name: s.name, isPrimary: s.isPrimary }));
+      return;
+    }
+
+    this.proceduresBase = official;
+    if (!official.length) 
+      return;
+
+    this.setCirurgias(official.map((p) => ({ procedureId: p.procedureId, name: p.name })));
+    
+    if (!this.canEdit) 
+      this.form.disable({ emitEvent: false });
   }
 
   loadLabExams(localChangesPending = false): void {
@@ -829,13 +915,13 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   }
 
   private trySync(): void {
-    if (!navigator.onLine) 
+    if (!navigator.onLine)
       return;
 
-    if (this.labsReady && this.canEdit && !this.labSyncing && this.hasPendingLabChanges()) 
+    if (this.labsReady && this.canEdit && !this.labSyncing && this.hasPendingLabChanges())
       this.syncLabs();
 
-    if (!this.pendingFinalizePayload) 
+    if (!this.pendingFinalizePayload)
       return;
 
     this.submitPayload(this.pendingFinalizePayload, {
@@ -863,6 +949,10 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
         this.isSubmittingSignature = false;
         this.remoteRecordId = res?.data?.id ?? res?.id ?? this.remoteRecordId;
         this.pendingFinalizePayload = null;
+        // O procedimento salvo passa a ser o oficial da cirurgia.
+        this.proceduresBase = (payload.procedure?.surgeries ?? [])
+          .filter((s) => !!s.procedureId)
+          .map((s) => ({ procedureId: s.procedureId!, name: s.name, isPrimary: s.isPrimary }));
         this.isFinalized = true;
         this.form.disable();
         this.preAnesthesicService.clearDraft(this.anesthesiaRecordId!, this.patientId!);
@@ -889,12 +979,12 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
   private onFormChanged(): void {
     if (!this.anesthesiaRecordId || !this.patientId || !this.canEdit) return;
     this.preAnesthesicService.saveDraft(this.anesthesiaRecordId, this.patientId, this.toDraft());
-    this.lastSavedAt = new Date();    
+    this.lastSavedAt = new Date();
     this.syncLabs();
   }
 
   saveDraft(): void {
-    if (!this.anesthesiaRecordId || !this.patientId || !this.canEdit) 
+    if (!this.anesthesiaRecordId || !this.patientId || !this.canEdit)
       return;
     this.preAnesthesicService.saveDraft(this.anesthesiaRecordId, this.patientId, this.toDraft());
     this.lastSavedAt = new Date();
@@ -932,7 +1022,14 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
     return {
       procedure: {
-        surgeries: (raw.procedimento.cirurgias ?? []).map((c: any, index: number) => ({ name: c.nome ?? '', isPrimary: index === 0 })),
+        surgeries: (raw.procedimento.cirurgias ?? []).map((c: any, index: number) => ({
+          procedureId: c.procedimentoId || null,
+          name: c.nome ?? '',
+          isPrimary: index === 0,
+        })),
+        baseSurgeries: this.proceduresBase
+          ? this.proceduresBase.map((p) => ({ procedureId: p.procedureId, name: p.name, isPrimary: p.isPrimary }))
+          : null,
         laterality: raw.procedimento.lateralidade || null,
         preOperativeDiagnosis: raw.procedimento.diagnosticoPreOperatorio ?? '',
         consultationDate: raw.procedimento.dataConsulta ?? '',
@@ -1050,10 +1147,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
   /** Reconstrói o formulário (PT-BR) a partir de um rascunho/payload em inglês. */
   private patchFormFromDraft(draft: PreAnesthesicRecordDraft): void {
-    this.cirurgias.clear();
-    (draft.procedure?.surgeries ?? []).forEach((s) =>
-      this.cirurgias.push(this.fb.group({ nome: [s.name ?? ''] })),
-    );
+    this.setCirurgias(draft.procedure?.surgeries ?? []);
 
     const meds = draft.medicationsInUse?.items ?? [];
     this.medicacoes.clear();
@@ -1251,7 +1345,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
       const scrollRect = navScroll.getBoundingClientRect();
       const itemRect = navItem.getBoundingClientRect();
 
-      
+
       if (itemRect.left < scrollRect.left || itemRect.right > scrollRect.right) {
         navScroll.scrollTo({
           left: navItem.offsetLeft - navScroll.offsetLeft - (scrollRect.width / 2) + (itemRect.width / 2),
@@ -1393,9 +1487,6 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
 
 
   async salvar(): Promise<void> {
-    if (this.cirurgiaSelecionada && this.cirurgiaSelecionada.trim() !== '') {
-      this.addCirurgia();
-    }
     this.saveDraft();
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -1481,7 +1572,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
     if (!this.anesthesiaRecordId || !this.patientId) return;
 
     this.isSaving = true;
-    
+
     if (!(await this.flushLabs())) {
       this.isSaving = false;
       const t = await this.toastCtrl.create({
@@ -1560,7 +1651,7 @@ export class FichaPreAnestesicaComponent implements OnInit, OnDestroy {
       next: async () => {
         this.isReopening = false;
         await loading.dismiss();
-       
+
         this.isFinalized = false;
 
         const t = await this.toastCtrl.create({

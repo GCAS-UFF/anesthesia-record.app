@@ -173,7 +173,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
   }
 
   get procedureName(): string {
-    return this.selectedProcedure?.name || '';
+    return this.selectedProcedure?.description || this.selectedProcedure?.name || '';
   }
 
   /** Mesma condição da antiga barra inferior para "Finalizar cirurgia/anestesia". */
@@ -1536,8 +1536,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
 
 
   async openFichaAnestesicaModal(): Promise<void> {
-    const data = await this.buildFichaAnestesicaRecordData();
-    // Dados complementares em painel: a linha do tempo continua visível ao lado/acima.
+    const data = await this.buildFichaAnestesicaRecordData();    
     await this.presentPanel(RecordViewerModalComponent, { data });
   }
 
@@ -1555,7 +1554,7 @@ export class MonitorizacaoComponent implements OnInit, OnDestroy {
         title: this.translate.instant('monitorizacao.page.fichaAnestesica.teamSectionTitle'),
         fields: [
           { label: this.translate.instant('monitorizacao.page.fichaAnestesica.surgeonLabel'), value: this.selectedSurgery?.surgeonName || '--' },
-          { label: this.translate.instant('monitorizacao.page.fichaAnestesica.procedureLabel'), value: this.selectedProcedure?.name || '--' },
+          { label: this.translate.instant('monitorizacao.page.fichaAnestesica.procedureLabel'), value: this.selectedProcedure?.description || this.selectedProcedure?.name || '--' },
         ],
       },
     ];

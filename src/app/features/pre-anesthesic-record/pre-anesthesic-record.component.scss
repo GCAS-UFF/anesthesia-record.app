@@ -861,6 +861,61 @@
   color: var(--pre-muted);
 }
 
+.procedure-search {
+  position: relative;
+  width: 100%;
+}
+
+.procedure-search__list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 4px 0;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--pre-border-strong);
+  border-radius: t.$radius-base;
+  background: #fff;
+  box-shadow: var(--pre-shadow-md);
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: var(--pre-text);
+    cursor: pointer;
+
+    ion-icon {
+      flex-shrink: 0;
+      color: var(--pre-primary);
+    }
+
+    &:hover {
+      background: var(--pre-primary-soft);
+    }
+  }
+
+  .procedure-search__empty {
+    cursor: default;
+    color: var(--pre-muted);
+
+    &:hover {
+      background: transparent;
+    }
+  }
+}
+
+.procedure-primary-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pre-primary);
+  background: var(--pre-primary-soft);
+  white-space: nowrap;
+}
+
 .alert-block {
   margin-top: 14px;
   padding: 12px;

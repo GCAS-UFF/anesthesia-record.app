@@ -27,6 +27,10 @@
     "procedimento": {
       "surgeriesLabel": "Cirurgia(s) proposta(s)",
       "selectSurgeryPlaceholder": "Selecione a cirurgia...",
+      "searchProcedurePlaceholder": "Buscar procedimento para adicionar (mín. 2 letras)...",
+      "noProcedureFound": "Nenhum procedimento encontrado.",
+      "primary": "Principal",
+      "makePrimary": "Tornar principal",
       "add": "Adicionar",
       "principal": "Principal",
       "noSurgeryAdded": "Nenhuma cirurgia adicionada.",

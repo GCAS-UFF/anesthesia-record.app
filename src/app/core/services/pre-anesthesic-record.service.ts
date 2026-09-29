@@ -113,7 +113,10 @@ export class PreAnesthesicRecordService extends BaseService<PreAnesthesicRecordP
     return {
       anesthesiaRecordId: payload.anesthesiaRecordId,
 
-      surgeries: (payload.procedure.surgeries ?? []).map((s) => ({ name: s.name, isPrimary: s.isPrimary })),
+      surgeries: (payload.procedure.surgeries ?? []).map((s) => ({ procedureId: s.procedureId || null, name: s.name, isPrimary: s.isPrimary })),
+      baseSurgeries: payload.procedure.baseSurgeries
+        ? payload.procedure.baseSurgeries.map((s) => ({ procedureId: s.procedureId || null, name: s.name, isPrimary: s.isPrimary }))
+        : null,
       laterality: payload.procedure.laterality,
       preOperativeDiagnosis: payload.procedure.preOperativeDiagnosis,
       consultationDate: payload.procedure.consultationDate,
@@ -223,7 +226,7 @@ export class PreAnesthesicRecordService extends BaseService<PreAnesthesicRecordP
       firstAnesthesiologistId: wire.firstAnesthesiologistId ?? null,
 
       procedure: {
-        surgeries: (wire.surgeries ?? []).map((s: any) => ({ name: s.name, isPrimary: s.isPrimary })),
+        surgeries: (wire.surgeries ?? []).map((s: any) => ({ procedureId: s.procedureId ?? null, name: s.name, isPrimary: s.isPrimary })),
         laterality: wire.laterality ?? null,
         preOperativeDiagnosis: wire.preOperativeDiagnosis ?? '',
         consultationDate: wire.consultationDate ?? '',

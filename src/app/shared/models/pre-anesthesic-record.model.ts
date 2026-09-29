@@ -247,7 +247,8 @@ export const HUAP_SPECIALTY_OPTIONS: SelectOption[] = [
   { value: 'OTHER', label: 'Outra' },
 ];
 
-export interface PreAnesthesicSurgeryDraft {
+export interface PreAnesthesicSurgeryDraft {  
+  procedureId?: string | null;
   name: string;
   isPrimary: boolean;
 }
@@ -272,7 +273,8 @@ export interface PreAnesthesicReportDraft {
 
 export interface PreAnesthesicRecordDraft {
   procedure: {
-    surgeries: PreAnesthesicSurgeryDraft[];
+    surgeries: PreAnesthesicSurgeryDraft[];  
+    baseSurgeries?: PreAnesthesicSurgeryDraft[] | null;
     laterality: string | null;
     preOperativeDiagnosis: string;
     consultationDate: string;

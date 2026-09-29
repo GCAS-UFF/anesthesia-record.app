@@ -26,6 +26,10 @@
     "procedimento": {
       "surgeriesLabel": "Cirugía(s) propuesta(s)",
       "selectSurgeryPlaceholder": "Seleccione una cirugía (AGHU)…",
+      "searchProcedurePlaceholder": "Buscar procedimiento para agregar (mín. 2 letras)…",
+      "noProcedureFound": "Ningún procedimiento encontrado.",
+      "primary": "Principal",
+      "makePrimary": "Convertir en principal",
       "add": "Agregar",
       "principal": "Principal",
       "noSurgeryAdded": "No se agregó ninguna cirugía.",
